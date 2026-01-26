@@ -4,6 +4,9 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
+import pytest
+from pydantic import ValidationError
+
 from tlr.linear.models import (
     LinearCycle,
     LinearHistoryEntry,
@@ -11,8 +14,11 @@ from tlr.linear.models import (
     LinearIssueRef,
     LinearLabel,
     LinearProject,
+    LinearProjectState,
     LinearRelation,
+    LinearRelationType,
     LinearState,
+    LinearStateType,
     LinearUser,
 )
 
@@ -191,3 +197,73 @@ def test_linear_project():
     assert project.name == "Engineering"
     assert project.slug_id == "ENG"
     assert project.state == "started"
+
+
+def test_linear_state_type_enum_validation():
+    """Test that LinearStateType enum validates correct values."""
+    valid_types = ["backlog", "unstarted", "started", "completed", "canceled"]
+    for state_type in valid_types:
+        state = LinearState(id="state-1", name="Test", type=state_type)
+        assert state.type in LinearStateType
+
+
+def test_linear_relation_type_enum_validation():
+    """Test that LinearRelationType enum validates correct values."""
+    # Test blocks relation
+    relation_blocks = LinearRelation.model_validate({
+        "type": "blocks",
+        "relatedIssue": {"id": "issue-1", "identifier": "ENG-123", "title": "Test"},
+    })
+    assert relation_blocks.type == LinearRelationType.BLOCKS
+
+    # Test blocked relation
+    relation_blocked = LinearRelation.model_validate({
+        "type": "blocked",
+        "relatedIssue": {"id": "issue-1", "identifier": "ENG-123", "title": "Test"},
+    })
+    assert relation_blocked.type == LinearRelationType.BLOCKED
+
+
+def test_linear_project_state_enum_validation():
+    """Test that LinearProjectState enum validates correct values."""
+    valid_states = ["backlog", "planned", "started", "paused", "completed", "canceled"]
+    for state in valid_states:
+        project = LinearProject.model_validate({
+            "id": "project-1",
+            "name": "Test",
+            "slugId": "TEST",
+            "state": state,
+        })
+        assert project.state in LinearProjectState
+
+
+def test_linear_state_type_invalid_value():
+    """Test that LinearStateType enum rejects invalid values."""
+    with pytest.raises(ValidationError) as exc_info:
+        LinearState(id="state-1", name="Test", type="invalid_type")
+
+    assert "type" in str(exc_info.value)
+
+
+def test_linear_relation_type_invalid_value():
+    """Test that LinearRelationType enum rejects invalid values."""
+    with pytest.raises(ValidationError) as exc_info:
+        LinearRelation.model_validate({
+            "type": "invalid_relation",
+            "relatedIssue": {"id": "issue-1", "identifier": "ENG-123", "title": "Test"},
+        })
+
+    assert "type" in str(exc_info.value)
+
+
+def test_linear_project_state_invalid_value():
+    """Test that LinearProjectState enum rejects invalid values."""
+    with pytest.raises(ValidationError) as exc_info:
+        LinearProject.model_validate({
+            "id": "project-1",
+            "name": "Test",
+            "slugId": "TEST",
+            "state": "invalid_state",
+        })
+
+    assert "state" in str(exc_info.value)

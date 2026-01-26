@@ -3,8 +3,37 @@
 from __future__ import annotations
 
 from datetime import datetime
+from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field
+
+
+class LinearStateType(StrEnum):
+    """Linear workflow state type."""
+
+    BACKLOG = "backlog"
+    UNSTARTED = "unstarted"
+    STARTED = "started"
+    COMPLETED = "completed"
+    CANCELED = "canceled"
+
+
+class LinearRelationType(StrEnum):
+    """Linear issue relation type."""
+
+    BLOCKS = "blocks"
+    BLOCKED = "blocked"
+
+
+class LinearProjectState(StrEnum):
+    """Linear project state."""
+
+    BACKLOG = "backlog"
+    PLANNED = "planned"
+    STARTED = "started"
+    PAUSED = "paused"
+    COMPLETED = "completed"
+    CANCELED = "canceled"
 
 
 class LinearState(BaseModel):
@@ -12,7 +41,7 @@ class LinearState(BaseModel):
 
     id: str
     name: str
-    type: str
+    type: LinearStateType
 
 
 class LinearUser(BaseModel):
@@ -48,7 +77,7 @@ class LinearIssueRef(BaseModel):
 class LinearRelation(BaseModel):
     """Issue relation (blocks/blocked)."""
 
-    type: str
+    type: LinearRelationType
     related_issue: LinearIssueRef = Field(alias="relatedIssue")
 
 
@@ -102,4 +131,4 @@ class LinearProject(BaseModel):
     id: str
     name: str
     slug_id: str = Field(alias="slugId")
-    state: str
+    state: LinearProjectState

@@ -7,7 +7,13 @@ from typing import Any
 
 import httpx
 
-from tlr.linear.models import LinearHistoryEntry, LinearIssue, LinearLabel, LinearProject
+from tlr.linear.models import (
+    LinearHistoryEntry,
+    LinearIssue,
+    LinearLabel,
+    LinearProject,
+    LinearRelationType,
+)
 from tlr.linear.queries import (
     FIND_PROJECTS_QUERY,
     GET_ISSUE_HISTORY_QUERY,
@@ -177,9 +183,9 @@ def _extract_relationships(
             title=relation.related_issue.title,
             url=None,
         )
-        if relation.type == "blocks":
+        if relation.type == LinearRelationType.BLOCKS:
             blocks.append(ref)
-        elif relation.type == "blocked":
+        elif relation.type == LinearRelationType.BLOCKED:
             blocked_by.append(ref)
 
     return parent, children, tuple(blocks), tuple(blocked_by)

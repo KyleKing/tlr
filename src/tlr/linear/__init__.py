@@ -8,12 +8,22 @@ from tlr.linear.client import (
     get_api_key,
     transform_to_report,
 )
-from tlr.linear.models import LinearHistoryEntry, LinearIssue, LinearProject
+from tlr.linear.models import (
+    LinearHistoryEntry,
+    LinearIssue,
+    LinearProject,
+    LinearProjectState,
+    LinearRelationType,
+    LinearStateType,
+)
 
 __all__ = [
     "LinearHistoryEntry",
     "LinearIssue",
     "LinearProject",
+    "LinearProjectState",
+    "LinearRelationType",
+    "LinearStateType",
     "fetch_issue_history",
     "fetch_labels",
     "fetch_project_issues",
