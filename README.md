@@ -1,5 +1,7 @@
 # TLR - Tech Lead Reporter
 
+TLR, pronounced "Teller"
+
 Generate progress reports from Linear, Jira, and other project management tools.
 
 ## Installation
