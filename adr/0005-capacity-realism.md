@@ -53,6 +53,10 @@ The `capacity` block no longer has to be seeded by hand. `deno task capacity` re
 
 The transforms (`web/lib/capacity.js`) are pure and tested; the script only does the fetching and the
 write. A `roster` map in the block ties each person's display name to the email the two sources key on.
+That map is fetched too: the issue export stores only display names, so `deno task roster`
+(`scripts/roster.ts`) resolves each assignee to an email against the Linear GraphQL API rather than
+leaving it hand-typed. This is the spike-to-productionize move the [ADR 0007](0007-productization-and-domains.md)
+rule describes, applied to identity: a hand-seeded value replaced by a keychain-keyed API read.
 
 Merging is provenance-aware. Each source owns its fields (Incident.io owns `oncall`, the calendar owns
 `outDays`/`reason`) and tags what it writes. A refresh overwrites its own prior data, clears entries it

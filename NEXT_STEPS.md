@@ -13,16 +13,20 @@ Running list of what to build next and what needs a decision. Higher-level phase
   hand-seeding it. On-call comes from the Incident.io REST API; out-days come from a Google Calendar
   handoff file. Pure transforms in `web/lib/capacity.js` (tested), thin I/O in `scripts/capacity.ts`,
   provenance-aware merge that preserves hand-entered values. See ADR 0005's update.
+- Roster resolver. `deno task roster` (`scripts/roster.ts`) resolves each assignee display name to an
+  email against the Linear GraphQL API, so the roster is no longer hand-typed. Both current assignees
+  resolve; Marissa's email is filled.
+- Timeline toggle fix. Switching to the dependency view and back left the timeline rendered under the
+  board (a CSS `display` rule beat the `hidden` attribute). Guarded with `[hidden] { display: none }`.
+- Docs. `SETUP.md` is the day-zero credentials guide. New ADRs: 0006 (normalized issue schema across
+  Linear and GitHub) and 0007 (productizing the spikes into domains and ports). `AGENTS.md` records the
+  spike-then-productionize rule.
 
 ## Setup to finish the capacity feed
 
-- Incident.io token: create an API key in the Incident.io dashboard (Settings → API keys) with
-  permission to read schedules, then store it: `security add-generic-password -s tlr-incidentio -a
-  api-key -w` (paste the key when prompted). Run `deno task capacity --source incident --dry-run` to
-  check what it would write.
-- Google Calendar: run `/mcp` in this session and authorize "claude.ai Google Calendar". Out-days for
-  peers depend on whether the Workspace shares free/busy; probe once authed.
-- Fill in Marissa's email in the `roster` block of `cpu.json` so on-call and out-days match her.
+See `SETUP.md` for the full guide. The one blocker for the live on-call feed is the Incident.io key
+(store it, then `deno task capacity --source incident --dry-run`). Google Calendar out-days still come
+through the MCP handoff; the standalone adapter is future work per ADR 0007.
 
 ## Next up
 
