@@ -2,6 +2,7 @@
   "name": "tlr",
   "version": "0.0.0",
   "tasks": {
+    "capacity": "deno run --allow-read --allow-write --allow-env --allow-net=api.incident.io --allow-run=security ./scripts/capacity.ts",
     "dev": "deno run --allow-net --allow-read --allow-env ./scripts/serve.ts"
   },
   "fmt": {

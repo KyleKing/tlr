@@ -38,3 +38,23 @@ across their weeks and skip the near-term calendar events.
 - On-call and team-wide time off cannot be sourced automatically today. Until an Incident.io path and a
   team-calendar path exist, those numbers are entered by hand and should be read as estimates
 - Because the block is per-file, real capacity data stays in the gitignored `cpu.json`, never the repo
+
+## Update (2026-07-23) — the block is now fetched
+
+The `capacity` block no longer has to be seeded by hand. `deno task capacity` refreshes it:
+
+- On-call: Incident.io has no CLI or MCP, but its REST API does the job. `scripts/capacity.ts` reads a
+  bearer token (keychain service `tlr-incidentio`, account `api-key`, or `INCIDENT_IO_TOKEN`), lists
+  schedules, and pulls the final schedule entries across the cycle window. Anyone on a shift that
+  touches a cycle is marked on-call for it.
+- Time off: still Google Calendar, still the current user only. The MCP step writes a small handoff
+  file of out-of-office blocks that the script reads with `--calendar-file`. Peers stay manual until
+  their free/busy is reachable.
+
+The transforms (`web/lib/capacity.js`) are pure and tested; the script only does the fetching and the
+write. A `roster` map in the block ties each person's display name to the email the two sources key on.
+
+Merging is provenance-aware. Each source owns its fields (Incident.io owns `oncall`, the calendar owns
+`outDays`/`reason`) and tags what it writes. A refresh overwrites its own prior data, clears entries it
+no longer reports, and leaves the other source and any hand-entered value alone. So a value typed by
+hand survives every refresh until a source reports on the same person and cycle.

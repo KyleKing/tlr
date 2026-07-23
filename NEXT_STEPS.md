@@ -9,12 +9,23 @@ Running list of what to build next and what needs a decision. Higher-level phase
   (topological waves) instead of by assigned cycle. Each card shows its scheduled bucket, so a card
   scheduled ahead of its blocker stands out. Hover keeps the blocker highlight and full detail card.
   Logic is `dependencyWaves` in `web/lib/planning.js`, with tests.
+- Capacity fetcher. `deno task capacity` refreshes the `capacity` block from real sources instead of
+  hand-seeding it. On-call comes from the Incident.io REST API; out-days come from a Google Calendar
+  handoff file. Pure transforms in `web/lib/capacity.js` (tested), thin I/O in `scripts/capacity.ts`,
+  provenance-aware merge that preserves hand-entered values. See ADR 0005's update.
+
+## Setup to finish the capacity feed
+
+- Incident.io token: create an API key in the Incident.io dashboard (Settings → API keys) with
+  permission to read schedules, then store it: `security add-generic-password -s tlr-incidentio -a
+  api-key -w` (paste the key when prompted). Run `deno task capacity --source incident --dry-run` to
+  check what it would write.
+- Google Calendar: run `/mcp` in this session and authorize "claude.ai Google Calendar". Out-days for
+  peers depend on whether the Workspace shares free/busy; probe once authed.
+- Fill in Marissa's email in the `roster` block of `cpu.json` so on-call and out-days match her.
 
 ## Next up
 
-- Wire the real Google Calendar (current user only) so Kyle's out-days and the onsite come from actual
-  events instead of the hand-seeded `capacity` block. Teammates stay manual until team calendars or an
-  Incident.io path exist.
 - Slop-scan tuning. The base rate (33 of 48 shown) is likely still too high even with the per-ticket
   "not slop" override. Consider weighting tells, or only flagging above a score threshold.
 - Compact ticks show only the ticket number. Decide whether to add a short wrapped title snippet, or
@@ -22,9 +33,12 @@ Running list of what to build next and what needs a decision. Higher-level phase
 
 ## Open questions
 
-- Capacity sourcing: Incident.io has no MCP, so on-call is entered by hand. The Google Calendar MCP
-  reads only the current user's calendar, not the team's. How do we get team-wide availability, shared
-  calendars, a manual entry surface, or an Incident.io API token?
+- Team-wide time off: the Google Calendar MCP reads only the current user's calendar. Do teammates
+  share free/busy across the Workspace (so the freebusy API reaches them), or do we need a manual
+  entry surface for their out-days? On-call is now sourced from Incident.io for everyone on a schedule.
+- Google Calendar in the standalone script: the fetch currently comes through the MCP in a Claude
+  session, handed to the script as a file. A reproducible `deno task capacity` run would need its own
+  OAuth client credentials or a service account. Worth it, or is the MCP handoff enough?
 - Deflation knobs: on-call is a flat 35% cut and time off is a straight day-fraction. Are those right,
   or should on-call vary by team and rotation load?
 - Per-person base velocity is still a placeholder (default 20). Pull it from past-cycle throughput?

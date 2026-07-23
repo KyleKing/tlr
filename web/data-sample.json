@@ -261,6 +261,14 @@
       "oncallPenalty": 0.35
     },
     "defaultVelocity": 20,
+    "roster": {
+      "Ada Lovelace": {
+        "email": "ada@example.com"
+      },
+      "Grace Hopper": {
+        "email": "grace@example.com"
+      }
+    },
     "people": {
       "Ada Lovelace": {
         "velocity": 18,
