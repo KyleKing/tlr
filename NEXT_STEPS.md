@@ -22,6 +22,14 @@ Running list of what to build next and what needs a decision. Higher-level phase
   comes from 1Password and the refresh token is cached for silent re-runs.
 - Timeline toggle fix. Switching to the dependency view and back left the timeline rendered under the
   board (a CSS `display` rule beat the `hidden` attribute). Guarded with `[hidden] { display: none }`.
+- Slop-scan tuning. Real data showed 15 of 43 flagged tickets tripping on a single weak signal alone
+  (length, one dash, one semicolon, or bullets with no stock-phrase hit). `isSlop` now requires
+  `score >= 2`, dropping the flagged count from 43 to 28 of 66 issues (33 to 19 of the 48 shown by
+  default). The hover card's "mark not slop" affordance now gates on the same threshold instead of
+  raw flag count, so it no longer appears for tickets that aren't actually flagged.
+- Compact-tick titles. Decided to keep ticket-number-only chips; the hover card already gives the
+  full title and detail instantly, and chips are too narrow/dense (several per cell) to fit a useful
+  title snippet without bloating the grid.
 - Docs. `SETUP.md` is the day-zero credentials guide. New ADRs: 0006 (normalized issue schema across
   Linear and GitHub) and 0007 (productizing the spikes into domains and ports). `AGENTS.md` records the
   spike-then-productionize rule.
@@ -35,10 +43,7 @@ standalone spike (`deno task gcal:freebusy`, own OAuth client, no MCP); folding 
 
 ## Next up
 
-- Slop-scan tuning. The base rate (33 of 48 shown) is likely still too high even with the per-ticket
-  "not slop" override. Consider weighting tells, or only flagging above a score threshold.
-- Compact ticks show only the ticket number. Decide whether to add a short wrapped title snippet, or
-  leave the full title to the hover card (current behaviour).
+(nothing queued right now — see Open questions below for what needs a decision first)
 
 ## Open questions
 
