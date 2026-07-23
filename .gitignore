@@ -10,3 +10,11 @@ htmlcov/
 .coverage
 dist/
 build/
+
+# Deno
+node_modules/
+
+# Local Linear data (public repo — never commit real ticket data)
+web/data/
+*.tlr.sqlite
+*.tlr.sqlite-*

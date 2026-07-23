@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>tlr — capacity matrix (spike)</title>
+  <style>
+    :root {
+      --bg: #ffffff; --fg: #1a1a1a; --muted: #6b7280; --line: #e5e7eb;
+      --cell: #f9fafb; --chip: #ffffff;
+      --ok: #16a34a; --warn: #d97706; --over: #dc2626;
+      --st-completed: #16a34a; --st-started: #2563eb; --st-unstarted: #d97706;
+      --st-backlog: #9ca3af; --st-triage: #7c3aed; --st-canceled: #9ca3af;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0e1116; --fg: #e6e6e6; --muted: #9aa4b2; --line: #262c36;
+        --cell: #151a21; --chip: #1b212b;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 14px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+           background: var(--bg); color: var(--fg); }
+    header { padding: 16px 20px; border-bottom: 1px solid var(--line); }
+    h1 { margin: 0 0 4px; font-size: 18px; }
+    .sub { color: var(--muted); font-size: 13px; }
+    .controls { display: flex; flex-wrap: wrap; gap: 18px; align-items: center;
+                padding: 12px 20px; border-bottom: 1px solid var(--line); }
+    .controls label { font-size: 13px; color: var(--muted); }
+    .chip-filter { display: inline-flex; gap: 6px; flex-wrap: wrap; }
+    .chip-filter button { border: 1px solid var(--line); background: var(--cell); color: var(--fg);
+                          border-radius: 999px; padding: 3px 10px; font-size: 12px; cursor: pointer; }
+    .chip-filter button[aria-pressed="false"] { opacity: .4; text-decoration: line-through; }
+    .wrap { overflow-x: auto; padding: 16px 20px 40px; }
+    table { border-collapse: collapse; width: 100%; min-width: 900px; }
+    th, td { border: 1px solid var(--line); vertical-align: top; padding: 0; }
+    thead th { position: sticky; top: 0; background: var(--bg); text-align: left;
+               padding: 8px 10px; font-size: 12px; }
+    thead th .date { color: var(--muted); font-weight: 400; display: block; font-size: 11px; }
+    tbody th { text-align: left; padding: 10px; white-space: nowrap; background: var(--bg);
+               position: sticky; left: 0; }
+    td { background: var(--cell); min-width: 150px; }
+    .cellhead { display: flex; justify-content: space-between; align-items: center;
+                padding: 5px 8px; font-size: 12px; border-bottom: 1px solid var(--line); }
+    .load { font-variant-numeric: tabular-nums; }
+    .bar { height: 4px; background: var(--line); }
+    .bar > i { display: block; height: 100%; }
+    .bar.ok > i { background: var(--ok); } .bar.warn > i { background: var(--warn); }
+    .bar.over > i { background: var(--over); }
+    .cards { display: flex; flex-direction: column; gap: 4px; padding: 6px; }
+    .card { display: flex; gap: 6px; align-items: baseline; text-decoration: none; color: var(--fg);
+            background: var(--chip); border: 1px solid var(--line); border-left-width: 3px;
+            border-radius: 5px; padding: 4px 7px; font-size: 12px; }
+    .card:hover { border-color: var(--muted); }
+    .card .id { font-weight: 600; font-variant-numeric: tabular-nums; }
+    .card .pts { margin-left: auto; color: var(--muted); }
+    .card .t { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 190px; }
+    .legend { display: flex; gap: 14px; flex-wrap: wrap; color: var(--muted); font-size: 12px; padding: 0 20px 16px; }
+    .legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px;
+                           margin-right: 5px; vertical-align: middle; background: var(--dot); }
+    .note { color: var(--muted); font-size: 12px; padding: 0 20px 24px; max-width: 760px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 id="proj">Capacity matrix</h1>
+    <div class="sub" id="meta"></div>
+  </header>
+  <div class="controls">
+    <label>Capacity <input type="range" id="cap" min="3" max="20" value="8" /> <b id="capv">8</b> pts / person / cycle</label>
+    <label style="display:inline-flex;gap:6px;align-items:center">
+      <input type="checkbox" id="hidedone" checked /> hide completed &amp; canceled
+    </label>
+    <span class="chip-filter" id="filters"></span>
+  </div>
+  <div class="legend" id="legend"></div>
+  <div class="wrap"><table id="grid"></table></div>
+  <p class="note">
+    Spike on real Contractual Product Uptime data. Placement rule: an issue in cycle 47/48/49 shows in that
+    cycle column, otherwise in its milestone column, otherwise Backlog. The capacity bar (per-person cycle
+    columns only) is a forecast against the adjustable points/person/cycle knob, not a real per-person velocity.
+    Blocking/subissue relations are not shown yet (needs the API key for a bulk relations fetch).
+  </p>
+
+  <script type="module">
+    const STATUS = {
+      completed: { label: "Done", color: "var(--st-completed)" },
+      started: { label: "In progress", color: "var(--st-started)" },
+      unstarted: { label: "Todo", color: "var(--st-unstarted)" },
+      triage: { label: "Triage", color: "var(--st-triage)" },
+      backlog: { label: "Backlog", color: "var(--st-backlog)" },
+      canceled: { label: "Canceled", color: "var(--st-canceled)" },
+    }
+    const active = new Set(Object.keys(STATUS))
+
+    async function loadData() {
+      const real = await fetch("/data/cpu.json")
+      if (real.ok) return real.json()
+      return (await fetch("/data-sample.json")).json()
+    }
+    const data = await loadData()
+    document.getElementById("proj").textContent = data.project.name + " — capacity matrix"
+    document.getElementById("meta").innerHTML =
+      `${data.issues.length} issues · project ${data.project.start} → ${data.project.target} · ` +
+      `current cycle ${data.currentCycle} · <a href="${data.project.url}" target="_blank">open in Linear</a>`
+
+    const cycleById = new Map(data.cycles.map((c) => [c.n, c]))
+    function bucketOf(i) {
+      if ([47, 48, 49].includes(i.cycle)) return "C" + i.cycle
+      if (i.milestone) return i.milestone
+      return "BACKLOG"
+    }
+    const COLS = [
+      { key: "C47", label: "Cycle 47", sub: "Jul 13–20 (past)" },
+      { key: "C48", label: "Cycle 48", sub: "Jul 20–27 · current" },
+      { key: "C49", label: "Cycle 49", sub: "Jul 27–Aug 3 · next" },
+      ...data.milestones.map((m) => ({ key: m.key, label: m.name.replace(/^M\d: /, m.key + " · "), sub: "target " + m.target + " · " + Math.round(m.progress) + "%" })),
+      { key: "BACKLOG", label: "Backlog", sub: "no cycle, no milestone" },
+    ]
+    const isCycleCol = (k) => k.startsWith("C4")
+
+    // filter chips
+    const fbox = document.getElementById("filters")
+    for (const [k, v] of Object.entries(STATUS)) {
+      const b = document.createElement("button")
+      b.textContent = v.label
+      b.style.borderLeft = "3px solid " + v.color
+      b.setAttribute("aria-pressed", "true")
+      b.onclick = () => { active.has(k) ? active.delete(k) : active.add(k); b.setAttribute("aria-pressed", active.has(k)); render() }
+      fbox.appendChild(b)
+    }
+    const legend = document.getElementById("legend")
+    for (const v of Object.values(STATUS)) {
+      const s = document.createElement("span"); s.style.setProperty("--dot", v.color); s.textContent = v.label; legend.appendChild(s)
+    }
+
+    const cap = document.getElementById("cap"), capv = document.getElementById("capv"), hidedone = document.getElementById("hidedone")
+    cap.oninput = () => { capv.textContent = cap.value; render() }
+    hidedone.onchange = render
+
+    function visible(i) {
+      if (!active.has(i.statusType)) return false
+      if (hidedone.checked && (i.statusType === "completed" || i.statusType === "canceled")) return false
+      return true
+    }
+
+    function render() {
+      const shown = data.issues.filter(visible)
+      const people = [...new Set(shown.map((i) => i.assignee))]
+        .sort((a, b) => (a === "Unassigned") - (b === "Unassigned") || a.localeCompare(b))
+      const capVal = Number(cap.value)
+
+      const grid = document.getElementById("grid")
+      let html = "<thead><tr><th>Assignee</th>"
+      for (const c of COLS) html += `<th>${c.label}<span class="date">${c.sub}</span></th>`
+      html += "</tr></thead><tbody>"
+
+      for (const person of people) {
+        html += `<tr><th>${person}</th>`
+        for (const c of COLS) {
+          const items = shown.filter((i) => i.assignee === person && bucketOf(i) === c.key)
+          const load = items.reduce((s, i) => s + i.estimate, 0)
+          let head = `<span class="load">${load || ""}</span>`
+          let bar = ""
+          if (isCycleCol(c.key) && person !== "Unassigned" && load > 0) {
+            const ratio = load / capVal
+            const cls = ratio <= 0.8 ? "ok" : ratio <= 1.05 ? "warn" : "over"
+            head = `<span class="load">${load}/${capVal}</span>`
+            bar = `<div class="bar ${cls}"><i style="width:${Math.min(100, ratio * 100)}%"></i></div>`
+          }
+          const cards = items
+            .sort((a, b) => a.priorityValue - b.priorityValue || b.estimate - a.estimate)
+            .map((i) => `<a class="card" href="${i.url}" target="_blank" title="${i.title.replace(/"/g, "&quot;")}\n${STATUS[i.statusType]?.label ?? i.status} · ${i.priority ?? ""} · ${i.estimate}pt"
+                 style="border-left-color:${STATUS[i.statusType]?.color ?? "var(--muted)"}">
+                 <span class="id">${i.id}</span><span class="t">${i.title}</span><span class="pts">${i.estimate || "–"}</span></a>`)
+            .join("")
+          html += `<td><div class="cellhead">${head}</div>${bar}<div class="cards">${cards}</div></td>`
+        }
+        html += "</tr>"
+      }
+      html += "</tbody>"
+      grid.innerHTML = html
+    }
+    render()
+  </script>
+</body>
+</html>

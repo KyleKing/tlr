@@ -1,0 +1,256 @@
+{
+  "project": {
+    "name": "Sample Reliability Program",
+    "start": "2026-07-01",
+    "target": "2026-11-30",
+    "url": "https://linear.app/"
+  },
+  "cycles": [
+    {
+      "n": 47,
+      "start": "2026-07-13",
+      "end": "2026-07-20"
+    },
+    {
+      "n": 48,
+      "start": "2026-07-20",
+      "end": "2026-07-27"
+    },
+    {
+      "n": 49,
+      "start": "2026-07-27",
+      "end": "2026-08-03"
+    }
+  ],
+  "currentCycle": 48,
+  "milestones": [
+    {
+      "key": "M1",
+      "name": "M1: Measure and page",
+      "target": "2026-07-31",
+      "progress": 60
+    },
+    {
+      "key": "M2",
+      "name": "M2: Synthetics and status page",
+      "target": "2026-08-31",
+      "progress": 20
+    },
+    {
+      "key": "M3",
+      "name": "M3: Incident readiness",
+      "target": "2026-09-30",
+      "progress": 0
+    },
+    {
+      "key": "M4",
+      "name": "M4: Hardening (buffer)",
+      "target": "2026-11-30",
+      "progress": 0
+    }
+  ],
+  "issues": [
+    {
+      "id": "SAMPLE-101",
+      "title": "Define availability SLO spec",
+      "url": "https://linear.app/",
+      "estimate": 3,
+      "assignee": "Ada Lovelace",
+      "status": "Done",
+      "statusType": "completed",
+      "priority": null,
+      "priorityValue": 2,
+      "labels": [],
+      "parentId": null,
+      "milestone": "M1",
+      "cycle": 48
+    },
+    {
+      "id": "SAMPLE-102",
+      "title": "Wire alarms into paging",
+      "url": "https://linear.app/",
+      "estimate": 2,
+      "assignee": "Ada Lovelace",
+      "status": "In progress",
+      "statusType": "started",
+      "priority": null,
+      "priorityValue": 1,
+      "labels": [],
+      "parentId": null,
+      "milestone": "M1",
+      "cycle": 48
+    },
+    {
+      "id": "SAMPLE-103",
+      "title": "Guard the P0 dispatch call sites",
+      "url": "https://linear.app/",
+      "estimate": 1,
+      "assignee": "Ada Lovelace",
+      "status": "Todo",
+      "statusType": "unstarted",
+      "priority": null,
+      "priorityValue": 2,
+      "labels": [],
+      "parentId": null,
+      "milestone": "M1",
+      "cycle": 49
+    },
+    {
+      "id": "SAMPLE-104",
+      "title": "Retroactive availability baseline",
+      "url": "https://linear.app/",
+      "estimate": 5,
+      "assignee": "Grace Hopper",
+      "status": "In progress",
+      "statusType": "started",
+      "priority": null,
+      "priorityValue": 2,
+      "labels": [],
+      "parentId": null,
+      "milestone": null,
+      "cycle": 49
+    },
+    {
+      "id": "SAMPLE-105",
+      "title": "Deep /ready endpoint",
+      "url": "https://linear.app/",
+      "estimate": 3,
+      "assignee": "Grace Hopper",
+      "status": "Todo",
+      "statusType": "unstarted",
+      "priority": null,
+      "priorityValue": 2,
+      "labels": [],
+      "parentId": null,
+      "milestone": null,
+      "cycle": 49
+    },
+    {
+      "id": "SAMPLE-106",
+      "title": "External synthetic probes",
+      "url": "https://linear.app/",
+      "estimate": 5,
+      "assignee": "Grace Hopper",
+      "status": "Backlog",
+      "statusType": "backlog",
+      "priority": null,
+      "priorityValue": 3,
+      "labels": [],
+      "parentId": null,
+      "milestone": "M2",
+      "cycle": null
+    },
+    {
+      "id": "SAMPLE-107",
+      "title": "Month-end uptime calc",
+      "url": "https://linear.app/",
+      "estimate": 3,
+      "assignee": "Ada Lovelace",
+      "status": "Triage",
+      "statusType": "triage",
+      "priority": null,
+      "priorityValue": 2,
+      "labels": [],
+      "parentId": null,
+      "milestone": "M2",
+      "cycle": null
+    },
+    {
+      "id": "SAMPLE-108",
+      "title": "Live status page",
+      "url": "https://linear.app/",
+      "estimate": 8,
+      "assignee": null,
+      "status": "Backlog",
+      "statusType": "backlog",
+      "priority": null,
+      "priorityValue": 3,
+      "labels": [],
+      "parentId": null,
+      "milestone": "M2",
+      "cycle": null
+    },
+    {
+      "id": "SAMPLE-109",
+      "title": "Clerk incident grace mode",
+      "url": "https://linear.app/",
+      "estimate": 5,
+      "assignee": null,
+      "status": "Backlog",
+      "statusType": "backlog",
+      "priority": null,
+      "priorityValue": 2,
+      "labels": [],
+      "parentId": null,
+      "milestone": "M3",
+      "cycle": null
+    },
+    {
+      "id": "SAMPLE-110",
+      "title": "Kill switches",
+      "url": "https://linear.app/",
+      "estimate": 3,
+      "assignee": null,
+      "status": "Backlog",
+      "statusType": "backlog",
+      "priority": null,
+      "priorityValue": 3,
+      "labels": [],
+      "parentId": null,
+      "milestone": "M3",
+      "cycle": null
+    },
+    {
+      "id": "SAMPLE-111",
+      "title": "Durable email outbox MVP",
+      "url": "https://linear.app/",
+      "estimate": 8,
+      "assignee": null,
+      "status": "Backlog",
+      "statusType": "backlog",
+      "priority": null,
+      "priorityValue": 4,
+      "labels": [],
+      "parentId": null,
+      "milestone": "M4",
+      "cycle": null
+    },
+    {
+      "id": "SAMPLE-112",
+      "title": "Weekly scorecard",
+      "url": "https://linear.app/",
+      "estimate": 2,
+      "assignee": null,
+      "status": "Backlog",
+      "statusType": "backlog",
+      "priority": null,
+      "priorityValue": 4,
+      "labels": [],
+      "parentId": null,
+      "milestone": "M4",
+      "cycle": null
+    },
+    {
+      "id": "SAMPLE-113",
+      "title": "Triage inbox cleanup",
+      "url": "https://linear.app/",
+      "estimate": 1,
+      "assignee": "Grace Hopper",
+      "status": "Backlog",
+      "statusType": "backlog",
+      "priority": null,
+      "priorityValue": 4,
+      "labels": [],
+      "parentId": null,
+      "milestone": null,
+      "cycle": null
+    }
+  ],
+  "teamVelocity": {
+    "note": "synthetic",
+    "recent": [
+      40,
+      45
+    ]
+  }
+}
