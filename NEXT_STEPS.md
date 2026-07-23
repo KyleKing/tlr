@@ -43,18 +43,20 @@ standalone spike (`deno task gcal:freebusy`, own OAuth client, no MCP); folding 
 
 ## Next up
 
-(nothing queued right now — see Open questions below for what needs a decision first)
+- `GoogleCalendarSource` adapter for `deno task capacity --source gcal`, folding in the free/busy spike.
+  Out-day heuristic (decided): a day counts as reduced-capacity if free/busy shows >=5 busy hours on it,
+  or it's an all-day block, even without an explicit OOO title (free/busy carries no event type). Cross-
+  reference against past-cycle throughput once that exists, rather than treating it as a flat binary cut.
+- Per-person base velocity: replace the flat default-20 placeholder by computing each person's base
+  velocity from their real past-cycle throughput, the same spike-to-productionize move `capacity.js`
+  already made for on-call and out-days.
 
-## Open questions
+## Resolved (feeds the items above)
 
-- Free/busy to out-days: the spike proves teammates' free/busy is reachable, but free/busy shows busy
-  windows without a reason. Mapping a busy block to an out-of-office day needs a heuristic (all-day or
-  multi-day blocks) or the `calendar.events.readonly` scope to read event types. Decide which before the
-  `GoogleCalendarSource` adapter lands.
-- Deflation knobs: on-call is a flat 35% cut and time off is a straight day-fraction. Are those right,
-  or should on-call vary by team and rotation load?
-- Per-person base velocity is still a placeholder (default 20). Pull it from past-cycle throughput?
-- Whether the dependency timeline and the capacity board stay two views or merge into one.
+- Deflation knobs: on-call penalty raised from a flat 35% to 45% (`CAPACITY_DEFAULTS.oncallPenalty` in
+  `web/lib/planning.js`, mirrored in ADR 0005). Time off stays a straight day-fraction cut, confirmed as
+  right for now.
+- Dependency timeline and capacity board stay two separate views (current toggle), not merged.
 
 ## Later (unchanged from roadmap)
 

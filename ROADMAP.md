@@ -48,10 +48,9 @@ grid. SVG export for weekly-update artifacts.
 
 ## Open questions
 
-- Per-person capacity deflates for on-call and time off (see [adr/0005-capacity-realism.md](adr/0005-capacity-realism.md)).
-  On-call is wired through the Incident.io REST API and teammates' out-days are reachable through Google
-  Calendar free/busy (personal OAuth, Workspace sharing on). Open: fold the free/busy spike into a
-  standalone adapter, and replace the placeholder per-person base velocity with past-cycle throughput
-- Whether the dependency timeline and the capacity board are two views or one
-- Slop-scan tuning: 33 of 48 shown tickets currently flag. A per-ticket "not slop" override now
-  clears false positives, but the base rate may still be too high to trust
+- Per-person capacity deflates for on-call (flat 45%, see [adr/0005-capacity-realism.md](adr/0005-capacity-realism.md))
+  and time off (straight day-fraction, confirmed). On-call is wired through the Incident.io REST API and
+  teammates' out-days are reachable through Google Calendar free/busy (personal OAuth, Workspace sharing
+  on). Open: fold the free/busy spike into a standalone adapter using a >=5-busy-hours-or-all-day
+  heuristic for out-days, and replace the placeholder per-person base velocity with past-cycle throughput
+- The dependency timeline and the capacity board stay two views, not merged (decided)
