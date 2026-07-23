@@ -5,7 +5,9 @@ import {
   milestoneCapacity,
   missingData,
   orderingRisks,
+  slopHash,
   slopScan,
+  statusRank,
   weeksBetween,
 } from "../web/lib/planning.js"
 
@@ -61,6 +63,17 @@ Deno.test("missingData only blocks when the issue is in an active cycle", () => 
   assertEquals(missingData({ cycle: 48, estimate: 0, assignee: "Unassigned", milestone: null }).blocking, true)
   assertEquals(missingData({ cycle: null, estimate: 0, assignee: "Unassigned", milestone: null }).blocking, false)
   assertEquals(missingData({ cycle: 48, estimate: 3, assignee: "Ada", milestone: "M1" }).flags.length, 0)
+})
+
+Deno.test("slopHash is stable across whitespace reflow and changes with content", () => {
+  assertEquals(slopHash("hello   world"), slopHash("hello world\n"))
+  assertEquals(slopHash("hello world") === slopHash("hello there"), false)
+})
+
+Deno.test("statusRank orders active work before terminal states", () => {
+  assertEquals(statusRank("started") < statusRank("backlog"), true)
+  assertEquals(statusRank("backlog") < statusRank("completed"), true)
+  assertEquals(statusRank("canceled") > statusRank("triage"), true)
 })
 
 Deno.test("orderingRisks flags a blocker that finishes after its dependent", () => {

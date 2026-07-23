@@ -16,6 +16,7 @@
     <span class="chips" id="chips"></span>
     <label>capacity <input type="range" id="cap" min="3" max="16" value="8" /> <b id="capv">8</b> pt/person/wk</label>
     <button class="chip" id="expand" aria-pressed="false">Expand</button>
+    <button class="chip" id="orient" aria-pressed="false">Rows: people</button>
   </div>
   <div class="summary" id="summary"></div>
   <div class="wrap"><table id="grid"></table></div>
@@ -26,8 +27,10 @@
     points/person/week knob (milestone columns scale it by weeks in the window), not real velocity.
     Flags: ⚠ slop scans the description for AI tells (dashes, semicolons, checklists, length, stock phrases);
     ⛔ ordering risk means a blocker finishes after the issue it blocks; ◑ missing marks absent estimate,
-    assignee, or milestone, but only for issues already committed to a cycle. Hover a ticket to light up its
-    blocking relations.
+    assignee, or milestone, but only for issues already committed to a cycle. Hover a ticket for details and
+    its blocking relations, and to mark a false-positive slop flag as reviewed (it stays cleared until the
+    ticket text changes). Double-click a status chip to show only that status; "Rows: people" flips the grid
+    so buckets run down the side when heavy filtering leaves few columns.
   </p>
   <script type="module" src="/app.js"></script>
 </body>

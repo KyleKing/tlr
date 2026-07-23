@@ -21,6 +21,11 @@ list) and score each ticket. Surface it as a flag and a filter. Missing planning
 assignee, or milestone) are flagged too, but only count as blocking when the ticket is already in a
 cycle. Logic lives in `slopScan` and `missingData` in `web/lib/planning.js`, with tests.
 
+A flag is a heuristic, so a false positive needs a human override. Marking a ticket "not slop" stores
+a hash of its text (`slopHash`) in browser localStorage and clears the flag. The flag returns if the
+text changes, because the stored hash no longer matches. This keeps a reviewed judgement without
+committing any ticket data to the repo.
+
 AI-edit review: do not rely on actor attribution. Record intent at write time with a Claude Code hook
 that logs what a batch changed, and reconcile that against a local snapshot diff. "What I recently
 changed" comes from the same snapshot diff.

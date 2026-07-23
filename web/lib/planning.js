@@ -97,6 +97,21 @@ export function slopScan(text) {
   return { score, flags }
 }
 
+// Stable hash of a ticket's text, so a dismissed slop flag can persist until the content
+// changes. Whitespace is collapsed first, so trivial reflows do not re-flag.
+export function slopHash(text) {
+  const t = (text || "").replace(/\s+/g, " ").trim()
+  let h = 5381
+  for (let k = 0; k < t.length; k++) h = ((h << 5) + h + t.charCodeAt(k)) | 0
+  return (h >>> 0).toString(36)
+}
+
+// Sort order for statuses within a cell: active work first, terminal states last.
+const STATUS_RANK = { started: 0, unstarted: 1, triage: 2, backlog: 3, completed: 4, canceled: 5 }
+export function statusRank(statusType) {
+  return STATUS_RANK[statusType] ?? 9
+}
+
 // Missing-data flags. `blocking` is true only when the issue sits in an active cycle,
 // where missing fields actually block execution.
 export function missingData(issue) {
