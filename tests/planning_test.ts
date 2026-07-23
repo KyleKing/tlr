@@ -2,6 +2,7 @@ import { assertEquals } from "jsr:@std/assert@1"
 import {
   bucketOf,
   buildBuckets,
+  dependencyWaves,
   milestoneCapacity,
   missingData,
   orderingRisks,
@@ -90,6 +91,26 @@ Deno.test("personCycleCapacity deflates for time off and on-call", () => {
   assertEquals(personCycleCapacity("Ada", 49, cap).points, 0) // all 5 workdays out
   assertEquals(personCycleCapacity("Ada", 48, cap).factors[0].kind, "oncall")
   assertEquals(personCycleCapacity("Ada", null, cap).factors.length, 0) // no cycle, no deflation
+})
+
+Deno.test("dependencyWaves orders by blocker depth and excludes unconnected issues", () => {
+  const issues = [
+    { id: "A", blockedBy: [], blocks: ["B"] },
+    { id: "B", blockedBy: ["A"], blocks: ["C"] },
+    { id: "C", blockedBy: ["B"], blocks: [] },
+    { id: "D", blockedBy: [], blocks: [] }, // no relations, excluded
+  ]
+  assertEquals(dependencyWaves(issues), [["A"], ["B"], ["C"]])
+})
+
+Deno.test("dependencyWaves breaks a cycle into a final wave instead of hanging", () => {
+  const issues = [
+    { id: "X", blockedBy: ["Y"], blocks: ["Y"] },
+    { id: "Y", blockedBy: ["X"], blocks: ["X"] },
+  ]
+  const waves = dependencyWaves(issues)
+  assertEquals(waves.length, 1)
+  assertEquals(waves[0].sort(), ["X", "Y"])
 })
 
 Deno.test("orderingRisks flags a blocker that finishes after its dependent", () => {

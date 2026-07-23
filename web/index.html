@@ -13,6 +13,7 @@
   </header>
   <div class="bar-controls">
     <input id="search" type="search" placeholder="Search id / title / description…" />
+    <button class="chip" id="view" aria-pressed="false">Timeline</button>
     <button class="chip" id="expand" aria-pressed="false">Expand</button>
     <button class="chip" id="orient" aria-pressed="false">Rows: people</button>
     <span class="sync-box">
@@ -26,7 +27,7 @@
     <span class="fgroup"><span class="flabel">Flags</span><span class="chips" id="flag-chips"></span></span>
   </div>
   <div class="summary" id="summary"></div>
-  <div class="wrap"><table id="grid"></table></div>
+  <div class="wrap"><table id="grid"></table><div id="timeline" hidden></div></div>
   <div id="tip"></div>
   <details class="legend">
     <summary>How to read this board</summary>
@@ -52,6 +53,12 @@
         restore). "Rows: people / buckets" flips the grid so buckets run down the side when heavy
         filtering leaves few columns. The board re-fetches every five minutes and on Refresh without
         touching your filters or scroll position.
+      </p>
+      <p>
+        "Timeline" flips to a dependency-ordered view: issues are grouped into waves by how deep they sit
+        in the blocking graph (wave 1 has no blockers, each later wave depends only on earlier ones). Each
+        card shows where it is scheduled, so a card scheduled before its blocker stands out as an ordering
+        risk. Issues with no blocking relations are left out of this view.
       </p>
     </div>
   </details>

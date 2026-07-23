@@ -146,6 +146,40 @@ export function missingData(issue) {
   return { flags, blocking: inCycle && flags.length > 0 }
 }
 
+// Order issues into dependency waves: wave 0 has no blockers among the connected set, wave n depends
+// only on earlier waves. Only issues touching a blocks/blockedBy edge are included. A dependency cycle
+// is broken by dropping its remaining nodes into a final wave, so the function always terminates.
+export function dependencyWaves(issues) {
+  const byId = Object.fromEntries(issues.map((i) => [i.id, i]))
+  const connected = new Set()
+  for (const i of issues) {
+    if ((i.blockedBy || []).length || (i.blocks || []).length) connected.add(i.id)
+  }
+  const blockers = {} // id -> its blockers within the connected set
+  const indeg = {}
+  for (const id of connected) {
+    blockers[id] = (byId[id].blockedBy || []).filter((b) => connected.has(b))
+    indeg[id] = blockers[id].length
+  }
+  const waves = []
+  let frontier = [...connected].filter((id) => indeg[id] === 0)
+  const placed = new Set()
+  while (frontier.length) {
+    frontier.sort()
+    waves.push(frontier)
+    frontier.forEach((id) => placed.add(id))
+    const next = []
+    for (const id of connected) {
+      if (placed.has(id)) continue
+      if (blockers[id].every((b) => placed.has(b))) next.push(id)
+    }
+    frontier = next
+  }
+  const leftover = [...connected].filter((id) => !placed.has(id)) // dependency cycle, if any
+  if (leftover.length) waves.push(leftover.sort())
+  return waves
+}
+
 // A blocking edge is an ordering risk when the blocker finishes after the issue it blocks.
 export function orderingRisks(issues) {
   const byId = Object.fromEntries(issues.map((i) => [i.id, i]))

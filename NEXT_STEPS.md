@@ -3,11 +3,12 @@
 Running list of what to build next and what needs a decision. Higher-level phases live in
 [ROADMAP.md](ROADMAP.md); this file tracks the near-term work and the questions blocking it.
 
-## In progress
+## Done
 
-- Dependency-ordered timeline view. A third view beside the capacity board that lays issues out by
-  dependency depth (topological waves) instead of by assigned cycle, so the delivery order and any
-  ordering risk are visible at a glance.
+- Dependency-ordered timeline view. A "Timeline" toggle lays issues out by dependency depth
+  (topological waves) instead of by assigned cycle. Each card shows its scheduled bucket, so a card
+  scheduled ahead of its blocker stands out. Hover keeps the blocker highlight and full detail card.
+  Logic is `dependencyWaves` in `web/lib/planning.js`, with tests.
 
 ## Next up
 

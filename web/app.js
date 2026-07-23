@@ -1,6 +1,7 @@
 import {
   bucketOf,
   buildBuckets,
+  dependencyWaves,
   missingData,
   orderingRisks,
   personCycleCapacity,
@@ -78,6 +79,7 @@ const state = {
   flags: new Set(),
   expanded: false,
   transpose: false,
+  view: "board", // or "timeline"
 }
 
 data = await loadData()
@@ -112,6 +114,14 @@ orient.onclick = () => {
   state.transpose = !state.transpose
   orient.setAttribute("aria-pressed", state.transpose)
   orient.textContent = state.transpose ? "Rows: buckets" : "Rows: people"
+  render()
+}
+const viewBtn = document.getElementById("view")
+viewBtn.onclick = () => {
+  state.view = state.view === "board" ? "timeline" : "board"
+  viewBtn.setAttribute("aria-pressed", state.view === "timeline")
+  const board = state.view === "board"
+  exp.hidden = orient.hidden = !board
   render()
 }
 const refreshBtn = document.getElementById("refresh")
@@ -334,41 +344,84 @@ function render() {
     `<span style="color:var(--miss)"><b>${shown.filter((i) => i._miss.blocking).length}</b> missing-in-cycle</span>`,
   ].join("")
 
-  let h
-  if (!state.transpose) {
-    const nCyc = visible.filter((b) => b.kind === "cycle").length
-    const nMile = visible.filter((b) => b.kind === "milestone").length
-    const nBack = visible.filter((b) => b.kind === "backlog").length
-    h = "<thead><tr class='grp'><th></th>"
-    if (nCyc) h += `<th colspan="${nCyc}">Now · cycles</th>`
-    if (nMile) h += `<th colspan="${nMile}">Horizon · milestones</th>`
-    if (nBack) h += `<th>Unscheduled</th>`
-    h += "</tr><tr class='col'><th>Assignee</th>"
-    for (const b of visible) h += bucketTh(b)
-    h += "</tr></thead><tbody>"
-    for (const person of people) {
-      h += `<tr><th>${escapeHtml(person)}${personPts(shown, person)}</th>`
-      for (const b of visible) h += cellHTML(person, b)
-      h += "</tr>"
-    }
-    h += "</tbody>"
-  } else {
-    h = "<thead><tr class='col'><th>Bucket</th>"
-    for (const person of people) h += `<th>${escapeHtml(person)}${personPts(shown, person)}</th>`
-    h += "</tr></thead><tbody>"
-    for (const b of visible) {
-      const kindTag = b.kind === "cycle" ? "now" : b.kind === "milestone" ? "horizon" : "backlog"
-      h += `<tr><th class="rowhead ${kindTag}">${b.label}<span class="s">${bucketSub(b)}</span></th>`
-      for (const person of people) h += cellHTML(person, b)
-      h += "</tr>"
-    }
-    h += "</tbody>"
-  }
   const grid = document.getElementById("grid")
-  grid.className = state.transpose ? "transposed" : ""
-  grid.innerHTML = h
+  const timelineEl = document.getElementById("timeline")
+  if (state.view === "timeline") {
+    grid.hidden = true
+    timelineEl.hidden = false
+    timelineEl.innerHTML = buildTimeline()
+    wireNodes(timelineEl)
+  } else {
+    timelineEl.hidden = true
+    grid.hidden = false
+    grid.className = state.transpose ? "transposed" : ""
+    grid.innerHTML = state.transpose ? buildTransposed(people) : buildBoard(people, visible)
+    wireNodes(grid)
+  }
+  if (wrap) {
+    wrap.scrollLeft = sx
+    wrap.scrollTop = sy
+  }
+}
 
-  for (const el of grid.querySelectorAll("[data-id]")) {
+function buildBoard(people, visible) {
+  const nCyc = visible.filter((b) => b.kind === "cycle").length
+  const nMile = visible.filter((b) => b.kind === "milestone").length
+  const nBack = visible.filter((b) => b.kind === "backlog").length
+  let h = "<thead><tr class='grp'><th></th>"
+  if (nCyc) h += `<th colspan="${nCyc}">Now · cycles</th>`
+  if (nMile) h += `<th colspan="${nMile}">Horizon · milestones</th>`
+  if (nBack) h += `<th>Unscheduled</th>`
+  h += "</tr><tr class='col'><th>Assignee</th>"
+  for (const b of visible) h += bucketTh(b)
+  h += "</tr></thead><tbody>"
+  for (const person of people) {
+    h += `<tr><th>${escapeHtml(person)}${personPts(person)}</th>`
+    for (const b of visible) h += cellHTML(person, b)
+    h += "</tr>"
+  }
+  return h + "</tbody>"
+}
+
+function buildTransposed(people) {
+  const visible = buckets.filter((b) => state.bucketKeys.has(b.key))
+  let h = "<thead><tr class='col'><th>Bucket</th>"
+  for (const person of people) h += `<th>${escapeHtml(person)}${personPts(person)}</th>`
+  h += "</tr></thead><tbody>"
+  for (const b of visible) {
+    const kindTag = b.kind === "cycle" ? "now" : b.kind === "milestone" ? "horizon" : "backlog"
+    h += `<tr><th class="rowhead ${kindTag}">${b.label}<span class="s">${bucketSub(b)}</span></th>`
+    for (const person of people) h += cellHTML(person, b)
+    h += "</tr>"
+  }
+  return h + "</tbody>"
+}
+
+function buildTimeline() {
+  const waves = dependencyWaves(data.issues)
+  let h = ""
+  waves.forEach((ids, idx) => {
+    const cards = ids.map((id) => byId[id]).filter((i) => passesShown.has(i))
+    if (!cards.length) return
+    h += `<div class="wave"><div class="wave-h">Wave ${idx + 1}<span class="s">${cards.length}</span></div>` +
+      cards.map(timelineCard).join("") + "</div>"
+  })
+  return h || `<div class="empty">No blocking relations among the shown issues.</div>`
+}
+
+function timelineCard(i) {
+  const bkt = bucketByKey[i._bucket]
+  const label = bkt ? bkt.label.replace("Cycle ", "C") : i._bucket
+  return `<div class="tcard ${warnClass(i)}" data-id="${i.id}" onclick="window.open('${i.url}','_blank')" ` +
+    `style="border-left-color:${STATUS[i.statusType]?.color}">` +
+    `<div class="top"><span class="id">${i.id.replace(/^[A-Z]+-/, "")}</span>` +
+    `<span class="bkt">${escapeHtml(label)}</span></div>` +
+    `<div class="t">${escapeHtml(i.title)}</div>` +
+    `<div class="who">${escapeHtml(i.assignee)}</div></div>`
+}
+
+function wireNodes(container) {
+  for (const el of container.querySelectorAll("[data-id]")) {
     const i = byId[el.getAttribute("data-id")]
     nodeById.set(i.id, el)
     el.addEventListener("mouseenter", (e) => {
@@ -381,14 +434,11 @@ function render() {
       hideTimer = setTimeout(hideTip, 160)
     })
   }
-  if (wrap) {
-    wrap.scrollLeft = sx
-    wrap.scrollTop = sy
-  }
 }
 
-function personPts(shown, person) {
-  const pts = shown.filter((i) => i.assignee === person).reduce((s, i) => s + i.estimate, 0)
+function personPts(person) {
+  let pts = 0
+  for (const i of passesShown) if (i.assignee === person) pts += i.estimate
   return `<span class="pl"> ${pts}pt</span>`
 }
 function bucketSub(b) {

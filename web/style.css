@@ -76,6 +76,21 @@ td.now { background: var(--now); } td.past { background: var(--past); }
 .badge { font-size: 10px; padding: 0 4px; border-radius: 3px; border: 1px solid currentColor; }
 .badge.slop { color: var(--slop); } .badge.risk { color: var(--risk); } .badge.miss { color: var(--miss); }
 .dim { opacity: .18; } .hl { outline: 2px solid var(--fg); outline-offset: 1px; }
+/* dependency timeline */
+#timeline { display: flex; gap: 14px; align-items: flex-start; padding: 12px 16px; min-height: 200px; }
+.wave { flex: 0 0 210px; display: flex; flex-direction: column; gap: 6px; }
+.wave-h { position: sticky; top: 0; background: var(--bg); font-size: 12px; font-weight: 600; padding: 2px 0 4px; border-bottom: 1px solid var(--line); }
+.wave-h .s { color: var(--muted); font-weight: 400; margin-left: 6px; }
+.tcard { background: var(--chip); border: 1px solid var(--line); border-left: 3px solid var(--muted); border-radius: 6px; padding: 5px 8px; cursor: pointer; }
+.tcard:hover { border-color: var(--muted); }
+.tcard .top { display: flex; gap: 6px; align-items: center; }
+.tcard .id { font-weight: 600; font-size: 11px; font-variant-numeric: tabular-nums; }
+.tcard .bkt { margin-left: auto; font-size: 10px; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 0 6px; }
+.tcard .t { margin-top: 3px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.tcard .who { margin-top: 3px; font-size: 11px; color: var(--muted); }
+.tcard.w-risk { border-color: var(--risk); box-shadow: inset 0 0 0 1px var(--risk); }
+.tcard.w-slop { box-shadow: inset 0 0 0 1px var(--slop); }
+.empty { color: var(--muted); padding: 20px; }
 .legend { color: var(--muted); font-size: 12px; padding: 10px 16px 24px; max-width: 860px; }
 .legend summary { cursor: pointer; font-size: 12px; color: var(--fg); user-select: none; }
 .legend-body { margin-top: 8px; line-height: 1.5; }
