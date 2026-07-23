@@ -94,6 +94,97 @@ export function outDaysByCycle(events, cycles, roster, workdaysPerCycle = 5) {
   return out
 }
 
+// Split a [startISO, endISO) datetime interval into per-UTC-day busy milliseconds.
+function _splitByDay(startISO, endISO) {
+  const out = []
+  let cur = new Date(startISO)
+  const end = new Date(endISO)
+  while (cur < end) {
+    const dayStart = new Date(Date.UTC(cur.getUTCFullYear(), cur.getUTCMonth(), cur.getUTCDate()))
+    const dayEnd = new Date(dayStart.getTime() + 24 * 3600 * 1000)
+    const segEnd = end < dayEnd ? end : dayEnd
+    out.push([dayStart.toISOString().slice(0, 10), segEnd - cur])
+    cur = dayEnd
+  }
+  return out
+}
+
+// Google freeBusy calendars ({ email: { busy: [{ start, end }] } }, ISO datetimes) → out-days by
+// cycle. Free/busy carries no event type, so a day counts as reduced-capacity once its total busy
+// time reaches thresholdHours — an all-day block clears this on its own, and several meetings can add
+// up to the same signal. Weekend busy time is ignored since it never eats into workdays.
+export function outDaysFromFreeBusy(calendars, cycles, roster, workdaysPerCycle = 5, thresholdHours = 5) {
+  const resolve = _resolver(roster)
+  const out = {}
+  for (const [email, cal] of Object.entries(calendars || {})) {
+    const name = resolve(email, null)
+    if (!name) continue
+    const hoursByDay = {}
+    for (const b of cal.busy || []) {
+      for (const [day, ms] of _splitByDay(b.start, b.end)) {
+        hoursByDay[day] = (hoursByDay[day] || 0) + ms / 3600000
+      }
+    }
+    const busyDays = Object.keys(hoursByDay).filter((d) => hoursByDay[d] >= thresholdHours && _isWeekday(d)).sort()
+    for (const c of cycles) {
+      const days = busyDays.filter((d) => d >= c.start && d < c.end).length
+      if (days <= 0) continue
+      const slot = (out[name] ||= {})[c.n] ||= { outDays: 0, reason: "busy" }
+      slot.outDays = Math.min(workdaysPerCycle, slot.outDays + days)
+    }
+  }
+  return out
+}
+
+// Completed issues in past cycles → { displayName: avgPointsPerCycle }, rounded. Only cycles strictly
+// before currentCycle count as history; a person with no completed points in that window is omitted
+// so the caller's default velocity applies instead of a false zero.
+export function velocityByPerson(issues, cycles, currentCycle) {
+  const past = cycles.filter((c) => c.n < currentCycle)
+  if (!past.length) return {}
+  const totals = {}
+  for (const i of issues) {
+    if (i.statusType !== "completed") continue
+    if (!i.assignee || i.assignee === "Unassigned") continue
+    if (!past.some((c) => c.n === i.cycle)) continue
+    totals[i.assignee] = (totals[i.assignee] || 0) + (i.estimate || 0)
+  }
+  const out = {}
+  for (const [name, total] of Object.entries(totals)) {
+    if (total > 0) out[name] = Math.round(total / past.length)
+  }
+  return out
+}
+
+// Merge computed base velocities into the capacity block. Velocity is a per-person value, not a
+// per-cycle event, so it gets its own small merge instead of going through mergeCapacity: a hand-typed
+// velocity (no velocitySrc marker) is never touched, a "history" marker is refreshed, and a person this
+// source no longer has data for loses only the value it wrote.
+export function mergeVelocity(capacity, velocityByName) {
+  const cap = structuredClone(capacity || {})
+  cap.people ||= {}
+
+  for (const [name, person] of Object.entries(cap.people)) {
+    if (person.velocitySrc === "history" && velocityByName[name] == null) {
+      delete person.velocity
+      delete person.velocitySrc
+    }
+  }
+
+  for (const [name, v] of Object.entries(velocityByName)) {
+    const person = (cap.people[name] ||= { cycles: {} })
+    if (person.velocity != null && person.velocitySrc !== "history") continue // hand-entered, keep
+    person.velocity = v
+    person.velocitySrc = "history"
+  }
+
+  for (const [name, person] of Object.entries(cap.people)) {
+    if (Object.keys(person.cycles || {}).length === 0 && person.velocity == null) delete cap.people[name]
+  }
+
+  return cap
+}
+
 function _isEmptyEvent(ev) {
   return Object.keys(ev).filter((k) => k !== "oncallSrc" && k !== "outSrc").length === 0
 }
