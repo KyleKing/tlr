@@ -25,10 +25,13 @@ pinnable filters. Grounds the graph objectives in [adr/0002-planning-graph-objec
 
 ### Phase 1 — snapshot, diff, review (next)
 
-Port the reader to Deno. Persist project state to SQLite on demand. `tlr diff` shows how the plan
-changed between two captures, rolled up to the milestone level. `tlr review` shows edits since the
-last review. Actor attribution cannot separate AI-via-MCP edits from mine (both land under my
-account), so AI-edit review leans on a Claude Code hook that records intent at write time.
+Port the reader to Deno as the Ingest domain's Linear adapter, normalizing to the shared issue schema
+so GitHub can follow as a second tracker (see [adr/0006-normalized-tracker-schema.md](adr/0006-normalized-tracker-schema.md)
+and [adr/0007-productization-and-domains.md](adr/0007-productization-and-domains.md)). Persist project
+state to SQLite on demand. `tlr diff` shows how the plan changed between two captures, rolled up to the
+milestone level. `tlr review` shows edits since the last review. Actor attribution cannot separate
+AI-via-MCP edits from mine (both land under my account), so AI-edit review leans on a Claude Code hook
+that records intent at write time.
 
 ### Phase 2 — write layer
 
@@ -45,10 +48,10 @@ grid. SVG export for weekly-update artifacts.
 
 ## Open questions
 
-- Per-person capacity now deflates for on-call and time off from a hand-seeded `capacity` block
-  (see [adr/0005-capacity-realism.md](adr/0005-capacity-realism.md)). Open: automate the inputs, since
-  Incident.io has no MCP and the Google Calendar MCP reads only the current user's calendar. Per-person
-  base velocity from past cycles is still a placeholder
+- Per-person capacity deflates for on-call and time off (see [adr/0005-capacity-realism.md](adr/0005-capacity-realism.md)).
+  On-call is wired through the Incident.io REST API and teammates' out-days are reachable through Google
+  Calendar free/busy (personal OAuth, Workspace sharing on). Open: fold the free/busy spike into a
+  standalone adapter, and replace the placeholder per-person base velocity with past-cycle throughput
 - Whether the dependency timeline and the capacity board are two views or one
 - Slop-scan tuning: 33 of 48 shown tickets currently flag. A per-ticket "not slop" override now
   clears false positives, but the base rate may still be too high to trust

@@ -16,6 +16,10 @@ Running list of what to build next and what needs a decision. Higher-level phase
 - Roster resolver. `deno task roster` (`scripts/roster.ts`) resolves each assignee display name to an
   email against the Linear GraphQL API, so the roster is no longer hand-typed. Both current assignees
   resolve; Marissa's email is filled.
+- Google free/busy spike. `deno task gcal:freebusy` (`scripts/gcal-freebusy.ts`) reads teammates'
+  free/busy from a personal Desktop OAuth client, no MCP. Verified against real data: Workspace free/busy
+  sharing is on, so a peer's busy blocks come back and no service account is needed. The client JSON
+  comes from 1Password and the refresh token is cached for silent re-runs.
 - Timeline toggle fix. Switching to the dependency view and back left the timeline rendered under the
   board (a CSS `display` rule beat the `hidden` attribute). Guarded with `[hidden] { display: none }`.
 - Docs. `SETUP.md` is the day-zero credentials guide. New ADRs: 0006 (normalized issue schema across
@@ -38,13 +42,10 @@ standalone spike (`deno task gcal:freebusy`, own OAuth client, no MCP); folding 
 
 ## Open questions
 
-- Team-wide time off resolved: `deno task gcal:freebusy` returns real busy blocks for teammates from a
-  personal OAuth client, so Workspace free/busy sharing is on and no service account is needed. On-call
-  is already sourced from Incident.io for everyone on a schedule.
-- Standalone Google path resolved: the free/busy spike uses its own OAuth client, no MCP. Open piece is
-  folding it into a `GoogleCalendarSource` that returns out-day `Block[]` for `deno task capacity`.
-  Free/busy shows busy windows, not the reason, so mapping a busy block to an out-of-office day needs a
-  heuristic (all-day or multi-day blocks) or the `calendar.events.readonly` scope to read event types.
+- Free/busy to out-days: the spike proves teammates' free/busy is reachable, but free/busy shows busy
+  windows without a reason. Mapping a busy block to an out-of-office day needs a heuristic (all-day or
+  multi-day blocks) or the `calendar.events.readonly` scope to read event types. Decide which before the
+  `GoogleCalendarSource` adapter lands.
 - Deflation knobs: on-call is a flat 35% cut and time off is a straight day-fraction. Are those right,
   or should on-call vary by team and rotation load?
 - Per-person base velocity is still a placeholder (default 20). Pull it from past-cycle throughput?
