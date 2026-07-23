@@ -1,4 +1,13 @@
-import { bucketOf, buildBuckets, missingData, orderingRisks, slopHash, slopScan, statusRank, weeksBetween } from "./lib/planning.js"
+import {
+  bucketOf,
+  buildBuckets,
+  missingData,
+  orderingRisks,
+  slopHash,
+  slopScan,
+  statusRank,
+  weeksBetween,
+} from "./lib/planning.js"
 
 const STATUS = {
   started: { label: "In progress", color: "var(--st-started)" },
@@ -9,42 +18,47 @@ const STATUS = {
   canceled: { label: "Canceled", color: "var(--st-canceled)" },
 }
 const FLAGS = { slop: "⚠ slop", risk: "⛔ ordering risk", miss: "◑ missing (in cycle)" }
+const DEFAULT_STATUSES = ["started", "unstarted", "triage", "backlog"]
+const CAP_PER_CYCLE = 20 // fixed for now; revisit with per-person velocity and calendar time off
 const REVIEW_KEY = "tlr.notslop"
 
+// mutable module data, replaced on refresh
+let data, buckets, bucketByKey, bucketWeeks, byId, riskIds
+
+function deriveBuckets() {
+  buckets = buildBuckets(data)
+  bucketByKey = Object.fromEntries(buckets.map((b) => [b.key, b]))
+  bucketWeeks = {}
+  data.milestones.forEach((m, idx) => {
+    const start = idx === 0
+      ? data.asOf
+      : (new Date(data.asOf) > new Date(data.milestones[idx - 1].target) ? data.asOf : data.milestones[idx - 1].target)
+    bucketWeeks[m.key] = Math.max(0.5, weeksBetween(start, m.target))
+  })
+  for (const b of buckets) if (b.kind === "cycle") bucketWeeks[b.key] = 1
+  bucketWeeks.BACKLOG = Infinity
+}
+
+function enrich() {
+  for (const i of data.issues) {
+    i.blocks ||= []
+    i.blockedBy ||= []
+    i.related ||= []
+    i._bucket = bucketOf(i)
+    i._bucketEnd = (bucketByKey[i._bucket] || { end: "9999-12-31" }).end
+    i._slop = slopScan(i.description)
+    i._slopHash = slopHash(i.description)
+    i._miss = missingData(i)
+  }
+  riskIds = new Set(orderingRisks(data.issues).flatMap((r) => [r.issue, r.blocker]))
+  for (const i of data.issues) i._risk = riskIds.has(i.id) && (i.blockedBy.length > 0)
+  byId = Object.fromEntries(data.issues.map((i) => [i.id, i]))
+}
+
 async function loadData() {
-  const r = await fetch("/data/cpu.json")
-  return (r.ok ? r : await fetch("/data-sample.json")).json()
+  const r = await fetch("/data/cpu.json", { cache: "no-store" })
+  return (r.ok ? r : await fetch("/data-sample.json", { cache: "no-store" })).json()
 }
-
-const data = await loadData()
-const buckets = buildBuckets(data)
-const bucketByKey = Object.fromEntries(buckets.map((b) => [b.key, b]))
-
-// weeks per bucket window (per-person capacity basis)
-const bucketWeeks = {}
-data.milestones.forEach((m, idx) => {
-  const start = idx === 0
-    ? data.asOf
-    : (new Date(data.asOf) > new Date(data.milestones[idx - 1].target) ? data.asOf : data.milestones[idx - 1].target)
-  bucketWeeks[m.key] = Math.max(0.5, weeksBetween(start, m.target))
-})
-for (const b of buckets) if (b.kind === "cycle") bucketWeeks[b.key] = 1
-bucketWeeks.BACKLOG = Infinity
-
-// enrich issues
-for (const i of data.issues) {
-  i.blocks ||= []
-  i.blockedBy ||= []
-  i.related ||= []
-  i._bucket = bucketOf(i)
-  i._bucketEnd = (bucketByKey[i._bucket] || { end: "9999-12-31" }).end
-  i._slop = slopScan(i.description)
-  i._slopHash = slopHash(i.description)
-  i._miss = missingData(i)
-}
-const riskIds = new Set(orderingRisks(data.issues).flatMap((r) => [r.issue, r.blocker]))
-for (const i of data.issues) i._risk = riskIds.has(i.id) && (i.blockedBy.length > 0)
-const byId = Object.fromEntries(data.issues.map((i) => [i.id, i]))
 
 // not-slop dismissals persist locally, keyed by content hash so an edit re-flags
 const reviewed = JSON.parse(localStorage.getItem(REVIEW_KEY) || "{}")
@@ -57,32 +71,33 @@ function toggleReviewed(i) {
   render()
 }
 
-const DEFAULT_STATUSES = ["started", "unstarted", "triage", "backlog"]
 const state = {
   q: "",
   statuses: new Set(DEFAULT_STATUSES),
+  bucketKeys: null, // set after first load to all keys
   flags: new Set(),
-  cap: 8,
   expanded: false,
   transpose: false,
 }
 
-// header
-document.getElementById("title").textContent = data.project.name
-document.getElementById("meta").innerHTML =
-  `${data.issues.length} issues · ${data.project.start} → ${data.project.target} · as of ${data.asOf} · ` +
-  `<a href="${data.project.url}" target="_blank">Linear ↗</a>`
+data = await loadData()
+deriveBuckets()
+enrich()
+state.bucketKeys = new Set(buckets.map((b) => b.key))
+let loadedAt = new Date()
 
-// controls
+// header + controls
+document.getElementById("title").textContent = data.project.name
+function renderMeta() {
+  document.getElementById("meta").innerHTML =
+    `${data.issues.length} issues · ${data.project.start} → ${data.project.target} · ` +
+    `<a href="${data.project.url}" target="_blank">Linear ↗</a>`
+}
+renderMeta()
+
 const search = document.getElementById("search")
 search.oninput = () => {
   state.q = search.value.trim().toLowerCase()
-  render()
-}
-const cap = document.getElementById("cap"), capv = document.getElementById("capv")
-cap.oninput = () => {
-  state.cap = +cap.value
-  capv.textContent = cap.value
   render()
 }
 const exp = document.getElementById("expand")
@@ -99,13 +114,10 @@ orient.onclick = () => {
   orient.textContent = state.transpose ? "Rows: buckets" : "Rows: people"
   render()
 }
+const refreshBtn = document.getElementById("refresh")
+refreshBtn.onclick = () => refresh()
 
-const chips = document.getElementById("chips")
-const statusChips = new Map()
-function syncStatusChips() {
-  for (const [k, b] of statusChips) b.setAttribute("aria-pressed", state.statuses.has(k))
-}
-function chip(label, on, color, cls, toggle, onSolo) {
+function chipButton(host, label, on, color, cls, toggle, onSolo) {
   const b = document.createElement("button")
   b.className = "chip " + (cls || "")
   b.textContent = label
@@ -113,40 +125,67 @@ function chip(label, on, color, cls, toggle, onSolo) {
   if (color) b.style.color = color
   if (onSolo) b.title = "double-click to show only this"
   b.onclick = () => {
-    const now = b.getAttribute("aria-pressed") !== "true"
-    b.setAttribute("aria-pressed", now)
-    toggle(now)
+    b.setAttribute("aria-pressed", b.getAttribute("aria-pressed") !== "true")
+    toggle(b.getAttribute("aria-pressed") === "true")
     render()
   }
   if (onSolo) {
     b.ondblclick = () => {
       onSolo()
-      syncStatusChips()
+      syncChips()
       render()
     }
   }
-  chips.appendChild(b)
+  host.appendChild(b)
   return b
 }
-for (const [k, v] of Object.entries(STATUS)) {
-  const b = chip(
-    v.label,
-    state.statuses.has(k),
-    v.color,
-    "",
-    (on) => on ? state.statuses.add(k) : state.statuses.delete(k),
-    () => {
-      const solo = state.statuses.size === 1 && state.statuses.has(k)
-      state.statuses = new Set(solo ? DEFAULT_STATUSES : [k])
-    },
-  )
-  statusChips.set(k, b)
+
+const statusChipEls = new Map()
+const bucketChipEls = new Map()
+function syncChips() {
+  for (const [k, b] of statusChipEls) b.setAttribute("aria-pressed", state.statuses.has(k))
+  for (const [k, b] of bucketChipEls) b.setAttribute("aria-pressed", state.bucketKeys.has(k))
 }
-const sep = document.createElement("span")
-sep.className = "chip-sep"
-chips.appendChild(sep)
+
+const statusHost = document.getElementById("status-chips")
+for (const [k, v] of Object.entries(STATUS)) {
+  statusChipEls.set(
+    k,
+    chipButton(
+      statusHost,
+      v.label,
+      state.statuses.has(k),
+      v.color,
+      "",
+      (on) => on ? state.statuses.add(k) : state.statuses.delete(k),
+      () => {
+        const solo = state.statuses.size === 1 && state.statuses.has(k)
+        state.statuses = new Set(solo ? DEFAULT_STATUSES : [k])
+      },
+    ),
+  )
+}
+const bucketHost = document.getElementById("bucket-chips")
+for (const b of buckets) {
+  bucketChipEls.set(
+    b.key,
+    chipButton(
+      bucketHost,
+      b.label.replace("Cycle ", "C"),
+      true,
+      "",
+      "",
+      (on) => on ? state.bucketKeys.add(b.key) : state.bucketKeys.delete(b.key),
+      () => {
+        const solo = state.bucketKeys.size === 1 && state.bucketKeys.has(b.key)
+        state.bucketKeys = new Set(solo ? buckets.map((x) => x.key) : [b.key])
+      },
+    ),
+  )
+}
+const flagHost = document.getElementById("flag-chips")
 for (const [k, label] of Object.entries(FLAGS)) {
-  chip(label, false, `var(--${k})`, "flag", (on) => on ? state.flags.add(k) : state.flags.delete(k))
+  chipButton(flagHost, label, false, `var(--${k})`, "flag", (on) => on ? state.flags.add(k) : state.flags.delete(k))
 }
 
 // interactive hover card (holds the not-slop action, so it must stay reachable)
@@ -178,12 +217,15 @@ function showTip(e, i) {
     (i._slop.flags.length
       ? `<div class="tip-f slop">⚠ ${i._slop.flags.join(", ")}</div>` +
         `<button class="tip-act" data-act="slop">${isDismissed(i) ? "Re-flag as slop" : "Mark not slop"}</button>`
-      : "")
-  const btn = tip.querySelector(".tip-act")
-  if (btn) {btn.onclick = () => {
-    toggleReviewed(i)
-    hideTip()
-  }}
+      : "") +
+    `<a class="tip-act tip-link" href="${i.url}" target="_blank">Open in Linear ↗</a>`
+  const btn = tip.querySelector('[data-act="slop"]')
+  if (btn) {
+    btn.onclick = () => {
+      toggleReviewed(i)
+      hideTip()
+    }
+  }
   tip.style.display = "block"
   const w = tip.offsetWidth || 300, h = tip.offsetHeight || 120
   tip.style.left = Math.max(8, Math.min(e.clientX + 14, innerWidth - w - 8)) + "px"
@@ -199,6 +241,7 @@ tip.onmouseleave = () => hideTip()
 
 function passes(i) {
   if (!state.statuses.has(i.statusType)) return false
+  if (!state.bucketKeys.has(i._bucket)) return false
   if (state.q && !(`${i.id} ${i.title} ${i.description}`.toLowerCase().includes(state.q))) return false
   for (const f of state.flags) {
     if (f === "slop" && !isSlop(i)) return false
@@ -228,12 +271,13 @@ function warnClass(i) {
   return ""
 }
 
+let passesShown = new Set()
 function cellHTML(person, b) {
   const items = data.issues.filter((i) => passesShown.has(i) && i.assignee === person && i._bucket === b.key)
     .sort((a, x) => statusRank(a.statusType) - statusRank(x.statusType) || x.estimate - a.estimate)
   const load = items.reduce((s, i) => s + i.estimate, 0)
   const cls = b.key === "C47" ? "past" : (b.kind === "cycle" ? "now" : "")
-  const capacity = person === "Unassigned" ? null : state.cap * bucketWeeks[b.key]
+  const capacity = person === "Unassigned" ? null : CAP_PER_CYCLE * bucketWeeks[b.key]
   let heat = ""
   if (capacity && load > 0) {
     const ratio = load / capacity
@@ -242,15 +286,13 @@ function cellHTML(person, b) {
       zone === "over" ? "rgba(220,38,38,.16)" : zone === "warn" ? "rgba(217,119,6,.13)" : "rgba(22,163,74,.09)"
     }"></div>`
   }
-  return `<td class="${cls}" data-cap="${capacity ?? ""}" data-load="${load}">${heat}<div class="cellbody">${
-    renderItems(items)
-  }</div></td>`
+  return `<td class="${cls}" data-load="${load}">${heat}<div class="cellbody">${renderItems(items)}</div></td>`
 }
 
-// filter cache so cellHTML does not re-run passes() per cell
-let passesShown = new Set()
-
 function render() {
+  const wrap = document.querySelector(".wrap")
+  const sx = wrap ? wrap.scrollLeft : 0, sy = wrap ? wrap.scrollTop : 0
+  const visible = buckets.filter((b) => state.bucketKeys.has(b.key))
   const shown = data.issues.filter(passes)
   passesShown = new Set(shown)
   const people = [...new Set(shown.map((i) => i.assignee))].sort((a, b) =>
@@ -258,7 +300,6 @@ function render() {
   )
   nodeById.clear()
 
-  // summary
   const act = shown.filter((i) => i.statusType !== "completed" && i.statusType !== "canceled")
   document.getElementById("summary").innerHTML = [
     `<span><b>${shown.length}</b> shown</span>`,
@@ -273,16 +314,19 @@ function render() {
 
   let h
   if (!state.transpose) {
-    const nCyc = buckets.filter((b) => b.kind === "cycle").length
-    const nMile = buckets.filter((b) => b.kind === "milestone").length
-    h = "<thead><tr class='grp'><th></th>" +
-      `<th colspan="${nCyc}">Now · cycles</th><th colspan="${nMile}">Horizon · milestones</th><th>Unscheduled</th></tr>`
-    h += "<tr class='col'><th>Assignee</th>"
-    for (const b of buckets) h += bucketTh(b)
+    const nCyc = visible.filter((b) => b.kind === "cycle").length
+    const nMile = visible.filter((b) => b.kind === "milestone").length
+    const nBack = visible.filter((b) => b.kind === "backlog").length
+    h = "<thead><tr class='grp'><th></th>"
+    if (nCyc) h += `<th colspan="${nCyc}">Now · cycles</th>`
+    if (nMile) h += `<th colspan="${nMile}">Horizon · milestones</th>`
+    if (nBack) h += `<th>Unscheduled</th>`
+    h += "</tr><tr class='col'><th>Assignee</th>"
+    for (const b of visible) h += bucketTh(b)
     h += "</tr></thead><tbody>"
     for (const person of people) {
       h += `<tr><th>${escapeHtml(person)}${personPts(shown, person)}</th>`
-      for (const b of buckets) h += cellHTML(person, b)
+      for (const b of visible) h += cellHTML(person, b)
       h += "</tr>"
     }
     h += "</tbody>"
@@ -290,7 +334,7 @@ function render() {
     h = "<thead><tr class='col'><th>Bucket</th>"
     for (const person of people) h += `<th>${escapeHtml(person)}${personPts(shown, person)}</th>`
     h += "</tr></thead><tbody>"
-    for (const b of buckets) {
+    for (const b of visible) {
       const kindTag = b.kind === "cycle" ? "now" : b.kind === "milestone" ? "horizon" : "backlog"
       h += `<tr><th class="rowhead ${kindTag}">${b.label}<span class="s">${bucketSub(b)}</span></th>`
       for (const person of people) h += cellHTML(person, b)
@@ -302,7 +346,6 @@ function render() {
   grid.className = state.transpose ? "transposed" : ""
   grid.innerHTML = h
 
-  // wire nodes
   for (const el of grid.querySelectorAll("[data-id]")) {
     const i = byId[el.getAttribute("data-id")]
     nodeById.set(i.id, el)
@@ -315,14 +358,10 @@ function render() {
     el.addEventListener("mouseleave", () => {
       hideTimer = setTimeout(hideTip, 160)
     })
-    if (state.expanded && el.classList.contains("card")) {
-      el.addEventListener("click", (e) => {
-        if (e.target.tagName !== "A") {
-          e.preventDefault()
-          el.classList.toggle("open")
-        }
-      })
-    }
+  }
+  if (wrap) {
+    wrap.scrollLeft = sx
+    wrap.scrollTop = sy
   }
 }
 
@@ -357,20 +396,62 @@ function renderItems(items) {
       }).join("")
     }</div>`
   }
-  return items.map((i) =>
-    `<a class="card ${warnClass(i)}" data-id="${i.id}" href="${i.url}" style="border-left-color:${
-      STATUS[i.statusType]?.color
-    }">
-    <span class="top"><a class="id" href="${i.url}" target="_blank">${i.id}</a><span class="badges">${
-      flagBadges(i)
-    }</span><span class="pts">${i.estimate || "–"}</span></span>
-    <span class="t">${escapeHtml(i.title)}</span>
-    <span class="rel">${escapeHtml(relText(i))}${
-      isSlop(i) ? "<br>⚠ " + i._slop.flags.join(", ") : ""
-    }</span>
-  </a>`
-  ).join("")
+  return `<div class="cards">${
+    items.map((i) =>
+      `<div class="card ${warnClass(i)}" data-id="${i.id}" onclick="window.open('${i.url}','_blank')" ` +
+      `style="border-left-color:${STATUS[i.statusType]?.color}">` +
+      `<div class="top"><span class="id">${i.id.replace(/^[A-Z]+-/, "")}</span>` +
+      `<span class="badges">${flagBadges(i)}</span>` +
+      `<span class="pts">${i.estimate || "–"}</span></div>` +
+      `<div class="t">${escapeHtml(i.title)}</div></div>`
+    ).join("")
+  }</div>`
 }
 
-capv.textContent = cap.value
+async function refresh() {
+  refreshBtn.disabled = true
+  refreshBtn.textContent = "Refreshing…"
+  try {
+    const fresh = await loadData()
+    data.issues = fresh.issues
+    data.milestones = fresh.milestones
+    data.cycles = fresh.cycles
+    data.asOf = fresh.asOf
+    data.currentCycle = fresh.currentCycle
+    data.project = fresh.project
+    deriveBuckets()
+    enrich()
+    for (const k of buckets.map((b) => b.key)) if (!bucketChipEls.has(k)) state.bucketKeys.add(k)
+    loadedAt = new Date()
+    renderMeta()
+    render()
+  } finally {
+    refreshBtn.disabled = false
+    refreshBtn.textContent = "Refresh"
+    updateSync()
+  }
+}
+
+function pad(n) {
+  return String(n).padStart(2, "0")
+}
+function updateSync() {
+  document.getElementById("sync").textContent = `data as of ${data.asOf} · loaded ${pad(loadedAt.getHours())}:${
+    pad(loadedAt.getMinutes())
+  }`
+}
+
+// auto-refresh every 5 minutes; only re-renders if the payload changed, keeping filters intact
+let lastPayload = JSON.stringify(data.issues)
+setInterval(async () => {
+  const fresh = await loadData().catch(() => null)
+  if (!fresh) return
+  const sig = JSON.stringify(fresh.issues)
+  if (sig !== lastPayload) {
+    lastPayload = sig
+    await refresh()
+  }
+}, 300000)
+
+updateSync()
 render()

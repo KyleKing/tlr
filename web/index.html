@@ -13,25 +13,46 @@
   </header>
   <div class="bar-controls">
     <input id="search" type="search" placeholder="Search id / title / description…" />
-    <span class="chips" id="chips"></span>
-    <label>capacity <input type="range" id="cap" min="3" max="16" value="8" /> <b id="capv">8</b> pt/person/wk</label>
     <button class="chip" id="expand" aria-pressed="false">Expand</button>
     <button class="chip" id="orient" aria-pressed="false">Rows: people</button>
+    <span class="sync-box">
+      <span id="sync" class="sync-text"></span>
+      <button class="chip" id="refresh">Refresh</button>
+    </span>
+  </div>
+  <div class="bar-filters">
+    <span class="fgroup"><span class="flabel">Status</span><span class="chips" id="status-chips"></span></span>
+    <span class="fgroup"><span class="flabel">Bucket</span><span class="chips" id="bucket-chips"></span></span>
+    <span class="fgroup"><span class="flabel">Flags</span><span class="chips" id="flag-chips"></span></span>
   </div>
   <div class="summary" id="summary"></div>
   <div class="wrap"><table id="grid"></table></div>
   <div id="tip"></div>
-  <p class="note">
-    Spike on real Contractual Product Uptime data. Placement: an issue in an active cycle shows in that
-    cycle column, else its milestone, else Backlog. Capacity heat is a forecast against the adjustable
-    points/person/week knob (milestone columns scale it by weeks in the window), not real velocity.
-    Flags: ⚠ slop scans the description for AI tells (dashes, semicolons, checklists, length, stock phrases);
-    ⛔ ordering risk means a blocker finishes after the issue it blocks; ◑ missing marks absent estimate,
-    assignee, or milestone, but only for issues already committed to a cycle. Hover a ticket for details and
-    its blocking relations, and to mark a false-positive slop flag as reviewed (it stays cleared until the
-    ticket text changes). Double-click a status chip to show only that status; "Rows: people" flips the grid
-    so buckets run down the side when heavy filtering leaves few columns.
-  </p>
+  <details class="legend">
+    <summary>How to read this board</summary>
+    <div class="legend-body">
+      <p>
+        Placement: an issue in an active cycle shows in that cycle's column, otherwise its milestone,
+        otherwise Backlog. Capacity heat is a forecast against a fixed 20 points per person per cycle
+        (milestone columns scale it by the weeks in their window), not real velocity. Hover any ticket
+        for its full title, assignee, milestone, relations, and the reason for a flag.
+      </p>
+      <ul>
+        <li><b>⚠ slop</b> scans the description for AI tells: dashes, semicolons, checklists, length, and
+          stock phrases. A false positive can be marked "not slop" from the hover card; it stays cleared
+          until the ticket text changes.</li>
+        <li><b>⛔ ordering risk</b> means a blocker finishes after the issue it blocks.</li>
+        <li><b>◑ missing</b> marks an absent estimate, assignee, or milestone, but only for issues already
+          committed to a cycle.</li>
+      </ul>
+      <p>
+        Filters: double-click a Status or Bucket chip to show only that one (double-click again to
+        restore). "Rows: people / buckets" flips the grid so buckets run down the side when heavy
+        filtering leaves few columns. The board re-fetches every five minutes and on Refresh without
+        touching your filters or scroll position.
+      </p>
+    </div>
+  </details>
   <script type="module" src="/app.js"></script>
 </body>
 </html>
