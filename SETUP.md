@@ -93,6 +93,13 @@ The refresh token is not a Console setting. The flow opens the auth URL with `ac
 `prompt=consent`, and Google returns the refresh token on that first consent. Those parameters live in
 the script's request, not the Console, which is why you won't find a toggle for them.
 
+How long the cached token lasts is set by the consent screen's publishing status, not by the auth
+method. An **External** app left in **Testing** issues refresh tokens that expire after 7 days, so the
+browser consent returns every week. An **Internal** app (everyone inside the Workspace) or an External
+app published to **In production** issues refresh tokens that do not expire on a timer, so the one
+consent holds until the token is revoked or unused for six months. Set the consent screen to Internal,
+or publish to production, to avoid the weekly re-consent.
+
 This is a spike behind the `CapacitySource.outDays` port ([ADR 0007](adr/0007-productization-and-domains.md));
 the shipped `GoogleCalendarSource` adapter is later work.
 

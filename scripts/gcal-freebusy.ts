@@ -139,7 +139,8 @@ async function rosterEmails(): Promise<string[]> {
   try {
     const data = JSON.parse(await Deno.readTextFile(DATA_PATH))
     const roster = data.capacity?.roster ?? {}
-    return [...new Set(Object.values(roster).map(String).filter(Boolean))]
+    const emails = Object.values(roster).map((p) => (p as { email?: string }).email).filter(Boolean)
+    return [...new Set(emails as string[])]
   } catch {
     return []
   }

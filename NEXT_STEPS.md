@@ -38,12 +38,13 @@ standalone spike (`deno task gcal:freebusy`, own OAuth client, no MCP); folding 
 
 ## Open questions
 
-- Team-wide time off: `deno task gcal:freebusy` will show whether teammates' free/busy is reachable
-  from a personal OAuth client (Workspace sharing on) or comes back empty (needs domain-wide delegation
-  or a manual entry surface). Run it to decide. On-call is already sourced from Incident.io for everyone
-  on a schedule.
+- Team-wide time off resolved: `deno task gcal:freebusy` returns real busy blocks for teammates from a
+  personal OAuth client, so Workspace free/busy sharing is on and no service account is needed. On-call
+  is already sourced from Incident.io for everyone on a schedule.
 - Standalone Google path resolved: the free/busy spike uses its own OAuth client, no MCP. Open piece is
   folding it into a `GoogleCalendarSource` that returns out-day `Block[]` for `deno task capacity`.
+  Free/busy shows busy windows, not the reason, so mapping a busy block to an out-of-office day needs a
+  heuristic (all-day or multi-day blocks) or the `calendar.events.readonly` scope to read event types.
 - Deflation knobs: on-call is a flat 35% cut and time off is a straight day-fraction. Are those right,
   or should on-call vary by team and rotation load?
 - Per-person base velocity is still a placeholder (default 20). Pull it from past-cycle throughput?
