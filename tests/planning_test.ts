@@ -1,0 +1,80 @@
+import { assertEquals } from "jsr:@std/assert@1"
+import {
+  bucketOf,
+  buildBuckets,
+  milestoneCapacity,
+  missingData,
+  orderingRisks,
+  slopScan,
+  weeksBetween,
+} from "../web/lib/planning.js"
+
+const DATA = {
+  asOf: "2026-07-23",
+  currentCycle: 48,
+  cycles: [
+    { n: 47, start: "2026-07-13", end: "2026-07-20" },
+    { n: 48, start: "2026-07-20", end: "2026-07-27" },
+    { n: 49, start: "2026-07-27", end: "2026-08-03" },
+  ],
+  milestones: [
+    { key: "M1", name: "M1", target: "2026-07-31", progress: 66 },
+    { key: "M2", name: "M2", target: "2026-08-31", progress: 27 },
+  ],
+}
+
+Deno.test("bucketOf places issues by cycle, then milestone, then backlog", () => {
+  assertEquals(bucketOf({ cycle: 48, milestone: "M2" }), "C48")
+  assertEquals(bucketOf({ cycle: null, milestone: "M2" }), "M2")
+  assertEquals(bucketOf({ cycle: null, milestone: null }), "BACKLOG")
+  assertEquals(bucketOf({ cycle: 47, milestone: "M1" }), "C47")
+})
+
+Deno.test("buildBuckets orders cycles then milestones then backlog", () => {
+  const keys = buildBuckets(DATA).map((b) => b.key)
+  assertEquals(keys, ["C47", "C48", "C49", "M1", "M2", "BACKLOG"])
+})
+
+Deno.test("weeksBetween is roughly right and never negative", () => {
+  assertEquals(Math.round(weeksBetween("2026-07-13", "2026-07-20")), 1)
+  assertEquals(weeksBetween("2026-07-20", "2026-07-13"), 0)
+})
+
+Deno.test("milestoneCapacity scales with weeks remaining", () => {
+  const m1 = milestoneCapacity("M1", DATA, 10) // ~1.1 weeks from asOf
+  const m2 = milestoneCapacity("M2", DATA, 10) // ~4.4 weeks from M1 target
+  assertEquals(m1 < m2, true)
+  assertEquals(m1 > 0, true)
+})
+
+Deno.test("slopScan catches dashes, semicolons, phrases, checklists, length", () => {
+  assertEquals(slopScan("a clean short note").flags.length, 0)
+  assertEquals(slopScan("we use an em—dash here").flags.includes("em/en dash"), true)
+  assertEquals(slopScan("first clause; second clause").flags.includes("semicolon"), true)
+  assertEquals(slopScan("- [ ] a task item").flags.includes("checklist"), true)
+  const p = slopScan("This leverages a comprehensive robust approach")
+  assertEquals(p.flags.some((f) => f.startsWith("phrase")), true)
+  assertEquals(p.score >= 1, true)
+})
+
+Deno.test("missingData only blocks when the issue is in an active cycle", () => {
+  assertEquals(missingData({ cycle: 48, estimate: 0, assignee: "Unassigned", milestone: null }).blocking, true)
+  assertEquals(missingData({ cycle: null, estimate: 0, assignee: "Unassigned", milestone: null }).blocking, false)
+  assertEquals(missingData({ cycle: 48, estimate: 3, assignee: "Ada", milestone: "M1" }).flags.length, 0)
+})
+
+Deno.test("orderingRisks flags a blocker that finishes after its dependent", () => {
+  const issues = [
+    { id: "A", blockedBy: ["B"], statusType: "unstarted", _bucketEnd: "2026-07-31" },
+    { id: "B", blockedBy: [], statusType: "unstarted", _bucketEnd: "2026-08-31" },
+  ]
+  assertEquals(orderingRisks(issues), [{ issue: "A", blocker: "B" }])
+})
+
+Deno.test("orderingRisks ignores completed blockers", () => {
+  const issues = [
+    { id: "A", blockedBy: ["B"], statusType: "unstarted", _bucketEnd: "2026-07-31" },
+    { id: "B", blockedBy: [], statusType: "completed", _bucketEnd: "2026-08-31" },
+  ]
+  assertEquals(orderingRisks(issues), [])
+})

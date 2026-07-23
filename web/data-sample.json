@@ -22,7 +22,9 @@
       "end": "2026-08-03"
     }
   ],
+  "asOf": "2026-07-23",
   "currentCycle": 48,
+  "teamCapacityPerCycle": 40,
   "milestones": [
     {
       "key": "M1",
