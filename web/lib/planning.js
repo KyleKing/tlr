@@ -112,7 +112,7 @@ export function statusRank(statusType) {
   return STATUS_RANK[statusType] ?? 9
 }
 
-export const CAPACITY_DEFAULTS = { workdaysPerCycle: 5, oncallPenalty: 0.35, defaultVelocity: 20 }
+export const CAPACITY_DEFAULTS = { workdaysPerCycle: 5, oncallPenalty: 0.45, defaultVelocity: 20 }
 
 // Effective points a person can deliver in one cycle, after time off and on-call. Returns
 // { base, points, factors } where factors describe each deflation so the board can show why.

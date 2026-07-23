@@ -21,7 +21,7 @@ Model effective capacity per person per cycle in `personCycleCapacity` (pure, te
 (20 by default, overridable per person) is cut by time off and on-call:
 
 - Out days scale it by `(workdays - outDays) / workdays`
-- On-call multiplies by `(1 - oncallPenalty)`, default 0.35
+- On-call multiplies by `(1 - oncallPenalty)`, default 0.45
 - Each cut is returned as a factor so the cell can show why: 📟 on-call, 🧳 time off, and an "over"
   badge when committed points exceed the result
 
