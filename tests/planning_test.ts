@@ -5,6 +5,7 @@ import {
   milestoneCapacity,
   missingData,
   orderingRisks,
+  personCycleCapacity,
   slopHash,
   slopScan,
   statusRank,
@@ -74,6 +75,21 @@ Deno.test("statusRank orders active work before terminal states", () => {
   assertEquals(statusRank("started") < statusRank("backlog"), true)
   assertEquals(statusRank("backlog") < statusRank("completed"), true)
   assertEquals(statusRank("canceled") > statusRank("triage"), true)
+})
+
+Deno.test("personCycleCapacity deflates for time off and on-call", () => {
+  const cap = {
+    config: { workdaysPerCycle: 5, oncallPenalty: 0.4 },
+    defaultVelocity: 20,
+    people: {
+      Ada: { velocity: 20, cycles: { "48": { oncall: true }, "49": { outDays: 5, reason: "PTO" } } },
+    },
+  }
+  assertEquals(personCycleCapacity("Nobody", 48, cap).points, 20) // default velocity, no events
+  assertEquals(personCycleCapacity("Ada", 48, cap).points, 12) // 20 * (1 - 0.4)
+  assertEquals(personCycleCapacity("Ada", 49, cap).points, 0) // all 5 workdays out
+  assertEquals(personCycleCapacity("Ada", 48, cap).factors[0].kind, "oncall")
+  assertEquals(personCycleCapacity("Ada", null, cap).factors.length, 0) // no cycle, no deflation
 })
 
 Deno.test("orderingRisks flags a blocker that finishes after its dependent", () => {

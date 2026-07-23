@@ -44,6 +44,11 @@ td { min-width: 132px; background: var(--cell); position: relative; }
 td.now { background: var(--now); } td.past { background: var(--past); }
 .heat { position: absolute; inset: 0; pointer-events: none; }
 .cellbody { position: relative; padding: 5px 6px; display: flex; flex-direction: column; gap: 3px; min-height: 24px; }
+.capfoot { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 1px; }
+.cf { font-size: 9px; line-height: 1.5; padding: 0 5px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+.cf.oncall { color: #7c3aed; }
+.cf.out { color: #0e7490; }
+.cf.over { color: var(--over); font-weight: 600; }
 /* compact labeled tickets */
 .ticks { display: flex; flex-wrap: wrap; gap: 3px; }
 .tick {

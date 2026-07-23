@@ -254,5 +254,35 @@
       40,
       45
     ]
+  },
+  "capacity": {
+    "config": {
+      "workdaysPerCycle": 5,
+      "oncallPenalty": 0.35
+    },
+    "defaultVelocity": 20,
+    "people": {
+      "Ada Lovelace": {
+        "velocity": 18,
+        "cycles": {
+          "48": {
+            "oncall": true
+          },
+          "49": {
+            "outDays": 5,
+            "reason": "PTO"
+          }
+        }
+      },
+      "Grace Hopper": {
+        "velocity": 24,
+        "cycles": {
+          "49": {
+            "outDays": 3,
+            "reason": "onsite"
+          }
+        }
+      }
+    }
   }
 }

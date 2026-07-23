@@ -3,6 +3,7 @@ import {
   buildBuckets,
   missingData,
   orderingRisks,
+  personCycleCapacity,
   slopHash,
   slopScan,
   statusRank,
@@ -19,7 +20,6 @@ const STATUS = {
 }
 const FLAGS = { slop: "⚠ slop", risk: "⛔ ordering risk", miss: "◑ missing (in cycle)" }
 const DEFAULT_STATUSES = ["started", "unstarted", "triage", "backlog"]
-const CAP_PER_CYCLE = 20 // fixed for now; revisit with per-person velocity and calendar time off
 const REVIEW_KEY = "tlr.notslop"
 
 // mutable module data, replaced on refresh
@@ -271,13 +271,32 @@ function warnClass(i) {
   return ""
 }
 
+// Effective capacity for a person in a bucket. Cycles carry on-call and time-off deflation;
+// milestones size off base velocity across their weeks (no near-term calendar events applied).
+function cellCapacity(person, b) {
+  if (person === "Unassigned" || b.key === "C47" || b.kind === "backlog") return { points: null, factors: [] }
+  if (b.kind === "cycle") return personCycleCapacity(person, parseInt(b.key.slice(1), 10), data.capacity)
+  const base = personCycleCapacity(person, null, data.capacity).base
+  return { points: Math.round(base * bucketWeeks[b.key]), factors: [] }
+}
+
+function capFootHTML(factors, capacity, load) {
+  const parts = factors.map((f) =>
+    f.kind === "oncall"
+      ? `<span class="cf oncall">📟 on-call</span>`
+      : `<span class="cf out">🧳 ${escapeHtml(f.reason)} ${f.days}d</span>`
+  )
+  if (capacity != null && load > capacity) parts.push(`<span class="cf over">over +${load - capacity}</span>`)
+  return parts.length ? `<div class="capfoot">${parts.join("")}</div>` : ""
+}
+
 let passesShown = new Set()
 function cellHTML(person, b) {
   const items = data.issues.filter((i) => passesShown.has(i) && i.assignee === person && i._bucket === b.key)
     .sort((a, x) => statusRank(a.statusType) - statusRank(x.statusType) || x.estimate - a.estimate)
   const load = items.reduce((s, i) => s + i.estimate, 0)
   const cls = b.key === "C47" ? "past" : (b.kind === "cycle" ? "now" : "")
-  const capacity = person === "Unassigned" ? null : CAP_PER_CYCLE * bucketWeeks[b.key]
+  const { points: capacity, factors } = cellCapacity(person, b)
   let heat = ""
   if (capacity && load > 0) {
     const ratio = load / capacity
@@ -286,7 +305,10 @@ function cellHTML(person, b) {
       zone === "over" ? "rgba(220,38,38,.16)" : zone === "warn" ? "rgba(217,119,6,.13)" : "rgba(22,163,74,.09)"
     }"></div>`
   }
-  return `<td class="${cls}" data-load="${load}">${heat}<div class="cellbody">${renderItems(items)}</div></td>`
+  const foot = capFootHTML(factors, capacity, load)
+  return `<td class="${cls}" data-load="${load}" data-cap="${capacity ?? ""}">${heat}<div class="cellbody">${foot}${
+    renderItems(items)
+  }</div></td>`
 }
 
 function render() {

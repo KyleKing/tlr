@@ -33,9 +33,11 @@
     <div class="legend-body">
       <p>
         Placement: an issue in an active cycle shows in that cycle's column, otherwise its milestone,
-        otherwise Backlog. Capacity heat is a forecast against a fixed 20 points per person per cycle
-        (milestone columns scale it by the weeks in their window), not real velocity. Hover any ticket
-        for its full title, assignee, milestone, relations, and the reason for a flag.
+        otherwise Backlog. Capacity heat is a forecast against each person's effective capacity: a base
+        velocity (20 points per cycle by default) cut down by on-call weeks and days out of office, with
+        milestone columns scaled by the weeks in their window. A cell shows 📟 on-call, 🧳 time off, and
+        an "over" badge when committed points exceed that capacity. Hover any ticket for its full title,
+        assignee, milestone, relations, and the reason for a flag.
       </p>
       <ul>
         <li><b>⚠ slop</b> scans the description for AI tells: dashes, semicolons, checklists, length, and

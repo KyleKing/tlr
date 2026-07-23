@@ -112,6 +112,29 @@ export function statusRank(statusType) {
   return STATUS_RANK[statusType] ?? 9
 }
 
+export const CAPACITY_DEFAULTS = { workdaysPerCycle: 5, oncallPenalty: 0.35, defaultVelocity: 20 }
+
+// Effective points a person can deliver in one cycle, after time off and on-call. Returns
+// { base, points, factors } where factors describe each deflation so the board can show why.
+// A null cycleN means "no cycle events" (used to size milestone windows off base velocity).
+export function personCycleCapacity(person, cycleN, capacity) {
+  const cfg = { ...CAPACITY_DEFAULTS, ...(capacity && capacity.config) }
+  const p = (capacity && capacity.people && capacity.people[person]) || {}
+  const base = p.velocity ?? (capacity && capacity.defaultVelocity) ?? cfg.defaultVelocity
+  const ev = cycleN == null ? {} : (p.cycles && p.cycles[String(cycleN)]) || {}
+  const factors = []
+  let points = base
+  if (ev.outDays > 0) {
+    points *= Math.max(0, (cfg.workdaysPerCycle - ev.outDays) / cfg.workdaysPerCycle)
+    factors.push({ kind: "out", days: ev.outDays, reason: ev.reason || "out" })
+  }
+  if (ev.oncall) {
+    points *= 1 - cfg.oncallPenalty
+    factors.push({ kind: "oncall" })
+  }
+  return { base, points: Math.round(points), factors }
+}
+
 // Missing-data flags. `blocking` is true only when the issue sits in an active cycle,
 // where missing fields actually block execution.
 export function missingData(issue) {
