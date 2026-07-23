@@ -45,8 +45,10 @@ grid. SVG export for weekly-update artifacts.
 
 ## Open questions
 
-- Per-person capacity: fixed at 20 points per cycle for now. Revisit with past-cycle velocity and
-  Google Calendar time-off deflation, at which point the flat number becomes per-person
+- Per-person capacity now deflates for on-call and time off from a hand-seeded `capacity` block
+  (see [adr/0005-capacity-realism.md](adr/0005-capacity-realism.md)). Open: automate the inputs, since
+  Incident.io has no MCP and the Google Calendar MCP reads only the current user's calendar. Per-person
+  base velocity from past cycles is still a placeholder
 - Whether the dependency timeline and the capacity board are two views or one
 - Slop-scan tuning: 33 of 48 shown tickets currently flag. A per-ticket "not slop" override now
   clears false positives, but the base rate may still be too high to trust
