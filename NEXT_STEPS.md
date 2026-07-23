@@ -25,8 +25,9 @@ Running list of what to build next and what needs a decision. Higher-level phase
 ## Setup to finish the capacity feed
 
 See `SETUP.md` for the full guide. The one blocker for the live on-call feed is the Incident.io key
-(store it, then `deno task capacity --source incident --dry-run`). Google Calendar out-days still come
-through the MCP handoff; the standalone adapter is future work per ADR 0007.
+(store it, then `deno task capacity --source incident --dry-run`). Google Calendar free/busy now has a
+standalone spike (`deno task gcal:freebusy`, own OAuth client, no MCP); folding it into a
+`GoogleCalendarSource` adapter that feeds `deno task capacity --source gcal` is the next step per ADR 0007.
 
 ## Next up
 
@@ -37,12 +38,12 @@ through the MCP handoff; the standalone adapter is future work per ADR 0007.
 
 ## Open questions
 
-- Team-wide time off: the Google Calendar MCP reads only the current user's calendar. Do teammates
-  share free/busy across the Workspace (so the freebusy API reaches them), or do we need a manual
-  entry surface for their out-days? On-call is now sourced from Incident.io for everyone on a schedule.
-- Google Calendar in the standalone script: the fetch currently comes through the MCP in a Claude
-  session, handed to the script as a file. A reproducible `deno task capacity` run would need its own
-  OAuth client credentials or a service account. Worth it, or is the MCP handoff enough?
+- Team-wide time off: `deno task gcal:freebusy` will show whether teammates' free/busy is reachable
+  from a personal OAuth client (Workspace sharing on) or comes back empty (needs domain-wide delegation
+  or a manual entry surface). Run it to decide. On-call is already sourced from Incident.io for everyone
+  on a schedule.
+- Standalone Google path resolved: the free/busy spike uses its own OAuth client, no MCP. Open piece is
+  folding it into a `GoogleCalendarSource` that returns out-day `Block[]` for `deno task capacity`.
 - Deflation knobs: on-call is a flat 35% cut and time off is a straight day-fraction. Are those right,
   or should on-call vary by team and rotation load?
 - Per-person base velocity is still a placeholder (default 20). Pull it from past-cycle throughput?

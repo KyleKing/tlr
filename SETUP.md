@@ -14,7 +14,7 @@ every service below as "one named secret" rather than "a file on my laptop".
 | --- | --- | --- | --- |
 | Linear | personal API key | `tlr-linear` | issue fetch, `deno task roster` |
 | Incident.io | API key (read schedules) | `tlr-incidentio` | `deno task capacity --source incident` |
-| Google Calendar | OAuth client or service account | not yet wired | out-days (MCP handoff today) |
+| Google Calendar | OAuth client JSON (Desktop app) | `web/data/gcal-client.json` | free/busy spike `deno task gcal:freebusy` |
 
 Each keychain entry uses account `api-key`. Store one like this (you are prompted for the value, so it
 never lands in shell history):
@@ -60,11 +60,14 @@ Verify: `deno task capacity --source incident --dry-run`.
 Out-of-office and onsite days come from Google Calendar. Two auth models exist, and which one you need
 depends on whose calendar you read.
 
-- OAuth 2.0 client (Desktop app), for reading your own calendar. You consent once in a browser and the
-  script keeps a refresh token. No Workspace admin is involved
-- Service account with domain-wide delegation, for reading teammates' calendars across the Workspace
-  without each person consenting. The service account impersonates each user, and a Workspace super
-  admin has to authorize the delegation. This is the model for a team-wide out-days feed
+- OAuth 2.0 client (Desktop app), for your own credentials. You consent once in a browser and the
+  script keeps a refresh token. No Workspace admin is involved. This route also reads teammates'
+  free/busy when the Workspace shares it (the default), which is the same data the Calendar webapp's
+  "Find a time" view shows. It is the right route for an out-days feed built on free/busy
+- Service account with domain-wide delegation, for reading teammates' event details across the
+  Workspace without each person consenting. The service account impersonates each user, and a Workspace
+  super admin has to authorize the delegation. Only needed when free/busy sharing is off or you need
+  event contents rather than busy blocks
 
 Today the standalone Google path is not built. Out-days flow through the Google Calendar MCP inside a
 Claude session, which reads the current user only and writes a small handoff file that
@@ -84,8 +87,18 @@ For the OAuth client (own calendar):
 
 4. Google Auth platform → Clients (`https://console.cloud.google.com/auth/clients`) → Create client →
    Application type **Desktop app**
-5. Download the client JSON (`client_id` and `client_secret`). Request offline access
-   (`access_type=offline`, `prompt=consent`) so the first consent returns a refresh token
+5. Download the client JSON (`client_id` and `client_secret`). That is all the Console needs; store the
+   file where the script can read it
+
+The refresh token is not a Console setting. It comes from the consent the script triggers: the flow
+opens the authorization URL with `access_type=offline` and `prompt=consent`, and Google returns a
+refresh token on that first consent. Those two parameters live in the script's auth request, not
+anywhere in the Console, which is why you won't find a toggle for them.
+
+Verify: save the downloaded client JSON to `web/data/gcal-client.json`, then `deno task gcal:freebusy`.
+The first run opens the browser once for consent, caches the refresh token in `web/data/gcal-token.json`
+(both files gitignored), and prints each roster member's busy blocks for the next two weeks. This is a
+spike that proves the free/busy read; the shipped `GoogleCalendarSource` adapter (ADR 0007) is later work.
 
 For the service account (teammates' calendars):
 
