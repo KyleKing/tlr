@@ -64,7 +64,7 @@ async function loadData() {
 // not-slop dismissals persist locally, keyed by content hash so an edit re-flags
 const reviewed = JSON.parse(localStorage.getItem(REVIEW_KEY) || "{}")
 const isDismissed = (i) => reviewed[i.id] === i._slopHash
-const isSlop = (i) => i._slop.flags.length > 0 && !isDismissed(i)
+const isSlop = (i) => i._slop.score >= 2 && !isDismissed(i)
 function toggleReviewed(i) {
   if (isDismissed(i)) delete reviewed[i.id]
   else reviewed[i.id] = i._slopHash
@@ -224,7 +224,7 @@ function showTip(e, i) {
     (rel ? `<div class="tip-rel">${rel}</div>` : "") +
     (i._risk ? `<div class="tip-f risk">⛔ ordering risk: blocker finishes later</div>` : "") +
     (i._miss.blocking ? `<div class="tip-f miss">◑ in cycle, missing: ${i._miss.flags.join(", ")}</div>` : "") +
-    (i._slop.flags.length
+    (isSlop(i) || isDismissed(i)
       ? `<div class="tip-f slop">⚠ ${i._slop.flags.join(", ")}</div>` +
         `<button class="tip-act" data-act="slop">${isDismissed(i) ? "Re-flag as slop" : "Mark not slop"}</button>`
       : "") +
