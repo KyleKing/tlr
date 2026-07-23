@@ -1,17 +1,16 @@
-// Spike: test Google Calendar free/busy over the Desktop OAuth flow.
+// Google Calendar free/busy over the Desktop OAuth flow.
 //
 //   deno task gcal:freebusy                       # roster emails from web/data/cpu.json, next 14 days
 //   deno run ... scripts/gcal-freebusy.ts --emails a@x.com,b@y.com --days 30
 //   deno run ... scripts/gcal-freebusy.ts --reauth # force a fresh consent
 //
-// This is the shortcut behind CapacitySource.outDays (ADR 0007), not the shipped path yet. It proves
-// that a personal OAuth client can read teammates' free/busy the same way the Calendar webapp's
-// "Find a time" view does, when the Workspace shares free/busy. Download a Desktop-app client JSON
-// (SETUP.md, Google section) to web/data/gcal-client.json. The first run opens a browser once for
-// consent and caches a refresh token in web/data/gcal-token.json (both gitignored); later runs are
-// silent.
+// Run standalone (above) this just prints free/busy blocks. scripts/capacity.ts's `--source gcal`
+// imports tokenFor/fetchFreeBusy from here to feed the real out-day heuristic (CapacitySource.outDays,
+// ADR 0007). Download a Desktop-app client JSON (SETUP.md, Google section) to web/data/gcal-client.json.
+// The first run opens a browser once for consent and caches a refresh token in web/data/gcal-token.json
+// (both gitignored); later runs are silent.
 
-const CLIENT_PATH = new URL("../web/data/gcal-client.json", import.meta.url).pathname
+export const CLIENT_PATH = new URL("../web/data/gcal-client.json", import.meta.url).pathname
 const TOKEN_PATH = new URL("../web/data/gcal-token.json", import.meta.url).pathname
 const DATA_PATH = new URL("../web/data/cpu.json", import.meta.url).pathname
 const AUTH_URI = "https://accounts.google.com/o/oauth2/v2/auth"
@@ -19,7 +18,7 @@ const TOKEN_URI = "https://oauth2.googleapis.com/token"
 const FREEBUSY_URI = "https://www.googleapis.com/calendar/v3/freeBusy"
 const SCOPE = "https://www.googleapis.com/auth/calendar.freebusy"
 
-interface Client {
+export interface Client {
   client_id: string
   client_secret: string
 }
@@ -34,7 +33,7 @@ function parseArgs(argv: string[]) {
   return args as { emails?: string; days?: string; client?: string; reauth?: boolean }
 }
 
-async function loadClient(path: string): Promise<Client> {
+export async function loadClient(path: string): Promise<Client> {
   let raw: string
   try {
     raw = await Deno.readTextFile(path)
@@ -50,7 +49,7 @@ async function loadClient(path: string): Promise<Client> {
   return { client_id: c.client_id, client_secret: c.client_secret }
 }
 
-async function readRefreshToken(): Promise<string | null> {
+export async function readRefreshToken(): Promise<string | null> {
   try {
     return JSON.parse(await Deno.readTextFile(TOKEN_PATH)).refresh_token ?? null
   } catch {
@@ -67,7 +66,7 @@ function openBrowser(url: string) {
 }
 
 // Loopback OAuth: listen on an ephemeral localhost port, send the user to consent, catch the redirect.
-async function consent(client: Client): Promise<string> {
+export async function consent(client: Client): Promise<string> {
   let resolveCode: (code: string) => void
   const codePromise = new Promise<string>((r) => (resolveCode = r))
   const ac = new AbortController()
@@ -120,7 +119,7 @@ async function consent(client: Client): Promise<string> {
   return tok.access_token as string
 }
 
-async function accessToken(client: Client, refresh: string): Promise<string> {
+export async function accessToken(client: Client, refresh: string): Promise<string> {
   const res = await fetch(TOKEN_URI, {
     method: "POST",
     headers: { "content-type": "application/x-www-form-urlencoded" },
@@ -146,6 +145,27 @@ async function rosterEmails(): Promise<string[]> {
   }
 }
 
+// Silent when a cached refresh token works; otherwise runs the interactive consent flow once.
+export async function tokenFor(client: Client, reauth = false): Promise<string> {
+  const refresh = reauth ? null : await readRefreshToken()
+  return refresh ? await accessToken(client, refresh) : await consent(client)
+}
+
+export async function fetchFreeBusy(
+  token: string,
+  emails: string[],
+  timeMin: string,
+  timeMax: string,
+): Promise<Record<string, { busy?: { start: string; end: string }[]; errors?: { reason: string }[] }>> {
+  const res = await fetch(FREEBUSY_URI, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "content-type": "application/json" },
+    body: JSON.stringify({ timeMin, timeMax, items: emails.map((id) => ({ id })) }),
+  })
+  if (!res.ok) throw new Error(`freeBusy → ${res.status} ${await res.text()}`)
+  return (await res.json()).calendars ?? {}
+}
+
 async function main() {
   const args = parseArgs(Deno.args)
   const client = await loadClient(args.client ?? CLIENT_PATH)
@@ -155,24 +175,13 @@ async function main() {
     throw new Error("no emails to query: pass --emails a@x,b@y or fill the roster (deno task roster)")
   }
 
-  const refresh = args.reauth ? null : await readRefreshToken()
-  const token = refresh ? await accessToken(client, refresh) : await consent(client)
+  const token = await tokenFor(client, args.reauth)
 
   const days = Number(args.days ?? 14)
   const now = new Date()
   const end = new Date(now.getTime() + days * 24 * 60 * 60 * 1000)
 
-  const res = await fetch(FREEBUSY_URI, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}`, "content-type": "application/json" },
-    body: JSON.stringify({
-      timeMin: now.toISOString(),
-      timeMax: end.toISOString(),
-      items: emails.map((id) => ({ id })),
-    }),
-  })
-  if (!res.ok) throw new Error(`freeBusy → ${res.status} ${await res.text()}`)
-  const { calendars } = await res.json()
+  const calendars = await fetchFreeBusy(token, emails, now.toISOString(), end.toISOString())
 
   console.log(`free/busy for the next ${days} days:\n`)
   for (const email of emails) {
