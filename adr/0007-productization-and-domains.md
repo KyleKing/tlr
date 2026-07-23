@@ -72,7 +72,7 @@ Where each spike lands:
 | --- | --- |
 | `web/lib/planning.js`, `web/lib/capacity.js` (pure) | Planning domain, unchanged |
 | `scripts/capacity.ts` on-call fetch | `IncidentIoSource` behind `CapacitySource` |
-| `scripts/capacity.ts` gcal handoff file | `GoogleCalendarSource` behind `CapacitySource` |
+| `scripts/capacity.ts` gcal live free/busy fetch (or handoff file) | `GoogleCalendarSource` behind `CapacitySource` |
 | `scripts/roster.ts` | Ingest identity resolution (a `TrackerSource` read) |
 | `web/app.js`, `scripts/serve.ts` | Delivery (web) |
 | `src/tlr/` (Python reader) | replaced by the Ingest Linear adapter, then removed |

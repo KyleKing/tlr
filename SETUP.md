@@ -87,7 +87,9 @@ calendar you read:
 
 Verify: `deno task gcal:freebusy`. The first run opens the browser once for consent, caches a refresh
 token in `web/data/gcal-token.json`, and prints each roster member's busy blocks for the next two weeks.
-Later runs are silent.
+Later runs are silent. The same client and token feed `deno task capacity --source gcal`, which converts
+free/busy into out-days (a weekday counts once its busy time reaches 5 hours, or it's an all-day block)
+without needing a separate handoff file.
 
 The refresh token is not a Console setting. The flow opens the auth URL with `access_type=offline` and
 `prompt=consent`, and Google returns the refresh token on that first consent. Those parameters live in
@@ -100,8 +102,9 @@ app published to **In production** issues refresh tokens that do not expire on a
 consent holds until the token is revoked or unused for six months. Set the consent screen to Internal,
 or publish to production, to avoid the weekly re-consent.
 
-This is a spike behind the `CapacitySource.outDays` port ([ADR 0007](adr/0007-productization-and-domains.md));
-the shipped `GoogleCalendarSource` adapter is later work.
+This is the `CapacitySource.outDays` port's live adapter ([ADR 0007](adr/0007-productization-and-domains.md));
+it still runs as a local OAuth client rather than a hosted, per-user credential, which is the remaining
+gap before a shared runner can use it.
 
 ### Service account (teammates' event details)
 

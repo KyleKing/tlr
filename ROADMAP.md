@@ -48,9 +48,8 @@ grid. SVG export for weekly-update artifacts.
 
 ## Open questions
 
-- Per-person capacity deflates for on-call (flat 45%, see [adr/0005-capacity-realism.md](adr/0005-capacity-realism.md))
-  and time off (straight day-fraction, confirmed). On-call is wired through the Incident.io REST API and
-  teammates' out-days are reachable through Google Calendar free/busy (personal OAuth, Workspace sharing
-  on). Open: fold the free/busy spike into a standalone adapter using a >=5-busy-hours-or-all-day
-  heuristic for out-days, and replace the placeholder per-person base velocity with past-cycle throughput
-- The dependency timeline and the capacity board stay two views, not merged (decided)
+None queued right now. Per-person capacity deflates for on-call (flat 45%, see
+[adr/0005-capacity-realism.md](adr/0005-capacity-realism.md)) and time off (straight day-fraction). Both
+Incident.io on-call and Google Calendar free/busy out-days are wired into `deno task capacity`, and
+per-person velocity comes from past-cycle throughput where a person has history. The dependency timeline
+and the capacity board stay two views, not merged.

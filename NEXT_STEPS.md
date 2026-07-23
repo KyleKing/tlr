@@ -33,30 +33,31 @@ Running list of what to build next and what needs a decision. Higher-level phase
 - Docs. `SETUP.md` is the day-zero credentials guide. New ADRs: 0006 (normalized issue schema across
   Linear and GitHub) and 0007 (productizing the spikes into domains and ports). `AGENTS.md` records the
   spike-then-productionize rule.
+- `GoogleCalendarSource` adapter. `deno task capacity --source gcal` now fetches live free/busy through
+  the same OAuth client as the spike and runs it through `outDaysFromFreeBusy`: a weekday counts as
+  reduced-capacity once its busy time reaches 5 hours, or it's an all-day block (free/busy carries no
+  event type, so title-based detection isn't available). `--calendar-file` still works for named events
+  when a real reason is known. Pure logic in `web/lib/capacity.js` (tested); still a local OAuth client,
+  not a hosted per-user credential, which stays the gap before a shared runner can use it (ADR 0007).
+- Per-person base velocity. `deno task capacity --source history` computes each person's velocity from
+  completed points in past cycles, no external fetch needed since it reads the same data file. Applied
+  to the real `cpu.json`: Marissa's velocity is now 20 from cycle 47 throughput; Kyle has no completed
+  points in a past cycle yet, so he still falls back to the default. `mergeVelocity` keeps hand-typed
+  overrides and only refreshes what this source itself wrote.
+- Deflation knobs: on-call penalty raised from a flat 35% to 45% (`CAPACITY_DEFAULTS.oncallPenalty` in
+  `web/lib/planning.js`, ADR 0005, and the real `cpu.json`'s own `config.oncallPenalty`, which had been
+  overriding the code default). Time off stays a straight day-fraction cut, confirmed as right for now.
+- Dependency timeline and capacity board stay two separate views (current toggle), not merged.
 
 ## Setup to finish the capacity feed
 
 See `SETUP.md` for the full guide. The one blocker for the live on-call feed is the Incident.io key
-(store it, then `deno task capacity --source incident --dry-run`). Google Calendar free/busy now has a
-standalone spike (`deno task gcal:freebusy`, own OAuth client, no MCP); folding it into a
-`GoogleCalendarSource` adapter that feeds `deno task capacity --source gcal` is the next step per ADR 0007.
+(store it, then `deno task capacity --source incident --dry-run`). Google Calendar out-days and
+per-person velocity both run without extra setup beyond what SETUP.md already covers.
 
 ## Next up
 
-- `GoogleCalendarSource` adapter for `deno task capacity --source gcal`, folding in the free/busy spike.
-  Out-day heuristic (decided): a day counts as reduced-capacity if free/busy shows >=5 busy hours on it,
-  or it's an all-day block, even without an explicit OOO title (free/busy carries no event type). Cross-
-  reference against past-cycle throughput once that exists, rather than treating it as a flat binary cut.
-- Per-person base velocity: replace the flat default-20 placeholder by computing each person's base
-  velocity from their real past-cycle throughput, the same spike-to-productionize move `capacity.js`
-  already made for on-call and out-days.
-
-## Resolved (feeds the items above)
-
-- Deflation knobs: on-call penalty raised from a flat 35% to 45% (`CAPACITY_DEFAULTS.oncallPenalty` in
-  `web/lib/planning.js`, mirrored in ADR 0005). Time off stays a straight day-fraction cut, confirmed as
-  right for now.
-- Dependency timeline and capacity board stay two separate views (current toggle), not merged.
+(nothing queued right now)
 
 ## Later (unchanged from roadmap)
 
