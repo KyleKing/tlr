@@ -45,6 +45,8 @@ grid. SVG export for weekly-update artifacts.
 
 ## Open questions
 
-- Per-person capacity: flat knob, past-cycle velocity, or Google Calendar OOO deflation
+- Per-person capacity: fixed at 20 points per cycle for now. Revisit with past-cycle velocity and
+  Google Calendar time-off deflation, at which point the flat number becomes per-person
 - Whether the dependency timeline and the capacity board are two views or one
-- Slop-scan tuning: 33 of 48 shown tickets currently flag, which may be too sensitive to be useful
+- Slop-scan tuning: 33 of 48 shown tickets currently flag. A per-ticket "not slop" override now
+  clears false positives, but the base rate may still be too high to trust
