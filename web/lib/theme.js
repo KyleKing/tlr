@@ -106,10 +106,30 @@ const SEMANTIC = {
 }
 
 // Relative luminance (WCAG) of a "#rrggbb" hex color, 0 (black) to 1 (white).
-function luminance(hex) {
+export function luminance(hex) {
   const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
   const lin = (c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4)
   return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)
+}
+
+// WCAG contrast ratio between two "#rrggbb" colors, 1 (no contrast) to 21 (black on white). Exported
+// so theme_test.ts can assert every flavor/accent combination clears AA (4.5:1) wherever this module's
+// colors end up as small text — the bug class this guards is a text color picked without checking it
+// against the background it will actually render on, which this repo has hit more than once.
+export function contrastRatio(hexA, hexB) {
+  const a = luminance(hexA)
+  const b = luminance(hexB)
+  const lighter = Math.max(a, b)
+  const darker = Math.min(a, b)
+  return (lighter + 0.05) / (darker + 0.05)
+}
+
+// The near-black/near-white text color that contrasts better against a given background — picking by
+// a luminance > 0.5 midpoint (this module's first pass) is wrong, since contrast-vs-black and
+// contrast-vs-white cross at luminance ≈ 0.179, not 0.5; anything between those darkened comfortably
+// enough to look "light" still contrasted better with black than white and got the wrong pick.
+function contrastFg(hex) {
+  return contrastRatio(hex, "#111111") >= contrastRatio(hex, "#f5f5f5") ? "#111111" : "#f5f5f5"
 }
 
 // { "--base": "#1e1e2e", ..., "--accent": "<accent hex>" } for setting as CSS custom properties.
@@ -122,11 +142,11 @@ export function themeVars(flavor, accent) {
   // Text drawn on a solid --accent background (filled buttons, selected pills): pick whichever
   // extreme contrasts with the chosen accent, since accents range from dark (mauve) to pastel
   // (yellow, pink) across flavors and a fixed --base/--text pairing goes unreadable on the light ones.
-  vars["--accent-fg"] = luminance(p[accent]) > 0.5 ? "#111111" : "#f5f5f5"
+  vars["--accent-fg"] = contrastFg(p[accent])
   for (const [k, source] of Object.entries(SEMANTIC)) {
     const color = p[source] ?? p.red
     vars[`--${k}`] = color
-    vars[`--${k}-fg`] = luminance(color) > 0.5 ? "#111111" : "#f5f5f5"
+    vars[`--${k}-fg`] = contrastFg(color)
   }
   return vars
 }
