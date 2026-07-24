@@ -16,9 +16,9 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
-      - uses: jdx/mise-action@v3
+      - uses: jdx/mise-action@v4
 
       - name: Install dependencies
         run: deno install
@@ -44,7 +44,7 @@ jobs:
         run: deno task test:e2e --project=chrome
       - name: Upload test artifacts on failure
         if: failure()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-artifacts
           path: |
