@@ -95,6 +95,25 @@ function recentPair(projectName: string): { before: Snapshot; after: Snapshot } 
   }
 }
 
+// A specific pair by snapshot id, oldest first regardless of the order given — so picking two entries
+// from a list (in either order) always diffs forward in time. Null on a bad id or a project mismatch.
+function pairById(
+  projectName: string,
+  fromId: number,
+  toId: number,
+): { before: Snapshot; after: Snapshot } | null {
+  const store = openStore(SNAPSHOT_DB)
+  try {
+    const rows = store.listSnapshots().filter((r) => r.projectName === projectName)
+    const ids = new Set(rows.map((r) => r.id))
+    if (!ids.has(fromId) || !ids.has(toId) || fromId === toId) return null
+    const [olderId, newerId] = fromId < toId ? [fromId, toId] : [toId, fromId]
+    return { before: store.loadSnapshot(olderId), after: store.loadSnapshot(newerId) }
+  } finally {
+    store.close()
+  }
+}
+
 const app = new Hono()
 const logger = getLogger(["app"])
 
@@ -267,11 +286,15 @@ app.get("/api/snapshots", (c) => {
   }
 })
 
-// Weekly-update narrative from the diff of a project's two most recent snapshots.
+// Weekly-update narrative from the diff of two snapshots: the project's two most recent by default,
+// or a specific ?from=<id>&to=<id> pair so the Changes page can browse snapshot history, not just the
+// latest window.
 app.get("/api/report", (c) => {
   const project = c.req.query("project")
   if (!project) return c.json({ error: "expected ?project=<name>" }, 400)
-  const pair = recentPair(project)
+  const from = c.req.query("from")
+  const to = c.req.query("to")
+  const pair = from && to ? pairById(project, Number(from), Number(to)) : recentPair(project)
   if (!pair) return c.json({ report: null, reason: "need at least two snapshots" })
   return c.json({ report: weeklyReport(diffSnapshots(pair.before, pair.after)) })
 })

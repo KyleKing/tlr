@@ -184,6 +184,31 @@ a {
 .page-head .pill {
   margin-left: auto;
 }
+.snap-compare {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--surface0);
+  font-size: 12.5px;
+}
+.snap-compare label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--subtext0);
+}
+.snap-compare select {
+  padding: 3px 6px;
+  border: 1px solid var(--surface1);
+  border-radius: var(--radius);
+  background: var(--mantle);
+  color: var(--text);
+  font: 12px var(--font);
+}
+.snap-hint {
+  color: var(--red);
+}
 .page-body {
   padding: 16px;
   max-width: 760px;

@@ -14,6 +14,24 @@ test("changes page renders the weekly report from two snapshots", async ({ page 
   await expect(page.locator(".rsec li.risk").first()).toBeVisible()
 })
 
+test("changes page's From/To pickers browse snapshot history, not just the latest pair", async ({ page }) => {
+  await page.goto(`/changes${SEED}`)
+  await expect(page.locator(".rsec")).toHaveCount(3)
+
+  const fromSelect = page.locator("#snap-from")
+  const toSelect = page.locator("#snap-to")
+  await expect(fromSelect).toBeVisible()
+  await expect(fromSelect.locator("option")).toHaveCount(2)
+
+  // picking the same snapshot for both ends refuses to diff instead of showing nonsense
+  await toSelect.selectOption({ index: 0 })
+  await expect(page.locator(".page-body")).toContainText("nothing to diff")
+
+  // and picking two distinct ones (even reversed) still renders a real report
+  await toSelect.selectOption({ index: 1 })
+  await expect(page.locator(".rsec")).toHaveCount(3)
+})
+
 test("review page groups changes by ticket and marks them reviewed", async ({ page }) => {
   await page.goto(`/review${SEED}`)
 
