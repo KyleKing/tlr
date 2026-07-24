@@ -39,15 +39,18 @@ Running list of what to build next and what needs a decision. Higher-level phase
   event type, so title-based detection isn't available). `--calendar-file` still works for named events
   when a real reason is known. Pure logic in `web/lib/capacity.js` (tested); still a local OAuth client,
   not a hosted per-user credential, which stays the gap before a shared runner can use it (ADR 0007).
-  Running it for real against `cpu.json` surfaced that the heuristic under-reports real time off next to
-  a hand-typed note (Marissa's known 3-day onsite showed as 1 busy day) — decided to drop hand-typed
-  protection entirely rather than special-case it, so every source now always wins once it has an answer
-  for a person+cycle, no permanent override.
+  Running it for real against `cpu.json` surfaced a real regression: the onsite week doesn't show as
+  calendar-busy time at all (an onsite doesn't fill a calendar with meetings, and an all-day block set to
+  Free/transparent is invisible to free/busy regardless of duration), so an automation-always-wins merge
+  silently replaced Marissa's known 3-day onsite with a coincidental, far-less-accurate "1 busy day"
+  reading. Fixed by making hand-typed values (no source marker) protected by default in both
+  `mergeCapacity` and `mergeVelocity`: a source only ever refreshes what it wrote itself on an earlier
+  run. Added `locked: true` as an explicit escape hatch for the reverse case, freezing a value a source
+  previously wrote once it's hand-confirmed. Marissa's onsite entry in `cpu.json` is now `locked: true`.
 - Per-person base velocity. `deno task capacity --source history` computes each person's velocity from
   completed points in past cycles, no external fetch needed since it reads the same data file. Applied
   to the real `cpu.json`: Marissa's velocity is now 20 from cycle 47 throughput; Kyle has no completed
-  points in a past cycle yet, so he still falls back to the default. `mergeVelocity` now overwrites any
-  prior value, hand-typed or not, matching on-call and out-days.
+  points in a past cycle yet, so he still falls back to the default.
 - Deflation knobs: on-call penalty raised from a flat 35% to 45% (`CAPACITY_DEFAULTS.oncallPenalty` in
   `web/lib/planning.js`, ADR 0005, and the real `cpu.json`'s own `config.oncallPenalty`, which had been
   overriding the code default). Time off stays a straight day-fraction cut, confirmed as right for now.
