@@ -43,7 +43,7 @@ const PROJECT_QUERY = `
 `
 
 const ISSUES_QUERY = `
-  query ProjectIssues($projectId: String!, $after: String) {
+  query ProjectIssues($projectId: ID!, $after: String) {
     issues(filter: { project: { id: { eq: $projectId } } }, first: 100, after: $after) {
       pageInfo { hasNextPage endCursor }
       nodes {

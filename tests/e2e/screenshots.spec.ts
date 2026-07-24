@@ -5,11 +5,15 @@ import { test } from "@playwright/test"
 // asked. The dark scheme and fixed viewport come from the "screenshots" project config.
 const OUT = "docs/images"
 
+// Target the seed project by slug so the shots are the seeded demo regardless of what other projects a
+// real ingest has left in the shared manifest.
+const SEED = "?project=seeded-reliability"
+
 const pages: [path: string, name: string, ready: string][] = [
-  ["/", "board", "#grid tr"],
-  ["/changes", "changes", ".rsec"],
-  ["/review", "review", ".rgroup"],
-  ["/settings", "settings", ".cfg-nav-item"],
+  [`/${SEED}`, "board", "#grid tr"],
+  [`/changes${SEED}`, "changes", ".rsec"],
+  [`/review${SEED}`, "review", ".rgroup"],
+  [`/settings${SEED}`, "settings", ".cfg-nav-item"],
 ]
 
 for (const [path, name, ready] of pages) {

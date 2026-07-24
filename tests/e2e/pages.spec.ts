@@ -1,7 +1,11 @@
 import { expect, test } from "./fixtures.ts"
 
+// The seed project's snapshots come from global.setup; target it by slug so the tests stay deterministic
+// even when other projects (a real ingest) also sit in the shared manifest.
+const SEED = "?project=seeded-reliability"
+
 test("changes page renders the weekly report from two snapshots", async ({ page }) => {
-  await page.goto("/changes")
+  await page.goto(`/changes${SEED}`)
 
   await expect(page.locator("h1")).toContainText("Changes")
   // shipped, moved, at risk
@@ -11,7 +15,7 @@ test("changes page renders the weekly report from two snapshots", async ({ page 
 })
 
 test("review page groups changes by ticket and marks them reviewed", async ({ page }) => {
-  await page.goto("/review")
+  await page.goto(`/review${SEED}`)
 
   const groups = page.locator(".rgroup")
   await expect(groups.first()).toBeVisible()
@@ -23,7 +27,7 @@ test("review page groups changes by ticket and marks them reviewed", async ({ pa
 })
 
 test("review page edits a ticket: form pre-fills, previews a dry run, and guards apply without a Linear link", async ({ page }) => {
-  await page.goto("/review")
+  await page.goto(`/review${SEED}`)
 
   await page.locator("button[data-edit]").first().click()
   const form = page.locator("form.editf").first()

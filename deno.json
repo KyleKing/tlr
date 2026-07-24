@@ -19,6 +19,7 @@
     "prod": "deno task compile && NODE_ENV=production ./dist/tlr",
     "roster": "deno run --allow-read --allow-write --allow-env --allow-net=api.linear.app --allow-run=security ./scripts/roster.ts",
     "seed": "deno run --allow-read --allow-write=./web/data ./scripts/seed.ts",
+    "seed:linear": "deno run --allow-read --allow-env --allow-net=api.linear.app --allow-run=security ./scripts/seed-linear.ts",
     "test": "deno test --allow-read --allow-write --allow-env --allow-sys --allow-ffi --check=all",
     "screenshots": "deno run --allow-all npm:playwright test --project=screenshots",
     "test:e2e": "deno run --allow-all npm:playwright test --project=chrome",
