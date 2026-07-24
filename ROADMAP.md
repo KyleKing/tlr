@@ -125,6 +125,28 @@ product:
   was removed; "graph" has always meant that wave-card representation plus the hover-based relation
   text. The Timeline view itself was removed this round (the board covers its case); rows: buckets is
   now the default orientation
+- A third pass, mostly from live testing against a real project: icon/emoji glyphs next to text
+  (ticket-pill flags, on-call/PTO badges, the Configure gear) get their own flex-centered `.ico` wrapper
+  instead of relying on inline text flow, since color-emoji fonts don't reliably scale or baseline-align
+  with regular text; compact ticket pills show the full id (with team prefix) instead of a bare number;
+  `table { width: 100% }` stretched columns to fill the width whenever only a couple were visible, now
+  sized to content; a selected bucket that ends up with nothing currently visible (after status/search/
+  flag filters, not just "no issues ever") drops out the same way people already did, and the board
+  scrolls to the current cycle on first load; Settings fills the page width instead of keeping its old
+  760px popup-dialog size; the Board's Refresh button was only ever re-reading the same local file — it
+  now POSTs `/api/refresh` (the live Linear/Incident.io/Calendar re-ingest) first, the same as Settings'
+  "Refresh all", and a failure there surfaces through the error banner instead of looking like a no-op
+- In-flow ticket editing moved off Review-only: `web/lib/editForm.js` extracts the shared form (title,
+  description, estimate, priority, milestone, status, cycle, assignee → preview → apply), and the
+  Board's hover card gets an "Edit" button that opens the same form in place, "pinning" the card so
+  typing/selecting doesn't trigger its usual hover-away auto-hide
+- On-call/out-days overrides moved from a Settings form onto the board itself: click an existing 📟/🧳
+  badge to edit that person's cycle entry, right-click elsewhere in an eligible cycle cell to add one.
+  Settings' "Calendar overrides" pane is removed — same `setPersonCycle` + `POST /api/config` path, just
+  edited where the data already renders instead of a separate per-person/per-cycle grid of inputs. This
+  also surfaced a real bug: `/api/config`, `/api/refresh`, and `/api/edit` all wrote the same project
+  data file with a plain `writeTextFile`, so a concurrent reader could observe a half-written file and
+  throw a JSON parse error — all three now write through a temp-file-then-rename `writeJsonAtomic`
 
 Open items live in the Blocked, Backlog, and Open questions sections below; durable decisions are in
 [adr/](adr). The schema stays thin (the current Linear shape), not ADR 0006's normalized model, until a
