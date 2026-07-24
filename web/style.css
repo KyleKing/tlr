@@ -300,15 +300,17 @@ thead .col th .s {
   font-weight: 400;
   font-size: 10.5px;
 }
-/* Milestone headers wrap aggressively into a narrow column; target and progress move to the hover
-   title so only the key and short name stay on screen. */
+/* Milestone headers truncate their name into a narrow column; the full name, target, progress, and
+   forecast all move to the hover title. */
 thead .col th.mile {
-  white-space: normal;
-  max-width: 130px;
+  max-width: 150px;
 }
-thead .col th.mile .s {
-  white-space: normal;
-  overflow-wrap: anywhere;
+.mlabel {
+  display: block;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 /* Forecast marker under a milestone header: only shown when the landing deviates from the target. */
 .fc {

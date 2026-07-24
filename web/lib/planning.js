@@ -9,6 +9,14 @@ export function bucketOf(issue) {
   return "BACKLOG"
 }
 
+// Display label for a milestone column: drop a leading "M1: "/"M12: " ordinal prefix when present, so
+// a project that follows the convention shows the name without the redundant code, and one with plain
+// names shows the name as-is. The full name lives in the hover; CSS truncates the visible label.
+export function milestoneDisplayName(name, fallback) {
+  if (!name) return fallback
+  return name.replace(/^M\d+:\s*/, "") || fallback
+}
+
 // Ordered time buckets with an end date each, so cycles and milestones compare on one axis.
 export function buildBuckets(data) {
   const cyc = Object.fromEntries(data.cycles.map((c) => [c.n, c]))
@@ -28,7 +36,7 @@ export function buildBuckets(data) {
   for (const m of data.milestones) {
     cols.push({
       key: m.key,
-      label: m.key,
+      label: milestoneDisplayName(m.name, m.key),
       name: m.name,
       sub: `target ${m.target}`,
       end: m.target,

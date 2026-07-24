@@ -4,6 +4,8 @@ import {
   buildBuckets,
   dependencyWaves,
   milestoneCapacity,
+  milestoneDisplayName,
+  milestoneForecast,
   missingData,
   orderingRisks,
   personCycleCapacity,
@@ -37,6 +39,29 @@ Deno.test("bucketOf places issues by cycle, then milestone, then backlog", () =>
 Deno.test("buildBuckets orders cycles then milestones then backlog", () => {
   const keys = buildBuckets(DATA).map((b) => b.key)
   assertEquals(keys, ["C47", "C48", "C49", "M1", "M2", "BACKLOG"])
+})
+
+Deno.test("milestoneDisplayName drops an M#: prefix but keeps a plain name", () => {
+  assertEquals(milestoneDisplayName("M1: Measure and page", "M1"), "Measure and page")
+  assertEquals(milestoneDisplayName("M12: Chaos", "M12"), "Chaos")
+  assertEquals(milestoneDisplayName("Reliability hardening", "abc"), "Reliability hardening")
+  assertEquals(milestoneDisplayName("", "M3"), "M3")
+})
+
+Deno.test("milestoneForecast lands milestones sequentially by target date", () => {
+  const data = {
+    ...DATA,
+    issues: [
+      { milestone: "M1", statusType: "unstarted", estimate: 20, assignee: "A" },
+      { milestone: "M2", statusType: "unstarted", estimate: 20, assignee: "A" },
+    ],
+    capacity: { roster: { A: { email: "a@x" } }, defaultVelocity: 20, people: {} },
+  }
+  const fc = milestoneForecast(data)
+  assertEquals(fc.teamWeeklyPoints, 20)
+  assertEquals(fc.milestones.map((m) => m.key), ["M1", "M2"])
+  // M1 needs one week from asOf; M2 starts after M1 lands, so its landing is later.
+  assertEquals(fc.milestones[1].landing > fc.milestones[0].landing, true)
 })
 
 Deno.test("weeksBetween is roughly right and never negative", () => {

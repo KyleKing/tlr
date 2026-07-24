@@ -598,7 +598,7 @@ function buildTransposed(people) {
   h += "</tr></thead><tbody>"
   for (const b of visible) {
     const kindTag = b.kind === "cycle" ? "now" : b.kind === "milestone" ? "horizon" : "backlog"
-    h += `<tr><th class="rowhead ${kindTag}" title="${escapeHtml(bucketDetail(b))}">${b.label}` +
+    h += `<tr><th class="rowhead ${kindTag}" title="${escapeHtml(bucketDetail(b))}">${escapeHtml(b.label)}` +
       `<span class="s">${bucketSub(b)}</span>${forecastBadge(b)}</th>`
     for (const person of people) h += cellHTML(person, b)
     h += "</tr>"
@@ -732,32 +732,27 @@ function personPts(person) {
   for (const i of passesShown) if (i.assignee === person) pts += i.estimate
   return `<span class="pl"> ${pts}pt</span>`
 }
-// Short name shown under a milestone key. Stripping "M1: " is a no-op for plain names; deriving a real
-// short display key from an arbitrary name is the blocked naming work (see ROADMAP).
-function milestoneName(b) {
-  return b.name ? escapeHtml(b.name.replace(/^M\d: /, "")) : ""
-}
-// Visible sub-line: kept compact for milestones (just the name, allowed to wrap) so the column stays
-// narrow. Cycles and backlog keep their one-word sub.
+// Visible sub-line under cycle/backlog headers. Milestones carry no sub: their label is the (truncated)
+// name, and target, progress, and forecast all live in the hover.
 function bucketSub(b) {
-  return b.kind === "milestone" ? milestoneName(b) : b.sub
+  return b.kind === "milestone" ? "" : b.sub
 }
 // How the forecast landing compares to the target, in words, for the hover.
 function forecastPhrase(fc) {
   if (fc.status === "on-track") return "on track"
   return fc.slipDays > 0 ? `${fc.slipDays}d late` : `${-fc.slipDays}d early`
 }
-// Full detail for the hover title: target, progress, and the forecast landing live here, not in the
-// header, for milestones.
+// Full detail for the hover title. For milestones the full (untruncated) name leads, then target,
+// progress, and the forecast landing.
 function bucketDetail(b) {
   if (b.kind !== "milestone") return `${b.label} · ${b.sub}`
-  const parts = [b.name ? b.name.replace(/^M\d: /, "") : b.label, b.sub]
+  const parts = [b.name || b.label, b.sub]
   if (b.progress != null) parts.push(`${Math.round(b.progress)}%`)
   const fc = forecastByKey?.[b.key]
   if (fc) parts.push(`forecast lands ${fc.landing} (${forecastPhrase(fc)})`)
   return parts.join(" · ")
 }
-// A compact forecast marker under a milestone key, only when the landing deviates from the target.
+// A compact forecast marker under a milestone header, only when the landing deviates from the target.
 function forecastBadge(b) {
   const fc = b.kind === "milestone" ? forecastByKey?.[b.key] : null
   if (!fc || fc.status === "on-track") return ""
@@ -766,10 +761,13 @@ function forecastBadge(b) {
   return `<span class="fc ${cls}">${glyph} ~${Math.abs(fc.slipDays)}d</span>`
 }
 function bucketTh(b) {
-  const cls = b.kind === "milestone" ? "mile" : ""
-  return `<th class="${cls}" title="${escapeHtml(bucketDetail(b))}">${b.label}<span class="s">${bucketSub(b)}</span>${
-    forecastBadge(b)
-  }</th>`
+  const title = escapeHtml(bucketDetail(b))
+  if (b.kind === "milestone") {
+    return `<th class="mile" title="${title}"><span class="mlabel">${escapeHtml(b.label)}</span>${
+      forecastBadge(b)
+    }</th>`
+  }
+  return `<th title="${title}">${b.label}<span class="s">${bucketSub(b)}</span></th>`
 }
 
 function flagBadges(i) {

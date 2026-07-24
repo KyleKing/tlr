@@ -34,6 +34,8 @@ product:
   headers that wrap into a narrow column with target and progress moved to the hover
 - Forecast on the board: each milestone header carries a slip marker (early/late vs. target) with the
   forecast landing date in the hover, from the shared `milestoneForecast` in web/lib/planning.js
+- Milestone naming: headers show the name (an "M1: " prefix stripped) truncated to a narrow column,
+  full name and detail in the hover, so a project with plain milestone names renders correctly
 
 Open items and tradeoffs are in [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md). The schema stays thin (the
 current Linear shape), not ADR 0006's normalized model, until a second tracker lands.
@@ -80,33 +82,31 @@ items depending on them are marked below.
 - **Production deployment.** Plan written in [adr/0008](adr/0008-deployment.md): a separate systemd
   unit on the yak-shears-managed VM, pulled in and started the same way, sharing the CPU. Blocked on
   the secrets story (no macOS keychain on the Linux host).
-- **Milestone display-key strategy.** The header now wraps the name into a narrow column and moves
-  target and progress to the hover, so the width problem is fixed. What remains is deriving a short
-  column key from an arbitrary milestone name: today `milestoneKey` (scripts/issues.ts) and `bucketSub`
-  (web/app.js) assume the "M1: Name" convention, so a project with plain names gets the whole name as
-  the key. Pick an approach (see [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md)) before I change the derivation.
 
 ## Backlog
 
 Ordered by payoff. Unblocked unless a "(blocked: ...)" note says otherwise.
 
-- **Surface the weekly report in the UI.** The slip forecast now shows on the board (see Status); the
-  weekly narrative from `tlr report` is still CLI-only. Bring it into a page (ties to the cohesive-app
-  work below), rendered from a Phase 1 diff between two stored snapshots.
-- **Round the board into a cohesive app.** It is one page today. Candidate surfaces: a project
-  overview (health, slip forecast, at-risk), a diff and review page that brings Phase 1's diff and
-  review queue into the UI rather than only the CLI, a per-person load page, and a real settings area.
-  Keep the navigation and chrome consistent across them. Expand the configuration panel to manage
-  secrets (Linear key, Incident.io token, Google OAuth) through the UI, stored in the keychain today
-  and wired through the `SecretStore` port (ADR 0007) so the same panel drives hosted secrets in
-  production later. (The secrets-config UI advances the blocked secrets story.)
-- **Edit history and review by my account.** Capture and show my own recent edits: at minimum created
-  or edited comments and created or edited issues, with assignee changes, and other field changes as a
-  nice-to-have. Give me a way to mark a change as reviewed. Group changes to the same ticket that fall
-  within a 30-minute window into one reviewable unit, even when spread across that window, but never
-  group across a change already marked reviewed. This is the UI for Phase 1's review queue and ties to
-  ADR 0004, where AI-edit review leans on a write-time hook because actor attribution cannot separate
-  AI-via-MCP edits from mine.
+- **Snapshot history in the server** (prerequisite for the two pages below). The sqlite store
+  (`src/snapshot.ts`) exists but only the CLI writes it. Decision: the server captures a snapshot on
+  each refresh (deduping an unchanged payload) and exposes list/load plus server-side diff, report, and
+  review endpoints that reuse the `src/` handlers. That gives the Changes and Review pages two
+  snapshots to compare without a Linear key.
+- **Routed pages and shared nav** (decided over panels). Split the single board into Board, Changes,
+  Review, and Settings pages behind one top nav with consistent chrome. Board is the current view;
+  Settings folds in today's config dialog and later the secrets panel.
+- **Changes page (weekly report).** Render `tlr report`'s shipped/moved/at-risk narrative from the
+  diff between the two most recent stored snapshots. Depends on the snapshot history above.
+- **Review page (edit history by my account).** The UI for Phase 1's review queue, built from the
+  snapshot-diff first (added, removed, moved, re-estimated, status, slop), which works offline with no
+  key. Give me a way to mark a change reviewed, and group changes to the same ticket within a 30-minute
+  window into one unit, never grouping across a change already reviewed. Actor attribution (AI-via-MCP
+  vs. mine) is deferred: both land under my account today. The clean split is to route AI edits through
+  a distinct Linear app-user/agent token (agents show as their own actor) or a write-time hook; add
+  that enrichment on top of the snapshot-diff base once a key exists.
+- **Secrets in the config UI** (advances the blocked secrets story). Expand Settings to manage the
+  Linear key, Incident.io token, and Google OAuth through the UI, in the keychain today and wired
+  through the `SecretStore` port (ADR 0007) so the same panel drives hosted secrets in production.
 - **What-if planning.** Toggle a person's PTO or move scope and watch the forecast shift, in-tool.
   Fits the in-flow editing below.
 - **In-flow editing on the board** (the rest of Phase 3). Editing from inside the tool that feeds the
