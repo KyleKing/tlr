@@ -14,6 +14,11 @@ import { handleApiError } from "@/utils/errorHandler.ts"
 import { ingestProject, linearKey } from "./issues.ts"
 import { type CapacityData, refreshCapacity } from "./capacity.ts"
 import { renderPage } from "../web/templates/helpers.ts"
+import { openStore } from "@/snapshot.ts"
+import { diffSnapshots } from "@/diff.ts"
+import { weeklyReport } from "@/report.ts"
+import { reviewSince } from "@/review.ts"
+import type { Snapshot } from "@/seed.ts"
 
 const config = getEnvConfig()
 
@@ -40,10 +45,47 @@ await configure({
 })
 
 const DATA_ROOT = new URL("../web/data/", import.meta.url)
+const SNAPSHOT_DB = new URL("tlr.sqlite", DATA_ROOT).pathname
 
 function safeDataFile(name: unknown): string | null {
   if (typeof name !== "string" || !/^[\w.-]+\.json$/.test(name)) return null
   return name
+}
+
+// The comparable shape of a snapshot: what a plan-level diff would notice. Used to skip a capture that
+// would be identical to the latest one already stored for the project.
+function snapshotSignature(s: Snapshot): string {
+  return JSON.stringify({ asOf: s.asOf, milestones: s.milestones, issues: s.issues })
+}
+
+// Capture a snapshot into the local store, unless the project's latest stored snapshot is identical.
+// Returns the saved row, or null when nothing changed. Opens and closes its own store handle.
+function captureSnapshot(snapshot: Snapshot, label?: string): { id: number; skipped: boolean } {
+  const store = openStore(SNAPSHOT_DB)
+  try {
+    const latest = store.listSnapshots().find((r) => r.projectName === snapshot.project.name)
+    if (latest && snapshotSignature(store.loadSnapshot(latest.id)) === snapshotSignature(snapshot)) {
+      return { id: latest.id, skipped: true }
+    }
+    const saved = store.saveSnapshot(snapshot, Date.now(), label)
+    return { id: saved.id, skipped: false }
+  } finally {
+    store.close()
+  }
+}
+
+// The two most recent snapshots for a project, oldest first, or null when there are fewer than two.
+function recentPair(projectName: string): { before: Snapshot; after: Snapshot } | null {
+  const store = openStore(SNAPSHOT_DB)
+  try {
+    const rows = store.listSnapshots().filter((r) => r.projectName === projectName)
+    if (rows.length < 2) return null
+    const after = store.loadSnapshot(rows[0].id)
+    const before = store.loadSnapshot(rows[1].id)
+    return { before, after }
+  } finally {
+    store.close()
+  }
 }
 
 const app = new Hono()
@@ -133,10 +175,64 @@ app.post("/api/refresh", async (c) => {
     log.push(...(await refreshCapacity(data)))
 
     await Deno.writeTextFile(path, JSON.stringify(data, null, 2) + "\n")
+
+    if (data.project?.name && Array.isArray((data as { issues?: unknown }).issues)) {
+      const capture = captureSnapshot(data as unknown as Snapshot, "refresh")
+      log.push(capture.skipped ? "snapshot: unchanged, not captured" : `snapshot: captured #${capture.id}`)
+    }
     return c.json({ ok: true, log })
   } catch (err) {
     return c.json({ ok: false, log, error: err instanceof Error ? err.message : String(err) }, 500)
   }
+})
+
+// Explicit snapshot capture of a data file, for building history offline (no Linear key). The live
+// path captures on refresh above; this is the manual/seed path and the same dedupe applies.
+app.post("/api/snapshot", async (c) => {
+  const body = await c.req.json().catch(() => null)
+  const dataFile = safeDataFile(body?.dataFile)
+  if (!dataFile) return c.json({ error: "expected { dataFile: string }" }, 400)
+  try {
+    const snapshot = await Deno.readTextFile(new URL(dataFile, DATA_ROOT)).then(JSON.parse) as Snapshot
+    if (!snapshot?.project?.name || !Array.isArray(snapshot.issues)) {
+      return c.json({ error: "data file is not a snapshot" }, 400)
+    }
+    const capture = captureSnapshot(snapshot, typeof body?.label === "string" ? body.label : "manual")
+    return c.json({ ok: true, ...capture })
+  } catch (err) {
+    return handleApiError(err, c, { message: "Failed to capture snapshot", context: { dataFile } })
+  }
+})
+
+// Stored snapshots for a project, newest first.
+app.get("/api/snapshots", (c) => {
+  const project = c.req.query("project")
+  if (!project) return c.json({ error: "expected ?project=<name>" }, 400)
+  const store = openStore(SNAPSHOT_DB)
+  try {
+    return c.json(store.listSnapshots().filter((r) => r.projectName === project))
+  } finally {
+    store.close()
+  }
+})
+
+// Weekly-update narrative from the diff of a project's two most recent snapshots.
+app.get("/api/report", (c) => {
+  const project = c.req.query("project")
+  if (!project) return c.json({ error: "expected ?project=<name>" }, 400)
+  const pair = recentPair(project)
+  if (!pair) return c.json({ report: null, reason: "need at least two snapshots" })
+  return c.json({ report: weeklyReport(diffSnapshots(pair.before, pair.after)) })
+})
+
+// Review queue (added, removed, moved, re-estimated, status, slop) between a project's two most recent
+// snapshots. Read-only: the review pointer is not advanced here.
+app.get("/api/review", (c) => {
+  const project = c.req.query("project")
+  if (!project) return c.json({ error: "expected ?project=<name>" }, 400)
+  const pair = recentPair(project)
+  if (!pair) return c.json({ window: null, items: [], reason: "need at least two snapshots" })
+  return c.json(reviewSince(pair.before, pair.after))
 })
 
 app.get("/", (c) => renderPage("pages/board.vto", {}, "tlr — planning board (spike)", c))
