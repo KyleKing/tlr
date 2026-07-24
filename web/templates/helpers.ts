@@ -1,7 +1,7 @@
 import type { Context } from "hono"
 import { renderTemplate } from "./engine.ts"
 
-type PageOptions = { script?: string; active?: string }
+type PageOptions = { script?: string; active?: string; demo?: boolean }
 
 export async function renderPage(
   pageTemplate: string,
@@ -16,6 +16,7 @@ export async function renderPage(
     content,
     script: opts.script ?? "/app.js",
     active: opts.active ?? "board",
+    demo: opts.demo ?? false,
   })
   return c.html(html)
 }

@@ -29,6 +29,9 @@ export const envSchema = z.object({
     },
     z.enum(["trace", "debug", "info", "warning", "error", "fatal"]),
   ),
+  // Demo mode points writes at the free/test workspace (keychain account demo-key) and shows a banner.
+  // Live mode (the default) uses the real workspace key (account api-key). Set TLR_DEMO=1 to opt in.
+  DEMO: z.preprocess((val) => val === "1" || val === "true", z.boolean()),
 })
 
 export type EnvConfig = z.infer<typeof envSchema>
@@ -39,5 +42,6 @@ export function getEnvConfig(): EnvConfig {
     PORT: Deno.env.get("PORT"),
     HOST: Deno.env.get("HOST"),
     LOG_LEVEL: Deno.env.get("LOG_LEVEL"),
+    DEMO: Deno.env.get("TLR_DEMO"),
   })
 }

@@ -112,19 +112,22 @@ function parseArgs(argv: string[]) {
   return { ...(args as { data: string; dryRun?: boolean }), project: positional[0] }
 }
 
-export async function linearKey(): Promise<string> {
-  const env = Deno.env.get("LINEAR_API_KEY")
+// account "api-key" is the real workspace; "demo-key" is the free/test workspace used in demo mode.
+// Each has its own env override (LINEAR_API_KEY / LINEAR_DEMO_API_KEY) so CI can inject without a keychain.
+export async function linearKey(account: "api-key" | "demo-key" = "api-key"): Promise<string> {
+  const envName = account === "demo-key" ? "LINEAR_DEMO_API_KEY" : "LINEAR_API_KEY"
+  const env = Deno.env.get(envName)
   if (env) return env.trim()
   const cmd = new Deno.Command("security", {
-    args: ["find-generic-password", "-s", "tlr-linear", "-a", "api-key", "-w"],
+    args: ["find-generic-password", "-s", "tlr-linear", "-a", account, "-w"],
     stdout: "piped",
     stderr: "null",
   })
   const { code, stdout } = await cmd.output()
   if (code !== 0) {
     throw new Error(
-      "no Linear key: set LINEAR_API_KEY or store one with\n" +
-        "  security add-generic-password -s tlr-linear -a api-key -w",
+      `no Linear key: set ${envName} or store one with\n` +
+        `  security add-generic-password -s tlr-linear -a ${account} -w`,
     )
   }
   return new TextDecoder().decode(stdout).trim()

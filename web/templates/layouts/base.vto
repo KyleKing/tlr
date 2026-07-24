@@ -12,7 +12,9 @@
     <a href="/" {{ if active === "board" }}aria-current="page"{{ /if }}>Board</a>
     <a href="/changes" {{ if active === "changes" }}aria-current="page"{{ /if }}>Changes</a>
     <a href="/review" {{ if active === "review" }}aria-current="page"{{ /if }}>Review</a>
+    {{ if demo }}<span class="demotag" title="Writes go to the free/test workspace">demo</span>{{ /if }}
   </nav>
+  {{ if demo }}<div class="demobar" role="status">Demo mode — connected to the free/test workspace. Edits do not touch your real Linear.</div>{{ /if }}
   {{ content |> safe }}
   <script type="module" src="{{ script }}"></script>
 </body>

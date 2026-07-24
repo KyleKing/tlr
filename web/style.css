@@ -89,6 +89,24 @@ a {
   border-bottom-color: var(--accent);
   font-weight: 600;
 }
+.topnav .demotag {
+  margin-left: auto;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--peach);
+  color: var(--crust);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.demobar {
+  padding: 6px 16px;
+  background: color-mix(in srgb, var(--peach) 22%, var(--base));
+  border-bottom: 1px solid var(--peach);
+  color: var(--text);
+  font-size: 12px;
+}
 .page-head {
   display: flex;
   align-items: center;

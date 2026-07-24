@@ -47,6 +47,9 @@ await configure({
 const DATA_ROOT = new URL("../web/data/", import.meta.url)
 // Overridable so e2e can point at a throwaway store instead of the real local one.
 const SNAPSHOT_DB = Deno.env.get("TLR_SNAPSHOT_DB") ?? new URL("tlr.sqlite", DATA_ROOT).pathname
+// Demo mode uses the free/test workspace key and shows a banner; live mode uses the real key.
+const DEMO = config.DEMO
+const KEY_ACCOUNT = DEMO ? "demo-key" : "api-key"
 
 function safeDataFile(name: unknown): string | null {
   if (typeof name !== "string" || !/^[\w.-]+\.json$/.test(name)) return null
@@ -165,7 +168,7 @@ app.post("/api/refresh", async (c) => {
   try {
     const projectQuery = typeof body?.project === "string" ? body.project : data.project?.name
     if (projectQuery) {
-      const key = await linearKey()
+      const key = await linearKey(KEY_ACCOUNT)
       const result = await ingestProject(key, projectQuery, data, dataFile)
       data = result.data
       log.push(...result.log)
@@ -236,17 +239,22 @@ app.get("/api/review", (c) => {
   return c.json(reviewSince(pair.before, pair.after))
 })
 
+// Which workspace writes land in, so the client can label buttons and confirm before a live mutation.
+app.get("/api/mode", (c) => c.json({ demo: DEMO, workspace: DEMO ? "demo" : "live" }))
+
 app.get(
   "/",
-  (c) => renderPage("pages/board.vto", {}, "tlr — planning board", c, { active: "board", script: "/app.js" }),
+  (c) =>
+    renderPage("pages/board.vto", {}, "tlr — planning board", c, { active: "board", script: "/app.js", demo: DEMO }),
 )
 app.get(
   "/changes",
-  (c) => renderPage("pages/changes.vto", {}, "tlr — changes", c, { active: "changes", script: "/changes.js" }),
+  (c) =>
+    renderPage("pages/changes.vto", {}, "tlr — changes", c, { active: "changes", script: "/changes.js", demo: DEMO }),
 )
 app.get(
   "/review",
-  (c) => renderPage("pages/review.vto", {}, "tlr — review", c, { active: "review", script: "/review.js" }),
+  (c) => renderPage("pages/review.vto", {}, "tlr — review", c, { active: "review", script: "/review.js", demo: DEMO }),
 )
 
 app.use("*", serveStatic({ root: "./web" }))
