@@ -43,10 +43,28 @@ test("review page edits a ticket: form pre-fills, previews a dry run, and guards
   await expect(form.locator('[data-act="apply"]')).toBeDisabled()
 })
 
-test("nav moves between board, changes, and review", async ({ page }) => {
+test("settings page switches panes and saves the capacity block", async ({ page }) => {
+  await page.goto("/settings")
+
+  // appearance pane is open first, with the theme pickers rendered
+  await expect(page.locator("#flavor-picker .flavor-btn").first()).toBeVisible()
+
+  // switching panes hides the others
+  await page.click('.cfg-nav-item[data-pane="capacity"]')
+  await expect(page.locator('.cfg-pane[data-pane="capacity"]')).toBeVisible()
+  await expect(page.locator('.cfg-pane[data-pane="appearance"]')).toBeHidden()
+
+  // save writes back and reports it
+  await page.click("#cfg-save")
+  await expect(page.locator("#cfg-status")).toHaveText("Saved")
+})
+
+test("nav moves between board, changes, review, and settings", async ({ page }) => {
   await page.goto("/")
   await page.click(".topnav a[href='/changes']")
   await expect(page).toHaveURL(/\/changes$/)
   await page.click(".topnav a[href='/review']")
   await expect(page).toHaveURL(/\/review$/)
+  await page.click(".topnav a[href='/settings']")
+  await expect(page).toHaveURL(/\/settings$/)
 })

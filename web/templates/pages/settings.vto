@@ -1,0 +1,68 @@
+  <header class="page-head">
+    <div>
+      <h1 id="title">Settings</h1>
+      <div class="sub" id="meta">Appearance, capacity, roster, calendar overrides, and integrations</div>
+    </div>
+    <span id="cfg-status" class="cfg-status"></span>
+    <button class="pill" id="cfg-save">Save</button>
+  </header>
+  <div class="page-body">
+    <div class="cfg-layout">
+      <nav class="cfg-nav" id="cfg-nav">
+        <button class="cfg-nav-item" data-pane="appearance" aria-current="true">Appearance</button>
+        <button class="cfg-nav-item" data-pane="capacity">Capacity</button>
+        <button class="cfg-nav-item" data-pane="roster">Roster</button>
+        <button class="cfg-nav-item" data-pane="overrides">Calendar overrides</button>
+        <button class="cfg-nav-item" data-pane="integrations">Integrations</button>
+      </nav>
+      <div class="cfg-panes">
+        <div class="cfg-pane" data-pane="appearance">
+          <div class="cfg-section">
+            <h3>Theme</h3>
+            <div class="cfg-row" id="flavor-picker"></div>
+          </div>
+          <div class="cfg-section">
+            <h3>Accent</h3>
+            <div class="cfg-row" id="accent-picker"></div>
+          </div>
+        </div>
+        <div class="cfg-pane" data-pane="capacity" hidden>
+          <div class="cfg-section">
+            <h3>Capacity</h3>
+            <div class="cfg-fields">
+              <label>Workdays per cycle <input type="number" id="cfg-workdays" min="1" max="7" /></label>
+              <label>On-call penalty <input type="number" id="cfg-oncall-penalty" min="0" max="1" step="0.01" /></label>
+              <label>Default velocity <input type="number" id="cfg-default-velocity" min="0" /></label>
+            </div>
+          </div>
+        </div>
+        <div class="cfg-pane" data-pane="roster" hidden>
+          <div class="cfg-section">
+            <h3>Roster</h3>
+            <div id="cfg-roster" class="cfg-roster"></div>
+          </div>
+        </div>
+        <div class="cfg-pane" data-pane="overrides" hidden>
+          <div class="cfg-section">
+            <h3>Calendar overrides</h3>
+            <p class="cfg-hint">
+              Setting on-call or out-days here makes it hand-typed: a refresh leaves it alone. Clearing a
+              value back to blank removes that protection instead of confirming "no" — a later refresh
+              can still fill it back in. Check "locked" to also freeze a value a refresh already wrote.
+            </p>
+            <div id="cfg-overrides" class="cfg-overrides"></div>
+          </div>
+        </div>
+        <div class="cfg-pane" data-pane="integrations" hidden>
+          <div class="cfg-section">
+            <h3>Integrations</h3>
+            <p class="cfg-hint">Refreshes on-call, out-days, and velocity (Incident.io, Google Calendar,
+              cycle history) and re-fetches issues and roster from Linear — the same as running
+              <code>deno task capacity</code> and <code>deno task issues</code>.</p>
+            <button class="pill" id="cfg-refresh">Refresh all</button>
+            <pre id="cfg-refresh-log" class="cfg-refresh-log" hidden></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

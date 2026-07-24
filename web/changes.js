@@ -3,6 +3,9 @@
 // current data file so a fresh diff has something to compare.
 
 import { escapeHtml, resolveProject } from "./lib/page.js"
+import { applyTheme, loadTheme } from "./lib/appearance.js"
+
+applyTheme(loadTheme())
 
 const project = await resolveProject()
 const pageEl = document.getElementById("page")

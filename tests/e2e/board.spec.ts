@@ -9,14 +9,12 @@ test("board loads and renders the sample data", async ({ page }) => {
   await expect(page.locator("#grid tr").first()).toBeVisible()
 })
 
-test("configuration panel opens and closes", async ({ page }) => {
+test("the board's Configure link opens the Settings page", async ({ page }) => {
   await page.goto("/")
 
   await page.click("#config-btn")
-  await expect(page.locator("#config-panel")).toBeVisible()
-
-  await page.click("#config-close")
-  await expect(page.locator("#config-panel")).toBeHidden()
+  await expect(page).toHaveURL(/\/settings$/)
+  await expect(page.locator(".cfg-nav")).toBeVisible()
 })
 
 test("shows the sample-data banner when the project data file is missing", async ({ page }) => {

@@ -7,6 +7,9 @@
 // snapshot-diff cannot tell them apart.
 
 import { escapeHtml, resolveProject } from "./lib/page.js"
+import { applyTheme, loadTheme } from "./lib/appearance.js"
+
+applyTheme(loadTheme())
 
 const REVIEWED_KEY = "tlr.reviewed"
 const project = await resolveProject()

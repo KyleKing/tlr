@@ -302,6 +302,15 @@ app.get(
   "/review",
   (c) => renderPage("pages/review.vto", {}, "tlr — review", c, { active: "review", script: "/review.js", demo: DEMO }),
 )
+app.get(
+  "/settings",
+  (c) =>
+    renderPage("pages/settings.vto", {}, "tlr — settings", c, {
+      active: "settings",
+      script: "/settings.js",
+      demo: DEMO,
+    }),
+)
 
 app.use("*", serveStatic({ root: "./web" }))
 
