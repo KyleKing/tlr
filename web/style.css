@@ -156,3 +156,12 @@ td.now { background: color-mix(in srgb, var(--accent) 8%, var(--mantle)); } td.p
 .flavor-btn[aria-pressed="true"] { background: var(--accent); color: var(--base); border-color: var(--accent); font-weight: 600; }
 .swatch { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--surface1); cursor: pointer; padding: 0; }
 .swatch[aria-pressed="true"] { border-color: var(--text); box-shadow: 0 0 0 2px var(--mantle), 0 0 0 3px var(--text); }
+.cfg-fields { display: flex; flex-direction: column; gap: 8px; }
+.cfg-fields label { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 12.5px; }
+.cfg-fields input { width: 100px; background: var(--base); border: 1px solid var(--surface1); color: var(--text); border-radius: var(--radius); padding: 4px 8px; font: 12.5px var(--font); }
+.cfg-roster { display: flex; flex-direction: column; gap: 6px; max-height: 180px; overflow: auto; }
+.cfg-roster-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; }
+.cfg-roster-row .name { flex: 1 1 40%; color: var(--subtext0); }
+.cfg-roster-row input { flex: 1 1 60%; background: var(--base); border: 1px solid var(--surface1); color: var(--text); border-radius: var(--radius); padding: 4px 8px; font: 12.5px var(--font); }
+.cfg-actions { display: flex; align-items: center; gap: 10px; }
+.cfg-status { color: var(--subtext0); font-size: 12px; }

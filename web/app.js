@@ -12,6 +12,7 @@ import {
 } from "./lib/planning.js"
 import { pickProject } from "./lib/issues.js"
 import { ACCENTS, defaultFlavor, FLAVORS, themeVars } from "./lib/theme.js"
+import { updateCapacityConfig, updateRosterEmail } from "./lib/config.js"
 
 const STATUS = {
   started: { label: "In progress", color: "var(--st-started)" },
@@ -166,8 +167,53 @@ accentPicker.addEventListener("click", (e) => {
 applyTheme()
 
 const configPanel = document.getElementById("config-panel")
-document.getElementById("config-btn").addEventListener("click", () => configPanel.showModal())
+const workdaysInput = document.getElementById("cfg-workdays")
+const oncallPenaltyInput = document.getElementById("cfg-oncall-penalty")
+const defaultVelocityInput = document.getElementById("cfg-default-velocity")
+const rosterEl = document.getElementById("cfg-roster")
+const cfgStatus = document.getElementById("cfg-status")
+
+function renderConfigForm() {
+  const cap = data.capacity ?? {}
+  workdaysInput.value = cap.config?.workdaysPerCycle ?? 5
+  oncallPenaltyInput.value = cap.config?.oncallPenalty ?? 0.45
+  defaultVelocityInput.value = cap.defaultVelocity ?? 20
+  rosterEl.innerHTML = Object.entries(cap.roster ?? {}).map(([name, info]) =>
+    `<div class="cfg-roster-row"><span class="name">${name}</span>` +
+    `<input type="email" data-name="${name}" value="${info.email ?? ""}" /></div>`
+  ).join("")
+  cfgStatus.textContent = ""
+}
+
+document.getElementById("config-btn").addEventListener("click", () => {
+  renderConfigForm()
+  configPanel.showModal()
+})
 document.getElementById("config-close").addEventListener("click", () => configPanel.close())
+
+document.getElementById("cfg-save").addEventListener("click", async () => {
+  let capacity = updateCapacityConfig(data.capacity ?? {}, {
+    config: { workdaysPerCycle: Number(workdaysInput.value), oncallPenalty: Number(oncallPenaltyInput.value) },
+    defaultVelocity: Number(defaultVelocityInput.value),
+  })
+  for (const input of rosterEl.querySelectorAll("input")) {
+    capacity = updateRosterEmail(capacity, input.dataset.name, input.value.trim())
+  }
+
+  cfgStatus.textContent = "Saving…"
+  try {
+    const res = await fetch("/api/config", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ dataFile: currentDataFile, capacity }),
+    })
+    if (!res.ok) throw new Error(`save failed: ${res.status}`)
+    data.capacity = capacity
+    cfgStatus.textContent = "Saved"
+  } catch (err) {
+    cfgStatus.textContent = err instanceof Error ? err.message : "Save failed"
+  }
+})
 
 const search = document.getElementById("search")
 search.oninput = () => {

@@ -4,7 +4,7 @@
   "tasks": {
     "capacity": "deno run --allow-read --allow-write --allow-env --allow-net=api.incident.io,accounts.google.com,oauth2.googleapis.com,www.googleapis.com,127.0.0.1 --allow-run=security,open ./scripts/capacity.ts",
     "check": "deno check .",
-    "dev": "deno run --allow-net --allow-read --allow-env ./scripts/serve.ts",
+    "dev": "deno run --allow-net --allow-read --allow-write=./web/data --allow-env ./scripts/serve.ts",
     "fmt": "deno fmt",
     "gcal:freebusy": "deno run --allow-read --allow-write --allow-net=accounts.google.com,oauth2.googleapis.com,www.googleapis.com,127.0.0.1 --allow-run=open ./scripts/gcal-freebusy.ts",
     "issues": "deno run --allow-read --allow-write --allow-env --allow-net=api.linear.app --allow-run=security ./scripts/issues.ts",
