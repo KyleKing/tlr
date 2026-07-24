@@ -233,13 +233,17 @@ for (const [k, v] of Object.entries(STATUS)) {
     ),
   )
 }
+const cycleBuckets = buckets.filter((b) => b.kind !== "milestone")
+const milestoneBuckets = buckets.filter((b) => b.kind === "milestone")
+const knownBucketKeys = new Set(buckets.map((b) => b.key))
+
 const bucketHost = document.getElementById("bucket-chips")
-for (const b of buckets) {
+for (const b of cycleBuckets) {
   bucketChipEls.set(
     b.key,
     chipButton(
       bucketHost,
-      b.kind === "milestone" ? b.key : b.label.replace("Cycle ", "C"),
+      b.label.replace("Cycle ", "C"),
       true,
       "",
       "",
@@ -251,6 +255,89 @@ for (const b of buckets) {
     ),
   )
 }
+
+// Milestone filter: a searchable multi-select instead of one chip per milestone. A milestone without
+// the "M1: " naming convention has no short form, so a chip-per-milestone row either overflows or
+// shows the full name — this scales to any name length and any milestone count.
+function initMilestoneSelect() {
+  const root = document.getElementById("milestone-select")
+  const btn = document.getElementById("msel-btn")
+  const panel = document.getElementById("msel-panel")
+  const search = document.getElementById("msel-search")
+  const list = document.getElementById("msel-list")
+  const countEl = document.getElementById("msel-count")
+  if (!milestoneBuckets.length) {
+    root.hidden = true
+    return
+  }
+
+  const displayName = (b) => b.name ?? b.label
+
+  function syncButton() {
+    const n = milestoneBuckets.filter((b) => state.bucketKeys.has(b.key)).length
+    const total = milestoneBuckets.length
+    countEl.hidden = n === total
+    countEl.textContent = n === 0 ? "0" : `${n}/${total}`
+    btn.setAttribute("aria-pressed", n !== total)
+  }
+
+  function renderList() {
+    const q = search.value.trim().toLowerCase()
+    const rows = milestoneBuckets.filter((b) => !q || displayName(b).toLowerCase().includes(q))
+    list.innerHTML = rows.length
+      ? rows.map((b) => {
+        const checked = state.bucketKeys.has(b.key)
+        const name = escapeHtml(displayName(b))
+        return `<li role="option" aria-selected="${checked}">` +
+          `<label><input type="checkbox" data-key="${escapeHtml(b.key)}"${checked ? " checked" : ""} /> ` +
+          `<span title="${name}">${name}</span></label></li>`
+      }).join("")
+      : `<li class="msel-empty">No matches</li>`
+    for (const cb of list.querySelectorAll("input[type=checkbox]")) {
+      cb.onchange = () => {
+        if (cb.checked) state.bucketKeys.add(cb.dataset.key)
+        else state.bucketKeys.delete(cb.dataset.key)
+        syncButton()
+        render()
+      }
+    }
+  }
+
+  function open() {
+    panel.hidden = false
+    btn.setAttribute("aria-expanded", "true")
+    renderList()
+    search.value = ""
+    search.focus()
+  }
+  function close() {
+    panel.hidden = true
+    btn.setAttribute("aria-expanded", "false")
+  }
+
+  btn.onclick = () => (panel.hidden ? open() : close())
+  document.addEventListener("click", (e) => {
+    if (!panel.hidden && !root.contains(e.target)) close()
+  })
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !panel.hidden) close()
+  })
+  search.oninput = renderList
+  document.getElementById("msel-all").onclick = () => {
+    for (const b of milestoneBuckets) state.bucketKeys.add(b.key)
+    syncButton()
+    renderList()
+    render()
+  }
+  document.getElementById("msel-none").onclick = () => {
+    for (const b of milestoneBuckets) state.bucketKeys.delete(b.key)
+    syncButton()
+    renderList()
+    render()
+  }
+  syncButton()
+}
+initMilestoneSelect()
 const flagHost = document.getElementById("flag-chips")
 for (const [k, label] of Object.entries(FLAGS)) {
   chipButton(flagHost, label, false, `var(--${k})`, "flag", (on) => on ? state.flags.add(k) : state.flags.delete(k))
@@ -265,8 +352,13 @@ function bulk(setState) {
 document.getElementById("status-all").onclick = () => bulk(() => (state.statuses = new Set(Object.keys(STATUS))))
 document.getElementById("status-none").onclick = () => bulk(() => (state.statuses = new Set()))
 document.getElementById("bucket-all").onclick = () =>
-  bulk(() => (state.bucketKeys = new Set(buckets.map((b) => b.key))))
-document.getElementById("bucket-none").onclick = () => bulk(() => (state.bucketKeys = new Set()))
+  bulk(() => {
+    for (const b of cycleBuckets) state.bucketKeys.add(b.key)
+  })
+document.getElementById("bucket-none").onclick = () =>
+  bulk(() => {
+    for (const b of cycleBuckets) state.bucketKeys.delete(b.key)
+  })
 
 // interactive hover card (holds the not-slop action, so it must stay reachable)
 const tip = document.getElementById("tip")
@@ -685,7 +777,12 @@ async function refresh() {
     data.capacity = fresh.capacity
     deriveBuckets()
     enrich()
-    for (const k of buckets.map((b) => b.key)) if (!bucketChipEls.has(k)) state.bucketKeys.add(k)
+    for (const k of buckets.map((b) => b.key)) {
+      if (!knownBucketKeys.has(k)) {
+        state.bucketKeys.add(k)
+        knownBucketKeys.add(k)
+      }
+    }
     loadedAt = new Date()
     renderMeta()
     render()

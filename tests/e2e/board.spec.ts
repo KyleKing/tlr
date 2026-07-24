@@ -41,3 +41,25 @@ test("grid tickets are keyboard reachable and arrow-navigable", async ({ page })
   const focusedId = await page.evaluate(() => document.activeElement?.getAttribute("data-id"))
   expect(focusedId).not.toBe(firstId)
 })
+
+test("milestone filter is a searchable multi-select that narrows the board's columns", async ({ page }) => {
+  await page.goto("/")
+  await expect(page.locator("#grid tr").first()).toBeVisible()
+
+  const columnCount = await page.locator("#grid thead th.mile").count()
+  expect(columnCount).toBeGreaterThan(1)
+
+  await page.click("#msel-btn")
+  await expect(page.locator("#msel-panel")).toBeVisible()
+
+  const firstLabel = (await page.locator("#msel-list label span").first().textContent()) ?? ""
+  await page.fill("#msel-search", firstLabel.slice(0, 4))
+  await expect(page.locator("#msel-list li")).toHaveCount(1)
+
+  await page.click("#msel-none")
+  await page.click(`#msel-list input[type="checkbox"]`)
+  await page.keyboard.press("Escape")
+
+  await expect(page.locator("#msel-btn")).toContainText("1/")
+  await expect(page.locator("#grid thead th.mile")).toHaveCount(1)
+})
