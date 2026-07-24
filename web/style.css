@@ -701,7 +701,11 @@ h1 {
 }
 table {
   border-collapse: collapse;
-  width: 100%;
+  /* No width: 100% — a table that always fills .wrap stretches its columns to split whatever's left
+     over when only a couple are visible (two columns at 50% each looks absurd), and jumps size every
+     time a filter changes column count. Sizing to content (each column's own min/max-width) instead
+     means fewer columns just leaves empty space to the right, and .wrap's overflow-x scrolls when there
+     are more than fit. */
 }
 th,
 td {
