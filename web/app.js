@@ -320,7 +320,7 @@ refreshBtn.onclick = () => refresh()
 
 function chipButton(host, label, on, color, cls, toggle, onSolo) {
   const b = document.createElement("button")
-  b.className = "chip " + (cls || "")
+  b.className = `chip ${cls || ""}`
   b.textContent = label
   b.setAttribute("aria-pressed", on)
   if (color) b.style.color = color
@@ -395,9 +395,9 @@ let hoverIssue = null
 let hideTimer = null
 function relText(i) {
   const parts = []
-  if (i.blockedBy.length) parts.push("blocked by " + i.blockedBy.join(", "))
-  if (i.blocks.length) parts.push("blocks " + i.blocks.join(", "))
-  if (i.related.length) parts.push("related " + i.related.join(", "))
+  if (i.blockedBy.length) parts.push(`blocked by ${i.blockedBy.join(", ")}`)
+  if (i.blocks.length) parts.push(`blocks ${i.blocks.join(", ")}`)
+  if (i.related.length) parts.push(`related ${i.related.join(", ")}`)
   return parts.join(" · ")
 }
 function showTip(e, i) {
@@ -429,8 +429,8 @@ function showTip(e, i) {
   }
   tip.style.display = "block"
   const w = tip.offsetWidth || 300, h = tip.offsetHeight || 120
-  tip.style.left = Math.max(8, Math.min(e.clientX + 14, innerWidth - w - 8)) + "px"
-  tip.style.top = Math.max(8, Math.min(e.clientY + 16, innerHeight - h - 8)) + "px"
+  tip.style.left = `${Math.max(8, Math.min(e.clientX + 14, innerWidth - w - 8))}px`
+  tip.style.top = `${Math.max(8, Math.min(e.clientY + 16, innerHeight - h - 8))}px`
 }
 function hideTip() {
   tip.style.display = "none"
@@ -571,7 +571,7 @@ function buildBoard(people, visible) {
     for (const b of visible) h += cellHTML(person, b)
     h += "</tr>"
   }
-  return h + "</tbody>"
+  return `${h}</tbody>`
 }
 
 function buildTransposed(people) {
@@ -585,7 +585,7 @@ function buildTransposed(people) {
     for (const person of people) h += cellHTML(person, b)
     h += "</tr>"
   }
-  return h + "</tbody>"
+  return `${h}</tbody>`
 }
 
 function buildTimeline() {
@@ -633,8 +633,8 @@ function personPts(person) {
   return `<span class="pl"> ${pts}pt</span>`
 }
 function bucketSub(b) {
-  return `${b.name ? escapeHtml(b.name.replace(/^M\d: /, "")) + " · " : ""}${b.sub}${
-    b.progress != null ? " · " + Math.round(b.progress) + "%" : ""
+  return `${b.name ? `${escapeHtml(b.name.replace(/^M\d: /, ""))} · ` : ""}${b.sub}${
+    b.progress != null ? ` · ${Math.round(b.progress)}%` : ""
   }`
 }
 function bucketTh(b) {

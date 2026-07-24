@@ -4,6 +4,11 @@ hooks {
     ["pre-commit"] {
         fix = true
         steps {
+            ["biome"] {
+                glob = List("*.ts", "*.js")
+                check = "deno task biome check {{files}}"
+                fix = "deno task biome check --write {{files}}"
+            }
             ["check"] {
                 glob = "*.ts"
                 check = "deno task check"

@@ -4,7 +4,7 @@ export const ACTIVE_CYCLES = [48, 49]
 
 export function bucketOf(issue) {
   if (issue.cycle === 47) return "C47"
-  if (ACTIVE_CYCLES.includes(issue.cycle)) return "C" + issue.cycle
+  if (ACTIVE_CYCLES.includes(issue.cycle)) return `C${issue.cycle}`
   if (issue.milestone) return issue.milestone
   return "BACKLOG"
 }
@@ -17,8 +17,8 @@ export function buildBuckets(data) {
   for (const n of ACTIVE_CYCLES) {
     if (cyc[n]) {
       cols.push({
-        key: "C" + n,
-        label: "Cycle " + n,
+        key: `C${n}`,
+        label: `Cycle ${n}`,
         sub: n === data.currentCycle ? "current" : "next",
         end: cyc[n].end,
         kind: "cycle",
@@ -30,7 +30,7 @@ export function buildBuckets(data) {
       key: m.key,
       label: m.key,
       name: m.name,
-      sub: "target " + m.target,
+      sub: `target ${m.target}`,
       end: m.target,
       progress: m.progress,
       kind: "milestone",
@@ -89,10 +89,10 @@ export function slopScan(text) {
   if (/^[ \t]*[-*] \[[ xX]\]/m.test(t)) flags.push("checklist")
   const lower = t.toLowerCase()
   const hits = TELLS.filter((p) => lower.includes(p))
-  if (hits.length) flags.push("phrase: " + hits.slice(0, 3).join(", "))
-  if (t.length > 1500) flags.push("long (" + Math.round(t.length / 100) / 10 + "k chars)")
+  if (hits.length) flags.push(`phrase: ${hits.slice(0, 3).join(", ")}`)
+  if (t.length > 1500) flags.push(`long (${Math.round(t.length / 100) / 10}k chars)`)
   const bullets = (t.match(/^[ \t]*[-*] /gm) || []).length
-  if (bullets >= 8) flags.push(bullets + " bullets")
+  if (bullets >= 8) flags.push(`${bullets} bullets`)
   const score = flags.length + hits.length + (t.length > 3000 ? 1 : 0)
   return { score, flags }
 }
@@ -118,10 +118,10 @@ export const CAPACITY_DEFAULTS = { workdaysPerCycle: 5, oncallPenalty: 0.45, def
 // { base, points, factors } where factors describe each deflation so the board can show why.
 // A null cycleN means "no cycle events" (used to size milestone windows off base velocity).
 export function personCycleCapacity(person, cycleN, capacity) {
-  const cfg = { ...CAPACITY_DEFAULTS, ...(capacity && capacity.config) }
-  const p = (capacity && capacity.people && capacity.people[person]) || {}
-  const base = p.velocity ?? (capacity && capacity.defaultVelocity) ?? cfg.defaultVelocity
-  const ev = cycleN == null ? {} : (p.cycles && p.cycles[String(cycleN)]) || {}
+  const cfg = { ...CAPACITY_DEFAULTS, ...(capacity?.config) }
+  const p = (capacity?.people?.[person]) || {}
+  const base = p.velocity ?? (capacity?.defaultVelocity) ?? cfg.defaultVelocity
+  const ev = cycleN == null ? {} : (p.cycles?.[String(cycleN)]) || {}
   const factors = []
   let points = base
   if (ev.outDays > 0) {
@@ -167,7 +167,7 @@ export function dependencyWaves(issues) {
   while (frontier.length) {
     frontier.sort()
     waves.push(frontier)
-    frontier.forEach((id) => placed.add(id))
+    for (const id of frontier) placed.add(id)
     const next = []
     for (const id of connected) {
       if (placed.has(id)) continue

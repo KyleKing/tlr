@@ -82,14 +82,14 @@ export async function consent(client: Client): Promise<string> {
   const { port } = server.addr as Deno.NetAddr
   const redirectUri = `http://127.0.0.1:${port}`
 
-  const authUrl = `${AUTH_URI}?` + new URLSearchParams({
+  const authUrl = `${AUTH_URI}?${new URLSearchParams({
     client_id: client.client_id,
     redirect_uri: redirectUri,
     response_type: "code",
     scope: SCOPE,
     access_type: "offline",
     prompt: "consent",
-  })
+  })}`
   console.log("Opening the consent screen in your browser. If it does not open, visit:\n")
   console.log(`  ${authUrl}\n`)
   openBrowser(authUrl)
@@ -114,7 +114,7 @@ export async function consent(client: Client): Promise<string> {
   if (!tok.refresh_token) {
     throw new Error("no refresh_token returned; re-run with --reauth to force a fresh consent")
   }
-  await Deno.writeTextFile(TOKEN_PATH, JSON.stringify({ refresh_token: tok.refresh_token }, null, 2) + "\n")
+  await Deno.writeTextFile(TOKEN_PATH, `${JSON.stringify({ refresh_token: tok.refresh_token }, null, 2)}\n`)
   console.log(`cached refresh token in ${TOKEN_PATH}\n`)
   return tok.access_token as string
 }

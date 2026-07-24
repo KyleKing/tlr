@@ -132,7 +132,7 @@ async function main() {
     console.log("--dry-run: roster block that would be written:")
     console.log(JSON.stringify(data.capacity.roster, null, 2))
   } else {
-    await Deno.writeTextFile(args.data, JSON.stringify(data, null, 2) + "\n")
+    await Deno.writeTextFile(args.data, `${JSON.stringify(data, null, 2)}\n`)
     console.log(`wrote ${args.data}`)
   }
 }

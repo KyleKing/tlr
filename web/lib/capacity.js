@@ -14,8 +14,8 @@ const OWNED = {
 // Days from startISO (inclusive) up to endISO (exclusive), as YYYY-MM-DD strings.
 export function eachDay(startISO, endISO) {
   const out = []
-  const d = new Date(startISO + "T00:00:00Z")
-  const end = new Date(endISO + "T00:00:00Z")
+  const d = new Date(`${startISO}T00:00:00Z`)
+  const end = new Date(`${endISO}T00:00:00Z`)
   while (d < end) {
     out.push(d.toISOString().slice(0, 10))
     d.setUTCDate(d.getUTCDate() + 1)
@@ -24,7 +24,7 @@ export function eachDay(startISO, endISO) {
 }
 
 function _isWeekday(iso) {
-  const wd = new Date(iso + "T00:00:00Z").getUTCDay()
+  const wd = new Date(`${iso}T00:00:00Z`).getUTCDay()
   return wd >= 1 && wd <= 5
 }
 
@@ -48,7 +48,7 @@ function _resolver(roster) {
   const byName = {}
   for (const [name, info] of Object.entries(roster || {})) {
     byName[name.toLowerCase()] = name
-    if (info && info.email) byEmail[info.email.toLowerCase()] = name
+    if (info?.email) byEmail[info.email.toLowerCase()] = name
   }
   return (email, name) => {
     if (email && byEmail[email.toLowerCase()]) return byEmail[email.toLowerCase()]
@@ -211,7 +211,7 @@ export function mergeCapacity(capacity, incoming, source) {
   for (const [name, person] of Object.entries(cap.people)) {
     for (const [cn, ev] of Object.entries(person.cycles || {})) {
       if (ev.locked) continue
-      const stillReported = incoming[name] && incoming[name][cn]
+      const stillReported = incoming[name]?.[cn]
       if (ev[owned.marker] === source && !stillReported) {
         for (const f of owned.fields) delete ev[f]
         delete ev[owned.marker]

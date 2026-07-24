@@ -1,5 +1,6 @@
 {
   "tasks": {
+    "biome": "deno run --allow-read --allow-write --allow-env --allow-run @biomejs/biome",
     "capacity": "deno run --allow-read --allow-write --allow-env --allow-net=api.incident.io,accounts.google.com,oauth2.googleapis.com,www.googleapis.com,127.0.0.1 --allow-run=security,open ./scripts/capacity.ts",
     "check": "deno check .",
     "dev": "deno run --allow-net --allow-read --allow-write=./web/data --allow-env --allow-run=security,open ./scripts/serve.ts",
@@ -11,6 +12,7 @@
     "test": "deno test"
   },
   "imports": {
+    "@biomejs/biome": "npm:@biomejs/biome@^2.2.4",
     "hono": "npm:hono@^4.9.8",
     "vento/": "https://deno.land/x/vento@v2.4.0/"
   },

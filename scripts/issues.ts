@@ -200,7 +200,7 @@ export async function ingestProject(key: string, projectQuery: string, existingD
 
   const manifest = await Deno.readTextFile(MANIFEST_PATH).then(JSON.parse).catch(() => [])
   const updatedManifest = upsertProjectManifest(manifest, { slug: project.slugId, name: project.name, dataFile })
-  await Deno.writeTextFile(MANIFEST_PATH, JSON.stringify(updatedManifest, null, 2) + "\n")
+  await Deno.writeTextFile(MANIFEST_PATH, `${JSON.stringify(updatedManifest, null, 2)}\n`)
   log.push(`wrote ${MANIFEST_PATH}`)
 
   return { data: merged, project, log }
@@ -225,7 +225,7 @@ async function main() {
   const { data, log } = await ingestProject(key, args.project, existing, args.data.split("/").pop()!)
   for (const line of log) console.log(line)
 
-  await Deno.writeTextFile(args.data, JSON.stringify(data, null, 2) + "\n")
+  await Deno.writeTextFile(args.data, `${JSON.stringify(data, null, 2)}\n`)
   console.log(`wrote ${args.data}`)
 }
 
