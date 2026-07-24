@@ -64,7 +64,60 @@ per-person velocity both run without extra setup beyond what SETUP.md already co
 
 ## Next up
 
-(nothing queued right now)
+Ordered roughly by dependency and payoff; production deployment is last on purpose.
+
+1. **Visual redesign: Linear's structure, a personal skin.** Goal is to read as Linear-caliber without
+   being a reskin of Linear. Research so far:
+   - Linear's actual discipline (not vibes): a strict 4px grid for padding/icon/text sizes, a muted
+     grey-heavy base with full-saturation color reserved for status/priority/interactive elements only,
+     progressive disclosure (hover reveals actions, click expands, detail view shows everything),
+     skeleton loading states instead of spinners, optimistic UI (edits appear before the API confirms),
+     and a keyboard-first model: Cmd+K command palette for any action, single letters for common actions,
+     a fixed sidebar with animated (not reloaded) view transitions. That structural discipline is what's
+     worth copying, not the literal purple-on-dark-grey palette.
+   - `yak-shears` already has a distinct personal visual language worth carrying over instead: monospace
+     type throughout (including headings), a warm cream/paper background rather than stark white or dark
+     grey, one confident accent color (mustard yellow) instead of Linear's purple, pill-shaped chips with
+     crisp black borders, and a small playful touch like the circular initials badge in the header.
+     Screenshots pulled from the repo confirm this reads as considered, not cheesy.
+   - Proposed direction: keep tlr's current muted/functional palette approach and Linear's density and
+     keyboard-first interactions, but swap in a warm paper background, monospace type, and a single
+     non-purple accent so it's recognizably "the same designer" as yak-shears rather than a Linear clone.
+     Worth a small throwaway mockup (a static HTML comp, not wired to real data) before touching
+     `web/style.css` for real, since this is a taste call that's easy to get wrong in code first.
+2. **Project switcher.** Today the web app only ever reads one static `/data/cpu.json`, and the Python
+   ingest script takes a single project name/slug per run — there's no concept of "list the projects I'm
+   a member of" anywhere. Needs: a Linear GraphQL query for the viewer's member projects (similar shape
+   to `_find_project` in `_tlr-linear_progress.py`, but listing rather than searching), a per-project data
+   file convention (e.g. `web/data/<slug>.json`) so switching is instant client-side, and a picker in the
+   header (a natural fit for the command palette from item 1, if that lands first — "switch to project"
+   as one of its actions). This is also the first real motivation to move the ingest step off the
+   single-project Python script and toward the Ingest domain ADR 0007 already describes.
+3. **Data-freshness UX.** `loadData()` silently falls back to `data-sample.json` if `cpu.json` is missing,
+   and there's no visible signal when the shown data is stale (a snapshot taken hours or days ago) versus
+   the fallback sample. A visible banner or header state for "showing sample data" / "data as of
+   `<age>`" would prevent misreading stale or demo data as current.
+4. **Keyboard navigation on the board itself.** If item 1 adopts a keyboard-first posture, the grid needs
+   to earn it: arrow-key movement between ticks/cards, a focus ring distinct from the hover state, and
+   ARIA roles so the hover card's content is reachable without a mouse. Currently everything (search,
+   filters, hover card) is mouse-only.
+5. **Narrow-viewport handling.** The board is a wide table; `.wrap` scrolls horizontally but the header,
+   filter bar, and legend haven't been checked below ~900px. Decide whether to explicitly scope tlr as
+   desktop-only (reasonable for a planning tool used at a desk) or invest in a real narrow layout, rather
+   than leaving it undefined.
+6. **Web UI test coverage.** All current tests are pure-function unit tests (`web/lib/*.js`);
+   `web/app.js`'s DOM rendering and interaction code (filters, hover card, timeline toggle) has zero
+   automated coverage. At minimum, a manual QA checklist to run before any deploy; ideally a lightweight
+   DOM smoke test.
+7. **Secrets story for more than one local user.** Every credential today is a macOS keychain entry or a
+   gitignored local file (Incident.io token, Google OAuth client/token, Linear API key). ADR 0007's
+   `SecretStore` port (`KeychainSecrets` vs `HostedSecrets`) is designed but not built. Needed before
+   tlr can run for anyone other than the current single local user, including on the deployment below.
+8. **Production deployment — last.** Likely target: nested into the existing `yak-shears` Hetzner Cloud
+   VPS rather than a new server, for cost — same Caddy reverse proxy (new subdomain or path route), a
+   new systemd service alongside the existing ones, reusing the cloud-init/DNS/Let's Encrypt pattern
+   already proven there. Blocked on at least item 7 (no keychain access on a shared server) and probably
+   item 2 (a single hardcoded project stops making sense once this isn't just a local spike).
 
 ## Later (unchanged from roadmap)
 
