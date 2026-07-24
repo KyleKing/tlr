@@ -28,6 +28,11 @@ is next, and [AGENTS.md](AGENTS.md) for where to start.
 - Weekly-update narrative (shipped, moved, at risk) generated from a plan-level diff
 - Slop scan of ticket text for AI tells (dashes, stock phrases, checklists, length), with a review
   queue for recent edits and a way to mark each one reviewed
+- Review-and-fix loop for bulk AI changes: the Review page groups every change to a ticket, lets you
+  clear each as reviewed, and edits a ticket's title, description, estimate, or priority in place. It
+  previews the change first (a dry run), then writes it to Linear on confirm. That is the only path tlr
+  has to Linear, and it only runs from the UI, because bulk edits already go through the Linear MCP in
+  Claude Code and tlr's job is to catch and fix what they got wrong
 
 ## The board
 
@@ -40,9 +45,14 @@ Changes reads the two most recent snapshots and writes the weekly update.
 
 ![The changes page](docs/images/changes.png)
 
-Review groups every change to a ticket into one unit and lets you mark it reviewed.
+Review groups every change to a ticket into one unit, lets you mark it reviewed, and edits the ticket in
+place (title, description, estimate, priority) with a preview before it writes to Linear.
 
 ![The review page](docs/images/review.png)
+
+Writes run in one of two modes, chosen at launch. Live mode (the default) uses your real workspace key.
+Demo mode (`TLR_DEMO=1`) points every write at a free/test workspace and shows a banner, so you can try
+edits without touching real tickets. See [SETUP.md](SETUP.md) for storing each key in the keychain.
 
 Screenshots come from the end-to-end suite against seed data. They refresh only on demand, so they do
 not churn on every run. Regenerate them after a UI change with `deno task screenshots`.
@@ -96,9 +106,11 @@ deno task cli snapshot --project seed-b.json          # capture a snapshot into 
 deno task cli export   --project seed-b.json          # SVG of the board (or --timeline)
 ```
 
-There is no MCP server by design, and none is planned. The CLI is the integration surface. If tlr is
-ever hosted, the CLI can gain a mode that calls the hosted API instead of reading local files, reusing
-the same handlers.
+The CLI reads and previews only; it never writes to Linear (`plan` shows the ops and the resulting diff
+but applies nothing). Writes run from the Review page. There is no MCP server by design, and none is
+planned: bulk edits already go through the Linear MCP in Claude Code, so a tlr write command would only
+duplicate it. If tlr is ever hosted, the CLI can gain a mode that calls the hosted API instead of
+reading local files, reusing the same handlers.
 
 ## Development
 
@@ -120,7 +132,8 @@ work (a refresh would fire, an edit would call the API) rather than re-testing t
 
 ```
 src/              the core: seed (data contract), snapshot store, diff, review, ops, plan,
-                  report, forecast, export, and commands/ (scan, capacity, timeline)
+                  linear_write (the one write adapter), report, forecast, export, and
+                  commands/ (scan, capacity, timeline)
 scripts/          data-refresh and dev-server scripts (issues, capacity, roster, serve, seed, cli)
 web/              the app: app.js (board), changes.js, review.js, style.css
 web/lib/          pure logic (planning.js, capacity.js), imported by both the browser and Deno tests

@@ -24,8 +24,14 @@ product:
 - Phase 1: `src/snapshot.ts` (node:sqlite store), `src/diff.ts` (milestone-rollup diff), `src/review.ts`
   (review queue with a stored pointer). CLI: `diff`, `review`, `snapshot`, `snapshots`
 - Phase 2: `src/ops.ts` (typed op model, validate against live state, in-memory apply) and `src/plan.ts`
-  (deterministic guidance parser). CLI: `plan` (previews the resulting diff). The real Linear mutation
-  adapter behind the tracker port is the remaining work, gated on a key
+  (deterministic guidance parser). CLI: `plan` (previews the resulting diff, read-only). Writes reach
+  Linear only from the Review page (see Phase 3), never the CLI
+- Write path: `src/linear_write.ts` turns validated ops into Linear `issueUpdate` mutations, driven by
+  the server's `POST /api/edit` (dry-run by default, writes on confirm). v1 covers the fields keyed by
+  the issue UUID alone: title, description, estimate, priority. Milestone/status/cycle/assignee moves
+  need a name-to-UUID lookup and are v2
+- Demo/live mode: `TLR_DEMO=1` points writes at the free/test workspace (keychain account `demo-key`)
+  and shows a banner; live mode (the default) uses the real key (`api-key`). `GET /api/mode` reports it
 - Phase 3: `src/export.ts` (`boardSvg`, `timelineSvg`). CLI: `export`
 - Reporting: `src/report.ts` (`tlr report`, weekly shipped/moved/at-risk narrative from a diff) and
   `src/forecast.ts` (`tlr forecast`, per-milestone landing date vs target, labeled a forecast)
@@ -40,6 +46,10 @@ product:
   store) and serves list, report, and review endpoints. The web app is now three routed pages behind a
   shared nav (Board, Changes, Review). Changes renders the weekly update; Review groups edits by ticket
   with a mark-reviewed toggle
+- In-flow fixes: the Review page edits a ticket's title, description, estimate, or priority, previews
+  the change (dry run), then applies it to Linear on confirm. This is the only write path, and only from
+  the UI. Demo mode (`TLR_DEMO=1`) points it at the free/test workspace with a visible banner; live mode
+  uses the real key
 - E2E and screenshots: the Playwright suite seeds data and captures snapshots against an isolated
   store (no Linear key), covering the board and both new pages. `deno task screenshots` regenerates the
   committed README images on demand
@@ -52,23 +62,27 @@ current Linear shape), not ADR 0006's normalized model, until a second tracker l
 ### Phase 1 — snapshot, diff, review (scaffolded)
 
 Persist project state to SQLite on demand. `tlr diff` shows how the plan changed between two captures,
-rolled up to the milestone level. `tlr review` shows edits since the last review. Actor attribution
-cannot separate AI-via-MCP edits from mine (both land under my account), so AI-edit review leans on a
-Claude Code hook that records intent at write time. See [adr/0006](adr/0006-normalized-tracker-schema.md)
-and [adr/0007](adr/0007-productization-and-domains.md) for the normalized schema and domain split this
+rolled up to the milestone level. `tlr review` shows edits since the last review, and the Review page
+groups them by ticket and lets me clear each one. Actor attribution is out of scope (see Decisions).
+See [adr/0006](adr/0006-normalized-tracker-schema.md) and
+[adr/0007](adr/0007-productization-and-domains.md) for the normalized schema and domain split this
 builds on.
 
-### Phase 2 — write layer (scaffolded; real apply pending a key)
+### Phase 2 — write layer (op model built; writes run from the UI, not the CLI)
 
 `tlr plan "<natural-language guidance>"` turns intent into structured ops (move milestone, set
-priority, add relation, rename, rescope). The tool validates each op against live state, renders a
-diff, and `tlr apply` runs the approved subset as idempotent mutations. Packages the manual
-staging-file workflow so it cannot go stale.
+priority, add relation, rename, rescope) and previews the resulting diff. It is read-only: the CLI
+never writes. Writes go through the Review page, which validates each op against live state, previews
+the change, and on confirm applies it as an idempotent `issueUpdate`. Bulk AI edits still go through
+the Linear MCP in Claude Code; tlr's job is to review them and fix what is wrong, not to duplicate that
+write surface.
 
-### Phase 3 — in-flow editing (SVG export shipped; in-flow editing pending)
+### Phase 3 — in-flow editing (shipped for the v1 fields)
 
-Editing from inside the tool that feeds the same validate-and-apply path as Phase 2. Candidate: a
-pannable 2D layout instead of the grid. SVG export for weekly-update artifacts.
+Edit a ticket in place on the Review page: fix the title, description, estimate, or priority, preview
+the change (a dry run), then apply it to the current workspace. This is the same op-and-apply path the
+write layer uses. SVG export for weekly-update artifacts shipped earlier. Remaining: the fields that
+need a name-to-UUID lookup (milestone, status, cycle, assignee), and a candidate pannable 2D layout.
 
 ## Blocked
 
@@ -80,9 +94,11 @@ items depending on them are marked below.
   (and a `--linear` mode for the seed script) needs you to create a free Linear account and store its
   key in the keychain. Until then diff, review, and apply only run against synthetic or your existing
   local data.
-- **Real Linear write path (Phase 2 `apply`).** The op model, validation against live state, and an
-  in-memory apply are built and previewed by `tlr plan`. Real mutations need a Linear key and the
-  tracker write adapter behind the port.
+- **Exercising the write path against a real workspace.** The adapter, the `/api/edit` endpoint, and
+  the Review-page edit UI are built and unit- and e2e-tested offline. A real `issueUpdate` needs a key
+  in the keychain (`demo-key` for the free/test workspace, `api-key` for the real one) and issues
+  ingested from that workspace so each carries its Linear UUID. Until a key is stored, the edit form
+  previews but refuses to write (it says so per ticket).
 - **Secrets story (`SecretStore` port, ADR 0007).** `KeychainSecrets` vs `HostedSecrets` is designed,
   not built. Every credential today is a keychain entry or a gitignored file. Needed before tlr runs
   for anyone but the current local user, and before any deploy.
@@ -97,29 +113,30 @@ Ordered by payoff. Unblocked unless a "(blocked: ...)" note says otherwise.
 - **Settings page.** The nav has Board, Changes, and Review today; the config still opens as a dialog
   on the board. Give it its own routed Settings page with the same chrome, folding in appearance,
   capacity, roster, calendar overrides, and integrations, then the secrets panel below.
-- **Review attribution and temporal grouping.** The Review page is built on snapshot-diff, which
-  cannot tell AI-via-MCP edits from mine (both land under my account) and has no per-edit timestamp, so
-  the 30-minute grouping does not apply yet. Both need a real edit-activity source: route AI edits
-  through a distinct Linear app-user/agent token (agents show as their own actor) or a write-time hook,
-  then enrich the snapshot-diff base with actor and timestamp. Blocked on a key.
+- **Editing the fields that need a name-to-UUID lookup.** The Review-page edit form covers title,
+  description, estimate, and priority. Milestone, status, cycle, and assignee moves need their target
+  resolved to a Linear UUID (the snapshot carries names, not ids for these). Add the resolution to
+  `src/linear_write.ts` and the fields to the form.
 - **Secrets in the config UI** (advances the blocked secrets story). Manage the Linear key,
   Incident.io token, and Google OAuth through Settings, in the keychain today and wired through the
   `SecretStore` port (ADR 0007) so the same panel drives hosted secrets in production.
 - **What-if planning.** Toggle a person's PTO or move scope and watch the forecast shift, in-tool.
-  Fits the in-flow editing below.
-- **In-flow editing on the board** (the rest of Phase 3). Editing from inside the tool that feeds the
-  same validate-and-apply path as Phase 2. Candidate: a pannable 2D layout instead of the grid.
-  (Real writes are blocked on the Linear write path above.)
 - **Vendored public assets** fetched by a build task and gitignored (`app-template`'s
   `download-assets.sh`), only if the web app ever depends on something like HTMX instead of the
   hand-rolled `app.js` it uses today.
 
 ## Decisions
 
-- **CLI, not MCP.** The CLI (`deno task cli`: scan, capacity, timeline, diff, review, plan, snapshot,
-  export) is the integration surface for Claude Code, and it is built. Do not build an MCP server. If
-  tlr is ever hosted, the CLI can gain a mode that calls the hosted tlr API instead of reading local
-  files, which reuses the same handlers without an MCP protocol layer.
+- **CLI, not MCP, and neither writes.** The CLI (`deno task cli`: scan, capacity, timeline, diff,
+  review, plan, snapshot, export) is the read-and-preview surface for Claude Code, and it is built. Do
+  not build an MCP server, and do not add writes to the CLI: bulk AI edits already go through the Linear
+  MCP in Claude Code, so a tlr write command would only duplicate it. tlr writes only from the Review
+  page, where a person reviews and fixes what the AI changed. If tlr is ever hosted, the CLI can gain a
+  mode that calls the hosted tlr API instead of reading local files, reusing the same handlers.
+- **Actor attribution is out of scope.** A snapshot-diff cannot tell an AI-via-MCP edit from mine (both
+  land under my account), and splitting them would need a distinct Linear agent token or a write-time
+  hook. The Review page does not try; it shows every change since the last snapshot and lets me clear
+  each one, which is enough to catch what a bulk AI run touched.
 - **Thin schema, no GitHub yet.** Snapshot, diff, review, and the op model read the current Linear
   shape. ADR 0006's normalized model stays the target for when a second tracker actually lands.
 - **Out of scope** (Linear's own views cover them): a GitHub adapter or any third tracker, a

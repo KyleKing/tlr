@@ -49,6 +49,22 @@ is the raw key (`Authorization: <key>`), not a Bearer token, which is a Linear q
 Verify: `deno task roster --dry-run --force` prints each assignee resolved to an email, and
 `deno task issues "<project name>" --dry-run` prints the project's issue count.
 
+### Demo (free/test) workspace
+
+Edits from the Review page write to Linear. To try them without touching real tickets, run the server in
+demo mode against a free Linear workspace. Store that workspace's key under the same service with account
+`demo-key`, then launch with `TLR_DEMO=1`:
+
+```sh
+security add-generic-password -s tlr-linear -a demo-key -w   # paste the free-workspace key
+TLR_DEMO=1 deno task dev                                     # banner shows you are in demo mode
+```
+
+Live mode (the default, no `TLR_DEMO`) uses the `api-key` entry above. Each mode also honors an env
+override (`LINEAR_API_KEY` / `LINEAR_DEMO_API_KEY`) for CI, where a keychain is not available. To edit a
+ticket, first refresh issues from that workspace so each carries its Linear id; the edit form refuses to
+write a ticket it has no id for.
+
 ## Incident.io
 
 On-call comes from the Incident.io REST API. There is no CLI and no MCP, so a key is the only path.
