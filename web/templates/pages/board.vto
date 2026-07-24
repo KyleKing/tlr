@@ -9,8 +9,8 @@
   <div id="freshness" class="freshness" role="status" hidden></div>
   <div class="bar-controls">
     <input id="search" type="search" placeholder="Search id / title / description…" />
-    <button class="chip" id="expand" aria-pressed="false">Expand</button>
-    <button class="chip" id="orient" aria-pressed="false">Rows: buckets</button>
+    <button class="chip label-toggle" id="expand" aria-pressed="false">Expand</button>
+    <button class="chip label-toggle" id="orient" aria-pressed="false">Rows: buckets</button>
     <span class="sync-box">
       <span id="sync" class="sync-text"></span>
       <button class="chip" id="refresh">Refresh</button>
@@ -41,7 +41,13 @@
         </div>
       </div>
     </span>
-    <span class="fgroup"><span class="flabel">Flags</span><span class="chips" id="flag-chips"></span></span>
+    <span class="fgroup msel" id="flag-select">
+      <span class="flabel">Flags</span>
+      <button class="chip msel-btn" id="fsel-btn" type="button" aria-haspopup="true" aria-expanded="false">Filter <span class="msel-count" id="fsel-count" hidden></span></button>
+      <div class="msel-panel fsel-panel" id="fsel-panel" hidden>
+        <ul class="msel-list" id="flag-list" role="listbox" aria-multiselectable="true"></ul>
+      </div>
+    </span>
     <span class="fhint">tip: double-click a chip to show only it</span>
   </div>
   <div class="summary" id="summary"></div>

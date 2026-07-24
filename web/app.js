@@ -343,10 +343,60 @@ function initBucketSelect() {
   syncButton()
 }
 initBucketSelect()
-const flagHost = document.getElementById("flag-chips")
-for (const [k, label] of Object.entries(FLAGS)) {
-  chipButton(flagHost, label, false, `var(--${k})`, "flag", (on) => on ? state.flags.add(k) : state.flags.delete(k))
+
+// Flags filter as a checklist popover, same shape as Buckets: a "Filter" button with an active count
+// that opens a panel instead of a row of chips (only 3 flags, but keeping the pattern consistent).
+function initFlagSelect() {
+  const root = document.getElementById("flag-select")
+  const btn = document.getElementById("fsel-btn")
+  const panel = document.getElementById("fsel-panel")
+  const countEl = document.getElementById("fsel-count")
+  const list = document.getElementById("flag-list")
+
+  function syncButton() {
+    const n = state.flags.size
+    countEl.hidden = n === 0
+    countEl.textContent = n
+    btn.setAttribute("aria-pressed", n > 0)
+  }
+
+  function renderList() {
+    list.innerHTML = Object.entries(FLAGS).map(([k, label]) => {
+      const checked = state.flags.has(k)
+      return `<li role="option" aria-selected="${checked}">` +
+        `<label><input type="checkbox" data-key="${k}"${checked ? " checked" : ""} /> ` +
+        `<span>${label}</span></label></li>`
+    }).join("")
+    for (const cb of list.querySelectorAll("input[type=checkbox]")) {
+      cb.onchange = () => {
+        if (cb.checked) state.flags.add(cb.dataset.key)
+        else state.flags.delete(cb.dataset.key)
+        syncButton()
+        render()
+      }
+    }
+  }
+
+  function open() {
+    panel.hidden = false
+    btn.setAttribute("aria-expanded", "true")
+    renderList()
+  }
+  function close() {
+    panel.hidden = true
+    btn.setAttribute("aria-expanded", "false")
+  }
+
+  btn.onclick = () => (panel.hidden ? open() : close())
+  document.addEventListener("click", (e) => {
+    if (!panel.hidden && !root.contains(e.target)) close()
+  })
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !panel.hidden) close()
+  })
+  syncButton()
 }
+initFlagSelect()
 
 // Per-group bulk toggles so a wholesale change is one click, not one per chip.
 function bulk(setState) {

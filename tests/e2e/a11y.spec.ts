@@ -6,9 +6,10 @@ import { expect, test } from "./fixtures.ts"
 test("board passes automated color-contrast checks", async ({ page }) => {
   await page.goto("/")
   await page.waitForSelector("#grid tr")
-  // Press a status and a flag chip so their selected-state colors are part of the scan too.
+  // Press a status chip and a flag checkbox so their selected-state colors are part of the scan too.
   await page.click("#status-chips button")
-  await page.click("#flag-chips button")
+  await page.click("#fsel-btn")
+  await page.click("#flag-list input[type=checkbox]")
 
   const results = await new AxeBuilder({ page })
     .withTags(["wcag2aa"])
