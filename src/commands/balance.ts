@@ -47,16 +47,45 @@ const DEFAULT_AFFINITIES: Affinity[] = [
   {
     person: "Marissa TK",
     keywords: [
-      "synthetic", "browser", "chromium", "browserbase", "smoke", "post-deploy", "playbook",
-      "probe", "vendor", "member-access", "radar", "fixture", "drift", "status page",
+      "synthetic",
+      "browser",
+      "chromium",
+      "browserbase",
+      "smoke",
+      "post-deploy",
+      "playbook",
+      "probe",
+      "vendor",
+      "member-access",
+      "radar",
+      "fixture",
+      "drift",
+      "status page",
     ],
   },
   {
     person: "Kyle King",
     keywords: [
-      "watch-doggo", "watchdoggo", "code review", "code-gen", "uptime", "month-end", "error budget",
-      "error-budget", "slo", "dagster", "hatchet", "n+1", "index", "postgres", "performance",
-      "pulumi", "kill-switch", "outbox", "resilience", "bedrock",
+      "watch-doggo",
+      "watchdoggo",
+      "code review",
+      "code-gen",
+      "uptime",
+      "month-end",
+      "error budget",
+      "error-budget",
+      "slo",
+      "dagster",
+      "hatchet",
+      "n+1",
+      "index",
+      "postgres",
+      "performance",
+      "pulumi",
+      "kill-switch",
+      "outbox",
+      "resilience",
+      "bedrock",
     ],
   },
 ]
@@ -74,13 +103,16 @@ function affinityScore(i: Issue, affinities: Affinity[]): Record<string, number>
   return out
 }
 
-// Per-person capacity for one cycle: the weekly ceiling deflated by out-days (pro rata over the work
+// Per-person capacity for one cycle: a base velocity deflated by out-days (pro rata over the work
 // week) and by an on-call week (a flat penalty), matching planning.js so a hand run and the board
-// agree.
-function cycleCapacity(person: string, cycle: number, snapshot: Snapshot, weekly: number): number {
-  const cfg = { ...CAPACITY_DEFAULTS, ...(snapshot.capacity?.config) }
-  const ev = snapshot.capacity?.people?.[person]?.cycles?.[String(cycle)] ?? {}
-  let points = weekly
+// agree. Base is the person's own velocity by default (so a slower teammate holds less), overridden by
+// `weeklyOverride` when the caller wants a flat ceiling for this project.
+function cycleCapacity(person: string, cycle: number, snapshot: Snapshot, weeklyOverride?: number): number {
+  const cap = snapshot.capacity
+  const cfg = { ...CAPACITY_DEFAULTS, ...(cap?.config) }
+  const base = weeklyOverride ?? cap?.people?.[person]?.velocity ?? cap?.defaultVelocity ?? 20
+  const ev = cap?.people?.[person]?.cycles?.[String(cycle)] ?? {}
+  let points = base
   if (ev.outDays && ev.outDays > 0) {
     points *= Math.max(0, (cfg.workdaysPerCycle - ev.outDays) / cfg.workdaysPerCycle)
   }
@@ -126,12 +158,22 @@ function cycleForDate(snapshot: Snapshot, iso: string): number {
   return last.n + 1 + Math.max(0, weeks)
 }
 
+export type MilestoneRisk = {
+  key: string
+  target: string
+  latestScheduledEnd: string | null
+  unscheduledPoints: number
+  verdict: "on-track" | "at-risk" | "deferred"
+}
+
 export function balance(snapshot: Snapshot, options: BalanceOptions = {}): {
   options: Required<Pick<BalanceOptions, "weeklyPerPerson" | "start" | "end">> & { people: string[] }
+  warnings: string[]
   capacity: { person: string; cycle: number; capacity: number; committed: number; free: number }[]
   assignments: Assignment[]
   unscheduled: Assignment[]
   atRisk: { id: string; title: string; milestone: string | null; reason: string }[]
+  milestoneRisk: MilestoneRisk[]
   perCycle: { cycle: number; end: string; byPerson: Record<string, number> }[]
   ops: Op[]
 } {
@@ -141,9 +183,20 @@ export function balance(snapshot: Snapshot, options: BalanceOptions = {}): {
   const people = options.people ??
     (snapshot.capacity?.roster ? Object.keys(snapshot.capacity.roster) : [])
   const affinities = (options.affinities ?? DEFAULT_AFFINITIES).filter((a) => people.includes(a.person))
-  const cycles: number[] = []
-  for (let n = start; n <= end; n++) cycles.push(n)
   const cycleEnd = Object.fromEntries(snapshot.cycles.map((c) => [c.n, c.end]))
+  const warnings: string[] = []
+
+  // Only schedule into cycles the team actually runs. A cycle in the window with no matching snapshot
+  // cycle has nowhere to land a `set_cycle`, so drop it and say so rather than propose an impossible move.
+  const existing = new Set(snapshot.cycles.map((c) => c.n))
+  const cycles: number[] = []
+  const missing: number[] = []
+  for (let n = start; n <= end; n++) (existing.has(n) ? cycles : missing).push(n)
+  if (missing.length) {
+    warnings.push(`cycles ${missing.join(", ")} do not exist in the team yet; nothing scheduled there`)
+  }
+  if (!people.length) warnings.push("no rostered people; nothing to assign")
+  if (!cycles.length) warnings.push("no runnable cycles in the window; every candidate left unscheduled")
 
   // Remaining capacity grid, seeded then drained by work already committed to a cycle in the window.
   const free: Record<string, Record<number, number>> = {}
@@ -152,10 +205,26 @@ export function balance(snapshot: Snapshot, options: BalanceOptions = {}): {
     free[p] = {}
     cap[p] = {}
     for (const n of cycles) {
-      const c = cycleCapacity(p, n, snapshot, weekly)
+      const c = cycleCapacity(p, n, snapshot, options.weeklyPerPerson)
       cap[p][n] = c
       free[p][n] = c
     }
+  }
+
+  // Committed work owned by someone off the roster still consumes real capacity but is invisible to
+  // the grid, so the load math would understate it. Flag it rather than silently miscount.
+  const offRoster = new Set<string>()
+  for (const i of snapshot.issues) {
+    if (
+      i.cycle && cycles.includes(i.cycle) && ALIVE(i) && i.assignee !== "Unassigned" && !people.includes(i.assignee)
+    ) {
+      offRoster.add(i.assignee)
+    }
+  }
+  if (offRoster.size) {
+    warnings.push(
+      `off-roster owners with committed work in the window (capacity not modeled): ${[...offRoster].sort().join(", ")}`,
+    )
   }
   for (const i of snapshot.issues) {
     if (i.cycle && cycles.includes(i.cycle) && ALIVE(i) && free[i.assignee]?.[i.cycle] !== undefined) {
@@ -190,6 +259,11 @@ export function balance(snapshot: Snapshot, options: BalanceOptions = {}): {
       return a.id.localeCompare(b.id)
     })
 
+  const unestimated = candidates.filter((i) => !i.estimate).map((i) => i.id)
+  if (unestimated.length) {
+    warnings.push(`no estimate, left unscheduled: ${unestimated.join(", ")}`)
+  }
+
   const assignments: Assignment[] = []
   const unscheduled: Assignment[] = []
   const atRisk: { id: string; title: string; milestone: string | null; reason: string }[] = []
@@ -201,20 +275,23 @@ export function balance(snapshot: Snapshot, options: BalanceOptions = {}): {
   // balance term is in weeks-of-work, so a one-keyword lean (1.0) is worth ~one week of imbalance and
   // an owned chain (1.5) a bit more; neither lets one person run far ahead of the other.
   const AFFINITY_W = 1.0, CONTINUITY_W = 1.5, BALANCE_W = 1.0
-  const pick = (issue: Issue, est: number): string => {
+  const pick = (issue: Issue): string => {
     const score = affinityScore(issue, affinities)
-    const owns = (p: string) => owned[p].has(issue.milestone ?? "") ||
+    const owns = (p: string) =>
+      owned[p].has(issue.milestone ?? "") ||
       [...(issue.blockedBy ?? []), ...(issue.blocks ?? []), ...(issue.related ?? [])]
         .some((n) => byId[n]?.assignee === p)
     const value = (p: string) =>
       AFFINITY_W * score[p] + CONTINUITY_W * (owns(p) ? 1 : 0) - BALANCE_W * (assignedTotal[p] / weekly)
-    return [...people].sort((a, b) => value(b) - value(a) || assignedTotal[a] - assignedTotal[b] || a.localeCompare(b))[0]
+    return [...people].sort((a, b) =>
+      value(b) - value(a) || assignedTotal[a] - assignedTotal[b] || a.localeCompare(b)
+    )[0]
   }
 
   for (const issue of candidates) {
     const est = issue.estimate || 0
     const score = affinityScore(issue, affinities)
-    const person = pick(issue, est)
+    const person = pick(issue)
 
     const leadFloor = options.maxLeadCycles !== undefined
       ? cycleForDate(snapshot, MILESTONE_TARGET(snapshot, issue.milestone)) - options.maxLeadCycles
@@ -257,7 +334,12 @@ export function balance(snapshot: Snapshot, options: BalanceOptions = {}): {
       assignments.push(row)
       ops.push({ kind: "set_cycle", id: issue.id, cycle: placed })
       if (cycleEnd[placed] && cycleEnd[placed] > target) {
-        atRisk.push({ id: issue.id, title: issue.title, milestone: issue.milestone, reason: `cycle ${placed} ends ${cycleEnd[placed]}, after milestone target ${target}` })
+        atRisk.push({
+          id: issue.id,
+          title: issue.title,
+          milestone: issue.milestone,
+          reason: `cycle ${placed} ends ${cycleEnd[placed]}, after milestone target ${target}`,
+        })
       }
     } else {
       row.reason = est === 0
@@ -267,7 +349,12 @@ export function balance(snapshot: Snapshot, options: BalanceOptions = {}): {
         : "beyond horizon capacity"
       unscheduled.push(row)
       if (target <= (cycleEnd[end] ?? "9999-12-31")) {
-        atRisk.push({ id: issue.id, title: issue.title, milestone: issue.milestone, reason: `unscheduled but milestone target ${target} is inside the horizon` })
+        atRisk.push({
+          id: issue.id,
+          title: issue.title,
+          milestone: issue.milestone,
+          reason: `unscheduled but milestone target ${target} is inside the horizon`,
+        })
       }
     }
     if (byId[issue.id]) byId[issue.id].assignee = person
@@ -282,12 +369,46 @@ export function balance(snapshot: Snapshot, options: BalanceOptions = {}): {
     byPerson: Object.fromEntries(people.map((p) => [p, cap[p][n] - free[p][n]])),
   }))
 
+  // Schedule-aware deadline read per milestone this pass touched: the latest cycle any of its still-open
+  // work lands in (committed or newly placed), and how many open points are still unplaced. A milestone
+  // is at risk when work lands after its target, or when work is unplaced and the target sits inside the
+  // window we planned; unplaced work for a target past the window is deferred, not at risk. This answers
+  // "do the estimates say we miss the date" from the actual plan, not a team-average forecast.
+  const horizonEndDate = cycles.length ? cycleEnd[cycles[cycles.length - 1]] : (cycleEnd[end] ?? "9999-12-31")
+  const touched = new Set(candidates.map((c) => c.milestone).filter((m): m is string => m != null))
+  const milestoneRisk = snapshot.milestones
+    .filter((m) => touched.has(m.key))
+    .map((m) => {
+      let latestScheduledEnd: string | null = null
+      let unscheduledPoints = 0
+      for (const i of snapshot.issues) {
+        if (i.milestone !== m.key || !ALIVE(i)) continue
+        const c = i.cycle ?? scheduledCycle[i.id] ?? null
+        if (c == null) {
+          unscheduledPoints += i.estimate || 0
+          continue
+        }
+        const e = cycleEnd[c]
+        if (e && (latestScheduledEnd == null || e > latestScheduledEnd)) latestScheduledEnd = e
+      }
+      const landsLate = latestScheduledEnd != null && latestScheduledEnd > m.target
+      const unplacedByDeadline = unscheduledPoints > 0 && m.target <= horizonEndDate
+      const verdict: MilestoneRisk["verdict"] = landsLate || unplacedByDeadline
+        ? "at-risk"
+        : unscheduledPoints > 0
+        ? "deferred"
+        : "on-track"
+      return { key: m.key, target: m.target, latestScheduledEnd, unscheduledPoints, verdict }
+    })
+
   return {
     options: { weeklyPerPerson: weekly, start, end, people },
+    warnings,
     capacity: capacityRows,
     assignments,
     unscheduled,
     atRisk,
+    milestoneRisk,
     perCycle,
     ops,
   }

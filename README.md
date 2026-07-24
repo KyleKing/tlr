@@ -25,6 +25,9 @@ is next, and [AGENTS.md](AGENTS.md) for where to start.
   it blocks stands out
 - Milestone slip forecast, a realistic landing date against the target from remaining scope and team
   throughput, always labeled a forecast and never a real date
+- Balance proposal, a deterministic assignee-and-cycle plan for unscheduled work under a per-person
+  point ceiling (deflated for on-call and OOO), keeping a dependency chain with one owner and reporting
+  which milestones the estimates say will land late
 - Weekly-update narrative (shipped, moved, at risk) generated from a plan-level diff
 - Slop scan of ticket text for AI tells (dashes, stock phrases, checklists, length), with a review
   queue for recent edits and a way to mark each one reviewed
@@ -101,10 +104,11 @@ cleanly.
 ```sh
 deno task cli scan     --project seed-b.json          # slop score per issue, or --text "<t>"
 deno task cli capacity --project seed-b.json          # load vs capacity per person per cycle
+deno task cli balance  --project seed-b.json --weekly 14 --start 49 --end 54 --lead 8  # propose assignee+cycle, with milestone deadline risk
 deno task cli timeline --project seed-b.json          # dependency waves and ordering risks
 deno task cli diff     --a seed-a.json --b seed-b.json # plan-level change between two snapshots
 deno task cli report   --a seed-a.json --b seed-b.json # weekly-update narrative from a diff
-deno task cli forecast --project seed-b.json          # realistic landing date per milestone
+deno task cli forecast --project seed-b.json [--weekly 25]  # realistic landing date per milestone (--weekly overrides throughput)
 deno task cli review   --a seed-a.json --b seed-b.json # what changed worth a look since last review
 deno task cli plan     --project seed-b.json --text "move SEED-105 to M2"  # guidance -> ops, preview diff
 deno task cli snapshot --project seed-b.json          # capture a snapshot into the local store
@@ -138,7 +142,7 @@ work (a refresh would fire, an edit would call the API) rather than re-testing t
 ```
 src/              the core: seed (data contract), snapshot store, diff, review, ops, plan,
                   linear_write (the one write adapter), report, forecast, export, and
-                  commands/ (scan, capacity, timeline)
+                  commands/ (scan, capacity, balance, timeline)
 scripts/          data-refresh and dev-server scripts (issues, capacity, roster, serve, seed, cli)
 web/              the app: app.js (board), changes.js, review.js, style.css
 web/lib/          pure logic (planning.js, capacity.js), imported by both the browser and Deno tests

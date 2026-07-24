@@ -24,7 +24,11 @@ function issue(over: Partial<Issue> & { id: string }): Issue {
   }
 }
 
-function snapshot(issues: Issue[], people?: Record<string, { velocity?: number; cycles?: Record<string, unknown> }>): Snapshot {
+function snapshot(
+  issues: Issue[],
+  people?: Record<string, { velocity?: number; cycles?: Record<string, unknown> }>,
+  milestones?: { key: string; name: string; target: string; progress: number }[],
+): Snapshot {
   const cycles = []
   for (let n = 48; n <= 60; n++) {
     const start = new Date(Date.UTC(2026, 6, 20) + (n - 48) * 7 * 86400000).toISOString().slice(0, 10)
@@ -38,7 +42,7 @@ function snapshot(issues: Issue[], people?: Record<string, { velocity?: number; 
     currentCycle: 48,
     teamCapacityPerCycle: 40,
     teamVelocity: 40,
-    milestones: [
+    milestones: milestones ?? [
       { key: "M1", name: "M1", target: "2026-08-31", progress: 0 },
       { key: "M2", name: "M2", target: "2026-11-30", progress: 0 },
     ],
@@ -109,4 +113,109 @@ Deno.test("load stays balanced between two people on affinity-neutral work", () 
   for (const a of r.assignments) load[a.person] = (load[a.person] ?? 0) + a.estimate
   const vals = Object.values(load)
   assertEquals(Math.abs(vals[0] - vals[1]) <= 4, true, `loads ${JSON.stringify(load)}`)
+})
+
+Deno.test("cycles the team does not run are dropped and warned, nothing scheduled", () => {
+  const r = balance(snapshot([issue({ id: "T-1", estimate: 3 })]), { weeklyPerPerson: 10, start: 61, end: 62 })
+  assertEquals(r.assignments.length, 0)
+  assertEquals(r.warnings.some((w) => w.includes("do not exist")), true)
+  assertEquals(r.warnings.some((w) => w.includes("no runnable cycles")), true)
+})
+
+Deno.test("committed work owned by an off-roster person raises a warning", () => {
+  const issues = [issue({ id: "T-1", estimate: 3, statusType: "started", cycle: 50, assignee: "Stranger" })]
+  const r = balance(snapshot(issues), { weeklyPerPerson: 10, start: 49, end: 52 })
+  assertEquals(r.warnings.some((w) => w.includes("off-roster") && w.includes("Stranger")), true)
+})
+
+Deno.test("unestimated in-scope work is left unscheduled with a warning", () => {
+  const r = balance(snapshot([issue({ id: "T-1", estimate: 0, milestone: "M1" })]), {
+    weeklyPerPerson: 10,
+    start: 49,
+    end: 52,
+  })
+  assertEquals(r.assignments.length, 0)
+  assertEquals(r.unscheduled.map((a) => a.id), ["T-1"])
+  assertEquals(r.warnings.some((w) => w.includes("no estimate")), true)
+})
+
+Deno.test("a milestone whose work lands after its target is flagged at-risk", () => {
+  const ms = [{ key: "M1", name: "M1", target: "2026-07-20", progress: 0 }] // before the horizon start
+  const r = balance(snapshot([issue({ id: "T-1", estimate: 3, milestone: "M1" })], undefined, ms), {
+    weeklyPerPerson: 10,
+    start: 49,
+    end: 52,
+  })
+  const m1 = r.milestoneRisk.find((m) => m.key === "M1")!
+  assertEquals(m1.verdict, "at-risk")
+})
+
+Deno.test("a far-target milestone with unplaced work is deferred, not at-risk", () => {
+  const r = balance(snapshot([issue({ id: "T-1", estimate: 3, milestone: "M2" })]), {
+    weeklyPerPerson: 10,
+    start: 49,
+    end: 52,
+    maxLeadCycles: 2, // M2 target 2026-11-30 is far out, so it can't be pulled into this window
+  })
+  const m2 = r.milestoneRisk.find((m) => m.key === "M2")!
+  assertEquals(m2.verdict, "deferred")
+  assertEquals(m2.unscheduledPoints, 3)
+})
+
+Deno.test("a milestone whose work all lands by target is on-track", () => {
+  const ms = [{ key: "M1", name: "M1", target: "2026-12-31", progress: 0 }] // comfortably after the window
+  const r = balance(snapshot([issue({ id: "T-1", estimate: 3, milestone: "M1" })], undefined, ms), {
+    weeklyPerPerson: 10,
+    start: 49,
+    end: 52,
+  })
+  const m1 = r.milestoneRisk.find((m) => m.key === "M1")!
+  assertEquals(m1.verdict, "on-track")
+  assertEquals(m1.unscheduledPoints, 0)
+})
+
+Deno.test("an in-scope issue scheduled past its milestone target lands in atRisk", () => {
+  const ms = [{ key: "M1", name: "M1", target: "2026-07-20", progress: 0 }]
+  const r = balance(snapshot([issue({ id: "T-1", estimate: 3, milestone: "M1" })], undefined, ms), {
+    weeklyPerPerson: 10,
+    start: 49,
+    end: 52,
+  })
+  assertEquals(r.atRisk.some((a) => a.id === "T-1"), true)
+})
+
+Deno.test("an on-call week deflates capacity by the penalty", () => {
+  const r = balance(
+    snapshot([issue({ id: "T-1", estimate: 1, milestone: "M1" })], {
+      "Kyle King": { cycles: { "49": { oncall: true } } },
+    }),
+    { weeklyPerPerson: 10, start: 49, end: 49 },
+  )
+  const kyle = r.capacity.find((c) => c.person === "Kyle King" && c.cycle === 49)!
+  assertEquals(kyle.capacity, 6) // round(10 * (1 - 0.45))
+})
+
+Deno.test("an oversized estimate is still placed, not silently dropped", () => {
+  const r = balance(snapshot([issue({ id: "T-big", estimate: 40, milestone: "M1" })]), {
+    weeklyPerPerson: 10,
+    start: 49,
+    end: 52,
+  })
+  assertEquals(r.assignments.map((a) => a.id), ["T-big"])
+  assertEquals(r.unscheduled.length, 0)
+})
+
+Deno.test("the plan is deterministic across runs", () => {
+  const build = () =>
+    balance(
+      snapshot(
+        Array.from({ length: 10 }, (_, i) => issue({ id: `T-${i}`, estimate: 3, milestone: i % 2 ? "M1" : "M2" })),
+      ),
+      {
+        weeklyPerPerson: 12,
+        start: 49,
+        end: 54,
+      },
+    )
+  assertEquals(JSON.stringify(build()), JSON.stringify(build()))
 })

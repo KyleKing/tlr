@@ -36,6 +36,14 @@ product:
 - Reporting: `src/report.ts` (`tlr report`, weekly shipped/moved/at-risk narrative from a diff) and
   `src/forecast.ts` (`tlr forecast`, per-milestone landing date vs target, labeled a forecast)
 - Also: `scan`, `capacity`, and `timeline` CLI commands for Claude Code to pull before a batch edit
+- Balance: `src/commands/balance.ts` (`tlr balance`), a deterministic assigner that proposes an
+  assignee and cycle for unscheduled open work under a per-person point ceiling, deflated for on-call
+  and OOO, keeping a dependency chain with one owner. It emits `set_assignee`/`set_cycle` ops (ready for
+  the Review write path), flags off-roster owners and un-estimated work, and reports per-milestone
+  deadline risk (does the plan land a milestone's work after its target). `milestoneForecast` grew an
+  optional throughput override (`tlr forecast --weekly`) so the forecast can use a realistic per-person
+  rate instead of raw summed velocity. Next: route a balance proposal through `/api/edit` as a
+  Balance page (see `BALANCE-NOTES.md`)
 - Board UX: per-group All/None filter toggles with a visible double-click-to-solo hint, and milestone
   headers that wrap into a narrow column with target and progress moved to the hover
 - Forecast on the board: each milestone header carries a slip marker (early/late vs. target) with the

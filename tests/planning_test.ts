@@ -62,6 +62,17 @@ Deno.test("milestoneForecast lands milestones sequentially by target date", () =
   assertEquals(fc.milestones.map((m) => m.key), ["M1", "M2"])
   // M1 needs one week from asOf; M2 starts after M1 lands, so its landing is later.
   assertEquals(fc.milestones[1].landing > fc.milestones[0].landing, true)
+
+  // A throughput override replaces the roster-sum and slows the landings (half the rate, so M1's one
+  // week of work takes two).
+  const slow = milestoneForecast(data, 10)
+  assertEquals(slow.teamWeeklyPoints, 10)
+  assertEquals(slow.milestones[0].weeksNeeded, 2)
+  assertEquals(slow.milestones[0].landing > fc.milestones[0].landing, true)
+
+  // A non-positive override is meaningless and falls back to the roster sum, not a nonsense date.
+  assertEquals(milestoneForecast(data, 0).teamWeeklyPoints, 20)
+  assertEquals(milestoneForecast(data, -5).teamWeeklyPoints, 20)
 })
 
 Deno.test("weeksBetween is roughly right and never negative", () => {

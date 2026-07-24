@@ -88,8 +88,14 @@ function forecastStatus(slipDays) {
   return "at-risk"
 }
 
-export function milestoneForecast(snapshot) {
-  const weekly = teamWeeklyPoints(snapshot)
+// weeklyPoints overrides the team throughput used for the landing math. Omit for the default (sum of
+// each rostered person's base velocity). Pass a realistic figure (e.g. a per-person ceiling deflated
+// for on-call and OOO) when the project is only a slice of the team's work, so the forecast does not
+// assume everyone spends their whole week on it.
+export function milestoneForecast(snapshot, weeklyPoints) {
+  // A non-positive override is meaningless (it would land everything at asOf or before), so fall back
+  // to the roster sum rather than emit a nonsense date.
+  const weekly = weeklyPoints != null && weeklyPoints > 0 ? weeklyPoints : teamWeeklyPoints(snapshot)
   const ordered = [...snapshot.milestones].sort((a, b) => a.target.localeCompare(b.target))
   let cursor = snapshot.asOf
   const milestones = ordered.map((m) => {

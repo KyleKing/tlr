@@ -23,6 +23,6 @@ export type Forecast = {
   milestones: MilestoneForecast[]
 }
 
-export function milestoneForecast(snapshot: Snapshot): Forecast {
-  return _milestoneForecast(snapshot) as Forecast
+export function milestoneForecast(snapshot: Snapshot, weeklyPoints?: number): Forecast {
+  return _milestoneForecast(snapshot, weeklyPoints) as Forecast
 }

@@ -108,8 +108,10 @@ async function run(cmd: string | undefined, f: Flags): Promise<void> {
       const report = weeklyReport(diffSnapshots(before, after))
       return out(f.json ? report : renderReport(report))
     }
-    case "forecast":
-      return out(milestoneForecast(await loadData(str(f, "project") ?? "data-sample.json")))
+    case "forecast": {
+      const weekly = str(f, "weekly") !== undefined ? Number(str(f, "weekly")) : undefined
+      return out(milestoneForecast(await loadData(str(f, "project") ?? "data-sample.json"), weekly))
+    }
     case "review": {
       const { before, after, window } = await twoSnapshots(f, true)
       const review = reviewSince(before, after)
@@ -199,7 +201,7 @@ function usage(): void {
       "  timeline  --project <file>",
       "  diff      --a <file> --b <file> | --from <id> --to <id>",
       "  report    --a <file> --b <file> | --from <id> --to <id> [--json]",
-      "  forecast  --project <file>",
+      "  forecast  --project <file> [--weekly <n>]",
       "  review    --a <file> --b <file> | --db <path> [--no-advance]",
       "  plan      --project <file> --text <guidance>",
       "  snapshot  --project <file> [--label <l>] [--db <path>]",

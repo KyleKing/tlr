@@ -6,6 +6,25 @@ exists as `src/commands/balance.ts` (a pure, deterministic greedy assigner that 
 `set_cycle` ops) plus a `balance` CLI command. These notes are about making its output accurate and
 actionable, not about the allocation algorithm itself.
 
+## Status (2026-07-24)
+
+Landed since the first pass, so the gotchas below are mostly handled in code now:
+
+- Capacity base is each person's own velocity, deflated for on-call and OOO, with a flat `weeklyPerPerson`
+  ceiling as an optional override (the "prefer real per-person capacity" note).
+- `set_cycle` guards cycles that do not exist in the team: cycles outside `snapshot.cycles` are dropped
+  from the window and reported in `warnings`, so balance never proposes a move with nowhere to land.
+- `warnings` also flags off-roster owners with committed work in the window (their capacity is not
+  modeled) and in-scope issues with no estimate (left unscheduled, not counted as zero).
+- `milestoneRisk` answers the deadline question from the plan itself: per milestone, the latest cycle its
+  still-open work lands in and the points still unplaced, with a verdict (on-track / at-risk / deferred).
+- `milestoneForecast` takes an optional throughput override (`tlr forecast --weekly N`), so the forecast
+  can use a realistic per-person rate rather than the raw summed base velocity (which read 40 pts/week
+  for a two-person team and made every milestone look far ahead).
+
+Still open: the UI (route a proposal through `/api/edit`, see below), a per-person forecast variant,
+affinities in Settings rather than hardcoded, and whether to reassign already-owned work (opt-in).
+
 ## What already exists to build on
 
 Reuse these rather than re-deriving them. Everything analytic is pure and unit-tested, matching the
