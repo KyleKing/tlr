@@ -20,6 +20,32 @@ Folded into the plan, recorded so the reasoning survives:
   Open: do you want me to create the free workspace + API key, or will you provision it and drop the
   key in the keychain (`security add-generic-password -s tlr-linear-seed ...`) for the seed script?
 
+## Shipped since this log started (2026-07-23)
+
+Clearing the self-contained, unblocked items so what's left is only work that needs a decision:
+
+- Weekly-update report (`tlr report`, `src/report.ts`) and milestone slip forecast (`tlr forecast`,
+  now shared in web/lib/planning.js and shown on the board's milestone headers)
+- Faster filters (per-group All/None, visible double-click-to-solo hint)
+- Milestone header density (narrow wrapping column, target/progress/forecast moved to the hover)
+
+## Decisions that now block the rest of the roadmap
+
+Everything left needs your input, so I stopped here rather than guess:
+
+1. **Milestone display-key strategy** (see next section). Blocks the naming-assumption fix.
+2. **Cohesive-app page structure.** You asked "what other pages, and how to make it cohesive?" The
+   remaining UI items (weekly report in the app, an edit-history/review view) each need a home. Options:
+   keep one board page and add panels/modals like the config dialog, or add real routed pages with a
+   shared nav. I lean panels first (no routing commitment, reuses the dialog pattern), pages later.
+3. **Snapshot history in the server.** Both "report in the UI" and the review queue need two snapshots
+   to diff. The sqlite store (`src/snapshot.ts`) exists but only the CLI writes it. To surface either
+   in the app the server has to capture snapshots (on refresh? daily? on a button?) and expose a
+   list/load API. That capture cadence is a call for you.
+4. **Edit-history review data source.** The review view can read the diff between two stored snapshots
+   (works offline, no key) or lean on a Linear write-time hook for true actor attribution (needs the
+   key and the hook). Snapshot-diff is buildable now; the hook is blocked.
+
 ## Product direction: what tlr should build beyond Linear
 
 Captured from the mid-session discussion for you to prune. Ranked by value-over-Linear:
