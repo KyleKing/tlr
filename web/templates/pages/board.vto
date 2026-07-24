@@ -87,9 +87,18 @@
     </span>
   </div>
   <div class="bar-filters">
-    <span class="fgroup"><span class="flabel">Status</span><span class="chips" id="status-chips"></span></span>
-    <span class="fgroup"><span class="flabel">Bucket</span><span class="chips" id="bucket-chips"></span></span>
+    <span class="fgroup">
+      <span class="flabel">Status</span>
+      <span class="chips" id="status-chips"></span>
+      <span class="fbulk"><button class="chip mini" id="status-all" title="Show every status">All</button><button class="chip mini" id="status-none" title="Hide every status">None</button></span>
+    </span>
+    <span class="fgroup">
+      <span class="flabel">Bucket</span>
+      <span class="chips" id="bucket-chips"></span>
+      <span class="fbulk"><button class="chip mini" id="bucket-all" title="Show every column">All</button><button class="chip mini" id="bucket-none" title="Hide every column">None</button></span>
+    </span>
     <span class="fgroup"><span class="flabel">Flags</span><span class="chips" id="flag-chips"></span></span>
+    <span class="fhint">tip: double-click a chip to show only it</span>
   </div>
   <div class="summary" id="summary"></div>
   <div class="wrap">

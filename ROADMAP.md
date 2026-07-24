@@ -30,6 +30,8 @@ product:
 - Reporting: `src/report.ts` (`tlr report`, weekly shipped/moved/at-risk narrative from a diff) and
   `src/forecast.ts` (`tlr forecast`, per-milestone landing date vs target, labeled a forecast)
 - Also: `scan`, `capacity`, and `timeline` CLI commands for Claude Code to pull before a batch edit
+- Board UX: per-group All/None filter toggles with a visible double-click-to-solo hint, and milestone
+  headers that wrap into a narrow column with target and progress moved to the hover
 
 Open items and tradeoffs are in [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md). The schema stays thin (the
 current Linear shape), not ADR 0006's normalized model, until a second tracker lands.
@@ -76,27 +78,16 @@ items depending on them are marked below.
 - **Production deployment.** Plan written in [adr/0008](adr/0008-deployment.md): a separate systemd
   unit on the yak-shears-managed VM, pulled in and started the same way, sharing the CPU. Blocked on
   the secrets story (no macOS keychain on the Linux host).
-- **Milestone display-key strategy.** Pick an approach (see [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md))
-  before I fix the "M1: Name" naming assumption in the backlog item below.
+- **Milestone display-key strategy.** The header now wraps the name into a narrow column and moves
+  target and progress to the hover, so the width problem is fixed. What remains is deriving a short
+  column key from an arbitrary milestone name: today `milestoneKey` (scripts/issues.ts) and `bucketSub`
+  (web/app.js) assume the "M1: Name" convention, so a project with plain names gets the whole name as
+  the key. Pick an approach (see [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md)) before I change the derivation.
 
 ## Backlog
 
 Ordered by payoff. Unblocked unless a "(blocked: ...)" note says otherwise.
 
-- **Faster filter controls.** Changing the shown status, bucket, or flag set takes too many clicks
-  today (one per chip, with a hidden double-click-to-solo). Revisit the interaction: candidates are
-  select-all/clear-all per group, a shift-click range, keyboard access to the chips, and surfacing the
-  double-click-to-solo affordance so it is discoverable.
-- **Milestone header density and naming.** The milestone column header packs name, target, and
-  progress onto one wide line, which forces the column wider than the tickets need. Wrap it
-  aggressively to trade cell height for a much narrower column, and move most of the detail (target,
-  progress, full name) into the hover. Stop assuming the "M1: Name" convention: `milestoneKey`
-  (scripts/issues.ts) derives the key from the text before the colon, `buildBuckets`
-  (web/lib/planning.js) uses that key as the column label, and `bucketSub` (web/app.js) strips a
-  leading `/^M\d: /`. A Linear project whose milestones are plain names gets the whole name as a long
-  column label and a no-op strip. Derive a short display key independent of the name, and support
-  arbitrary, long milestone names end to end. (The naming fix is blocked on the display-key strategy
-  above; the wrapping and hover work is not.)
 - **Surface report and forecast in the UI.** `tlr report` and `tlr forecast` are CLI-only today.
   Bring the weekly narrative and the per-milestone landing dates into a page (ties to the cohesive-app
   work below), so a slip shows on the board next to its target, marked as a forecast.

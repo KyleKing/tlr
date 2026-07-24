@@ -206,6 +206,22 @@ h1 {
   border-color: currentColor;
   font-weight: 600;
 }
+.chip.mini {
+  padding: 2px 7px;
+  font-size: 11px;
+  color: var(--subtext0);
+}
+.fbulk {
+  display: inline-flex;
+  gap: 4px;
+  margin-left: 2px;
+}
+.fhint {
+  font-size: 11px;
+  color: var(--subtext0);
+  font-style: italic;
+  margin-left: auto;
+}
 .pill {
   border: 1px solid var(--surface1);
   background: var(--mantle);
@@ -283,6 +299,16 @@ thead .col th .s {
   color: var(--subtext0);
   font-weight: 400;
   font-size: 10.5px;
+}
+/* Milestone headers wrap aggressively into a narrow column; target and progress move to the hover
+   title so only the key and short name stay on screen. */
+thead .col th.mile {
+  white-space: normal;
+  max-width: 130px;
+}
+thead .col th.mile .s {
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 tbody th {
   position: sticky;

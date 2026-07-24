@@ -392,6 +392,18 @@ for (const [k, label] of Object.entries(FLAGS)) {
   chipButton(flagHost, label, false, `var(--${k})`, "flag", (on) => on ? state.flags.add(k) : state.flags.delete(k))
 }
 
+// Per-group bulk toggles so a wholesale change is one click, not one per chip.
+function bulk(setState) {
+  setState()
+  syncChips()
+  render()
+}
+document.getElementById("status-all").onclick = () => bulk(() => (state.statuses = new Set(Object.keys(STATUS))))
+document.getElementById("status-none").onclick = () => bulk(() => (state.statuses = new Set()))
+document.getElementById("bucket-all").onclick = () =>
+  bulk(() => (state.bucketKeys = new Set(buckets.map((b) => b.key))))
+document.getElementById("bucket-none").onclick = () => bulk(() => (state.bucketKeys = new Set()))
+
 // interactive hover card (holds the not-slop action, so it must stay reachable)
 const tip = document.getElementById("tip")
 let hoverIssue = null
@@ -584,7 +596,8 @@ function buildTransposed(people) {
   h += "</tr></thead><tbody>"
   for (const b of visible) {
     const kindTag = b.kind === "cycle" ? "now" : b.kind === "milestone" ? "horizon" : "backlog"
-    h += `<tr><th class="rowhead ${kindTag}">${b.label}<span class="s">${bucketSub(b)}</span></th>`
+    h += `<tr><th class="rowhead ${kindTag}" title="${escapeHtml(bucketDetail(b))}">${b.label}` +
+      `<span class="s">${bucketSub(b)}</span></th>`
     for (const person of people) h += cellHTML(person, b)
     h += "</tr>"
   }
@@ -717,13 +730,28 @@ function personPts(person) {
   for (const i of passesShown) if (i.assignee === person) pts += i.estimate
   return `<span class="pl"> ${pts}pt</span>`
 }
+// Short name shown under a milestone key. Stripping "M1: " is a no-op for plain names; deriving a real
+// short display key from an arbitrary name is the blocked naming work (see ROADMAP).
+function milestoneName(b) {
+  return b.name ? escapeHtml(b.name.replace(/^M\d: /, "")) : ""
+}
+// Visible sub-line: kept compact for milestones (just the name, allowed to wrap) so the column stays
+// narrow. Cycles and backlog keep their one-word sub.
 function bucketSub(b) {
-  return `${b.name ? `${escapeHtml(b.name.replace(/^M\d: /, ""))} · ` : ""}${b.sub}${
-    b.progress != null ? ` · ${Math.round(b.progress)}%` : ""
-  }`
+  return b.kind === "milestone" ? milestoneName(b) : b.sub
+}
+// Full detail for the hover title: target and progress live here, not in the header, for milestones.
+function bucketDetail(b) {
+  if (b.kind !== "milestone") return `${b.label} · ${b.sub}`
+  const parts = [b.name ? b.name.replace(/^M\d: /, "") : b.label, b.sub]
+  if (b.progress != null) parts.push(`${Math.round(b.progress)}%`)
+  return parts.join(" · ")
 }
 function bucketTh(b) {
-  return `<th>${b.label}<span class="s">${bucketSub(b)}</span></th>`
+  const cls = b.kind === "milestone" ? "mile" : ""
+  return `<th class="${cls}" title="${escapeHtml(bucketDetail(b))}">${b.label}<span class="s">${
+    bucketSub(b)
+  }</span></th>`
 }
 
 function flagBadges(i) {
