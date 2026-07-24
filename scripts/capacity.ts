@@ -30,6 +30,7 @@ import {
   velocityByPerson,
 } from "../web/lib/capacity.js"
 import { CLIENT_PATH, fetchFreeBusy, loadClient, tokenFor } from "./gcal-freebusy.ts"
+import { getSecret } from "@/secrets.ts"
 
 const INCIDENT_HOST = "https://api.incident.io"
 const DEFAULT_DATA = new URL("../web/data/cpu.json", import.meta.url).pathname
@@ -51,22 +52,8 @@ function parseArgs(argv: string[]) {
   }
 }
 
-async function incidentToken(): Promise<string> {
-  const env = Deno.env.get("INCIDENT_IO_TOKEN")
-  if (env) return env.trim()
-  const cmd = new Deno.Command("security", {
-    args: ["find-generic-password", "-s", "tlr-incidentio", "-a", "api-key", "-w"],
-    stdout: "piped",
-    stderr: "null",
-  })
-  const { code, stdout } = await cmd.output()
-  if (code !== 0) {
-    throw new Error(
-      "no Incident.io token: set INCIDENT_IO_TOKEN or store one with\n" +
-        "  security add-generic-password -s tlr-incidentio -a api-key -w",
-    )
-  }
-  return new TextDecoder().decode(stdout).trim()
+function incidentToken(): Promise<string> {
+  return getSecret("incidentio")
 }
 
 async function incidentGet(path: string, token: string) {

@@ -20,6 +20,7 @@ import {
   upsertProjectManifest,
 } from "../web/lib/issues.js"
 import { resolveRoster } from "./roster.ts"
+import { getSecret } from "@/secrets.ts"
 
 const LINEAR_API_URL = "https://api.linear.app/graphql"
 const DEFAULT_DATA = new URL("../web/data/cpu.json", import.meta.url).pathname
@@ -115,24 +116,8 @@ function parseArgs(argv: string[]) {
 }
 
 // account "api-key" is the real workspace; "demo-key" is the free/test workspace used in demo mode.
-// Each has its own env override (LINEAR_API_KEY / LINEAR_DEMO_API_KEY) so CI can inject without a keychain.
-export async function linearKey(account: "api-key" | "demo-key" = "api-key"): Promise<string> {
-  const envName = account === "demo-key" ? "LINEAR_DEMO_API_KEY" : "LINEAR_API_KEY"
-  const env = Deno.env.get(envName)
-  if (env) return env.trim()
-  const cmd = new Deno.Command("security", {
-    args: ["find-generic-password", "-s", "tlr-linear", "-a", account, "-w"],
-    stdout: "piped",
-    stderr: "null",
-  })
-  const { code, stdout } = await cmd.output()
-  if (code !== 0) {
-    throw new Error(
-      `no Linear key: set ${envName} or store one with\n` +
-        `  security add-generic-password -s tlr-linear -a ${account} -w`,
-    )
-  }
-  return new TextDecoder().decode(stdout).trim()
+export function linearKey(account: "api-key" | "demo-key" = "api-key"): Promise<string> {
+  return getSecret(account === "demo-key" ? "linear-demo" : "linear")
 }
 
 async function gql<T>(key: string, query: string, variables: Record<string, unknown>): Promise<T> {

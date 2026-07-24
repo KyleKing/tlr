@@ -9,6 +9,8 @@
 // or the LINEAR_API_KEY env var) so the roster is never hand-maintained. Existing roster entries are
 // kept; a name already carrying an email is left alone unless --force is passed.
 
+import { getSecret } from "@/secrets.ts"
+
 const LINEAR_API_URL = "https://api.linear.app/graphql"
 const DEFAULT_DATA = new URL("../web/data/cpu.json", import.meta.url).pathname
 
@@ -26,22 +28,8 @@ function parseArgs(argv: string[]) {
   return args as { data: string; dryRun?: boolean; force?: boolean }
 }
 
-async function linearKey(): Promise<string> {
-  const env = Deno.env.get("LINEAR_API_KEY")
-  if (env) return env.trim()
-  const cmd = new Deno.Command("security", {
-    args: ["find-generic-password", "-s", "tlr-linear", "-a", "api-key", "-w"],
-    stdout: "piped",
-    stderr: "null",
-  })
-  const { code, stdout } = await cmd.output()
-  if (code !== 0) {
-    throw new Error(
-      "no Linear key: set LINEAR_API_KEY or store one with\n" +
-        "  security add-generic-password -s tlr-linear -a api-key -w",
-    )
-  }
-  return new TextDecoder().decode(stdout).trim()
+function linearKey(): Promise<string> {
+  return getSecret("linear")
 }
 
 type LinearUser = { name: string; displayName: string; email: string; active: boolean }
