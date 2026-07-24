@@ -75,6 +75,7 @@
       <button class="pill" id="cfg-save">Save</button>
     </div>
   </dialog>
+  <div id="freshness" class="freshness" role="status" hidden></div>
   <div class="bar-controls">
     <input id="search" type="search" placeholder="Search id / title / description…" />
     <button class="chip" id="view" aria-pressed="false">Timeline</button>
@@ -91,7 +92,10 @@
     <span class="fgroup"><span class="flabel">Flags</span><span class="chips" id="flag-chips"></span></span>
   </div>
   <div class="summary" id="summary"></div>
-  <div class="wrap"><table id="grid"></table><div id="timeline" hidden></div></div>
+  <div class="wrap">
+    <table id="grid" aria-label="Planning board: issues by assignee and cycle or milestone"></table>
+    <div id="timeline" hidden></div>
+  </div>
   <div id="tip"></div>
   <details class="legend">
     <summary>How to read this board</summary>
@@ -117,6 +121,11 @@
         restore). "Rows: people / buckets" flips the grid so buckets run down the side when heavy
         filtering leaves few columns. The board re-fetches every five minutes and on Refresh without
         touching your filters or scroll position.
+      </p>
+      <p>
+        Keyboard: Tab into the grid, then use the arrow keys to move between tickets. Enter or Space
+        opens the focused ticket in Linear, "s" marks it not-slop (or re-flags it) when it carries a
+        slop warning, and Escape dismisses the card.
       </p>
       <p>
         "Timeline" flips to a dependency-ordered view: issues are grouped into waves by how deep they sit

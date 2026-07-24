@@ -65,10 +65,13 @@ async function loadProjects() {
 }
 
 let currentDataFile = "cpu.json"
+// true when the project's own data file was missing and we fell back to the bundled sample
+let isSampleData = false
 
 async function loadData(dataFile = currentDataFile) {
   currentDataFile = dataFile
   const r = await fetch(`/data/${dataFile}`, { cache: "no-store" })
+  isSampleData = !r.ok
   return (r.ok ? r : await fetch("/data-sample.json", { cache: "no-store" })).json()
 }
 
@@ -611,10 +614,82 @@ function timelineCard(i) {
     `<div class="who">${escapeHtml(i.assignee)}</div></div>`
 }
 
+function nodeLabel(i) {
+  const st = STATUS[i.statusType]?.label ?? i.statusType
+  const flags = [i._risk && "ordering risk", isSlop(i) && "slop", i._miss.blocking && "missing data"].filter(Boolean)
+  return `${i.id}: ${i.title}. ${st}, ${i.assignee}, ${i.estimate || "no"} points` +
+    (flags.length ? `. Flags: ${flags.join(", ")}` : "")
+}
+
+function showTipForEl(el, i) {
+  const r = el.getBoundingClientRect()
+  showTip({ clientX: r.left, clientY: r.bottom - 8 }, i)
+}
+
+// roving tabindex: only one grid node is tab-reachable at a time; arrows move focus between them
+function focusNode(el, nodes) {
+  for (const n of nodes) n.tabIndex = -1
+  el.tabIndex = 0
+  el.focus()
+}
+
+function arrowTarget(key, el, nodes) {
+  const idx = nodes.indexOf(el)
+  if (key === "ArrowRight") return nodes[idx + 1] ?? null
+  if (key === "ArrowLeft") return nodes[idx - 1] ?? null
+  if (key !== "ArrowDown" && key !== "ArrowUp") return null
+  const r = el.getBoundingClientRect()
+  const cx = r.left + r.width / 2, cy = r.top + r.height / 2
+  let best = null, bestScore = Infinity
+  for (const n of nodes) {
+    if (n === el) continue
+    const nr = n.getBoundingClientRect()
+    const dy = nr.top + nr.height / 2 - cy
+    if (key === "ArrowDown" && dy <= 4) continue
+    if (key === "ArrowUp" && dy >= -4) continue
+    const score = Math.abs(dy) * 2 + Math.abs(nr.left + nr.width / 2 - cx)
+    if (score < bestScore) {
+      bestScore = score
+      best = n
+    }
+  }
+  return best
+}
+
+function onGridKey(e, nodes) {
+  const el = document.activeElement
+  if (!el?.hasAttribute?.("data-id")) return
+  const i = byId[el.getAttribute("data-id")]
+  if (e.key === "Enter" || e.key === " ") {
+    e.preventDefault()
+    globalThis.open(i.url, "_blank")
+    return
+  }
+  if (e.key === "Escape") {
+    hideTip()
+    el.blur()
+    return
+  }
+  if (e.key === "s" && (isSlop(i) || isDismissed(i))) {
+    e.preventDefault()
+    toggleReviewed(i)
+    return
+  }
+  const target = arrowTarget(e.key, el, nodes)
+  if (target) {
+    e.preventDefault()
+    focusNode(target, nodes)
+  }
+}
+
 function wireNodes(container) {
-  for (const el of container.querySelectorAll("[data-id]")) {
+  const nodes = [...container.querySelectorAll("[data-id]")]
+  nodes.forEach((el, idx) => {
     const i = byId[el.getAttribute("data-id")]
     nodeById.set(i.id, el)
+    el.tabIndex = idx === 0 ? 0 : -1
+    el.setAttribute("role", "button")
+    el.setAttribute("aria-label", nodeLabel(i))
     el.addEventListener("mouseenter", (e) => {
       clearTimeout(hideTimer)
       hoverIssue = i
@@ -624,7 +699,17 @@ function wireNodes(container) {
     el.addEventListener("mouseleave", () => {
       hideTimer = setTimeout(hideTip, 160)
     })
-  }
+    el.addEventListener("focus", () => {
+      clearTimeout(hideTimer)
+      hoverIssue = i
+      showTipForEl(el, i)
+      hoverDeps(i, true)
+    })
+    el.addEventListener("blur", () => {
+      hideTimer = setTimeout(hideTip, 160)
+    })
+  })
+  container.onkeydown = (e) => onGridKey(e, nodes)
 }
 
 function personPts(person) {
@@ -699,10 +784,43 @@ async function refresh() {
 function pad(n) {
   return String(n).padStart(2, "0")
 }
+// a snapshot older than this many days gets a visible staleness banner
+const STALE_DAYS = 2
+function dataAgeDays() {
+  const asOf = new Date(data.asOf)
+  if (Number.isNaN(asOf.getTime())) return null
+  return Math.floor((Date.now() - asOf.getTime()) / 86400000)
+}
+function ageLabel(days) {
+  if (days == null) return ""
+  if (days <= 0) return "today"
+  return days === 1 ? "1 day old" : `${days} days old`
+}
 function updateSync() {
-  document.getElementById("sync").textContent = `data as of ${data.asOf} · loaded ${pad(loadedAt.getHours())}:${
+  const days = dataAgeDays()
+  const age = days != null && days > 0 ? ` · ${ageLabel(days)}` : ""
+  document.getElementById("sync").textContent = `data as of ${data.asOf}${age} · loaded ${pad(loadedAt.getHours())}:${
     pad(loadedAt.getMinutes())
   }`
+  updateFreshness(days)
+}
+// Banner above the board: loud when we're showing the bundled sample instead of real data,
+// softer when a real snapshot has gone stale. Silent when data is fresh.
+function updateFreshness(days = dataAgeDays()) {
+  const el = document.getElementById("freshness")
+  if (!el) return
+  if (isSampleData) {
+    el.className = "freshness sample"
+    el.textContent = `Showing sample data — no live snapshot for “${data.project?.name ?? currentDataFile}” yet. ` +
+      `Run a refresh or “deno task issues” to pull real tickets.`
+    el.hidden = false
+  } else if (days != null && days >= STALE_DAYS) {
+    el.className = "freshness stale"
+    el.textContent = `This snapshot is ${ageLabel(days)} (as of ${data.asOf}). Refresh for current data.`
+    el.hidden = false
+  } else {
+    el.hidden = true
+  }
 }
 
 // auto-refresh every 5 minutes; only re-renders if the payload changed, keeping filters intact

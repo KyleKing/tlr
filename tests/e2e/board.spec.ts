@@ -18,3 +18,28 @@ test("configuration panel opens and closes", async ({ page }) => {
   await page.click("#config-close")
   await expect(page.locator("#config-panel")).toBeHidden()
 })
+
+test("shows the sample-data banner when the project data file is missing", async ({ page }) => {
+  // force the project's own data files to 404 so loadData falls back to data-sample.json
+  await page.route("**/data/**", (route) => route.fulfill({ status: 404, body: "" }))
+  await page.goto("/")
+
+  const banner = page.locator("#freshness")
+  await expect(banner).toBeVisible()
+  await expect(banner).toHaveClass(/sample/)
+  await expect(banner).toContainText("sample data")
+})
+
+test("grid tickets are keyboard reachable and arrow-navigable", async ({ page }) => {
+  await page.goto("/")
+
+  const first = page.locator("#grid [data-id]").first()
+  await expect(first).toHaveAttribute("role", "button")
+  await expect(first).toHaveAttribute("aria-label", /.+/)
+
+  const firstId = await first.getAttribute("data-id")
+  await first.focus()
+  await page.keyboard.press("ArrowRight")
+  const focusedId = await page.evaluate(() => document.activeElement?.getAttribute("data-id"))
+  expect(focusedId).not.toBe(firstId)
+})
