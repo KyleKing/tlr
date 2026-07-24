@@ -377,7 +377,7 @@ for (const b of buckets) {
     b.key,
     chipButton(
       bucketHost,
-      b.label.replace("Cycle ", "C"),
+      b.kind === "milestone" ? b.key : b.label.replace("Cycle ", "C"),
       true,
       "",
       "",

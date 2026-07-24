@@ -20,7 +20,8 @@
     "roster": "deno run --allow-read --allow-write --allow-env --allow-net=api.linear.app --allow-run=security ./scripts/roster.ts",
     "seed": "deno run --allow-read --allow-write=./web/data ./scripts/seed.ts",
     "test": "deno test --allow-read --allow-write --allow-env --allow-sys --allow-ffi --check=all",
-    "test:e2e": "deno run --allow-all npm:playwright test",
+    "screenshots": "deno run --allow-all npm:playwright test --project=screenshots",
+    "test:e2e": "deno run --allow-all npm:playwright test --project=chrome",
     "test:e2e:install": "deno install && deno run --allow-all npm:playwright install chromium --only-shell",
     "test:e2e:ui": "deno task test:e2e --ui"
   },

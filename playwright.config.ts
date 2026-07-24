@@ -26,15 +26,30 @@ export default defineConfig({
   },
 
   projects: [
+    // Captures the two seed snapshots into the store so the Changes and Review pages have a diff.
+    { name: "setup", testMatch: /global\.setup\.ts/ },
     {
       name: "chrome",
       use: { ...devices["Desktop Chrome"] },
+      dependencies: ["setup"],
+      testIgnore: /screenshots\.spec\.ts/,
+    },
+    // README screenshots, run on demand via `deno task screenshots`, never in the default e2e run, so
+    // the committed images only change when asked. A fixed dark scheme keeps them from churning.
+    {
+      name: "screenshots",
+      testMatch: /screenshots\.spec\.ts/,
+      use: { ...devices["Desktop Chrome"], colorScheme: "dark", viewport: { width: 1280, height: 800 } },
+      dependencies: ["setup"],
     },
   ],
 
+  // Seed fresh data and an isolated snapshot store on every run, so e2e is deterministic and never
+  // touches a real local store or needs a live Linear connection.
   webServer: {
-    command: `PORT=${PORT} deno task dev`,
+    command:
+      `rm -f ./web/data/e2e.tlr.sqlite && deno task seed && PORT=${PORT} TLR_SNAPSHOT_DB=./web/data/e2e.tlr.sqlite deno task dev`,
     url: BASE_URL,
-    timeout: 10 * 1000,
+    timeout: 15 * 1000,
   },
 })

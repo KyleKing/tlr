@@ -36,6 +36,13 @@ product:
   forecast landing date in the hover, from the shared `milestoneForecast` in web/lib/planning.js
 - Milestone naming: headers show the name (an "M1: " prefix stripped) truncated to a narrow column,
   full name and detail in the hover, so a project with plain milestone names renders correctly
+- Snapshot history and pages: the server captures a snapshot on refresh (into an env-overridable
+  store) and serves list, report, and review endpoints. The web app is now three routed pages behind a
+  shared nav (Board, Changes, Review). Changes renders the weekly update; Review groups edits by ticket
+  with a mark-reviewed toggle
+- E2E and screenshots: the Playwright suite seeds data and captures snapshots against an isolated
+  store (no Linear key), covering the board and both new pages. `deno task screenshots` regenerates the
+  committed README images on demand
 
 Open items and tradeoffs are in [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md). The schema stays thin (the
 current Linear shape), not ADR 0006's normalized model, until a second tracker lands.
@@ -87,26 +94,17 @@ items depending on them are marked below.
 
 Ordered by payoff. Unblocked unless a "(blocked: ...)" note says otherwise.
 
-- **Snapshot history in the server** (prerequisite for the two pages below). The sqlite store
-  (`src/snapshot.ts`) exists but only the CLI writes it. Decision: the server captures a snapshot on
-  each refresh (deduping an unchanged payload) and exposes list/load plus server-side diff, report, and
-  review endpoints that reuse the `src/` handlers. That gives the Changes and Review pages two
-  snapshots to compare without a Linear key.
-- **Routed pages and shared nav** (decided over panels). Split the single board into Board, Changes,
-  Review, and Settings pages behind one top nav with consistent chrome. Board is the current view;
-  Settings folds in today's config dialog and later the secrets panel.
-- **Changes page (weekly report).** Render `tlr report`'s shipped/moved/at-risk narrative from the
-  diff between the two most recent stored snapshots. Depends on the snapshot history above.
-- **Review page (edit history by my account).** The UI for Phase 1's review queue, built from the
-  snapshot-diff first (added, removed, moved, re-estimated, status, slop), which works offline with no
-  key. Give me a way to mark a change reviewed, and group changes to the same ticket within a 30-minute
-  window into one unit, never grouping across a change already reviewed. Actor attribution (AI-via-MCP
-  vs. mine) is deferred: both land under my account today. The clean split is to route AI edits through
-  a distinct Linear app-user/agent token (agents show as their own actor) or a write-time hook; add
-  that enrichment on top of the snapshot-diff base once a key exists.
-- **Secrets in the config UI** (advances the blocked secrets story). Expand Settings to manage the
-  Linear key, Incident.io token, and Google OAuth through the UI, in the keychain today and wired
-  through the `SecretStore` port (ADR 0007) so the same panel drives hosted secrets in production.
+- **Settings page.** The nav has Board, Changes, and Review today; the config still opens as a dialog
+  on the board. Give it its own routed Settings page with the same chrome, folding in appearance,
+  capacity, roster, calendar overrides, and integrations, then the secrets panel below.
+- **Review attribution and temporal grouping.** The Review page is built on snapshot-diff, which
+  cannot tell AI-via-MCP edits from mine (both land under my account) and has no per-edit timestamp, so
+  the 30-minute grouping does not apply yet. Both need a real edit-activity source: route AI edits
+  through a distinct Linear app-user/agent token (agents show as their own actor) or a write-time hook,
+  then enrich the snapshot-diff base with actor and timestamp. Blocked on a key.
+- **Secrets in the config UI** (advances the blocked secrets story). Manage the Linear key,
+  Incident.io token, and Google OAuth through Settings, in the keychain today and wired through the
+  `SecretStore` port (ADR 0007) so the same panel drives hosted secrets in production.
 - **What-if planning.** Toggle a person's PTO or move scope and watch the forecast shift, in-tool.
   Fits the in-flow editing below.
 - **In-flow editing on the board** (the rest of Phase 3). Editing from inside the tool that feeds the

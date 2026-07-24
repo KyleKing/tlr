@@ -45,7 +45,8 @@ await configure({
 })
 
 const DATA_ROOT = new URL("../web/data/", import.meta.url)
-const SNAPSHOT_DB = new URL("tlr.sqlite", DATA_ROOT).pathname
+// Overridable so e2e can point at a throwaway store instead of the real local one.
+const SNAPSHOT_DB = Deno.env.get("TLR_SNAPSHOT_DB") ?? new URL("tlr.sqlite", DATA_ROOT).pathname
 
 function safeDataFile(name: unknown): string | null {
   if (typeof name !== "string" || !/^[\w.-]+\.json$/.test(name)) return null
