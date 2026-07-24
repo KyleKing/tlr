@@ -18,11 +18,15 @@ behind a port. The caller depends on an interface (`CapacitySource`, `SecretStor
 never on the shortcut, so productionizing is a new adapter and a delete rather than a caller rewrite.
 
 In practice that means MCP connectors are for exploring in a session, not for the shipped path. The
-product reads through a script with a keychain-backed key and a direct REST or GraphQL call, because an
-MCP dependency at runtime does not survive a hosted runner. The full reasoning, the domain boundaries,
-and where each current spike lands are in [ADR 0007](adr/0007-productization-and-domains.md); on-call
-(Incident.io) and the roster (Linear) already follow it, and Google Calendar out-days are the remaining
-spike.
+product reads through a script with a direct REST or GraphQL call and a secret from `src/secrets.ts` (an
+env var, else the macOS keychain), because an MCP dependency at runtime does not survive a hosted runner.
+`secrets.ts` is the realized `SecretStore` port; on-call (Incident.io) and the roster (Linear) follow the
+spike-then-productionize rule, and Google Calendar out-days are the remaining spike. The full reasoning
+and domain boundaries are in [ADR 0007](adr/0007-productization-and-domains.md).
+
+One hard rule that falls out of this: writes to Linear happen only from the web app's Review page, never
+the CLI or an MCP. Bulk edits already go through the Linear MCP in Claude Code, so a CLI write path would
+only duplicate it. Do not add one.
 
 ## Before a commit
 

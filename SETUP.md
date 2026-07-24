@@ -65,20 +65,35 @@ override (`LINEAR_API_KEY` / `LINEAR_DEMO_API_KEY`) for CI, where a keychain is 
 ticket, first refresh issues from that workspace so each carries its Linear id; the edit form refuses to
 write a ticket it has no id for.
 
+To fill an empty demo workspace with sample data, `deno task seed:linear` creates a throwaway "Horse
+Tinder" project (milestones, issues, a couple with deliberate slop, a few relations). It is guarded to
+the `tlr-demo-workspace` org and dry-runs by default; pass `--write` to apply, and re-running archives
+the prior seed rather than piling up duplicates. Then ingest it with
+`LINEAR_API_KEY=$(security find-generic-password -s tlr-linear -a demo-key -w) deno task issues "Horse Tinder" --data ./web/data/horse-tinder.json`.
+
 ## Incident.io
 
 On-call comes from the Incident.io REST API. There is no CLI and no MCP, so a key is the only path.
 
-1. [Incident.io → API keys](https://app.incident.io/~/settings/api-keys): add a key named `tlr`, and
-   under permissions select only **Read schedules**. That one scope covers `GET /v2/schedules` and
-   `GET /v2/schedule_entries`. Don't grant write or manage scopes for a read-only feed
-2. Copy the token (shown once) and store it: `security add-generic-password -s tlr-incidentio -a api-key -w`
+1. [Incident.io → API keys](https://app.incident.io/~/settings/api-keys): add a key named `tlr` and,
+   under **Account-level permissions**, select only **Read schedules**. That covers `GET /v2/schedules`
+   and `GET /v2/schedule_entries`. Don't grant write or manage scopes for a read-only feed
+2. Leave **Team-level permissions** empty. This is the trap: a team-scoped key filters
+   `GET /v2/schedules` to schedules that team owns, so an org-wide schedule (one with `team_ids: []`)
+   drops out of the list and the feed sees zero, even though the account-level Read schedules grant is
+   present and a fetch by schedule id still works. If a key already has a team (e.g. Engineering) under
+   Team-level permissions, remove it
+3. Copy the token (shown once) and store it: `security add-generic-password -s tlr-incidentio -a api-key -w`
 
-If your org uses team-scoped keys, grant Read schedules at the account level to see every schedule. The
-base host is `https://api.incident.io` and the header is `Authorization: Bearer <key>`. A key keeps
+The base host is `https://api.incident.io` and the header is `Authorization: Bearer <key>`. A key keeps
 working after its creator is deactivated, so it acts as a service credential.
 
-Verify: `deno task capacity --source incident --dry-run`.
+Diagnose scoping with the identity endpoint: `curl -H "Authorization: Bearer <key>"
+https://api.incident.io/v1/identity` shows the key's `teams`. A non-empty `teams` array means the list is
+team-filtered; `teams: []` sees every schedule.
+
+Verify: `deno task capacity --source incident --dry-run`. Note that on-call only shows for people already
+in `capacity.roster` (add them under Settings → Roster), so anyone on call who isn't rostered is dropped.
 
 ## Google Calendar
 

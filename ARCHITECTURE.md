@@ -21,14 +21,18 @@ the CLI and the web app never talk to Linear directly on their own terms.
 Linear GraphQL
       |
    core (Deno/TS)
-   ├─ fetch      read issues, history, milestones, cycles, relations
+   ├─ fetch      read issues, milestones, cycles, relations
    ├─ snapshot   persist state locally (SQLite) for diff + review
-   ├─ analyze    bucketing, capacity, slop scan, ordering risk  (web/lib/planning.js today)
-   └─ change     plan -> validate against live state -> apply    (write layer, later)
+   ├─ analyze    bucketing, capacity, slop scan, ordering risk  (web/lib/planning.js)
+   └─ change     ops -> validate against live state -> issueUpdate  (src/linear_write.ts)
       |
-      ├─ cli      report / snapshot / diff / review / plan / apply
-      └─ web      capacity board, dependency view, in-flow edit
+      ├─ cli      scan / capacity / timeline / diff / review / report / forecast / plan / snapshot / export  (read + preview only)
+      └─ web      capacity board, dependency view, weekly changes, review-and-fix, settings
 ```
+
+Writes reach Linear only from the web app's Review page, never the CLI. Bulk edits already go through the
+Linear MCP in Claude Code, so a CLI write path would duplicate it; the CLI stays read-and-preview. See
+[ROADMAP.md](ROADMAP.md) Decisions.
 
 ## Stack
 
@@ -40,24 +44,31 @@ Linear GraphQL
   custom. The project-issues filter now needs `ID!`, not `String!` (schema drift from the old script)
 - SQLite (`node:sqlite`, built in) for the snapshot store, kept out of the repo because it holds real
   ticket data. See [adr/0003-local-data-public-repo.md](adr/0003-local-data-public-repo.md)
-- API key in the macOS keychain (`security` CLI), service `tlr-linear`, account `api-key`
+- Secrets through `src/secrets.ts`: an env var (`LINEAR_API_KEY` and friends) first, else the macOS
+  keychain (`security` CLI, service `tlr-linear`). Off macOS the keychain call no-ops, so a Linux host
+  uses env vars unchanged, the realized form of ADR 0007's `SecretStore`
+- Demo/live mode: `TLR_DEMO=1` points writes at the free/test workspace (keychain account `demo-key`)
+  with a visible banner; live mode uses `api-key`
 
 ## Current layout
 
 ```
-scripts/serve.ts        tiny static server for the web spike
-web/index.html          board shell
-web/style.css           styles (light + dark)
-web/app.js              rendering, filters, interaction
-web/lib/planning.js     pure logic: bucketOf, buildBuckets, milestoneCapacity, slopScan,
-                        missingData, orderingRisks  (shared with tests)
-web/data/cpu.json       real project fixture (gitignored)
-web/data-sample.json    synthetic fixture so the public demo runs
-tests/planning_test.ts  Deno tests for the pure logic
+src/                  core: seed (data contract), snapshot, diff, review, ops, plan, linear_write
+                      (the one write adapter), report, forecast, export, secrets, commands/, utils/env
+scripts/              serve (dev server + JSON API), issues, roster, capacity, gcal-freebusy,
+                      seed, seed-linear (fill the demo workspace), cli
+web/app.js            board: rendering, filters, interaction
+web/changes.js        weekly-update page       web/review.js   review-and-fix page
+web/settings.js       settings page            web/lib/        pure logic (planning, capacity,
+                                                               issues, config, theme, appearance, page)
+web/templates/        Vento layouts + pages, rendered by the server
+web/data/             real fixtures + snapshot sqlite (gitignored); web/data-sample.json is the public demo
+tests/                Deno unit tests; tests/e2e Playwright (smoke, pages, screenshots)
 ```
 
 The prior Python implementation (`src/tlr/`) is gone. `capacity`, `roster`, `gcal:freebusy`, and
-`issues` cover what it did for capacity, roster, out-days, and issue ingest. `scripts/serve.ts` also
-exposes a small write API (`POST /api/config`, `POST /api/refresh`) so the web app's configuration
-panel can edit and refresh capacity data without a CLI round trip. See [ADR 0007](adr/0007-productization-and-domains.md)
-for the domain split this fits into, and [ROADMAP.md](ROADMAP.md) for what's still open.
+`issues` cover capacity, roster, out-days, and issue ingest. `scripts/serve.ts` exposes the JSON API the
+web app uses: `POST /api/config` and `POST /api/refresh` (capacity edits and refresh), `POST /api/edit`
+(the one Linear write path, from the Review page), snapshot capture, and the report/review/mode reads.
+See [ADR 0007](adr/0007-productization-and-domains.md) for the domain split and
+[ROADMAP.md](ROADMAP.md) for what's still open.

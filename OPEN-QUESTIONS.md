@@ -114,3 +114,30 @@ Choices I made building the CLI and Phases 1–3, for you to confirm or redirect
   stdio transport over the same handlers stays a roadmap item.
 - **Phase 3 is the SVG export slice.** `boardSvg`/`timelineSvg` render deterministic artifacts from a
   snapshot. The pannable 2D layout candidate from the roadmap is a larger UI effort left open.
+
+## Resolved this session (2026-07-24)
+
+Closing out the open items above; the reasoning lives in the commits and docs referenced.
+
+- **Page structure → routed pages.** Board, Changes, Review, and Settings are now separate routed pages
+  behind a shared nav, not panels. The config dialog moved to the Settings page.
+- **Milestone display key → truncate + hover.** Headers show the name (an `M#:` prefix stripped),
+  truncated into a narrow column, with the full detail and the forecast in the hover.
+- **Free workspace seed → shipped and verified.** `deno task seed:linear` fills the demo workspace
+  (guarded to `tlr-demo-workspace`, dry-run by default, archives on re-seed). The write path was verified
+  end to end against real Linear from the Review UI. See [SETUP.md](SETUP.md).
+- **Write path → shipped, UI-only.** The Review page edits title, description, estimate, priority,
+  milestone, status, cycle, and assignee, previews as a dry run, then applies via `issueUpdate`
+  (`src/linear_write.ts`, `POST /api/edit`). The CLI never writes. Demo/live mode picks the workspace.
+- **Actor attribution → out of scope.** A snapshot-diff cannot separate AI edits from mine; the Review
+  page shows every change and lets me clear each instead.
+- **Secrets → centralized.** `src/secrets.ts` reads an env var, else the keychain, and no-ops off macOS,
+  which is the env backend a Linux deploy uses. This is ADR 0007's `SecretStore` in pragmatic form.
+- **Incident.io zero-schedules → team scoping, fixed.** The key was team-scoped to Engineering, which
+  filters `GET /v2/schedules` to team-owned schedules and drops org-wide ones (`team_ids: []`). Removing
+  the team scope fixed it. [SETUP.md](SETUP.md) records the trap and the `/v1/identity` diagnostic.
+- **Deployment → VM, secrets no longer block it.** [adr/0008](adr/0008-deployment.md) now carries the
+  options matrix (VM / container / Deno Deploy / AWS / Cloudflare) and the VM decision.
+
+Still open: the VM setup itself (yours to run), a managed secret store for a multi-user deploy, rostering
+the on-call people who aren't tracked yet, and the pannable 2D layout candidate.
