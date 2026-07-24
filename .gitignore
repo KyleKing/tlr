@@ -1,6 +1,17 @@
 # Deno
 node_modules/
 
+# Environment
+.env
+.env.*
+!.env.example
+
+# Build output
+dist/
+coverage/
+*.log
+*.tsbuildinfo
+
 # Playwright
 /test-results/
 /playwright-report/
