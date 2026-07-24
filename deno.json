@@ -23,6 +23,7 @@
   "fmt": {
     "indentWidth": 2,
     "lineWidth": 120,
+    "proseWrap": "preserve",
     "semiColons": false,
     "useTabs": false
   },
