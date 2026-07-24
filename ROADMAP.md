@@ -130,6 +130,30 @@ Ordered by dependency and payoff; production deployment is last on purpose.
   spike-then-productionize rule (a read-only surface, no write path). The read-through analysis feeds
   the reviewed batch-edit path in Phase 2, where the agent proposes ops and tlr validates them.
 
+- **Milestone header density and naming.** The milestone column header packs name, target, and
+  progress onto one wide line, which forces the column wider than the tickets need. Wrap it
+  aggressively to trade cell height for a much narrower column, and move most of the detail (target,
+  progress, full name) into the hover. Stop assuming the "M1: Name" convention: `milestoneKey`
+  (scripts/issues.ts) derives the key from the text before the colon, `buildBuckets`
+  (web/lib/planning.js) uses that key as the column label, and `bucketSub` (web/app.js) strips a
+  leading `/^M\d: /`. A Linear project whose milestones are plain names gets the whole name as a long
+  column label and a no-op strip. Derive a short display key independent of the name, and support
+  arbitrary, long milestone names end to end.
+- **Round the board into a cohesive app.** It is one page today. Candidate surfaces: a project
+  overview (health, slip forecast, at-risk), a diff and review page that brings Phase 1's diff and
+  review queue into the UI rather than only the CLI, a per-person load page, and a real settings area.
+  Keep the navigation and chrome consistent across them. Expand the configuration panel to manage
+  secrets (Linear key, Incident.io token, Google OAuth) through the UI, stored in the keychain today
+  and wired through the `SecretStore` port (ADR 0007) so the same panel drives hosted secrets in
+  production later.
+- **Edit history and review by my account.** Capture and show my own recent edits: at minimum created
+  or edited comments and created or edited issues, with assignee changes, and other field changes as a
+  nice-to-have. Give me a way to mark a change as reviewed. Group changes to the same ticket that fall
+  within a 30-minute window into one reviewable unit, even when spread across that window, but never
+  group across a change already marked reviewed. This is the UI for Phase 1's review queue and ties to
+  ADR 0004, where AI-edit review leans on a write-time hook because actor attribution cannot separate
+  AI-via-MCP edits from mine.
+
 Explicitly out of scope for now (Linear's own views cover them): a GitHub adapter or any third
 tracker (ADR 0006 stays the target, not a near-term build), cross-project load view, and
 stale-issue detection.

@@ -38,6 +38,16 @@ Captured from the mid-session discussion for you to prune. Ranked by value-over-
 Explicitly _not_ pursuing (Linear's own insights/filters are good enough): cross-project load view,
 stale-issue detection.
 
+## Near-term: milestone naming assumption (bug when polling other projects)
+
+The board assumes Linear milestones are named "M1: Name". `milestoneKey` (scripts/issues.ts) keys off
+the text before the colon, `buildBuckets` uses that key as the column label, and `bucketSub` strips a
+leading `/^M\d: /`. A project whose milestones are plain names gets the full name as a long column
+label. This will surface the moment tlr points at a real project through the Linear MCP. Open decision:
+how to derive a short column label from an arbitrary milestone name. Options I see are ordinal codes by
+target date (M1, M2, ... assigned by tlr, not by the name), a truncation with the full name in the
+hover, or a user-set short code. Tell me which and I will implement it. Detail is in the ROADMAP item.
+
 ## Deferred: deployment and secrets (backlog items 8–11)
 
 - **Secrets story (item 8).** ADR 0007's `SecretStore` port (`KeychainSecrets` vs `HostedSecrets`) is
