@@ -11,11 +11,11 @@ with per-user namespaced secrets ([Long-term](#long-term-a-hosted-runner)), so t
 
 ## At a glance
 
-| Service | Secret | Stored as | Used by |
-| --- | --- | --- | --- |
-| Linear | personal API key | keychain `tlr-linear` or `op read` | issue fetch, `deno task roster` |
-| Incident.io | API key (read schedules) | keychain `tlr-incidentio` or `op read` | `deno task capacity --source incident` |
-| Google Calendar | OAuth client JSON (Desktop app) | `web/data/gcal-client.json` | `deno task gcal:freebusy` |
+| Service         | Secret                          | Stored as                              | Used by                                |
+| --------------- | ------------------------------- | -------------------------------------- | -------------------------------------- |
+| Linear          | personal API key                | keychain `tlr-linear` or `op read`     | issue fetch, `deno task roster`        |
+| Incident.io     | API key (read schedules)        | keychain `tlr-incidentio` or `op read` | `deno task capacity --source incident` |
+| Google Calendar | OAuth client JSON (Desktop app) | `web/data/gcal-client.json`            | `deno task gcal:freebusy`              |
 
 ## Storing a secret
 

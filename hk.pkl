@@ -4,6 +4,10 @@ hooks {
     ["pre-commit"] {
         fix = true
         steps {
+            ["check"] {
+                glob = "*.ts"
+                check = "deno task check"
+            }
             ["dprint"] {
                 glob = List("*.json", "*.md", "*.toml")
                 check = "dprint check {{files}}"

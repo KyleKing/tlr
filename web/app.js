@@ -24,7 +24,7 @@ const DEFAULT_STATUSES = ["started", "unstarted", "triage", "backlog"]
 const REVIEW_KEY = "tlr.notslop"
 
 // mutable module data, replaced on refresh
-let data, buckets, bucketByKey, bucketWeeks, byId, riskIds
+let buckets, bucketByKey, bucketWeeks, byId, riskIds
 
 function deriveBuckets() {
   buckets = buildBuckets(data)
@@ -82,7 +82,7 @@ const state = {
   view: "board", // or "timeline"
 }
 
-data = await loadData()
+const data = await loadData()
 deriveBuckets()
 enrich()
 state.bucketKeys = new Set(buckets.map((b) => b.key))

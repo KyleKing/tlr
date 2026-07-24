@@ -126,22 +126,22 @@ The pieces, and why each is where it is:
 
 ### Mapping
 
-| Standard | Linear | GitHub |
-| --- | --- | --- |
-| `id` | issue `id` | `node_id` |
-| `key` | `identifier` (DEV-8548) | `owner/repo#number` |
-| `state` / `rawStatus` | workflow `state.type` / `state.name` | `open`\|`closed` + Projects v2 "Status" select |
-| `priority` | `priority` (0–4) | Projects v2 select (no native field) |
-| `estimate` | `estimate` | Projects v2 number field (often absent) |
-| `cycleId` | `cycle` | Projects v2 iteration field |
-| `assignees` | `assignee` (one) | `assignees` (many) |
-| `Grouping` | initiative, project, projectMilestone | milestone (repo), ProjectV2 board |
-| `Relation` blocks | issue `relations` | issue dependencies (GA 2025-08) |
-| `Relation` parent | `parent` / `children` | sub-issues |
-| labels | workspace/team labels | repo labels (→ `Meta` tags) |
-| `Comment` | comments | `IssueComment` |
-| `Event` | history entries | `timelineItems` (typed nodes) |
-| `Actor` | user (email reliable) | actor (`login`+`id`, email usually null) |
+| Standard              | Linear                                | GitHub                                         |
+| --------------------- | ------------------------------------- | ---------------------------------------------- |
+| `id`                  | issue `id`                            | `node_id`                                      |
+| `key`                 | `identifier` (DEV-8548)               | `owner/repo#number`                            |
+| `state` / `rawStatus` | workflow `state.type` / `state.name`  | `open`\|`closed` + Projects v2 "Status" select |
+| `priority`            | `priority` (0–4)                      | Projects v2 select (no native field)           |
+| `estimate`            | `estimate`                            | Projects v2 number field (often absent)        |
+| `cycleId`             | `cycle`                               | Projects v2 iteration field                    |
+| `assignees`           | `assignee` (one)                      | `assignees` (many)                             |
+| `Grouping`            | initiative, project, projectMilestone | milestone (repo), ProjectV2 board              |
+| `Relation` blocks     | issue `relations`                     | issue dependencies (GA 2025-08)                |
+| `Relation` parent     | `parent` / `children`                 | sub-issues                                     |
+| labels                | workspace/team labels                 | repo labels (→ `Meta` tags)                    |
+| `Comment`             | comments                              | `IssueComment`                                 |
+| `Event`               | history entries                       | `timelineItems` (typed nodes)                  |
+| `Actor`               | user (email reliable)                 | actor (`login`+`id`, email usually null)       |
 
 The GitHub adapter carries the weight here. Because status, priority, estimate, and cycle live in a
 Projects v2 board, that adapter needs a project selector plus a field-name map (which select is

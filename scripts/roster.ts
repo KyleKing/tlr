@@ -46,19 +46,24 @@ async function linearKey(): Promise<string> {
 
 type LinearUser = { name: string; displayName: string; email: string; active: boolean }
 
+type UsersResponse = {
+  errors?: { message: string }[]
+  data: { users: { nodes: LinearUser[]; pageInfo: { hasNextPage: boolean; endCursor: string | null } } }
+}
+
 async function fetchUsers(key: string): Promise<LinearUser[]> {
   const users: LinearUser[] = []
   let after: string | null = null
   do {
-    const res = await fetch(LINEAR_API_URL, {
+    const res: Response = await fetch(LINEAR_API_URL, {
       method: "POST",
       headers: { Authorization: key, "Content-Type": "application/json" },
       body: JSON.stringify({ query: USERS_QUERY, variables: { after } }),
     })
     if (!res.ok) throw new Error(`Linear users → ${res.status} ${res.statusText}`)
-    const json = await res.json()
+    const json: UsersResponse = await res.json()
     if (json.errors) {
-      throw new Error(`Linear GraphQL: ${json.errors.map((e: { message: string }) => e.message).join("; ")}`)
+      throw new Error(`Linear GraphQL: ${json.errors.map((e) => e.message).join("; ")}`)
     }
     const page = json.data.users
     users.push(...page.nodes)

@@ -24,12 +24,12 @@ point; this ADR names the boundaries inside that core.
 
 Four domains over a shared kernel, with every outside dependency reached through a port.
 
-| Domain | Owns | Pure? |
-| --- | --- | --- |
-| Ingest | tracker adapters, fetch, normalize to the ADR 0006 model | no (I/O at the edge) |
-| Snapshot | persist state, `diff` between captures, `review` since last look | no (storage) |
-| Planning | buckets, capacity, ordering risk, slop scan | yes |
-| Delivery | CLI and web, rendering, interaction | no (presentation) |
+| Domain   | Owns                                                             | Pure?                |
+| -------- | ---------------------------------------------------------------- | -------------------- |
+| Ingest   | tracker adapters, fetch, normalize to the ADR 0006 model         | no (I/O at the edge) |
+| Snapshot | persist state, `diff` between captures, `review` since last look | no (storage)         |
+| Planning | buckets, capacity, ordering risk, slop scan                      | yes                  |
+| Delivery | CLI and web, rendering, interaction                              | no (presentation)    |
 
 The kernel holds the normalized types, config, and the port interfaces. Domains depend inward on the
 kernel; delivery depends on domains; adapters implement ports; the planning domain imports no I/O at all,
@@ -68,14 +68,14 @@ classDiagram
 
 Where each spike lands:
 
-| Spike today | Migrates to |
-| --- | --- |
-| `web/lib/planning.js`, `web/lib/capacity.js` (pure) | Planning domain, unchanged |
-| `scripts/capacity.ts` on-call fetch | `IncidentIoSource` behind `CapacitySource` |
-| `scripts/capacity.ts` gcal live free/busy fetch (or handoff file) | `GoogleCalendarSource` behind `CapacitySource` |
-| `scripts/roster.ts` | Ingest identity resolution (a `TrackerSource` read) |
-| `web/app.js`, `scripts/serve.ts` | Delivery (web) |
-| `src/tlr/` (Python reader) | replaced by the Ingest Linear adapter, then removed |
+| Spike today                                                       | Migrates to                                         |
+| ----------------------------------------------------------------- | --------------------------------------------------- |
+| `web/lib/planning.js`, `web/lib/capacity.js` (pure)               | Planning domain, unchanged                          |
+| `scripts/capacity.ts` on-call fetch                               | `IncidentIoSource` behind `CapacitySource`          |
+| `scripts/capacity.ts` gcal live free/busy fetch (or handoff file) | `GoogleCalendarSource` behind `CapacitySource`      |
+| `scripts/roster.ts`                                               | Ingest identity resolution (a `TrackerSource` read) |
+| `web/app.js`, `scripts/serve.ts`                                  | Delivery (web)                                      |
+| `src/tlr/` (Python reader)                                        | replaced by the Ingest Linear adapter, then removed |
 
 ### The spike-versus-productionize rule
 

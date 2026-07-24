@@ -21,7 +21,14 @@
 // cycle entry in cpu.json to also freeze a value a source previously wrote, if it's since been
 // hand-confirmed and should stop drifting on refresh.
 
-import { mergeCapacity, mergeVelocity, oncallByCycle, outDaysByCycle, outDaysFromFreeBusy, velocityByPerson } from "../web/lib/capacity.js"
+import {
+  mergeCapacity,
+  mergeVelocity,
+  oncallByCycle,
+  outDaysByCycle,
+  outDaysFromFreeBusy,
+  velocityByPerson,
+} from "../web/lib/capacity.js"
 import { CLIENT_PATH, fetchFreeBusy, loadClient, tokenFor } from "./gcal-freebusy.ts"
 
 const INCIDENT_HOST = "https://api.incident.io"
