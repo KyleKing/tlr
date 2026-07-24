@@ -9,6 +9,13 @@
 // resolveRoster), so a single run keeps the roster current without a separate step. capacity.people,
 // teamVelocity, and teamCapacityPerCycle are left alone — `deno task capacity` owns those. Bearer key
 // from the macOS keychain, service `tlr-linear`, account `api-key`, or the LINEAR_API_KEY env var.
+//
+// Fetches cycles from every team on the project, not just the first: a project can span multiple
+// teams (e.g. this one has both Customer Ops and Product Development), and taking only teams(first: 1)
+// silently picked the wrong team's cycles whenever the actual issues lived on a different one. Each
+// team's cycles connection is also ordered oldest-first, so `last: N` (not `first: N`) is required to
+// get the N most recent cycles — on a long-running team, `first: 12` would return the earliest 12
+// cycles ever created, none of which overlap any current issue's cycle.
 
 import {
   buildCycles,
@@ -26,9 +33,12 @@ const LINEAR_API_URL = "https://api.linear.app/graphql"
 const DEFAULT_DATA = new URL("../web/data/cpu.json", import.meta.url).pathname
 const MANIFEST_PATH = new URL("../web/data/projects.json", import.meta.url).pathname
 
+// first: 10 (not 50) on the outer projects connection — fetching every team's cycles for each
+// candidate makes this query's complexity scale with outer * teams * cycles, and Linear rejects
+// anything over its complexity budget ("Query too complex") once teams(first: 10) is nested in.
 const PROJECT_QUERY = `
   query Projects($filter: ProjectFilter) {
-    projects(filter: $filter, first: 50) {
+    projects(filter: $filter, first: 10) {
       nodes {
         id
         name
@@ -37,7 +47,7 @@ const PROJECT_QUERY = `
         startDate
         targetDate
         projectMilestones(first: 50) { nodes { id name targetDate progress } }
-        teams(first: 1) { nodes { cycles(first: 12) { nodes { number startsAt endsAt } } } }
+        teams(first: 10) { nodes { cycles(last: 12) { nodes { number startsAt endsAt } } } }
       }
     }
   }
@@ -168,15 +178,25 @@ export async function ingestProject(key: string, projectQuery: string, existingD
 
   const milestones = buildMilestones(project.projectMilestones.nodes)
   const milestoneKeyById = new Map(project.projectMilestones.nodes.map((m) => [m.id, milestoneKey(m.name)]))
-  const cycles = buildCycles(project.teams.nodes[0]?.cycles.nodes ?? [])
+  const issues = rawIssues.map((i) => transformIssue(i, milestoneKeyById))
   const asOf = new Date().toISOString().slice(0, 10)
+
+  // Cycle numbers are only unique per team, so pooling cycles across a multi-team project can produce
+  // two different teams' cycles with overlapping date windows (same "current" week, different number) —
+  // currentCycleNumber can't tell those apart. Keeping only cycle numbers the project's own issues
+  // actually reference resolves the ambiguity in favor of whichever team is doing the work, and matches
+  // the board's own behavior of hiding any cycle bucket with no issues in it anyway.
+  const referencedCycles = new Set(issues.map((i) => i.cycle).filter((n) => n != null))
+  const cycles = buildCycles(project.teams.nodes.flatMap((t) => t.cycles.nodes)).filter((c) =>
+    referencedCycles.has(c.n)
+  )
 
   const fresh = {
     project: { name: project.name, start: project.startDate, target: project.targetDate, url: project.url },
     cycles,
     currentCycle: currentCycleNumber(cycles, asOf),
     milestones,
-    issues: rawIssues.map((i) => transformIssue(i, milestoneKeyById)),
+    issues,
     asOf,
   }
 

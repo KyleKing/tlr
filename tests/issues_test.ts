@@ -47,6 +47,16 @@ Deno.test("buildCycles maps and sorts by cycle number", () => {
   ])
 })
 
+// Regression: a project spanning multiple Linear teams pools each team's cycles(), and cycle numbers
+// are only unique within a team — two teams can both have a "cycle 48" with different date windows.
+Deno.test("buildCycles dedupes cycle numbers that collide across pooled teams", () => {
+  const out = buildCycles([
+    { number: 48, startsAt: "2026-06-20T00:00:00.000Z", endsAt: "2026-06-27T00:00:00.000Z" },
+    { number: 48, startsAt: "2026-07-20T00:00:00.000Z", endsAt: "2026-07-27T00:00:00.000Z" },
+  ])
+  assertEquals(out.length, 1)
+})
+
 const CYCLES = [
   { n: 48, start: "2026-07-20", end: "2026-07-27" },
   { n: 49, start: "2026-07-27", end: "2026-08-03" },

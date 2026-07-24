@@ -147,6 +147,25 @@ product:
   also surfaced a real bug: `/api/config`, `/api/refresh`, and `/api/edit` all wrote the same project
   data file with a plain `writeTextFile`, so a concurrent reader could observe a half-written file and
   throw a JSON parse error — all three now write through a temp-file-then-rename `writeJsonAtomic`
+- Fixed the real cause of "Refresh runs but shows no cycles" on a real (non-demo) project: a project
+  spanning more than one Linear team (`scripts/issues.ts`'s `PROJECT_QUERY`) only ever fetched
+  `teams(first: 1)`'s cycles, so whenever a project's actual issues lived on a different team than
+  whichever one came first, none of the fetched cycle numbers matched any issue's `cycle`, and every
+  bucket looked empty. Now pools cycles from every team on the project (`teams(first: 10)`, trimmed the
+  outer `projects(first: 50)` to `first: 10` to stay under Linear's query-complexity budget once that's
+  nested in), and `buildCycles` (`web/lib/issues.js`) dedupes by cycle number since it's only unique per
+  team. A further wrinkle: two teams can have a same-week cycle under different numbers, so
+  `currentCycleNumber` could still pick the wrong one — `ingestProject` now keeps only cycle numbers the
+  project's own issues actually reference, which resolves the ambiguity in favor of whichever team is
+  doing the work and matches the board's existing behavior of hiding cycles with no issues in them
+  anyway. Also caught and fixed while reproducing this: `teams(first: 1)` was itself wrong for the same
+  reason (a large team's `cycles` connection is oldest-first, so `first: 12` silently returned the
+  earliest 12 cycles ever created rather than the current ones — needed `last: 12`)
+- A fourth pass, live against a real project: confirmed the row-header truncation (bucket names in
+  Rows: buckets) does show the full label on hover as intended; the board's per-cell red "over capacity"
+  shading was checked and found correct (a real, heavily-scheduled future-cycle backlog), not a styling
+  bug; Settings' width fix reads as a deliberate ~1080px content column rather than a hard 760px card, not
+  full 1512px viewport width, since stretching form inputs edge-to-edge would look worse
 
 Open items live in the Blocked, Backlog, and Open questions sections below; durable decisions are in
 [adr/](adr). The schema stays thin (the current Linear shape), not ADR 0006's normalized model, until a

@@ -22,9 +22,13 @@ export function buildMilestones(rawMilestones) {
     .sort((a, b) => (a.target < b.target ? -1 : a.target > b.target ? 1 : 0))
 }
 
-// Team cycle nodes → board cycle rows { n, start, end }, sorted by cycle number.
+// Team cycle nodes → board cycle rows { n, start, end }, sorted by cycle number. Cycle numbers are
+// only unique within a team, so when a project spans multiple teams (rawCycles pooled from all of
+// them) a later team's cycle silently wins any number collision — the board has no per-team cycle
+// identity to disambiguate further.
 export function buildCycles(rawCycles) {
-  return rawCycles
+  const byNumber = new Map(rawCycles.map((c) => [c.number, c]))
+  return [...byNumber.values()]
     .map((c) => ({ n: c.number, start: c.startsAt.slice(0, 10), end: c.endsAt.slice(0, 10) }))
     .sort((a, b) => a.n - b.n)
 }
