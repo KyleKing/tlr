@@ -1,6 +1,6 @@
 {
   "project": {
-    "name": "Sample Reliability Program",
+    "name": "Sample: Horse Tinder",
     "start": "2026-07-01",
     "target": "2026-11-30",
     "url": "https://linear.app/"
@@ -28,25 +28,25 @@
   "milestones": [
     {
       "key": "M1",
-      "name": "M1: Measure and page",
+      "name": "M1: Matchmaking engine",
       "target": "2026-07-31",
       "progress": 60
     },
     {
       "key": "M2",
-      "name": "M2: Synthetics and status page",
+      "name": "M2: Stable profiles",
       "target": "2026-08-31",
       "progress": 20
     },
     {
       "key": "M3",
-      "name": "M3: Incident readiness",
+      "name": "M3: Neigh-bors chat",
       "target": "2026-09-30",
       "progress": 0
     },
     {
       "key": "M4",
-      "name": "M4: Hardening (buffer)",
+      "name": "M4: Trust and safety",
       "target": "2026-11-30",
       "progress": 0
     }
@@ -54,7 +54,7 @@
   "issues": [
     {
       "id": "SAMPLE-101",
-      "title": "Define availability SLO spec",
+      "title": "Swipe gestures for hoof-friendly screens",
       "url": "https://linear.app/",
       "estimate": 3,
       "assignee": "Ada Lovelace",
@@ -69,7 +69,7 @@
     },
     {
       "id": "SAMPLE-102",
-      "title": "Wire alarms into paging",
+      "title": "Match algorithm: pair by breed and temperament",
       "url": "https://linear.app/",
       "estimate": 2,
       "assignee": "Ada Lovelace",
@@ -84,7 +84,7 @@
     },
     {
       "id": "SAMPLE-103",
-      "title": "Guard the P0 dispatch call sites",
+      "title": "Geo-fence to nearby paddocks",
       "url": "https://linear.app/",
       "estimate": 1,
       "assignee": "Ada Lovelace",
@@ -99,7 +99,7 @@
     },
     {
       "id": "SAMPLE-104",
-      "title": "Retroactive availability baseline",
+      "title": "Deduplicate stallion accounts",
       "url": "https://linear.app/",
       "estimate": 5,
       "assignee": "Grace Hopper",
@@ -114,7 +114,7 @@
     },
     {
       "id": "SAMPLE-105",
-      "title": "Deep /ready endpoint",
+      "title": "Upload and crop mane shots",
       "url": "https://linear.app/",
       "estimate": 3,
       "assignee": "Grace Hopper",
@@ -129,7 +129,7 @@
     },
     {
       "id": "SAMPLE-106",
-      "title": "External synthetic probes",
+      "title": "Profile fields: gait, discipline, favorite hay",
       "url": "https://linear.app/",
       "estimate": 5,
       "assignee": "Grace Hopper",
@@ -144,7 +144,7 @@
     },
     {
       "id": "SAMPLE-107",
-      "title": "Month-end uptime calc",
+      "title": "Verified-vet badge",
       "url": "https://linear.app/",
       "estimate": 3,
       "assignee": "Ada Lovelace",
@@ -159,7 +159,7 @@
     },
     {
       "id": "SAMPLE-108",
-      "title": "Live status page",
+      "title": "Real-time whinny messaging",
       "url": "https://linear.app/",
       "estimate": 8,
       "assignee": null,
@@ -174,7 +174,7 @@
     },
     {
       "id": "SAMPLE-109",
-      "title": "Clerk incident grace mode",
+      "title": "Canned openers (icebreakers)",
       "url": "https://linear.app/",
       "estimate": 5,
       "assignee": null,
@@ -189,7 +189,7 @@
     },
     {
       "id": "SAMPLE-110",
-      "title": "Kill switches",
+      "title": "Push notifications for new matches",
       "url": "https://linear.app/",
       "estimate": 3,
       "assignee": null,
@@ -204,7 +204,7 @@
     },
     {
       "id": "SAMPLE-111",
-      "title": "Durable email outbox MVP",
+      "title": "Report and block bad actors",
       "url": "https://linear.app/",
       "estimate": 8,
       "assignee": null,
@@ -219,7 +219,7 @@
     },
     {
       "id": "SAMPLE-112",
-      "title": "Weekly scorecard",
+      "title": "Photo moderation queue",
       "url": "https://linear.app/",
       "estimate": 2,
       "assignee": null,
@@ -234,7 +234,7 @@
     },
     {
       "id": "SAMPLE-113",
-      "title": "Triage inbox cleanup",
+      "title": "Age verification (foals excluded)",
       "url": "https://linear.app/",
       "estimate": 1,
       "assignee": "Grace Hopper",

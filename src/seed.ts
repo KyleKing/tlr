@@ -87,16 +87,18 @@ const STATUS_LABEL: Record<Issue["statusType"], string> = {
 }
 
 // A few descriptions written to trip the slop scan (dashes, semicolons, checklist, stock phrases),
-// mixed with clean ones, so `tlr scan` and the board's slop filter have signal.
+// mixed with clean ones, so `tlr scan` and the board's slop filter have signal. Same fictional "Horse
+// Tinder" theme as scripts/seed-linear.ts's live-workspace fixture, so every demo/test surface tells
+// one obviously-fake story instead of two, and neither reads like real internal project data.
 const SLOP_DESC =
-  "This ticket will comprehensively leverage a robust, seamless approach; it delves into the core.\n- [ ] step one\n- [ ] step two"
-const CLEAN_DESC = "Add a p99 latency panel to the reliability dashboard and alert when it exceeds 300ms."
+  "This ticket will comprehensively leverage a robust, seamless approach to delight our equine users; it delves into the core.\n- [ ] step one\n- [ ] step two"
+const CLEAN_DESC = "Score candidates on breed compatibility, temperament, and shared disciplines."
 
 const MILESTONES = [
-  { key: "M1", name: "M1: Measure and page", target: "2026-07-31", progress: 55 },
-  { key: "M2", name: "M2: Synthetics and live status", target: "2026-08-31", progress: 20 },
-  { key: "M3", name: "M3: Incident readiness", target: "2026-09-30", progress: 5 },
-  { key: "M4", name: "M4: Chaos and game days", target: "2026-10-31", progress: 0 },
+  { key: "M1", name: "M1: Matchmaking engine", target: "2026-07-31", progress: 55 },
+  { key: "M2", name: "M2: Stable profiles", target: "2026-08-31", progress: 20 },
+  { key: "M3", name: "M3: Neigh-bors chat", target: "2026-09-30", progress: 5 },
+  { key: "M4", name: "M4: Trust and safety", target: "2026-10-31", progress: 0 },
 ]
 
 const CYCLES = [
@@ -150,7 +152,7 @@ function baseSnapshot(): Snapshot {
 
   return {
     project: {
-      name: "Seeded Reliability Program",
+      name: "Horse Tinder (seed)",
       start: "2026-07-01",
       target: "2026-11-30",
       url: "https://linear.app/seed",
