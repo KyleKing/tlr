@@ -85,6 +85,29 @@ test("grid tickets are keyboard reachable and arrow-navigable", async ({ page })
   expect(focusedId).not.toBe(firstId)
 })
 
+test("filter state round-trips through the URL, so a reload keeps it", async ({ page }) => {
+  await page.goto("/")
+  await expect(page.locator("#grid tr").first()).toBeVisible()
+
+  await page.click("#status-none")
+  await page.click("#expand")
+  await page.fill("#search", "risk")
+  await expect(page).toHaveURL(/status=&expanded=1&q=risk/)
+
+  await page.reload()
+  await expect(page.locator("#search")).toHaveValue("risk")
+  await expect(page.locator("#expand")).toHaveAttribute("aria-pressed", "true")
+  for (const btn of await page.locator("#status-chips button").all()) {
+    await expect(btn).toHaveAttribute("aria-pressed", "false")
+  }
+
+  // clearing the search and un-collapsing back to the default statuses drops those params entirely
+  // instead of writing the default value out explicitly
+  await page.click("#expand")
+  await page.fill("#search", "")
+  await expect(page).not.toHaveURL(/expanded=|q=/)
+})
+
 test("an uncaught client error surfaces in a visible, dismissible banner", async ({ page }) => {
   await page.goto("/")
   await expect(page.locator("#grid tr").first()).toBeVisible()

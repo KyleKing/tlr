@@ -109,7 +109,47 @@ const data = await loadData(currentProject?.dataFile)
 deriveBuckets()
 enrich()
 state.bucketKeys = new Set(buckets.map((b) => b.key))
+hydrateStateFromUrl()
 let loadedAt = new Date()
+
+// Filters and view mode read back from the URL on load, so a refresh, a bookmark, or a shared link
+// keeps them instead of always resetting to defaults. Only non-default values are ever written back
+// (see syncUrl), so a plain "/" stays a plain "/" until something is actually changed.
+function hydrateStateFromUrl() {
+  const p = new URLSearchParams(location.search)
+  if (p.has("q")) state.q = p.get("q")
+  if (p.has("status")) state.statuses = new Set(p.get("status").split(",").filter(Boolean))
+  if (p.has("buckets")) {
+    const wanted = new Set(p.get("buckets").split(",").filter(Boolean))
+    state.bucketKeys = new Set(buckets.map((b) => b.key).filter((k) => wanted.has(k)))
+  }
+  if (p.has("flags")) state.flags = new Set(p.get("flags").split(",").filter(Boolean))
+  if (p.has("expanded")) state.expanded = true
+  if (p.has("rows")) state.transpose = p.get("rows") !== "people"
+}
+
+// Writes the current filters/view mode into the URL (replacing history, not pushing — this fires on
+// every render, and a back-button entry per filter click would be unusable) so the address bar always
+// reflects what's on screen. Only non-default values are written, keeping a default-filtered URL plain.
+function syncUrl() {
+  const url = new URL(location.href)
+  const p = url.searchParams
+  state.q ? p.set("q", state.q) : p.delete("q")
+
+  const statuses = [...state.statuses].sort().join(",")
+  const defaultStatuses = [...DEFAULT_STATUSES].sort().join(",")
+  statuses === defaultStatuses ? p.delete("status") : p.set("status", statuses)
+
+  const bucketKeys = [...state.bucketKeys].sort().join(",")
+  const allBucketKeys = buckets.map((b) => b.key).sort().join(",")
+  bucketKeys === allBucketKeys ? p.delete("buckets") : p.set("buckets", bucketKeys)
+
+  state.flags.size ? p.set("flags", [...state.flags].join(",")) : p.delete("flags")
+  state.expanded ? p.set("expanded", "1") : p.delete("expanded")
+  state.transpose ? p.delete("rows") : p.set("rows", "people")
+
+  history.replaceState(null, "", url)
+}
 
 // header + controls
 document.getElementById("title").textContent = data.project.name
@@ -126,11 +166,14 @@ wireProjectPicker(projects, currentProject)
 applyTheme(loadTheme())
 
 const search = document.getElementById("search")
+search.value = state.q
 search.oninput = () => {
   state.q = search.value.trim().toLowerCase()
   render()
 }
 const exp = document.getElementById("expand")
+exp.setAttribute("aria-pressed", state.expanded)
+exp.textContent = state.expanded ? "Compact" : "Expand"
 exp.onclick = () => {
   state.expanded = !state.expanded
   exp.setAttribute("aria-pressed", state.expanded)
@@ -438,6 +481,7 @@ function cellHTML(person, b) {
 }
 
 function render() {
+  syncUrl()
   const wrap = document.querySelector(".wrap")
   const sx = wrap ? wrap.scrollLeft : 0, sy = wrap ? wrap.scrollTop : 0
   const visible = buckets.filter((b) => state.bucketKeys.has(b.key))
