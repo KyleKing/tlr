@@ -89,6 +89,22 @@ a {
   border-bottom-color: var(--accent);
   font-weight: 600;
 }
+.nav-project-picker {
+  margin-left: auto;
+  padding: 3px 8px;
+  border: 1px solid var(--surface1);
+  border-radius: var(--radius);
+  background: var(--base);
+  color: var(--text);
+  font: 12.5px var(--font);
+}
+.access-warning {
+  padding: 6px 16px;
+  background: color-mix(in srgb, var(--risk) 18%, var(--base));
+  border-bottom: 1px solid var(--risk);
+  color: var(--text);
+  font-size: 12px;
+}
 .topnav .demotag {
   margin-left: auto;
   padding: 1px 8px;

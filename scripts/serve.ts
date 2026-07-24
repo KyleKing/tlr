@@ -20,6 +20,7 @@ import { weeklyReport } from "@/report.ts"
 import { reviewSince } from "@/review.ts"
 import { applyOps, type Op } from "@/ops.ts"
 import { applyIssueEdits, isWritableOp } from "@/linear_write.ts"
+import { checkProjectsAccess, slugIdFromUrl } from "@/linearAccess.ts"
 import type { Snapshot } from "@/seed.ts"
 
 const config = getEnvConfig()
@@ -287,6 +288,32 @@ app.get("/api/review", (c) => {
 
 // Which workspace writes land in, so the client can label buttons and confirm before a live mutation.
 app.get("/api/mode", (c) => c.json({ demo: DEMO, workspace: DEMO ? "demo" : "live" }))
+
+// Whether the current key can still see each locally-ingested project, so the picker can warn on a
+// revoked or wrong-workspace key instead of silently showing stale data. Best-effort: an unset key or
+// a Linear outage yields an empty map rather than failing the request. Skipped entirely under the e2e
+// harness (TLR_SNAPSHOT_DB set) — e2e never has, or should reach for, a live Linear connection.
+app.get("/api/projects/access", async (c) => {
+  if (Deno.env.get("TLR_SNAPSHOT_DB")) return c.json({})
+  const manifest: { slug: string; dataFile: string }[] = await Deno.readTextFile(
+    new URL("projects.json", DATA_ROOT),
+  ).then(JSON.parse).catch(() => [])
+  const key = await linearKey(KEY_ACCOUNT).catch(() => null)
+  if (!key || !manifest.length) return c.json({})
+
+  // Prefer the slugId parsed from the project's own Linear url (from its data file) over the
+  // manifest's own slug field, which isn't guaranteed to be Linear's real id (see slugIdFromUrl).
+  const slugIdByManifestSlug = new Map<string, string>()
+  for (const entry of manifest) {
+    const data = await Deno.readTextFile(new URL(entry.dataFile, DATA_ROOT)).then(JSON.parse).catch(() => null)
+    slugIdByManifestSlug.set(entry.slug, slugIdFromUrl(data?.project?.url) ?? entry.slug)
+  }
+
+  const access = await checkProjectsAccess(key, [...slugIdByManifestSlug.values()])
+  const bySlugId: Record<string, boolean> = {}
+  for (const [manifestSlug, slugId] of slugIdByManifestSlug) bySlugId[manifestSlug] = access[slugId] ?? false
+  return c.json(bySlugId)
+})
 
 app.get(
   "/",

@@ -66,6 +66,18 @@ test("settings page switches panes and saves the capacity block", async ({ page 
   await expect(page.locator("#cfg-status")).toHaveText("Saved")
 })
 
+test("the global project picker in the nav switches projects and preserves the current page", async ({ page }) => {
+  await page.goto(`/review${SEED}`)
+
+  const picker = page.locator("#global-project-picker")
+  await expect(picker).toBeVisible()
+  await expect(picker).toHaveValue("seeded-reliability")
+
+  // /api/projects/access is skipped under the e2e harness (no live Linear connection), so the
+  // warning banner never fires here even though the manifest may list other, unrelated projects.
+  await expect(page.locator("#access-warning")).toBeHidden()
+})
+
 test("nav moves between board, changes, review, and settings", async ({ page }) => {
   await page.goto("/")
   await page.click(".topnav a[href='/changes']")

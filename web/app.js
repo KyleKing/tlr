@@ -14,6 +14,7 @@ import {
 } from "./lib/planning.js"
 import { pickProject } from "./lib/issues.js"
 import { applyTheme, loadTheme } from "./lib/appearance.js"
+import { wireProjectPicker } from "./lib/nav.js"
 
 const STATUS = {
   started: { label: "In progress", color: "var(--st-started)", fg: "var(--st-started-fg)" },
@@ -118,17 +119,7 @@ function renderMeta() {
 }
 renderMeta()
 
-const projectPicker = document.getElementById("project-picker")
-if (projects.length > 1) {
-  projectPicker.hidden = false
-  projectPicker.innerHTML = projects.map((p) => `<option value="${p.slug}">${p.name}</option>`).join("")
-  projectPicker.value = currentProject.slug
-  projectPicker.addEventListener("change", () => {
-    const url = new URL(location.href)
-    url.searchParams.set("project", projectPicker.value)
-    location.href = url.toString()
-  })
-}
+wireProjectPicker(projects, currentProject)
 
 // theme: applied from the shared appearance helper, so a choice made on Settings shows here too
 applyTheme(loadTheme())
