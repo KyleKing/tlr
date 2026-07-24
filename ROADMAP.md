@@ -93,15 +93,38 @@ product:
   and renders the message plus full stack into a dismissible banner, since a client-side failure has
   nothing to log server-side and was previously just silent. Wired into every page, plus explicit
   catches in the board's refresh and Settings' save/refresh actions
-- Changes page: From/To pickers (backed by the existing `/api/snapshots` list and a new optional
-  `from`/`to` on `GET /api/report`) let you diff any two captured snapshots, not just the latest pair.
-  Review is unchanged — its mark-reviewed and edit-in-place actions only make sense against the latest
-  window, so it keeps showing only that
+- Changes page: browses snapshot history (backed by the existing `/api/snapshots` list and a new
+  optional `from`/`to` on `GET /api/report`) instead of only ever showing the latest pair. First shipped
+  as two dropdowns, then replaced with ‹/› step buttons plus a day-range picker (1/7/30/since-last) that
+  resolves "from" to whichever snapshot lands closest to that many days before "to" — a pair of
+  dropdowns gave no sense of how far apart two entries were and could pick from-after-to. Review is
+  unchanged — its mark-reviewed and edit-in-place actions only make sense against the latest window, so
+  it keeps showing only that
 - Empty cycle columns (no issue scheduled into them) are now dropped from the board instead of showing
   as a blank column
+- Board cycle columns show every cycle the project has scheduled work in (gaps and all), not a fixed
+  47/48/49 window — `bucketOf`/`buildBuckets` (`web/lib/planning.js`) previously special-cased those
+  literal cycle numbers, which only ever matched the demo seed data; a real project's actual current
+  cycle never coincided with them, so its board could only ever fall back to the milestone/backlog view
+- Fixed a crash behind "refresh doesn't work": `transformIssue` (`web/lib/issues.js`) left a real
+  Linear-ingested unassigned issue as `assignee: null`, but every render/sort/group path keys off the
+  literal string "Unassigned" — opening such a project crashed `render()`'s people sort. Normalized at
+  the ingest boundary and again defensively in `enrich()`
+- A second UX/quality pass: bigger, bolder ticket-pill text (10px → 12px, dropped the cramped "·N"
+  estimate suffix now that the pill's width already encodes it); "Open in Linear" restyled as a
+  ghost/outline button instead of overriding only its text color on a solid accent fill (light-on-light
+  was possible for some accent choices) — `tests/theme_test.ts` now sweeps every flavor/accent
+  combination for this exact class of bug; the error banner moved to the bottom of the viewport so it
+  stops covering the nav/access-warning; Cycle chips and the Milestones popover merged into one Buckets
+  filter with two checkbox sections; the selected project and every board filter (search, status,
+  buckets, flags, expanded, rows) now round-trip through localStorage/the URL instead of resetting on
+  refresh or navigation; Settings notes that Appearance is a browser setting, not part of any project's
+  data, since the project picker there doesn't apply to it
 - Clarified, not changed: the "graph showing ticket relationships" is the Timeline view's dependency-
   wave grouping (`dependencyWaves` in `web/lib/planning.js`) — there is no node/edge graph UI, and none
-  was removed; "graph" has always meant that wave-card representation plus the hover-based relation text
+  was removed; "graph" has always meant that wave-card representation plus the hover-based relation
+  text. The Timeline view itself was removed this round (the board covers its case); rows: buckets is
+  now the default orientation
 
 Open items live in the Blocked, Backlog, and Open questions sections below; durable decisions are in
 [adr/](adr). The schema stays thin (the current Linear shape), not ADR 0006's normalized model, until a
@@ -164,6 +187,24 @@ Ordered by payoff. Unblocked unless a "(blocked: ...)" note says otherwise.
   hand-rolled `app.js` it uses today.
 - **A real node/edge relationship graph**, if the Timeline view's dependency-wave grouping (see Status)
   turns out not to be enough. Not started; raised as a question, not yet asked for as a feature.
+- **A relative 2D roadmap chart** to replace the removed Timeline view: ticket cards laid out on a
+  pannable 2D plane instead of the grid or wave-cards, with hover for detail (to avoid overlap at a
+  glance) and the same filters as the Board. Raised as a question; needs a layout algorithm decision
+  before it's buildable (force-directed vs. a fixed axis pair like time × dependency-depth).
+- **Scheduled snapshots.** A daily `deno task snapshot` run via launchd (macOS) or a systemd timer/cron
+  (Linux), with a catch-up run on wake if the machine was asleep at the scheduled time (`launchd`'s
+  `StartCalendarInterval` fires on wake automatically; cron needs `anacron` or an explicit `flock`-guarded
+  retry). Errors would need to surface somewhere the owner actually looks — a local notification, a log
+  file surfaced in the UI, or piping to the same error-banner mechanism (`web/lib/errorBanner.js`) via a
+  dismissed-on-visit banner. Not started; raised as a question about approach, not yet asked for as a
+  feature.
+- **Cross-project duplicate-ticket detection.** Flag likely duplicates (within or across projects) with
+  a quick yes/no/correct-the-AI review queue, an eval/golden set for tuning, and a note that this is hard
+  to get right: AI-generated tickets often sound similar as false positives, while an engineer and a
+  customer can describe the same issue differently enough that it takes reading the code to tell they
+  match. Would likely need semantic search (embeddings) at minimum, a bounded candidate range (not
+  all-pairs), and possibly a small tuned local model rather than a general cloud one for cost/latency at
+  that volume. Not started; raised as an idea to table, not a scoped feature.
 
 ## Decisions
 
