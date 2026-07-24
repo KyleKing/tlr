@@ -47,10 +47,10 @@ product:
   nav (Board, Changes, Review, Settings). Changes renders the weekly update; Review groups edits by
   ticket with a mark-reviewed toggle; Settings holds appearance, capacity, roster, calendar overrides,
   and integrations, moved off the board's old dialog
-- In-flow fixes: the Review page edits a ticket's title, description, estimate, or priority, previews
-  the change (dry run), then applies it to Linear on confirm. This is the only write path, and only from
-  the UI. Demo mode (`TLR_DEMO=1`) points it at the free/test workspace with a visible banner; live mode
-  uses the real key
+- In-flow fixes: the Review page edits a ticket's title, description, estimate, priority, milestone,
+  status, cycle, or assignee, previews the change (dry run), then applies it to Linear on confirm. This
+  is the only write path, and only from the UI. Demo mode (`TLR_DEMO=1`) points it at the free/test
+  workspace with a visible banner; live mode uses the real key
 - Demo workspace and live verification: `deno task seed:linear` seeds a throwaway "Horse Tinder" project
   into the free workspace (guarded to `tlr-demo-workspace`, dry-run by default, archives on re-seed). The
   full loop is verified end to end against real Linear: ingest → an edit from the Review UI → `issueUpdate`
@@ -82,12 +82,15 @@ the change, and on confirm applies it as an idempotent `issueUpdate`. Bulk AI ed
 the Linear MCP in Claude Code; tlr's job is to review them and fix what is wrong, not to duplicate that
 write surface.
 
-### Phase 3 — in-flow editing (shipped for the v1 fields)
+### Phase 3 — in-flow editing (shipped)
 
-Edit a ticket in place on the Review page: fix the title, description, estimate, or priority, preview
-the change (a dry run), then apply it to the current workspace. This is the same op-and-apply path the
-write layer uses. SVG export for weekly-update artifacts shipped earlier. Remaining: the fields that
-need a name-to-UUID lookup (milestone, status, cycle, assignee), and a candidate pannable 2D layout.
+Edit a ticket in place on the Review page: fix the title, description, estimate, priority, milestone,
+status, cycle, or assignee, preview the change (a dry run), then apply it to the current workspace. The
+name/key/number fields resolve to Linear ids at write time from the issue's team and project context.
+This is the same op-and-apply path the write layer uses. SVG export for weekly-update artifacts shipped
+earlier. Remaining candidate: a pannable 2D layout instead of the grid. One known limit: status
+resolves by workflow-state type and picks the first state of that type, so a team with two states in one
+category (two "started" states) needs the specific state chosen by name later.
 
 ## Blocked
 
@@ -105,10 +108,6 @@ items depending on them are marked below.
 
 Ordered by payoff. Unblocked unless a "(blocked: ...)" note says otherwise.
 
-- **Editing the fields that need a name-to-UUID lookup.** The Review-page edit form covers title,
-  description, estimate, and priority. Milestone, status, cycle, and assignee moves need their target
-  resolved to a Linear UUID (the snapshot carries names, not ids for these). Add the resolution to
-  `src/linear_write.ts` and the fields to the form.
 - **Secrets in the config UI** (advances the blocked secrets story). Manage the Linear key,
   Incident.io token, and Google OAuth through Settings, in the keychain today and wired through the
   `SecretStore` port (ADR 0007) so the same panel drives hosted secrets in production.

@@ -29,10 +29,10 @@ is next, and [AGENTS.md](AGENTS.md) for where to start.
 - Slop scan of ticket text for AI tells (dashes, stock phrases, checklists, length), with a review
   queue for recent edits and a way to mark each one reviewed
 - Review-and-fix loop for bulk AI changes: the Review page groups every change to a ticket, lets you
-  clear each as reviewed, and edits a ticket's title, description, estimate, or priority in place. It
-  previews the change first (a dry run), then writes it to Linear on confirm. That is the only path tlr
-  has to Linear, and it only runs from the UI, because bulk edits already go through the Linear MCP in
-  Claude Code and tlr's job is to catch and fix what they got wrong
+  clear each as reviewed, and edits a ticket in place (title, description, estimate, priority, milestone,
+  status, cycle, assignee). It previews the change first (a dry run), then writes it to Linear on
+  confirm. That is the only path tlr has to Linear, and it only runs from the UI, because bulk edits
+  already go through the Linear MCP in Claude Code and tlr's job is to catch and fix what they got wrong
 
 ## The board
 
@@ -46,7 +46,8 @@ Changes reads the two most recent snapshots and writes the weekly update.
 ![The changes page](docs/images/changes.png)
 
 Review groups every change to a ticket into one unit, lets you mark it reviewed, and edits the ticket in
-place (title, description, estimate, priority) with a preview before it writes to Linear.
+place (title, description, estimate, priority, milestone, status, cycle, assignee) with a preview before
+it writes to Linear.
 
 ![The review page](docs/images/review.png)
 
