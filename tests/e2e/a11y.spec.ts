@@ -39,6 +39,35 @@ test("board what-if mode passes automated color-contrast checks", async ({ page 
   expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([])
 })
 
+// The scheduled-snapshot banner only paints when a run failed, so stub that state to get its tinted
+// bar and its dismiss button into a scan. Every page carries it, so the board is enough.
+test("the scheduled-snapshot banner passes automated color-contrast checks", async ({ page }) => {
+  await page.route("**/api/schedule/health", (route) =>
+    route.fulfill({
+      json: {
+        state: "failed",
+        lastRun: {
+          startedAt: "2026-07-24T09:00:00.000Z",
+          finishedAt: "2026-07-24T09:00:04.000Z",
+          durationMs: 4000,
+          outcome: "failed",
+          detail: "Linear → 401 Unauthorized",
+        },
+        lastSuccessAt: "2026-07-22T09:00:04.000Z",
+        message: "The scheduled snapshot failed 2 hours ago: Linear → 401 Unauthorized",
+      },
+    }))
+  await page.goto("/")
+  await page.waitForSelector("#schedule-notice")
+
+  const results = await new AxeBuilder({ page })
+    .withTags(["wcag2aa"])
+    .options({ runOnly: { type: "rule", values: ["color-contrast"] } })
+    .analyze()
+
+  expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([])
+})
+
 // The secrets pane starts hidden, and axe skips hidden content, so open it to get its state chips,
 // notes, and disabled inputs into a scan.
 test("settings secrets pane passes automated color-contrast checks", async ({ page }) => {

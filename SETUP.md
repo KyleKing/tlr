@@ -162,6 +162,50 @@ A teammate query returns real data only if you can see their availability: Works
 for an OAuth user, or domain-wide delegation for the service account. Without one, a peer query comes
 back empty.
 
+## Daily snapshots on a schedule
+
+`deno task snapshot` refreshes every project in `web/data/projects.json` from Linear and Incident.io and
+captures a snapshot, the same work the board's Refresh button does. Run it by hand any time; the section
+below puts it on a daily launchd timer so the history builds without anyone remembering.
+
+Out-of-office is left out of a scheduled run. Google Calendar consent can need a browser, which a
+background job cannot answer, so out-days stay whatever the last interactive `deno task capacity` wrote.
+
+```sh
+./scripts/schedule.sh install              # daily at 09:00
+./scripts/schedule.sh install --at 07:30   # pick the hour
+./scripts/schedule.sh install --dry-run    # print the plist and the commands, change nothing
+```
+
+Install is safe to re-run, and you have to re-run it after upgrading Deno: the plist holds the absolute
+path to the `deno` binary, because a LaunchAgent gets no shell `PATH`.
+
+Check it:
+
+```sh
+./scripts/schedule.sh status
+launchctl list | grep me.kyleking.tlr.snapshot     # PID, last exit code, label
+tail web/data/snapshot-launchd.log                 # stdout and stderr of the last runs
+tail web/data/snapshot-runs.jsonl                  # one line per run: outcome, duration, error
+```
+
+Remove it:
+
+```sh
+./scripts/schedule.sh uninstall
+```
+
+macOS fires a missed daily run once when the machine wakes, and folds several missed days into that one
+run, so a closed laptop does not lose its snapshot. Two guards keep that from turning into duplicate
+work: a lock file (`web/data/snapshot-run.lock`) so a catch-up run cannot collide with a run already
+going, and a 12-hour minimum interval so a catch-up landing right after a good run does nothing. A lock
+older than 30 minutes is treated as abandoned and taken over, so a killed run does not wedge the
+schedule. `--force` overrides the interval; nothing overrides the lock.
+
+Failures surface in the app. Every run appends a line to `web/data/snapshot-runs.jsonl`, and the board
+shows a dismissible banner when the last run failed or nothing has been captured for two days. With no
+schedule installed there is no banner, which is the normal state, not a warning.
+
 ## Long-term: a hosted runner
 
 Local keychain entries are the day-zero shortcut, not the destination. On a shared runner each user's

@@ -15,6 +15,9 @@ import { ingestProject, linearKey } from "./issues.ts"
 import { type CapacityData, refreshCapacity } from "./capacity.ts"
 import { renderPage } from "../web/templates/helpers.ts"
 import { openStore } from "@/snapshot.ts"
+import { captureSnapshot, DATA_ROOT, RUN_LOG_PATH, SNAPSHOT_DB, writeJsonAtomic } from "@/capture.ts"
+import { readRunLog } from "@/runLog.ts"
+import { isScheduleInstalled, scheduleHealth } from "@/schedule.ts"
 import { diffSnapshots } from "@/diff.ts"
 import { weeklyReport } from "@/report.ts"
 import { reviewSince } from "@/review.ts"
@@ -48,9 +51,6 @@ await configure({
   ],
 })
 
-const DATA_ROOT = new URL("../web/data/", import.meta.url)
-// Overridable so e2e can point at a throwaway store instead of the real local one.
-const SNAPSHOT_DB = Deno.env.get("TLR_SNAPSHOT_DB") ?? new URL("tlr.sqlite", DATA_ROOT).pathname
 // Demo mode uses the free/test workspace key and shows a banner; live mode uses the real key.
 const DEMO = config.DEMO
 const KEY_ACCOUNT = DEMO ? "demo-key" : "api-key"
@@ -58,39 +58,6 @@ const KEY_ACCOUNT = DEMO ? "demo-key" : "api-key"
 function safeDataFile(name: unknown): string | null {
   if (typeof name !== "string" || !/^[\w.-]+\.json$/.test(name)) return null
   return name
-}
-
-// Writes JSON to `path` atomically (write a sibling temp file, then rename over the target) so a
-// concurrent reader — the board's own polling, another write in flight, a snapshot capture — never
-// observes a half-written file. A plain writeTextFile can otherwise be read mid-write and throw
-// "Unexpected end of JSON input", which is a real risk here: three different POST handlers write the
-// same project data file, and nothing serializes them against each other or against a GET.
-async function writeJsonAtomic(path: URL, data: unknown): Promise<void> {
-  const tmp = new URL(`${path.href}.${crypto.randomUUID()}.tmp`)
-  await Deno.writeTextFile(tmp, `${JSON.stringify(data, null, 2)}\n`)
-  await Deno.rename(tmp, path)
-}
-
-// The comparable shape of a snapshot: what a plan-level diff would notice. Used to skip a capture that
-// would be identical to the latest one already stored for the project.
-function snapshotSignature(s: Snapshot): string {
-  return JSON.stringify({ asOf: s.asOf, milestones: s.milestones, issues: s.issues })
-}
-
-// Capture a snapshot into the local store, unless the project's latest stored snapshot is identical.
-// Returns the saved row, or null when nothing changed. Opens and closes its own store handle.
-function captureSnapshot(snapshot: Snapshot, label?: string): { id: number; skipped: boolean } {
-  const store = openStore(SNAPSHOT_DB)
-  try {
-    const latest = store.listSnapshots().find((r) => r.projectName === snapshot.project.name)
-    if (latest && snapshotSignature(store.loadSnapshot(latest.id)) === snapshotSignature(snapshot)) {
-      return { id: latest.id, skipped: true }
-    }
-    const saved = store.saveSnapshot(snapshot, Date.now(), label)
-    return { id: saved.id, skipped: false }
-  } finally {
-    store.close()
-  }
 }
 
 // The two most recent snapshots for a project, oldest first, or null when there are fewer than two.
@@ -337,6 +304,13 @@ app.get("/api/review", (c) => {
   const pair = recentPair(project)
   if (!pair) return c.json({ window: null, items: [], reason: "need at least two snapshots" })
   return c.json(reviewSince(pair.before, pair.after))
+})
+
+// How the daily snapshot schedule is doing, for the banner in web/lib/scheduleBanner.js. A machine
+// with no LaunchAgent installed answers "unscheduled" with no message, which is the ordinary state.
+app.get("/api/schedule/health", async (c) => {
+  const [installed, entries] = await Promise.all([isScheduleInstalled(), readRunLog(RUN_LOG_PATH)])
+  return c.json(scheduleHealth({ entries, installed, nowMs: Date.now() }))
 })
 
 // Which workspace writes land in, so the client can label buttons and confirm before a live mutation.

@@ -167,6 +167,16 @@ product:
   bug; Settings' width fix reads as a deliberate ~1080px content column rather than a hard 760px card, not
   full 1512px viewport width, since stretching form inputs edge-to-edge would look worse
 
+- Scheduled snapshots: `deno task snapshot` refreshes every project in the manifest and captures, and a
+  launchd LaunchAgent (`scripts/schedule.sh install`, `scripts/launchagent.plist.template`) runs it
+  daily. macOS fires a missed run on wake, so a sleeping laptop still gets its capture; a lock file and
+  a 12-hour minimum interval (`src/runLock.ts`) keep a catch-up run from colliding with or duplicating
+  one that already happened. Every run appends to a capped run log beside the snapshot store
+  (`src/runLog.ts`), `GET /api/schedule/health` reads it back, and `web/lib/scheduleBanner.js` shows a
+  dismissible banner when the last run failed or nothing has been captured in two days. No schedule
+  installed means no banner. The hosted equivalent is a systemd timer, recorded in ADR 0008 rather than
+  shipped as an untested unit file
+
 Open items live in the Blocked, Backlog, and Open questions sections below; durable decisions are in
 [adr/](adr). The schema stays thin (the current Linear shape), not ADR 0006's normalized model, until a
 second tracker lands.
@@ -232,13 +242,9 @@ Ordered by payoff. Unblocked unless a "(blocked: ...)" note says otherwise.
   pannable 2D plane instead of the grid or wave-cards, with hover for detail (to avoid overlap at a
   glance) and the same filters as the Board. Raised as a question; needs a layout algorithm decision
   before it's buildable (force-directed vs. a fixed axis pair like time × dependency-depth).
-- **Scheduled snapshots.** A daily `deno task snapshot` run via launchd (macOS) or a systemd timer/cron
-  (Linux), with a catch-up run on wake if the machine was asleep at the scheduled time (`launchd`'s
-  `StartCalendarInterval` fires on wake automatically; cron needs `anacron` or an explicit `flock`-guarded
-  retry). Errors would need to surface somewhere the owner actually looks — a local notification, a log
-  file surfaced in the UI, or piping to the same error-banner mechanism (`web/lib/errorBanner.js`) via a
-  dismissed-on-visit banner. Not started; raised as a question about approach, not yet asked for as a
-  feature.
+- **Scheduled snapshots.** Built (see Status). What is left is the hosted half: the systemd timer ADR
+  0008 describes has no unit file in the repo, and nothing yet proves the LaunchAgent's wake-up catch-up
+  on a real overnight sleep rather than on launchd's documented behavior.
 - **Cross-project duplicate-ticket detection.** Flag likely duplicates (within or across projects) with
   a quick yes/no/correct-the-AI review queue, an eval/golden set for tuning, and a note that this is hard
   to get right: AI-generated tickets often sound similar as false positives, while an engineer and a

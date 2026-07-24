@@ -20,6 +20,7 @@
   {{ if demo }}<div class="demobar" role="status">Demo mode — connected to the free/test workspace. Edits do not touch your real Linear.</div>{{ /if }}
   <div id="access-warning" class="access-warning" role="status" hidden></div>
   {{ content |> safe }}
+  <script type="module" src="/lib/scheduleBanner.js"></script>
   <script type="module" src="{{ script }}"></script>
 </body>
 </html>
