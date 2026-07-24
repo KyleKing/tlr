@@ -3,7 +3,32 @@
 // resolution (board.js) or from resolveProject (the other pages); this only owns the <select> and the
 // access-warning banner, both rendered once in the layout.
 
+import { pickProject } from "./issues.js"
+
+const PROJECT_KEY = "tlr.project"
+
+// The project to use when the URL doesn't say: honor ?project=<slug> first, else the last one picked
+// (localStorage), else the manifest's first entry. Persists whatever it lands on, so a refresh or a
+// same-origin navigation that drops the query param still lands back on the right project instead of
+// silently resetting to the first manifest entry.
+export function resolveProjectSlug(projects, requestedSlug) {
+  const project = pickProject(projects, requestedSlug ?? localStorage.getItem(PROJECT_KEY))
+  if (project) localStorage.setItem(PROJECT_KEY, project.slug)
+  return project
+}
+
+// Keeps ?project=<slug> on the Board/Changes/Review/Settings links, so switching pages doesn't drop
+// the current project (the links are plain hrefs in the server-rendered layout).
+function syncNavLinks(slug) {
+  for (const a of document.querySelectorAll(".topnav a[href^='/']")) {
+    const url = new URL(a.getAttribute("href"), location.origin)
+    url.searchParams.set("project", slug)
+    a.setAttribute("href", `${url.pathname}${url.search}`)
+  }
+}
+
 export function wireProjectPicker(projects, current) {
+  if (current) syncNavLinks(current.slug)
   const el = document.getElementById("global-project-picker")
   if (!el) return
   if (projects.length <= 1) {
@@ -14,6 +39,7 @@ export function wireProjectPicker(projects, current) {
   el.innerHTML = projects.map((p) => `<option value="${p.slug}">${p.name}</option>`).join("")
   if (current) el.value = current.slug
   el.onchange = () => {
+    localStorage.setItem(PROJECT_KEY, el.value)
     const url = new URL(location.href)
     url.searchParams.set("project", el.value)
     location.href = url.toString()

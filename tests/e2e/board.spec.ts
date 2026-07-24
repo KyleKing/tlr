@@ -100,19 +100,35 @@ test("an uncaught client error surfaces in a visible, dismissible banner", async
   await expect(banner).toContainText("injected test error")
   await expect(page.locator(".js-error-stack")).toContainText("injected test error")
 
+  // Anchored to the bottom, not the top — it must never cover the nav or the access-warning banner.
+  const box = await page.locator(".js-error").boundingBox()
+  const viewport = page.viewportSize()
+  expect(box?.y).toBeGreaterThan(0)
+  if (box && viewport) expect(box.y + box.height).toBeCloseTo(viewport.height, 0)
+
   await page.click(".js-error-dismiss")
   await expect(banner).toHaveCount(0)
 })
 
-test("milestone filter is a searchable multi-select that narrows the board's columns", async ({ page }) => {
+test("the board defaults to rows: buckets", async ({ page }) => {
   await page.goto("/")
   await expect(page.locator("#grid tr").first()).toBeVisible()
 
-  const columnCount = await page.locator("#grid thead th.mile").count()
-  expect(columnCount).toBeGreaterThan(1)
+  await expect(page.locator("#grid")).toHaveClass(/transposed/)
+  await expect(page.locator("#orient")).toContainText("Rows: buckets")
+  await expect(page.locator(".rowhead").first()).toBeVisible()
+})
 
-  await page.click("#msel-btn")
-  await expect(page.locator("#msel-panel")).toBeVisible()
+test("the combined bucket filter is a searchable multi-select that narrows the board's rows", async ({ page }) => {
+  await page.goto("/")
+  await expect(page.locator("#grid tr").first()).toBeVisible()
+
+  const rowCount = await page.locator(".rowhead.horizon").count()
+  expect(rowCount).toBeGreaterThan(1)
+
+  await page.click("#bsel-btn")
+  await expect(page.locator("#bsel-panel")).toBeVisible()
+  await expect(page.locator("#cycle-list li")).not.toHaveCount(0)
 
   const firstLabel = (await page.locator("#msel-list label span").first().textContent()) ?? ""
   await page.fill("#msel-search", firstLabel.slice(0, 4))
@@ -122,6 +138,6 @@ test("milestone filter is a searchable multi-select that narrows the board's col
   await page.click(`#msel-list input[type="checkbox"]`)
   await page.keyboard.press("Escape")
 
-  await expect(page.locator("#msel-btn")).toContainText("1/")
-  await expect(page.locator("#grid thead th.mile")).toHaveCount(1)
+  await expect(page.locator("#bsel-btn")).toHaveAttribute("aria-pressed", "true")
+  await expect(page.locator(".rowhead.horizon")).toHaveCount(1)
 })

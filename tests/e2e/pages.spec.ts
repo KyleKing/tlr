@@ -98,10 +98,12 @@ test("the global project picker in the nav switches projects and preserves the c
 
 test("nav moves between board, changes, review, and settings", async ({ page }) => {
   await page.goto("/")
-  await page.click(".topnav a[href='/changes']")
-  await expect(page).toHaveURL(/\/changes$/)
-  await page.click(".topnav a[href='/review']")
-  await expect(page).toHaveURL(/\/review$/)
-  await page.click(".topnav a[href='/settings']")
-  await expect(page).toHaveURL(/\/settings$/)
+  // Nav links carry the current ?project= forward (see resolveProjectSlug/syncNavLinks), so they're no
+  // longer bare paths — match by prefix and allow a trailing query string.
+  await page.click(".topnav a[href^='/changes']")
+  await expect(page).toHaveURL(/\/changes(\?.*)?$/)
+  await page.click(".topnav a[href^='/review']")
+  await expect(page).toHaveURL(/\/review(\?.*)?$/)
+  await page.click(".topnav a[href^='/settings']")
+  await expect(page).toHaveURL(/\/settings(\?.*)?$/)
 })

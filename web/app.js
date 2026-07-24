@@ -1,7 +1,6 @@
 import {
   bucketOf,
   buildBuckets,
-  dependencyWaves,
   milestoneForecast,
   missingData,
   orderingRisks,
@@ -12,9 +11,8 @@ import {
   teamWeeklyThroughput,
   weeksBetween,
 } from "./lib/planning.js"
-import { pickProject } from "./lib/issues.js"
 import { applyTheme, loadTheme } from "./lib/appearance.js"
-import { wireProjectPicker } from "./lib/nav.js"
+import { resolveProjectSlug, wireProjectPicker } from "./lib/nav.js"
 import { showError } from "./lib/errorBanner.js"
 
 const STATUS = {
@@ -101,13 +99,12 @@ const state = {
   bucketKeys: null, // set after first load to all keys
   flags: new Set(),
   expanded: false,
-  transpose: false,
-  view: "board", // or "timeline"
+  transpose: true, // rows: buckets by default — one row per cycle/milestone, not per person
 }
 
 const projects = await loadProjects()
 const requestedSlug = new URLSearchParams(location.search).get("project")
-const currentProject = pickProject(projects, requestedSlug)
+const currentProject = resolveProjectSlug(projects, requestedSlug)
 const data = await loadData(currentProject?.dataFile)
 deriveBuckets()
 enrich()
@@ -141,18 +138,12 @@ exp.onclick = () => {
   render()
 }
 const orient = document.getElementById("orient")
+orient.setAttribute("aria-pressed", state.transpose)
+orient.textContent = state.transpose ? "Rows: buckets" : "Rows: people"
 orient.onclick = () => {
   state.transpose = !state.transpose
   orient.setAttribute("aria-pressed", state.transpose)
   orient.textContent = state.transpose ? "Rows: buckets" : "Rows: people"
-  render()
-}
-const viewBtn = document.getElementById("view")
-viewBtn.onclick = () => {
-  state.view = state.view === "board" ? "timeline" : "board"
-  viewBtn.setAttribute("aria-pressed", state.view === "timeline")
-  const board = state.view === "board"
-  exp.hidden = orient.hidden = !board
   render()
 }
 const refreshBtn = document.getElementById("refresh")
@@ -196,15 +187,9 @@ function chipButton(host, label, on, color, cls, toggle, onSolo) {
 }
 
 const statusChipEls = new Map()
-const bucketChipEls = new Map()
 function syncChips() {
   for (const [k, b] of statusChipEls) {
     const pressed = state.statuses.has(k)
-    b.setAttribute("aria-pressed", pressed)
-    paintChip(b, b.dataset.chipColor, pressed)
-  }
-  for (const [k, b] of bucketChipEls) {
-    const pressed = state.bucketKeys.has(k)
     b.setAttribute("aria-pressed", pressed)
     paintChip(b, b.dataset.chipColor, pressed)
   }
@@ -232,53 +217,32 @@ const cycleBuckets = buckets.filter((b) => b.kind !== "milestone")
 const milestoneBuckets = buckets.filter((b) => b.kind === "milestone")
 const knownBucketKeys = new Set(buckets.map((b) => b.key))
 
-const bucketHost = document.getElementById("bucket-chips")
-for (const b of cycleBuckets) {
-  bucketChipEls.set(
-    b.key,
-    chipButton(
-      bucketHost,
-      b.label.replace("Cycle ", "C"),
-      true,
-      "",
-      "",
-      (on) => on ? state.bucketKeys.add(b.key) : state.bucketKeys.delete(b.key),
-      () => {
-        const solo = state.bucketKeys.size === 1 && state.bucketKeys.has(b.key)
-        state.bucketKeys = new Set(solo ? buckets.map((x) => x.key) : [b.key])
-      },
-    ),
-  )
-}
-
-// Milestone filter: a searchable multi-select instead of one chip per milestone. A milestone without
-// the "M1: " naming convention has no short form, so a chip-per-milestone row either overflows or
-// shows the full name — this scales to any name length and any milestone count.
-function initMilestoneSelect() {
-  const root = document.getElementById("milestone-select")
-  const btn = document.getElementById("msel-btn")
-  const panel = document.getElementById("msel-panel")
-  const search = document.getElementById("msel-search")
-  const list = document.getElementById("msel-list")
-  const countEl = document.getElementById("msel-count")
-  if (!milestoneBuckets.length) {
-    root.hidden = true
-    return
-  }
+// One "Buckets" popover with two checkbox sections (Cycles, Milestones) instead of a chip row plus a
+// separate milestone popover — a milestone without the "M1: " short-name convention has no compact
+// form, so a chip-per-milestone row either overflows or shows the full name, and cycles/milestones are
+// both just "which bucket columns show" so one control covers both.
+function initBucketSelect() {
+  const root = document.getElementById("bucket-select")
+  const btn = document.getElementById("bsel-btn")
+  const panel = document.getElementById("bsel-panel")
+  const countEl = document.getElementById("bsel-count")
+  const cycleList = document.getElementById("cycle-list")
+  const mileList = document.getElementById("msel-list")
+  const mileSearch = document.getElementById("msel-search")
 
   const displayName = (b) => b.name ?? b.label
 
   function syncButton() {
-    const n = milestoneBuckets.filter((b) => state.bucketKeys.has(b.key)).length
-    const total = milestoneBuckets.length
+    const n = buckets.filter((b) => state.bucketKeys.has(b.key)).length
+    const total = buckets.length
     countEl.hidden = n === total
     countEl.textContent = n === 0 ? "0" : `${n}/${total}`
     btn.setAttribute("aria-pressed", n !== total)
   }
 
-  function renderList() {
-    const q = search.value.trim().toLowerCase()
-    const rows = milestoneBuckets.filter((b) => !q || displayName(b).toLowerCase().includes(q))
+  function renderChecklist(list, items, query) {
+    const q = (query ?? "").trim().toLowerCase()
+    const rows = items.filter((b) => !q || displayName(b).toLowerCase().includes(q))
     list.innerHTML = rows.length
       ? rows.map((b) => {
         const checked = state.bucketKeys.has(b.key)
@@ -298,12 +262,16 @@ function initMilestoneSelect() {
     }
   }
 
+  function renderAll() {
+    renderChecklist(cycleList, cycleBuckets)
+    renderChecklist(mileList, milestoneBuckets, mileSearch.value)
+  }
+
   function open() {
     panel.hidden = false
     btn.setAttribute("aria-expanded", "true")
-    renderList()
-    search.value = ""
-    search.focus()
+    mileSearch.value = ""
+    renderAll()
   }
   function close() {
     panel.hidden = true
@@ -317,22 +285,21 @@ function initMilestoneSelect() {
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && !panel.hidden) close()
   })
-  search.oninput = renderList
-  document.getElementById("msel-all").onclick = () => {
-    for (const b of milestoneBuckets) state.bucketKeys.add(b.key)
+  mileSearch.oninput = () => renderChecklist(mileList, milestoneBuckets, mileSearch.value)
+
+  const bulkToggle = (items, add) => () => {
+    for (const b of items) add ? state.bucketKeys.add(b.key) : state.bucketKeys.delete(b.key)
     syncButton()
-    renderList()
+    renderAll()
     render()
   }
-  document.getElementById("msel-none").onclick = () => {
-    for (const b of milestoneBuckets) state.bucketKeys.delete(b.key)
-    syncButton()
-    renderList()
-    render()
-  }
+  document.getElementById("cycle-all").onclick = bulkToggle(cycleBuckets, true)
+  document.getElementById("cycle-none").onclick = bulkToggle(cycleBuckets, false)
+  document.getElementById("msel-all").onclick = bulkToggle(milestoneBuckets, true)
+  document.getElementById("msel-none").onclick = bulkToggle(milestoneBuckets, false)
   syncButton()
 }
-initMilestoneSelect()
+initBucketSelect()
 const flagHost = document.getElementById("flag-chips")
 for (const [k, label] of Object.entries(FLAGS)) {
   chipButton(flagHost, label, false, `var(--${k})`, "flag", (on) => on ? state.flags.add(k) : state.flags.delete(k))
@@ -346,14 +313,6 @@ function bulk(setState) {
 }
 document.getElementById("status-all").onclick = () => bulk(() => (state.statuses = new Set(Object.keys(STATUS))))
 document.getElementById("status-none").onclick = () => bulk(() => (state.statuses = new Set()))
-document.getElementById("bucket-all").onclick = () =>
-  bulk(() => {
-    for (const b of cycleBuckets) state.bucketKeys.add(b.key)
-  })
-document.getElementById("bucket-none").onclick = () =>
-  bulk(() => {
-    for (const b of cycleBuckets) state.bucketKeys.delete(b.key)
-  })
 
 // interactive hover card (holds the not-slop action, so it must stay reachable)
 const tip = document.getElementById("tip")
@@ -502,19 +461,9 @@ function render() {
   ].join("")
 
   const grid = document.getElementById("grid")
-  const timelineEl = document.getElementById("timeline")
-  if (state.view === "timeline") {
-    grid.hidden = true
-    timelineEl.hidden = false
-    timelineEl.innerHTML = buildTimeline()
-    wireNodes(timelineEl)
-  } else {
-    timelineEl.hidden = true
-    grid.hidden = false
-    grid.className = state.transpose ? "transposed" : ""
-    grid.innerHTML = state.transpose ? buildTransposed(people) : buildBoard(people, visible)
-    wireNodes(grid)
-  }
+  grid.className = state.transpose ? "transposed" : ""
+  grid.innerHTML = state.transpose ? buildTransposed(people) : buildBoard(people, visible)
+  wireNodes(grid)
   if (wrap) {
     wrap.scrollLeft = sx
     wrap.scrollTop = sy
@@ -547,35 +496,13 @@ function buildTransposed(people) {
   h += "</tr></thead><tbody>"
   for (const b of visible) {
     const kindTag = b.kind === "cycle" ? "now" : b.kind === "milestone" ? "horizon" : "backlog"
-    h += `<tr><th class="rowhead ${kindTag}" title="${escapeHtml(bucketDetail(b))}">${escapeHtml(b.label)}` +
+    h += `<tr><th class="rowhead ${kindTag}" title="${escapeHtml(bucketDetail(b))}">` +
+      `<span class="mlabel">${escapeHtml(b.label)}</span>` +
       `<span class="s">${bucketSub(b)}</span>${forecastBadge(b)}</th>`
     for (const person of people) h += cellHTML(person, b)
     h += "</tr>"
   }
   return `${h}</tbody>`
-}
-
-function buildTimeline() {
-  const waves = dependencyWaves(data.issues)
-  let h = ""
-  waves.forEach((ids, idx) => {
-    const cards = ids.map((id) => byId[id]).filter((i) => passesShown.has(i))
-    if (!cards.length) return
-    h += `<div class="wave"><div class="wave-h">Wave ${idx + 1}<span class="s">${cards.length}</span></div>` +
-      cards.map(timelineCard).join("") + "</div>"
-  })
-  return h || `<div class="empty">No blocking relations among the shown issues.</div>`
-}
-
-function timelineCard(i) {
-  const bkt = bucketByKey[i._bucket]
-  const label = bkt ? bkt.label.replace("Cycle ", "C") : i._bucket
-  return `<div class="tcard ${warnClass(i)}" data-id="${i.id}" onclick="window.open('${i.url}','_blank')" ` +
-    `style="border-left-color:${STATUS[i.statusType]?.color}">` +
-    `<div class="top"><span class="id">${i.id.replace(/^[A-Z]+-/, "")}</span>` +
-    `<span class="bkt">${escapeHtml(label)}</span></div>` +
-    `<div class="t">${escapeHtml(i.title)}</div>` +
-    `<div class="who">${escapeHtml(i.assignee)}</div></div>`
 }
 
 function nodeLabel(i) {
@@ -729,11 +656,13 @@ function flagBadges(i) {
 
 // Compact-pill label: a leading flag glyph (so a flag reads even without color), the ticket number,
 // and the estimate as "·N" — the only room a pill this small has for a second data point.
+// The pill's width already encodes estimate magnitude (see min-width below), and a numeric "·N" suffix
+// crammed into a 10px pill was unreadable and redundant with that. The flag glyph is the second signal
+// a pill this small has room for; the exact estimate lives in the hover tip.
 function tickLabel(i) {
   const flag = i._risk ? "⛔" : isSlop(i) ? "⚠" : i._miss.blocking ? "◑" : ""
   const num = i.id.replace(/^[A-Z]+-/, "")
-  const pts = i.estimate ? `·${i.estimate}` : ""
-  return `${flag}${num}${pts}`
+  return `${flag}${num}`
 }
 
 function renderItems(items) {

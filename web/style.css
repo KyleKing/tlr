@@ -100,12 +100,14 @@ a {
 }
 .js-error {
   position: fixed;
-  top: 0;
+  bottom: 0;
   left: 0;
   right: 0;
   z-index: 1000;
   max-height: 60vh;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column-reverse;
 }
 .js-error-entry {
   background: color-mix(in srgb, var(--red) 90%, var(--crust));
@@ -607,6 +609,31 @@ h1 {
   font-style: italic;
   padding: 6px 4px;
 }
+.bsel-panel {
+  width: 260px;
+}
+.bsel-section + .bsel-section {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--surface0);
+}
+.bsel-section-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--subtext0);
+  margin-bottom: 6px;
+}
+.bsel-bulk {
+  display: flex;
+  gap: 4px;
+}
+.bsel-section .msel-list {
+  max-height: 140px;
+}
 .fhint {
   font-size: 11px;
   color: var(--subtext0);
@@ -619,7 +646,7 @@ h1 {
   color: var(--text);
   border-radius: var(--radius);
   padding: 5px 11px;
-  font: 12.5px var(--font);
+  font: 13.5px var(--font);
   cursor: pointer;
 }
 .pill[aria-pressed="true"] {
@@ -762,7 +789,7 @@ td.past {
   margin-bottom: 1px;
 }
 .cf {
-  font-size: 9.5px;
+  font-size: 10.5px;
   line-height: 1.5;
   padding: 0 5px;
   border-radius: 999px;
@@ -786,13 +813,13 @@ td.past {
   gap: 3px;
 }
 .tick {
-  min-height: 18px;
+  min-height: 20px;
   padding: 1px 6px;
   border-radius: 999px;
   cursor: pointer;
   color: var(--text);
-  font: 10px var(--mono);
-  line-height: 16px;
+  font: 600 12px var(--mono);
+  line-height: 18px;
   font-variant-numeric: tabular-nums;
   text-align: center;
   overflow: hidden;
@@ -1014,6 +1041,7 @@ td.past {
 }
 .rowhead {
   text-align: left;
+  max-width: 200px;
 }
 .rowhead .s {
   display: block;
@@ -1110,8 +1138,18 @@ td.past {
   text-decoration: none;
   box-sizing: border-box;
 }
+/* A secondary action next to .tip-act's solid fill: ghost style (no fill) so its text color only ever
+   has to work against --mantle (guaranteed legible), never against a fill color that varies with the
+   chosen accent — the earlier bug here was overriding just the text color on top of a solid accent
+   background, which could land on light-on-light or dark-on-dark depending on the accent picked. */
 .tip-link {
-  color: var(--subtext0);
+  background: transparent;
+  border-color: var(--surface1);
+  color: var(--text);
+}
+.tip-link:hover {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 /* configuration panel (theme, and later: capacity/roster editing) */
