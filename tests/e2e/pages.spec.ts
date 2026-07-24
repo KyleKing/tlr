@@ -18,8 +18,29 @@ test("review page groups changes by ticket and marks them reviewed", async ({ pa
   const count = await groups.count()
   expect(count).toBeGreaterThan(0)
 
-  await page.locator("button[data-id]").first().click()
+  await page.locator("button[data-review]").first().click()
   await expect(page.locator(".rgroup.reviewed")).toHaveCount(1)
+})
+
+test("review page edits a ticket: form pre-fills, previews a dry run, and guards apply without a Linear link", async ({ page }) => {
+  await page.goto("/review")
+
+  await page.locator("button[data-edit]").first().click()
+  const form = page.locator("form.editf").first()
+  await expect(form).toBeVisible()
+
+  // The form starts from the ticket's current values.
+  const title = form.locator('input[name="title"]')
+  await expect(title).not.toHaveValue("")
+  await title.fill("A clearer title")
+
+  // Preview is a dry run: it reports the change without writing.
+  await form.locator('[data-act="preview"]').click()
+  await expect(form.locator(".editf-out")).toContainText("title →")
+
+  // Seed data carries no Linear UUID, so a write is refused and apply stays disabled.
+  await expect(form.locator(".editf-warn")).toBeVisible()
+  await expect(form.locator('[data-act="apply"]')).toBeDisabled()
 })
 
 test("nav moves between board, changes, and review", async ({ page }) => {

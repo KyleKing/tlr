@@ -1,8 +1,10 @@
-// Review page: the UI for Phase 1's review queue. Renders /api/review (a diff between a project's two
-// most recent snapshots) grouped by ticket, so every change to one issue reads as a unit. A change-set
-// can be marked reviewed; reviewed groups dim and sink to the bottom, and are never merged with
-// unreviewed ones. Actor attribution (AI vs. me) is out of scope here: snapshot-diff cannot tell them
-// apart. Temporal 30-minute grouping applies to a future activity-feed source, not a two-point diff.
+// Review page: the UI for Phase 1's review queue plus in-flow fixes. Renders /api/review (a diff between
+// a project's two most recent snapshots) grouped by ticket, so every change to one issue reads as a
+// unit. A change-set can be marked reviewed; reviewed groups dim and sink to the bottom. Each ticket can
+// also be fixed in place: edit its title, description, estimate, or priority, preview the change (a dry
+// run, nothing leaves the process), then apply it to the current workspace. That write is the one path
+// tlr has to Linear, and it only runs from here. Actor attribution (AI vs. me) is out of scope: a
+// snapshot-diff cannot tell them apart.
 
 import { escapeHtml, resolveProject } from "./lib/page.js"
 
@@ -12,7 +14,12 @@ const pageEl = document.getElementById("page")
 const captureBtn = document.getElementById("capture")
 
 let queue = { window: null, items: [] }
+let mode = { demo: false, workspace: "live" }
+let issuesById = new Map()
+const editing = new Set()
 const reviewed = JSON.parse(localStorage.getItem(REVIEWED_KEY) || "{}")
+
+const PRIORITIES = [[0, "No priority"], [1, "Urgent"], [2, "High"], [3, "Medium"], [4, "Low"]]
 
 function windowKey() {
   return queue.window ? `${queue.window.from}_${queue.window.to}` : "none"
@@ -20,13 +27,11 @@ function windowKey() {
 function isReviewed(id) {
   return Boolean(reviewed[windowKey()]?.[id])
 }
-function toggleReviewed(id) {
-  const wk = windowKey()
-  const forWindow = (reviewed[wk] ||= {})
-  if (forWindow[id]) delete forWindow[id]
-  else forWindow[id] = true
+function setReviewed(id, done) {
+  const forWindow = (reviewed[windowKey()] ||= {})
+  if (done) forWindow[id] = true
+  else delete forWindow[id]
   localStorage.setItem(REVIEWED_KEY, JSON.stringify(reviewed))
-  render()
 }
 
 const KIND_LABEL = {
@@ -47,15 +52,52 @@ function groupByTicket(items) {
   return [...map.entries()].map(([id, changes]) => ({ id, changes }))
 }
 
+// The inline edit form for a ticket, pre-filled from its current values. Absent for a removed ticket
+// (nothing left to edit) or one tlr never ingested from Linear (no UUID, so a write would fail).
+function editFormHTML(id) {
+  const cur = issuesById.get(id)
+  if (!cur) return ""
+  const opts = PRIORITIES
+    .map(([v, label]) => `<option value="${v}"${(cur.priorityValue ?? 0) === v ? " selected" : ""}>${label}</option>`)
+    .join("")
+  const applyLabel = mode.demo ? "Apply to demo workspace" : "Apply to live workspace"
+  return `<form class="editf" data-id="${escapeHtml(id)}"${cur.linearId ? "" : ' data-nouuid="1"'}>
+    <label>Title<input name="title" type="text" value="${escapeHtml(cur.title)}" /></label>
+    <label>Description<textarea name="description" rows="4">${escapeHtml(cur.description ?? "")}</textarea></label>
+    <div class="editf-row">
+      <label>Estimate<input name="estimate" type="number" min="0" step="1" value="${cur.estimate ?? ""}" /></label>
+      <label>Priority<select name="priority">${opts}</select></label>
+    </div>
+    ${
+    cur.linearId ? "" : `<p class="editf-warn">No Linear link for this ticket — refresh from Linear before editing.</p>`
+  }
+    <div class="editf-actions">
+      <button type="button" class="chip" data-act="preview">Preview</button>
+      <button type="button" class="chip ${mode.demo ? "" : "danger"}" data-act="apply" disabled>${applyLabel}</button>
+      <button type="button" class="chip ghost" data-act="cancel">Cancel</button>
+    </div>
+    <pre class="editf-out" hidden></pre>
+  </form>`
+}
+
 function groupHTML(g) {
   const done = isReviewed(g.id)
+  const canEdit = issuesById.has(g.id)
+  const open = editing.has(g.id)
   const rows = g.changes.map((c) =>
     `<li><span class="kind k-${c.kind}">${KIND_LABEL[c.kind] ?? c.kind}</span> ${escapeHtml(c.summary)}</li>`
   ).join("")
+  const editBtn = canEdit
+    ? `<button class="chip mini" data-edit="${escapeHtml(g.id)}">${open ? "Close" : "Edit"}</button>`
+    : ""
   return `<div class="rgroup${done ? " reviewed" : ""}">` +
     `<div class="rgroup-h"><span class="rid">${escapeHtml(g.id)}</span>` +
-    `<button class="chip mini" data-id="${escapeHtml(g.id)}">${done ? "Reviewed ✓" : "Mark reviewed"}</button></div>` +
-    `<ul class="rchanges">${rows}</ul></div>`
+    `<span class="rgroup-btns">${editBtn}` +
+    `<button class="chip mini" data-review="${escapeHtml(g.id)}">${done ? "Reviewed ✓" : "Mark reviewed"}</button>` +
+    `</span></div>` +
+    `<ul class="rchanges">${rows}</ul>` +
+    (open ? editFormHTML(g.id) : "") +
+    `</div>`
 }
 
 function render() {
@@ -70,15 +112,138 @@ function render() {
   document.getElementById("meta").textContent =
     `${queue.window.from} → ${queue.window.to} · ${openCount} of ${groups.length} tickets to review`
   pageEl.innerHTML = groups.map(groupHTML).join("")
-  for (const btn of pageEl.querySelectorAll("button[data-id]")) {
-    btn.onclick = () => toggleReviewed(btn.dataset.id)
+  wire()
+}
+
+function wire() {
+  for (const btn of pageEl.querySelectorAll("button[data-review]")) {
+    btn.onclick = () => {
+      setReviewed(btn.dataset.review, !isReviewed(btn.dataset.review))
+      render()
+    }
   }
+  for (const btn of pageEl.querySelectorAll("button[data-edit]")) {
+    btn.onclick = () => {
+      const id = btn.dataset.edit
+      if (editing.has(id)) editing.delete(id)
+      else editing.add(id)
+      render()
+    }
+  }
+  for (const form of pageEl.querySelectorAll("form.editf")) wireForm(form)
+}
+
+// Build the ops for a form by comparing each field to the ticket's current value. Only changed fields
+// become ops, so an untouched form applies nothing.
+function formOps(form) {
+  const id = form.dataset.id
+  const cur = issuesById.get(id)
+  const ops = []
+  const title = form.title.value.trim()
+  if (title && title !== cur.title) ops.push({ kind: "rename", id, title })
+  const description = form.description.value
+  if (description !== (cur.description ?? "")) ops.push({ kind: "set_description", id, description })
+  const estimate = form.estimate.value === "" ? null : Number(form.estimate.value)
+  if (estimate != null && estimate !== cur.estimate) ops.push({ kind: "set_estimate", id, estimate })
+  const priority = Number(form.priority.value)
+  if (priority !== (cur.priorityValue ?? 0)) ops.push({ kind: "set_priority", id, priority })
+  return ops
+}
+
+async function postEdit(ops, confirm) {
+  const r = await fetch("/api/edit", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ dataFile: project.dataFile, ops, confirm }),
+  })
+  return await r.json()
+}
+
+function wireForm(form) {
+  const out = form.querySelector(".editf-out")
+  const applyBtn = form.querySelector('[data-act="apply"]')
+  const previewBtn = form.querySelector('[data-act="preview"]')
+  const noUuid = form.dataset.nouuid === "1"
+
+  const show = (text) => {
+    out.hidden = false
+    out.textContent = text
+  }
+
+  previewBtn.onclick = async () => {
+    const ops = formOps(form)
+    if (!ops.length) return show("No changes to preview.")
+    const res = await postEdit(ops, false)
+    if (res.error) return show(`Error: ${res.details ?? res.error}`)
+    const lines = (res.willApply ?? []).map((op) => `• ${describeOp(op)}`)
+    for (const s of res.skipped ?? []) lines.push(`skip ${s.op.kind} on ${s.op.id} — ${s.reason}`)
+    show(lines.join("\n"))
+    applyBtn.disabled = noUuid || !(res.willApply ?? []).length
+  }
+
+  applyBtn.onclick = async () => {
+    const ops = formOps(form)
+    if (!ops.length) return
+    applyBtn.disabled = true
+    applyBtn.textContent = "Applying…"
+    try {
+      const res = await postEdit(ops, true)
+      if (res.error) {
+        show(`Error: ${res.details ?? res.error}`)
+        applyBtn.disabled = false
+        return
+      }
+      const lines = (res.results ?? []).map((r) => (r.ok ? `✓ ${r.id} updated` : `✗ ${r.id} — ${r.error}`))
+      show(lines.join("\n") || "Nothing applied.")
+      const allOk = (res.results ?? []).length > 0 && res.results.every((r) => r.ok)
+      if (allOk) {
+        await refreshData()
+        setReviewed(form.dataset.id, true)
+        editing.delete(form.dataset.id)
+        render()
+      }
+    } finally {
+      applyBtn.textContent = mode.demo ? "Apply to demo workspace" : "Apply to live workspace"
+    }
+  }
+
+  form.querySelector('[data-act="cancel"]').onclick = () => {
+    editing.delete(form.dataset.id)
+    render()
+  }
+}
+
+function describeOp(op) {
+  switch (op.kind) {
+    case "rename":
+      return `title → "${op.title}"`
+    case "set_description":
+      return `description → ${op.description.length} chars`
+    case "set_estimate":
+      return `estimate → ${op.estimate}`
+    case "set_priority":
+      return `priority → ${PRIORITIES[op.priority][1]}`
+    default:
+      return op.kind
+  }
+}
+
+// The current issue values, so an edit form starts from live data and the diff is against truth.
+async function refreshData() {
+  const r = await fetch(`/data/${project.dataFile}`, { cache: "no-store" })
+  const data = r.ok ? await r.json() : { issues: [] }
+  issuesById = new Map((data.issues ?? []).map((i) => [i.id, i]))
 }
 
 async function load() {
   pageEl.innerHTML = `<p class="empty">Loading…</p>`
-  const r = await fetch(`/api/review?project=${encodeURIComponent(project.name)}`, { cache: "no-store" })
-  queue = await r.json()
+  const [reviewRes, modeRes] = await Promise.all([
+    fetch(`/api/review?project=${encodeURIComponent(project.name)}`, { cache: "no-store" }),
+    fetch("/api/mode", { cache: "no-store" }),
+  ])
+  queue = await reviewRes.json()
+  mode = await modeRes.json()
+  await refreshData()
   render()
 }
 
