@@ -21,6 +21,7 @@ import { reviewSince } from "@/review.ts"
 import { applyOps, type Op } from "@/ops.ts"
 import { applyIssueEdits, isWritableOp } from "@/linear_write.ts"
 import { checkProjectsAccess, slugIdFromUrl } from "@/linearAccess.ts"
+import { deleteSecret, describeSecret, isSecretName, type SecretName, setSecret } from "@/secrets.ts"
 import type { Snapshot } from "@/seed.ts"
 
 const config = getEnvConfig()
@@ -123,6 +124,24 @@ function pairById(
   } finally {
     store.close()
   }
+}
+
+// The secrets the Settings pane manages. The demo key stays out: it belongs to the demo-workspace
+// switch (TLR_DEMO), not to day-to-day configuration.
+const EDITABLE_SECRETS: SecretName[] = ["incidentio", "linear"]
+
+function fileExists(url: URL): Promise<boolean> {
+  return Deno.stat(url).then(() => true).catch(() => false)
+}
+
+// Google Calendar is not driven from Settings: consent happens in a browser against a Desktop OAuth
+// client, so the pane reports what sits on disk and names the task that runs the flow.
+async function googleStatus(): Promise<{ client: boolean; token: boolean; connected: boolean; command: string }> {
+  const [client, token] = await Promise.all([
+    fileExists(new URL("gcal-client.json", DATA_ROOT)),
+    fileExists(new URL("gcal-token.json", DATA_ROOT)),
+  ])
+  return { client, token, connected: client && token, command: "deno task gcal:freebusy" }
 }
 
 const app = new Hono()
@@ -349,6 +368,32 @@ app.get("/api/projects/access", async (c) => {
   return c.json(bySlugId)
 })
 
+// Credential state for the Settings pane. Presence and provenance only: a secret value never leaves
+// the process, so neither this response nor an error from the write below can echo a key.
+app.get("/api/secrets", async (c) => {
+  const secrets = await Promise.all(EDITABLE_SECRETS.map((name) => describeSecret(name)))
+  return c.json({ secrets, google: await googleStatus() })
+})
+
+// Store or clear one secret in the keychain. A secret an environment variable already supplies is
+// refused rather than written, because the read path would ignore the keychain entry. The failure text
+// is built here instead of going through handleApiError so nothing derived from the request body,
+// including a stack, reaches the log.
+app.post("/api/secrets", async (c) => {
+  const body = await c.req.json().catch(() => null)
+  const name = body?.name
+  const action = body?.action
+  if (!isSecretName(name) || !EDITABLE_SECRETS.includes(name) || (action !== "clear" && action !== "set")) {
+    return c.json({ error: 'expected { name: "incidentio" | "linear", action: "clear" | "set", value?: string }' }, 400)
+  }
+  try {
+    const secret = action === "set" ? await setSecret(name, body?.value) : await deleteSecret(name)
+    return c.json({ ok: true, secret })
+  } catch (err) {
+    return c.json({ ok: false, error: err instanceof Error ? err.message : "could not update the secret" }, 400)
+  }
+})
+
 app.get(
   "/",
   (c) =>
@@ -362,6 +407,15 @@ app.get(
 app.get(
   "/review",
   (c) => renderPage("pages/review.vto", {}, "tlr — review", c, { active: "review", script: "/review.js", demo: DEMO }),
+)
+app.get(
+  "/roadmap",
+  (c) =>
+    renderPage("pages/roadmap.vto", {}, "tlr — roadmap", c, {
+      active: "roadmap",
+      script: "/roadmap.js",
+      demo: DEMO,
+    }),
 )
 app.get(
   "/settings",

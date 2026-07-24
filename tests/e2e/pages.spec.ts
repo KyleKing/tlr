@@ -95,6 +95,30 @@ test("settings page switches panes and saves the capacity block", async ({ page 
   await expect(page.locator("#cfg-status")).toHaveText("Saved")
 })
 
+// Read-only on purpose: a write here would edit the keychain of whoever runs the suite. The pane's
+// state depends on the host's own keychain, so this asserts the shape (a row per secret, a masked
+// state, no value anywhere) rather than a particular set/unset outcome.
+test("settings secrets pane reports credential state without ever showing a value", async ({ page }) => {
+  await page.goto("/settings")
+  await page.click('.cfg-nav-item[data-pane="secrets"]')
+
+  const pane = page.locator('.cfg-pane[data-pane="secrets"]')
+  await expect(pane).toBeVisible()
+  await expect(pane).toContainText("write-only here")
+
+  const rows = pane.locator(".cfg-secret")
+  await expect(rows).toHaveCount(2)
+  for (const name of ["incidentio", "linear"]) {
+    const row = pane.locator(`.cfg-secret[data-name="${name}"]`)
+    await expect(row.locator(".cfg-secret-state")).toHaveText(/Set · (environment|keychain)|Not set/)
+    await expect(row.locator("input")).toHaveValue("")
+    await expect(row.locator("input")).toHaveAttribute("type", "password")
+  }
+
+  // Google Calendar is reported, not driven, from here: the pane names the task that runs consent.
+  await expect(pane.locator("#cfg-google")).toContainText("deno task gcal:freebusy")
+})
+
 test("the global project picker in the nav switches projects and preserves the current page", async ({ page }) => {
   await page.goto(`/review${SEED}`)
 
@@ -107,7 +131,47 @@ test("the global project picker in the nav switches projects and preserves the c
   await expect(page.locator("#access-warning")).toBeHidden()
 })
 
-test("nav moves between board, changes, review, and settings", async ({ page }) => {
+test("roadmap lays tickets out on the plane with dependency edges between them", async ({ page }) => {
+  await page.goto(`/roadmap${SEED}`)
+
+  await expect(page.locator("h1")).toContainText("Roadmap")
+  const cards = page.locator(".rm-card")
+  expect(await cards.count()).toBeGreaterThan(0)
+  // The seed project has a blocking chain, so both the wave labels and the edges are non-empty.
+  expect(await page.locator(".rm-row-label").count()).toBeGreaterThan(1)
+  expect(await page.locator(".rm-edge").count()).toBeGreaterThan(0)
+  await expect(page.locator("#summary")).toContainText("dependency waves")
+
+  // Two cards in the same cell are packed into lanes, so nothing ever overlaps.
+  const boxes = await cards.evaluateAll((els) =>
+    els.map((el) => ({ left: (el as HTMLElement).offsetLeft, top: (el as HTMLElement).offsetTop }))
+  )
+  expect(new Set(boxes.map((b) => `${b.left},${b.top}`)).size).toBe(boxes.length)
+})
+
+test("roadmap shows detail on focus and keeps filters and the view in the URL", async ({ page }) => {
+  await page.goto(`/roadmap${SEED}`)
+  await page.waitForSelector(".rm-card")
+
+  // Focus, not just hover, opens the detail card, so the plane is usable from the keyboard.
+  await page.locator(".rm-card").first().focus()
+  await expect(page.locator("#tip")).toBeVisible()
+  await expect(page.locator("#tip .tip-meta")).toContainText("Wave")
+
+  // The plane pans from the keyboard, and the pan lands in the address bar with the filters.
+  await page.locator("#rm-viewport").focus()
+  await page.keyboard.press("ArrowRight")
+  await expect(page).toHaveURL(/pan=/)
+  await page.click("#zoom-in")
+  await expect(page).toHaveURL(/zoom=/)
+
+  // Search is lowercased before it is matched and stored, the same as the board's.
+  await page.fill("#search", "SEED-102")
+  await expect(page).toHaveURL(/q=seed-102/)
+  await expect(page.locator(".rm-card")).toHaveCount(1)
+})
+
+test("nav moves between board, changes, review, roadmap, and settings", async ({ page }) => {
   await page.goto("/")
   // Nav links carry the current ?project= forward (see resolveProjectSlug/syncNavLinks), so they're no
   // longer bare paths — match by prefix and allow a trailing query string.
@@ -115,6 +179,8 @@ test("nav moves between board, changes, review, and settings", async ({ page }) 
   await expect(page).toHaveURL(/\/changes(\?.*)?$/)
   await page.click(".topnav a[href^='/review']")
   await expect(page).toHaveURL(/\/review(\?.*)?$/)
+  await page.click(".topnav a[href^='/roadmap']")
+  await expect(page).toHaveURL(/\/roadmap(\?.*)?$/)
   await page.click(".topnav a[href^='/settings']")
   await expect(page).toHaveURL(/\/settings(\?.*)?$/)
 })

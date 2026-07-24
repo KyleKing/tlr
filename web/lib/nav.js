@@ -17,8 +17,8 @@ export function resolveProjectSlug(projects, requestedSlug) {
   return project
 }
 
-// Keeps ?project=<slug> on the Board/Changes/Review/Settings links, so switching pages doesn't drop
-// the current project (the links are plain hrefs in the server-rendered layout).
+// Keeps ?project=<slug> on the Board/Changes/Review/Roadmap/Settings links, so switching pages doesn't
+// drop the current project (the links are plain hrefs in the shared layout).
 function syncNavLinks(slug) {
   for (const a of document.querySelectorAll(".topnav a[href^='/']")) {
     const url = new URL(a.getAttribute("href"), location.origin)

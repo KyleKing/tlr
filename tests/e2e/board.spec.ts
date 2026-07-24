@@ -236,7 +236,9 @@ test("the combined bucket filter is a searchable multi-select that narrows the b
   // loaded" — the default (first-in-manifest) project can be a real, locally-ingested one too, since
   // the manifest lives in the same web/data/ a real `deno task issues` run also writes to.
   await page.goto("/?project=seeded-reliability")
-  await expect(page.locator("#grid tr").first()).toBeVisible()
+  // A rendered bucket row, not `#grid tr`: the template ships a "Loading…" row, so waiting on the
+  // latter can pass before the data lands and leave the count below at zero.
+  await expect(page.locator(".rowhead").first()).toBeVisible()
 
   const rowCount = await page.locator(".rowhead.horizon").count()
   expect(rowCount).toBeGreaterThan(1)

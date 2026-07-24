@@ -1,6 +1,7 @@
 import {
   bucketOf,
   buildBuckets,
+  milestoneDisplayName,
   milestoneForecast,
   missingData,
   orderingRisks,
@@ -16,6 +17,7 @@ import { resolveProjectSlug, wireProjectPicker } from "./lib/nav.js"
 import { showError } from "./lib/errorBanner.js"
 import { editFormHTML, wireForm } from "./lib/editForm.js"
 import { setPersonCycle } from "./lib/config.js"
+import { whatIfPlan } from "./lib/whatif.js"
 
 const STATUS = {
   started: { label: "In progress", color: "var(--st-started)", fg: "var(--st-started-fg)" },
@@ -31,18 +33,21 @@ const REVIEW_KEY = "tlr.notslop"
 
 // mutable module data, replaced on refresh
 let buckets, bucketByKey, bucketWeeks, byId, riskIds, forecastByKey
+// What the board draws: the stored snapshot (`data`) normally, its what-if simulation while that mode
+// is on. Everything that renders reads `view`; only the real write paths read `data`.
+let view, plan
 
 function deriveBuckets() {
-  buckets = buildBuckets(data, data.issues)
+  buckets = buildBuckets(view, view.issues)
   bucketByKey = Object.fromEntries(buckets.map((b) => [b.key, b]))
   forecastByKey = Object.fromEntries(
-    milestoneForecast(data, teamWeeklyThroughput(data)).milestones.map((m) => [m.key, m]),
+    milestoneForecast(view, teamWeeklyThroughput(view)).milestones.map((m) => [m.key, m]),
   )
   bucketWeeks = {}
-  data.milestones.forEach((m, idx) => {
+  view.milestones.forEach((m, idx) => {
     const start = idx === 0
-      ? data.asOf
-      : (new Date(data.asOf) > new Date(data.milestones[idx - 1].target) ? data.asOf : data.milestones[idx - 1].target)
+      ? view.asOf
+      : (new Date(view.asOf) > new Date(view.milestones[idx - 1].target) ? view.asOf : view.milestones[idx - 1].target)
     bucketWeeks[m.key] = Math.max(0.5, weeksBetween(start, m.target))
   })
   for (const b of buckets) if (b.kind === "cycle") bucketWeeks[b.key] = 1
@@ -50,7 +55,7 @@ function deriveBuckets() {
 }
 
 function enrich() {
-  for (const i of data.issues) {
+  for (const i of view.issues) {
     // Every render/sort/group path below keys off the "Unassigned" sentinel string, not a real Linear
     // ingest's null (transformIssue normalizes it, but a hand-edited or older data file might not).
     i.assignee ||= "Unassigned"
@@ -63,9 +68,18 @@ function enrich() {
     i._slopHash = slopHash(i.description)
     i._miss = missingData(i)
   }
-  riskIds = new Set(orderingRisks(data.issues).flatMap((r) => [r.issue, r.blocker]))
-  for (const i of data.issues) i._risk = riskIds.has(i.id) && (i.blockedBy.length > 0)
-  byId = Object.fromEntries(data.issues.map((i) => [i.id, i]))
+  riskIds = new Set(orderingRisks(view.issues).flatMap((r) => [r.issue, r.blocker]))
+  for (const i of view.issues) i._risk = riskIds.has(i.id) && (i.blockedBy.length > 0)
+  byId = Object.fromEntries(view.issues.map((i) => [i.id, i]))
+}
+
+// Rebuild everything derived from the snapshot. Overlays are re-applied from the stored data each
+// time, so a simulation never compounds on top of a previous one.
+function recompute() {
+  plan = whatIf.on ? whatIfPlan(data, whatIf.overlays) : null
+  view = plan ? plan.snapshot : data
+  deriveBuckets()
+  enrich()
 }
 
 async function loadProjects() {
@@ -104,12 +118,16 @@ const state = {
   transpose: true, // rows: buckets by default — one row per cycle/milestone, not per person
 }
 
+// What-if planning. Overlays live here and nowhere else: never in the stored snapshot, never in
+// localStorage, and never in a request body. Leaving the mode drops them, so the board cannot be left
+// quietly showing simulated numbers.
+const whatIf = { on: false, overlays: [] }
+
 const projects = await loadProjects()
 const requestedSlug = new URLSearchParams(location.search).get("project")
 const currentProject = resolveProjectSlug(projects, requestedSlug)
 const data = await loadData(currentProject?.dataFile)
-deriveBuckets()
-enrich()
+recompute()
 state.bucketKeys = new Set(buckets.map((b) => b.key))
 hydrateStateFromUrl()
 let loadedAt = new Date()
@@ -447,7 +465,7 @@ function showTip(e, i) {
       ? `<div class="tip-f slop">⚠ ${i._slop.flags.join(", ")}</div>` +
         `<button class="tip-act" data-act="slop">${isDismissed(i) ? "Re-flag as slop" : "Mark not slop"}</button>`
       : "") +
-    `<button class="tip-act" data-act="edit">Edit</button>` +
+    `<button class="tip-act" data-act="edit">${whatIf.on ? "Move (what-if)" : "Edit"}</button>` +
     `<a class="tip-act tip-link" href="${i.url}" target="_blank">Open in Linear ↗</a>`
   const btn = tip.querySelector('[data-act="slop"]')
   if (btn) {
@@ -456,25 +474,29 @@ function showTip(e, i) {
       hideTip()
     }
   }
-  tip.querySelector('[data-act="edit"]').onclick = () => openTipEdit(i)
+  tip.querySelector('[data-act="edit"]').onclick = () => whatIf.on ? openTipMove(i) : openTipEdit(i)
   tip.style.display = "block"
   const w = tip.offsetWidth || 300, h = tip.offsetHeight || 120
   tip.style.left = `${Math.max(8, Math.min(e.clientX + 14, innerWidth - w - 8))}px`
   tip.style.top = `${Math.max(8, Math.min(e.clientY + 16, innerHeight - h - 8))}px`
 }
 
+// The form is much taller than a normal hover card, and showTip() only ever positioned for that
+// smaller size — reclamp so the buttons can't land below the viewport.
+function clampTip() {
+  const left = parseFloat(tip.style.left) || 8
+  const top = parseFloat(tip.style.top) || 8
+  tip.style.left = `${Math.max(8, Math.min(left, innerWidth - tip.offsetWidth - 8))}px`
+  tip.style.top = `${Math.max(8, Math.min(top, innerHeight - tip.offsetHeight - 8))}px`
+}
+
 function openTipEdit(i) {
+  if (whatIf.on) throw new Error("what-if mode never opens the real edit form")
   tipPinned = true
   tip.classList.add("tip-editing")
   tip.innerHTML = `<div class="tip-h"><b>${i.id}</b></div>` +
     editFormHTML(i, { milestones: data.milestones, cycles: data.cycles, capacity: data.capacity }, mode)
-  // The form is much taller than a normal hover card, and showTip() only ever positioned for that
-  // smaller size — reclamp so Preview/Apply/Cancel can't land below the viewport.
-  const left = parseFloat(tip.style.left) || 8
-  const top = parseFloat(tip.style.top) || 8
-  const h = tip.offsetHeight
-  tip.style.left = `${Math.max(8, Math.min(left, innerWidth - tip.offsetWidth - 8))}px`
-  tip.style.top = `${Math.max(8, Math.min(top, innerHeight - h - 8))}px`
+  clampTip()
   const form = tip.querySelector("form.editf")
   wireForm(form, i, currentDataFile, mode, {
     onApplied: async () => {
@@ -487,6 +509,67 @@ function openTipEdit(i) {
       hideTip()
     },
   })
+}
+
+function selectHTML(name, pairs, selected) {
+  const opts = pairs.map(([value, label]) =>
+    `<option value="${escapeHtml(String(value))}"${String(value) === String(selected) ? " selected" : ""}>${
+      escapeHtml(label)
+    }</option>`
+  ).join("")
+  return `<select name="${name}">${opts}</select>`
+}
+
+// Only the fields a move actually changes, compared against the ticket as the simulation currently
+// shows it, so re-opening the form and pressing Simulate without touching anything adds nothing.
+function movePatch(form, cur) {
+  const patch = {}
+  const milestone = form.milestone.value || null
+  if (milestone !== (cur.milestone ?? null)) patch.milestone = milestone
+  const cycle = form.cycle.value === "" ? null : Number(form.cycle.value)
+  if (cycle !== (cur.cycle ?? null)) patch.cycle = cycle
+  const assignee = form.assignee.value
+  if (assignee !== cur.assignee) patch.assignee = assignee
+  return patch
+}
+
+// The hover card's Edit button in what-if mode: the same cycle/milestone/assignee grammar as the real
+// edit form, routed to an overlay instead of /api/edit.
+function openTipMove(i) {
+  tipPinned = true
+  tip.classList.add("tip-editing")
+  const names = new Set(Object.keys(view.capacity?.roster ?? {}))
+  if (i.assignee !== "Unassigned") names.add(i.assignee)
+  tip.innerHTML = `<div class="tip-h"><b>${i.id}</b><span class="tip-pt">what-if move</span></div>` +
+    `<form class="editf whatif-move" data-id="${escapeHtml(i.id)}">` +
+    `<div class="editf-row">` +
+    `<label>Milestone${
+      selectHTML("milestone", [["", "— none —"], ...view.milestones.map((m) => [m.key, m.name])], i.milestone ?? "")
+    }</label>` +
+    `<label>Cycle${
+      selectHTML("cycle", [["", "— none —"], ...view.cycles.map((c) => [c.n, `Cycle ${c.n}`])], i.cycle ?? "")
+    }</label>` +
+    `</div>` +
+    `<label>Assignee${
+      selectHTML("assignee", [["Unassigned", "Unassigned"], ...[...names].sort().map((n) => [n, n])], i.assignee)
+    }</label>` +
+    `<p class="editf-warn">Simulation only — this never reaches Linear.</p>` +
+    `<div class="editf-actions">` +
+    `<button type="button" class="chip" data-act="simulate">Simulate move</button>` +
+    `<button type="button" class="chip ghost" data-act="cancel">Cancel</button>` +
+    `</div></form>`
+  clampTip()
+  const form = tip.querySelector("form.whatif-move")
+  const unpin = () => {
+    tipPinned = false
+    hideTip()
+  }
+  form.querySelector('[data-act="simulate"]').onclick = () => {
+    const patch = movePatch(form, i)
+    unpin()
+    if (Object.keys(patch).length) addOverlay({ kind: "scope", id: i.id, patch })
+  }
+  form.querySelector('[data-act="cancel"]').onclick = unpin
 }
 
 function hideTip() {
@@ -513,20 +596,25 @@ document.addEventListener("keydown", (e) => {
 const ovPopup = document.getElementById("ov-popup")
 
 function ovEntry(name, cycleN) {
-  return data.capacity?.people?.[name]?.cycles?.[cycleN] ?? {}
+  return view.capacity?.people?.[name]?.cycles?.[cycleN] ?? {}
 }
 
 function openOvPopup(name, cycleN, x, y) {
   const entry = ovEntry(name, cycleN)
-  ovPopup.innerHTML = `<h4>${escapeHtml(name)} · Cycle ${cycleN}</h4>` +
+  // In what-if mode the same popup writes an overlay instead of the stored capacity block. "Locked"
+  // is dropped there: it governs what a refresh may overwrite, which a simulation never reaches.
+  const sim = whatIf.on
+  ovPopup.innerHTML = `<h4>${sim ? "What-if · " : ""}${escapeHtml(name)} · Cycle ${cycleN}</h4>` +
     `<label><input type="checkbox" id="ov-oncall" ${entry.oncall ? "checked" : ""} /> On-call</label>` +
     `<label>Out days<input type="number" id="ov-outdays" min="0" value="${entry.outDays ?? ""}" /></label>` +
     `<label>Reason<input type="text" id="ov-reason" value="${escapeHtml(entry.reason ?? "")}" /></label>` +
-    `<label><input type="checkbox" id="ov-locked" ${
-      entry.locked ? "checked" : ""
-    } /> Locked (a refresh won't overwrite)</label>` +
+    (sim
+      ? ""
+      : `<label><input type="checkbox" id="ov-locked" ${
+        entry.locked ? "checked" : ""
+      } /> Locked (a refresh won't overwrite)</label>`) +
     `<div class="ov-popup-actions">` +
-    `<button type="button" class="chip mini" data-act="save">Save</button>` +
+    `<button type="button" class="chip mini" data-act="save">${sim ? "Simulate" : "Save"}</button>` +
     `<button type="button" class="chip mini ghost" data-act="delete">Clear</button>` +
     `<button type="button" class="chip mini ghost" data-act="cancel">Cancel</button>` +
     `</div>`
@@ -535,16 +623,18 @@ function openOvPopup(name, cycleN, x, y) {
   ovPopup.style.left = `${Math.max(8, Math.min(x, innerWidth - w - 8))}px`
   ovPopup.style.top = `${Math.max(8, Math.min(y, innerHeight - h - 8))}px`
 
-  const save = (patch) => saveOverride(name, cycleN, patch)
-  ovPopup.querySelector('[data-act="save"]').onclick = () =>
+  const save = (patch) => sim ? simulateOverride(name, cycleN, patch) : saveOverride(name, cycleN, patch)
+  ovPopup.querySelector('[data-act="save"]').onclick = () => {
+    const outDays = ovPopup.querySelector("#ov-outdays").value
     save({
       oncall: ovPopup.querySelector("#ov-oncall").checked ? true : null,
-      outDays: ovPopup.querySelector("#ov-outdays").value || null,
+      outDays: outDays === "" ? null : Number(outDays),
       reason: ovPopup.querySelector("#ov-reason").value.trim() || null,
-      locked: ovPopup.querySelector("#ov-locked").checked ? true : null,
+      ...(sim ? {} : { locked: ovPopup.querySelector("#ov-locked").checked ? true : null }),
     })
+  }
   ovPopup.querySelector('[data-act="delete"]').onclick = () =>
-    save({ oncall: null, outDays: null, reason: null, locked: null })
+    save({ oncall: null, outDays: null, reason: null, ...(sim ? {} : { locked: null }) })
   ovPopup.querySelector('[data-act="cancel"]').onclick = closeOvPopup
 }
 
@@ -552,7 +642,13 @@ function closeOvPopup() {
   ovPopup.hidden = true
 }
 
+function simulateOverride(name, cycleN, patch) {
+  closeOvPopup()
+  addOverlay({ kind: "capacity", person: name, cycle: cycleN, patch })
+}
+
 async function saveOverride(name, cycleN, patch) {
+  if (whatIf.on) throw new Error("what-if mode never writes a real on-call/out-days override")
   const capacity = setPersonCycle(data.capacity, name, cycleN, patch)
   try {
     const res = await fetch("/api/config", {
@@ -563,6 +659,7 @@ async function saveOverride(name, cycleN, patch) {
     if (!res.ok) throw new Error(`save failed: ${res.status} ${res.statusText}`)
     data.capacity = capacity
     closeOvPopup()
+    recompute()
     render()
   } catch (err) {
     showError(err, "Saving the on-call/out-days override failed")
@@ -584,6 +681,115 @@ document.addEventListener("contextmenu", (e) => {
   e.preventDefault()
   openOvPopup(td.dataset.name, td.dataset.cycle, e.clientX, e.clientY)
 })
+
+// What-if mode. The toggle and its banner are built here rather than in the board template so the
+// mode's chrome ships with the code that owns it. Both entry points into a simulation are the ones
+// the board already has: the 📟/🧳 badge (or a right-click on a cycle cell) for a person's on-call and
+// out-days, and the hover card's Edit button for moving a ticket.
+function initWhatIf() {
+  const btn = document.createElement("button")
+  btn.id = "whatif-btn"
+  btn.type = "button"
+  btn.className = "chip"
+  btn.textContent = "What-if"
+  btn.title = "Simulate PTO or a scope move without writing anything"
+  btn.setAttribute("aria-pressed", "false")
+  btn.onclick = () => setWhatIf(!whatIf.on)
+  const controls = document.querySelector(".bar-controls")
+  controls.insertBefore(btn, document.querySelector(".sync-box"))
+
+  const bar = document.createElement("div")
+  bar.id = "whatif-bar"
+  bar.className = "whatif-bar"
+  bar.hidden = true
+  bar.setAttribute("role", "status")
+  bar.innerHTML = `<div class="whatif-head">` +
+    `<span class="whatif-tag">What-if</span>` +
+    `<span class="whatif-note">Simulated forecast. Nothing here is written to Linear.</span>` +
+    `<span class="whatif-count" id="whatif-count"></span>` +
+    `<button type="button" class="chip mini" id="whatif-reset">Reset</button>` +
+    `<button type="button" class="chip mini" id="whatif-exit">Exit what-if</button>` +
+    `</div><div id="whatif-forecast"></div>`
+  const freshness = document.getElementById("freshness")
+  freshness.parentNode.insertBefore(bar, freshness.nextSibling)
+  bar.querySelector("#whatif-reset").onclick = () => {
+    whatIf.overlays = []
+    refreshWhatIf()
+  }
+  bar.querySelector("#whatif-exit").onclick = () => setWhatIf(false)
+}
+
+function setWhatIf(on) {
+  whatIf.on = on
+  whatIf.overlays = []
+  document.getElementById("whatif-btn").setAttribute("aria-pressed", String(on))
+  document.body.classList.toggle("whatif-on", on)
+  closeOvPopup()
+  tipPinned = false
+  hideTip()
+  refreshWhatIf()
+}
+
+function addOverlay(overlay) {
+  whatIf.overlays = [...whatIf.overlays, overlay]
+  refreshWhatIf()
+}
+
+// A bad overlay must not strand the board on a half-built view, so a failed recompute drops the whole
+// stack, reports it, and falls back to the real snapshot.
+function refreshWhatIf() {
+  try {
+    recompute()
+  } catch (err) {
+    whatIf.overlays = []
+    showError(err, "The what-if simulation failed")
+    recompute()
+  }
+  adoptNewBuckets()
+  renderWhatIf()
+  render()
+}
+
+function shiftHTML(shiftDays) {
+  if (shiftDays === 0) return `<span class="fc same">no change</span>`
+  const late = shiftDays > 0
+  return `<span class="fc ${late ? "late" : "early"}">${late ? "▲" : "▼"} ${Math.abs(shiftDays)}d ${
+    late ? "later" : "earlier"
+  }</span>`
+}
+
+// Two colorings, two questions: the landing cell carries the board's usual slip styling (how the
+// simulated date sits against the milestone's target), the shift cell how it moved from the baseline.
+function forecastRowHTML(m) {
+  const landingCls = m.status === "at-risk" ? "late" : m.status === "ahead" ? "early" : ""
+  return `<tr><th scope="row" title="${escapeHtml(m.name || m.key)}">${
+    escapeHtml(milestoneDisplayName(m.name, m.key))
+  }</th>` +
+    `<td>${m.target}</td><td>${m.baselineLanding}</td>` +
+    `<td class="${landingCls}" title="${forecastPhrase(m)} against the target">${m.landing}</td>` +
+    `<td>${shiftHTML(m.shiftDays)}</td></tr>`
+}
+
+function forecastTableHTML() {
+  const rows = plan?.milestones ?? []
+  if (!rows.length) return `<p class="whatif-empty">This project has no milestones to forecast.</p>`
+  return `<table class="whatif-table">` +
+    `<caption>Forecast, not a real date: landings derived from remaining points and team throughput.</caption>` +
+    `<thead><tr><th>Milestone</th><th>Target</th><th>Baseline lands</th><th>What-if lands</th><th>Shift</th></tr>` +
+    `</thead><tbody>${rows.map(forecastRowHTML).join("")}</tbody></table>`
+}
+
+function renderWhatIf() {
+  const bar = document.getElementById("whatif-bar")
+  bar.hidden = !whatIf.on
+  if (!whatIf.on) return
+  const n = whatIf.overlays.length
+  document.getElementById("whatif-count").textContent = n === 0
+    ? "no overlays yet — click a 📟/🧳 badge, right-click a cycle cell, or use a ticket's Move button"
+    : `${n} overlay${n === 1 ? "" : "s"}`
+  document.getElementById("whatif-forecast").innerHTML = forecastTableHTML()
+}
+initWhatIf()
 
 function passes(i) {
   if (!state.statuses.has(i.statusType)) return false
@@ -621,8 +827,8 @@ function warnClass(i) {
 // milestones size off base velocity across their weeks (no near-term calendar events applied).
 function cellCapacity(person, b) {
   if (person === "Unassigned" || b.key === "C47" || b.kind === "backlog") return { points: null, factors: [] }
-  if (b.kind === "cycle") return personCycleCapacity(person, parseInt(b.key.slice(1), 10), data.capacity)
-  const base = personCycleCapacity(person, null, data.capacity).base
+  if (b.kind === "cycle") return personCycleCapacity(person, parseInt(b.key.slice(1), 10), view.capacity)
+  const base = personCycleCapacity(person, null, view.capacity).base
   return { points: Math.round(base * bucketWeeks[b.key]), factors: [] }
 }
 
@@ -638,7 +844,7 @@ function capFootHTML(factors, capacity, load) {
 
 let passesShown = new Set()
 function cellHTML(person, b) {
-  const items = data.issues.filter((i) => passesShown.has(i) && i.assignee === person && i._bucket === b.key)
+  const items = view.issues.filter((i) => passesShown.has(i) && i.assignee === person && i._bucket === b.key)
     .sort((a, x) => statusRank(a.statusType) - statusRank(x.statusType) || x.estimate - a.estimate)
   const load = items.reduce((s, i) => s + i.estimate, 0)
   const cls = b.key === "C47" ? "past" : (b.kind === "cycle" ? "now" : "")
@@ -666,7 +872,7 @@ function render() {
   syncUrl()
   const wrap = document.querySelector(".wrap")
   const sx = wrap ? wrap.scrollLeft : 0, sy = wrap ? wrap.scrollTop : 0
-  const shown = data.issues.filter(passes)
+  const shown = view.issues.filter(passes)
   passesShown = new Set(shown)
   // A bucket selected in the filter can still have zero issues once status/search/flag filters also
   // apply — hide it from the grid too, the same way an assignee with nothing currently shown already
@@ -930,17 +1136,23 @@ async function reloadFromFile() {
   data.currentCycle = fresh.currentCycle
   data.project = fresh.project
   data.capacity = fresh.capacity
-  deriveBuckets()
-  enrich()
+  recompute()
+  adoptNewBuckets()
+  loadedAt = new Date()
+  renderMeta()
+  renderWhatIf()
+  render()
+}
+
+// A bucket column that appears after the first load (a new cycle, or one a what-if move just put work
+// into) starts visible rather than silently filtered out.
+function adoptNewBuckets() {
   for (const k of buckets.map((b) => b.key)) {
     if (!knownBucketKeys.has(k)) {
       state.bucketKeys.add(k)
       knownBucketKeys.add(k)
     }
   }
-  loadedAt = new Date()
-  renderMeta()
-  render()
 }
 
 // The Refresh button: re-ingests from Linear/Incident.io/Google Calendar (the same POST /api/refresh

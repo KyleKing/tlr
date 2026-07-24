@@ -1,0 +1,71 @@
+  <header class="page-head">
+    <div>
+      <h1 id="title">Roadmap</h1>
+      <div class="sub" id="meta">Loading…</div>
+    </div>
+    <a class="pill" id="board-btn" href="/">Back to the board</a>
+  </header>
+  <div class="bar-controls">
+    <input id="search" type="search" placeholder="Search id / title / description…" />
+    <span class="rm-zoom">
+      <button class="chip mini" id="zoom-out" type="button" aria-label="Zoom out">−</button>
+      <span class="sync-text" id="zoom-level">100%</span>
+      <button class="chip mini" id="zoom-in" type="button" aria-label="Zoom in">+</button>
+      <button class="chip mini" id="zoom-reset" type="button">Reset view</button>
+    </span>
+  </div>
+  <div class="bar-filters">
+    <span class="fgroup">
+      <span class="flabel">Status</span>
+      <span class="chips" id="status-chips"></span>
+      <span class="fbulk"><button class="chip mini" id="status-all" type="button" title="Show every status">All</button><button class="chip mini" id="status-none" type="button" title="Hide every status">None</button></span>
+    </span>
+    <span class="fgroup msel" id="bucket-select">
+      <span class="flabel">Buckets</span>
+      <button class="chip msel-btn" id="bsel-btn" type="button" aria-haspopup="true" aria-expanded="false">Filter <span class="msel-count" id="bsel-count" hidden></span></button>
+      <div class="msel-panel bsel-panel" id="bsel-panel" hidden>
+        <ul class="msel-list" id="bucket-list" role="listbox" aria-multiselectable="true"></ul>
+      </div>
+    </span>
+    <span class="fgroup msel" id="flag-select">
+      <span class="flabel">Flags</span>
+      <button class="chip msel-btn" id="fsel-btn" type="button" aria-haspopup="true" aria-expanded="false">Filter <span class="msel-count" id="fsel-count" hidden></span></button>
+      <div class="msel-panel fsel-panel" id="fsel-panel" hidden>
+        <ul class="msel-list" id="flag-list" role="listbox" aria-multiselectable="true"></ul>
+      </div>
+    </span>
+    <span class="fhint">tip: drag to pan, scroll to zoom, or Tab in and use the arrow keys</span>
+  </div>
+  <div class="summary" id="summary"></div>
+  <div class="rm-viewport" id="rm-viewport" tabindex="0" role="region" aria-label="Roadmap plane: arrow keys pan, plus and minus zoom, 0 resets the view, Tab reaches the ticket cards">
+    <div class="rm-plane" id="rm-plane"></div>
+  </div>
+  <div id="tip"></div>
+  <details class="legend">
+    <summary>How to read this roadmap</summary>
+    <div class="legend-body">
+      <p>
+        Every ticket sits on one plane with two fixed axes. Across is time: the cycle a ticket is
+        committed to, otherwise the forecast landing date of its milestone, otherwise Backlog at the far
+        right. Down is dependency depth: wave 0 is work nothing blocks, wave 1 waits on wave 0, and so
+        on, the same grouping the dependency waves use elsewhere. Tickets that would land in the same
+        cell are packed into lanes, so no card ever covers another.
+      </p>
+      <p>
+        Curved lines are blocking relations, drawn from the blocker to what it blocks. A line in the
+        risk color runs backward, meaning the blocker sits at or after the ticket it blocks on the time
+        axis. Hover or focus a card for its status, assignee, milestone, wave, relations, and the reason
+        for any flag; the card itself only carries the ticket number, a flag glyph, and the estimate.
+      </p>
+      <p>
+        Filters match the board: search, status chips, a Buckets panel, and a Flags panel. Filters and
+        the pan/zoom position are saved and written into the address bar, so a refresh or a shared link
+        lands on the same view.
+      </p>
+      <p>
+        Keyboard: Tab to the plane, then arrow keys pan (hold Shift for a bigger step), + and − zoom,
+        and 0 resets. Tab again to reach the cards, arrow keys move between them, Enter opens the
+        focused ticket in Linear, and Escape dismisses the detail card.
+      </p>
+    </div>
+  </details>
