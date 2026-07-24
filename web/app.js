@@ -502,8 +502,8 @@ function cellCapacity(person, b) {
 function capFootHTML(factors, capacity, load) {
   const parts = factors.map((f) =>
     f.kind === "oncall"
-      ? `<span class="cf oncall">📟 on-call</span>`
-      : `<span class="cf out">🧳 ${escapeHtml(f.reason)} ${f.days}d</span>`
+      ? `<span class="cf oncall"><span class="ico">📟</span> on-call</span>`
+      : `<span class="cf out"><span class="ico">🧳</span> ${escapeHtml(f.reason)} ${f.days}d</span>`
   )
   if (capacity != null && load > capacity) parts.push(`<span class="cf over">over +${load - capacity}</span>`)
   return parts.length ? `<div class="capfoot">${parts.join("")}</div>` : ""
@@ -742,9 +742,9 @@ function bucketTh(b) {
 
 function flagBadges(i) {
   let s = ""
-  if (i._risk) s += `<span class="badge risk">⛔</span>`
-  if (isSlop(i)) s += `<span class="badge slop">⚠${i._slop.score}</span>`
-  if (i._miss.blocking) s += `<span class="badge miss">◑</span>`
+  if (i._risk) s += `<span class="badge risk"><span class="ico">⛔</span></span>`
+  if (isSlop(i)) s += `<span class="badge slop"><span class="ico">⚠</span>${i._slop.score}</span>`
+  if (i._miss.blocking) s += `<span class="badge miss"><span class="ico">◑</span></span>`
   return s
 }
 
@@ -754,9 +754,10 @@ function flagBadges(i) {
 // crammed into a 10px pill was unreadable and redundant with that. The flag glyph is the second signal
 // a pill this small has room for; the exact estimate lives in the hover tip.
 function tickLabel(i) {
+  // Full id (including the team prefix), not just the number — with more than one project in view
+  // over time, a bare number is ambiguous about which project's ticket it is.
   const flag = i._risk ? "⛔" : isSlop(i) ? "⚠" : i._miss.blocking ? "◑" : ""
-  const num = i.id.replace(/^[A-Z]+-/, "")
-  return `${flag}${num}`
+  return `${flag ? `<span class="ico">${flag}</span>` : ""}${escapeHtml(i.id)}`
 }
 
 function renderItems(items) {
@@ -781,29 +782,51 @@ function renderItems(items) {
   }</div>`
 }
 
+// Re-reads the project's data file and re-renders, without touching Linear — used by the quiet
+// 5-minute poll (which only wants to pick up a file some other process already wrote) and as the
+// second half of a live refresh below.
+async function reloadFromFile() {
+  const fresh = await loadData()
+  data.issues = fresh.issues
+  data.milestones = fresh.milestones
+  data.cycles = fresh.cycles
+  data.asOf = fresh.asOf
+  data.currentCycle = fresh.currentCycle
+  data.project = fresh.project
+  data.capacity = fresh.capacity
+  deriveBuckets()
+  enrich()
+  for (const k of buckets.map((b) => b.key)) {
+    if (!knownBucketKeys.has(k)) {
+      state.bucketKeys.add(k)
+      knownBucketKeys.add(k)
+    }
+  }
+  loadedAt = new Date()
+  renderMeta()
+  render()
+}
+
+// The Refresh button: re-ingests from Linear/Incident.io/Google Calendar (the same POST /api/refresh
+// Settings' "Refresh all" uses) before reloading, so it actually pulls current data instead of only
+// re-reading the same local file the board already had — which looked like it worked (the "loaded"
+// time bumped) without ever changing anything.
 async function refresh() {
   refreshBtn.disabled = true
   refreshBtn.textContent = "Refreshing…"
   try {
-    const fresh = await loadData()
-    data.issues = fresh.issues
-    data.milestones = fresh.milestones
-    data.cycles = fresh.cycles
-    data.asOf = fresh.asOf
-    data.currentCycle = fresh.currentCycle
-    data.project = fresh.project
-    data.capacity = fresh.capacity
-    deriveBuckets()
-    enrich()
-    for (const k of buckets.map((b) => b.key)) {
-      if (!knownBucketKeys.has(k)) {
-        state.bucketKeys.add(k)
-        knownBucketKeys.add(k)
-      }
+    const res = await fetch("/api/refresh", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ dataFile: currentDataFile }),
+    })
+    const body = await res.json().catch(() => null)
+    if (!res.ok || !body?.ok) {
+      const detail = body?.error ?? `${res.status} ${res.statusText}`
+      const log = body?.log?.length ? `\n${body.log.join("\n")}` : ""
+      throw new Error(`${detail}${log}`)
     }
-    loadedAt = new Date()
-    renderMeta()
-    render()
+    await reloadFromFile()
   } catch (err) {
     showError(err, "Refresh failed")
   } finally {
@@ -863,7 +886,7 @@ setInterval(async () => {
   const sig = JSON.stringify(fresh.issues)
   if (sig !== lastPayload) {
     lastPayload = sig
-    await refresh()
+    await reloadFromFile()
   }
 }, 300000)
 

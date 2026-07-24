@@ -62,6 +62,9 @@ test("a null assignee (as a real Linear ingest produces) does not crash the boar
     if (route.request().url().endsWith("projects.json")) return route.continue()
     return route.fulfill({ json: data })
   })
+  // The Refresh button now re-ingests from Linear first (POST /api/refresh) before reloading the data
+  // file; stub that success so this test isolates the null-assignee render bug, not live Linear access.
+  await page.route("**/api/refresh", (route) => route.fulfill({ json: { ok: true, log: [] } }))
   await page.goto("/")
 
   await expect(page.locator("#grid tr").first()).toBeVisible()
@@ -69,6 +72,26 @@ test("a null assignee (as a real Linear ingest produces) does not crash the boar
 
   await page.click("#refresh")
   await expect(page.locator(".js-error")).toBeHidden()
+})
+
+test("Refresh re-ingests from Linear first, and a failure there shows up instead of looking like a no-op", async ({ page }) => {
+  await page.goto("/")
+  await expect(page.locator("#grid tr").first()).toBeVisible()
+
+  let refreshCalled = false
+  await page.route("**/api/refresh", (route) => {
+    refreshCalled = true
+    return route.fulfill({
+      status: 500,
+      json: { ok: false, log: ["issues: no Linear key configured"], error: "getSecret: no value for linear" },
+    })
+  })
+
+  await page.click("#refresh")
+  expect(refreshCalled).toBe(true)
+  await expect(page.locator(".js-error-entry")).toContainText("getSecret: no value for linear")
+  // the button resets instead of staying stuck on "Refreshing…"
+  await expect(page.locator("#refresh")).toHaveText("Refresh")
 })
 
 test("grid tickets are keyboard reachable and arrow-navigable", async ({ page }) => {

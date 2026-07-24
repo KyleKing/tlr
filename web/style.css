@@ -661,6 +661,9 @@ h1 {
   margin-left: auto;
 }
 .pill {
+  display: inline-flex;
+  align-items: center;
+  gap: .35em;
   border: 1px solid var(--surface1);
   background: var(--mantle);
   color: var(--text);
@@ -809,6 +812,9 @@ td.past {
   margin-bottom: 1px;
 }
 .cf {
+  display: inline-flex;
+  align-items: center;
+  gap: .35em;
   font-size: 10.5px;
   line-height: 1.5;
   padding: 0 5px;
@@ -833,20 +839,33 @@ td.past {
   gap: 3px;
 }
 .tick {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .3em;
   min-height: 20px;
   padding: 1px 6px;
   border-radius: 999px;
   cursor: pointer;
   color: var(--text);
   font: 600 12px var(--mono);
-  line-height: 18px;
   font-variant-numeric: tabular-nums;
-  text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   background: var(--base);
   border: 1px solid var(--surface1);
+}
+/* Any icon/emoji glyph placed next to text: color-emoji fonts don't scale or baseline-align with
+   surrounding text reliably, so every icon+text pairing gets its own flex-centered wrapper (sized
+   slightly under the text instead of at 1em, since emoji otherwise read as oversized) rather than
+   relying on inline text flow and a literal space for spacing. */
+.ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .85em;
+  line-height: 1;
 }
 .tick:hover {
   border-color: var(--accent);
@@ -914,6 +933,9 @@ td.past {
   gap: 4px;
 }
 .badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .25em;
   font-size: 10px;
   padding: 0 5px;
   border-radius: 999px;
