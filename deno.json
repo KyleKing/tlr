@@ -9,6 +9,7 @@
     "biome": "deno run --allow-read --allow-write --allow-env --allow-run @biomejs/biome",
     "capacity": "deno run --allow-read --allow-write --allow-env --allow-net=api.incident.io,accounts.google.com,oauth2.googleapis.com,www.googleapis.com,127.0.0.1 --allow-run=security,open ./scripts/capacity.ts",
     "check": "deno check .",
+    "cli": "deno run --allow-read --allow-write --allow-env --allow-ffi ./scripts/cli.ts",
     "compile": "deno compile --allow-net --allow-read --allow-write=./web/data --allow-env --allow-run=security,open --output ./dist/tlr ./scripts/serve.ts",
     "dev": "deno run --allow-net --allow-read --allow-write=./web/data --allow-env --allow-run=security,open ./scripts/serve.ts",
     "fmt": "deno fmt",
@@ -17,7 +18,8 @@
     "lint": "deno lint",
     "prod": "deno task compile && NODE_ENV=production ./dist/tlr",
     "roster": "deno run --allow-read --allow-write --allow-env --allow-net=api.linear.app --allow-run=security ./scripts/roster.ts",
-    "test": "deno test --allow-read --allow-write --allow-env --allow-sys --check=all",
+    "seed": "deno run --allow-read --allow-write=./web/data ./scripts/seed.ts",
+    "test": "deno test --allow-read --allow-write --allow-env --allow-sys --allow-ffi --check=all",
     "test:e2e": "deno run --allow-all npm:playwright test",
     "test:e2e:install": "deno install && deno run --allow-all npm:playwright install chromium --only-shell",
     "test:e2e:ui": "deno task test:e2e --ui"
