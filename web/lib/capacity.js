@@ -157,15 +157,17 @@ export function velocityByPerson(issues, cycles, currentCycle) {
 }
 
 // Merge computed base velocities into the capacity block. Velocity is a per-person value, not a
-// per-cycle event, so it gets its own small merge instead of going through mergeCapacity. History
-// always wins once it has an answer for a person, same as on-call and out-days: a prior value (typed
-// by hand or computed on an earlier run) is replaced, and a person this run has no data for loses only
-// the value this source wrote.
+// per-cycle event, so it gets its own small merge instead of going through mergeCapacity. A hand-typed
+// value (no velocitySrc marker) is protected by default; history only refreshes a value it wrote
+// itself on an earlier run, or fills a person with no velocity at all. `locked: true` is an explicit
+// escape hatch that blocks history even from refreshing its own prior write, for the rare case a
+// person's throughput is hand-confirmed and should stop drifting.
 export function mergeVelocity(capacity, velocityByName) {
   const cap = structuredClone(capacity || {})
   cap.people ||= {}
 
   for (const [name, person] of Object.entries(cap.people)) {
+    if (person.locked) continue
     if (person.velocitySrc === "history" && velocityByName[name] == null) {
       delete person.velocity
       delete person.velocitySrc
@@ -174,6 +176,8 @@ export function mergeVelocity(capacity, velocityByName) {
 
   for (const [name, v] of Object.entries(velocityByName)) {
     const person = (cap.people[name] ||= { cycles: {} })
+    if (person.locked) continue
+    if (person.velocity != null && person.velocitySrc !== "history") continue // hand-typed, protected by default
     person.velocity = v
     person.velocitySrc = "history"
   }
@@ -186,16 +190,17 @@ export function mergeVelocity(capacity, velocityByName) {
 }
 
 function _isEmptyEvent(ev) {
-  return Object.keys(ev).filter((k) => k !== "oncallSrc" && k !== "outSrc").length === 0
+  return Object.keys(ev).filter((k) => k !== "oncallSrc" && k !== "outSrc" && k !== "locked").length === 0
 }
 
 // Merge freshly fetched data into the capacity block for one source. The source owns a fixed set of
-// fields (on-call, or out-days+reason) and never touches fields owned by the other source. Within its
-// own fields it always wins: it overwrites whatever was there (typed by hand or written by an earlier
-// run) for any person+cycle it has data for, and clears its own stale entries where it no longer
-// reports — a value with no source marker is left alone only because no run has reported on that
-// person+cycle yet, not because it is protected. Returns a new capacity object; the input is not
-// mutated.
+// fields (on-call, or out-days+reason) and never touches fields owned by the other source. A hand-typed
+// value in its own fields (no source marker) is protected by default; the source only refreshes a
+// person+cycle it wrote itself on an earlier run, or fills one that had nothing at all. It still clears
+// its own stale entries where it no longer reports. `locked: true` on an entry blocks this source even
+// from refreshing its own prior write or clearing it, for a hand-confirmed value that should stop
+// drifting (e.g. a known onsite the automated heuristic can't detect). Returns a new capacity object;
+// the input is not mutated.
 export function mergeCapacity(capacity, incoming, source) {
   const owned = OWNED[source]
   if (!owned) throw new Error(`unknown capacity source: ${source}`)
@@ -205,6 +210,7 @@ export function mergeCapacity(capacity, incoming, source) {
   // Clear entries this source wrote on a prior run but no longer reports.
   for (const [name, person] of Object.entries(cap.people)) {
     for (const [cn, ev] of Object.entries(person.cycles || {})) {
+      if (ev.locked) continue
       const stillReported = incoming[name] && incoming[name][cn]
       if (ev[owned.marker] === source && !stillReported) {
         for (const f of owned.fields) delete ev[f]
@@ -213,12 +219,16 @@ export function mergeCapacity(capacity, incoming, source) {
     }
   }
 
-  // Apply incoming data, tagging it with the source marker.
+  // Apply incoming data, tagging it with the source marker. A hand-typed value (no marker for this
+  // source) is left alone; only an empty slot or one this source already owns gets written.
   for (const [name, byCycle] of Object.entries(incoming)) {
     const person = (cap.people[name] ||= { cycles: {} })
     person.cycles ||= {}
     for (const [cn, val] of Object.entries(byCycle)) {
       const ev = (person.cycles[cn] ||= {})
+      if (ev.locked) continue
+      const handTyped = owned.fields.some((f) => ev[f] != null) && ev[owned.marker] !== source
+      if (handTyped) continue
       if (source === "incident.io") {
         ev.oncall = true
       } else {

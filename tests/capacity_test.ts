@@ -94,6 +94,35 @@ Deno.test("mergeCapacity replaces its own out-days when the calendar changes the
   assertEquals(second.people["Kyle King"].cycles["49"].reason, "PTO")
 })
 
+Deno.test("mergeCapacity protects a hand-typed out-days value from an active gcal report", () => {
+  const base = {
+    people: {
+      "Marissa TK": { cycles: { 49: { outDays: 3, reason: "onsite" } } }, // hand-typed, no marker
+    },
+  }
+  // gcal now actually reports something for that same slot — the hand-typed value must survive.
+  const merged = mergeCapacity(base, { "Marissa TK": { 49: { outDays: 1, reason: "busy" } } }, "gcal")
+  const ev = merged.people["Marissa TK"].cycles["49"]
+  assertEquals(ev.outDays, 3)
+  assertEquals(ev.reason, "onsite")
+  assertEquals(ev.outSrc, undefined)
+})
+
+Deno.test("mergeCapacity's locked flag blocks a source from refreshing its own prior write", () => {
+  const base = {
+    people: {
+      "Kyle King": { cycles: { 49: { outDays: 1, reason: "busy", outSrc: "gcal", locked: true } } },
+    },
+  }
+  const merged = mergeCapacity(base, { "Kyle King": { 49: { outDays: 5, reason: "PTO" } } }, "gcal")
+  const ev = merged.people["Kyle King"].cycles["49"]
+  assertEquals(ev.outDays, 1)
+  assertEquals(ev.reason, "busy")
+  // Reporting nothing at all must not clear a locked entry either.
+  const cleared = mergeCapacity(merged, {}, "gcal")
+  assertEquals(cleared.people["Kyle King"].cycles["49"].outDays, 1)
+})
+
 Deno.test("outDaysFromFreeBusy flags a day only once busy time reaches the threshold", () => {
   const calendars = {
     "kyle@coverbase.ai": {
@@ -135,10 +164,9 @@ Deno.test("velocityByPerson averages completed points across past cycles", () =>
   assertEquals(velocityByPerson(issues, cycles, 48), { "Kyle King": 13 })
 })
 
-Deno.test("mergeVelocity overwrites a prior velocity, hand-typed or not, once history reports", () => {
-  const overHand = mergeVelocity({ people: { "Marissa TK": { cycles: {}, velocity: 25 } } }, { "Marissa TK": 10 })
-  assertEquals(overHand.people["Marissa TK"].velocity, 10)
-  assertEquals(overHand.people["Marissa TK"].velocitySrc, "history")
+Deno.test("mergeVelocity keeps a hand-typed velocity but refreshes its own prior write", () => {
+  const withHand = mergeVelocity({ people: { "Marissa TK": { cycles: {}, velocity: 25 } } }, { "Marissa TK": 10 })
+  assertEquals(withHand.people["Marissa TK"].velocity, 25) // hand-typed, no velocitySrc → protected by default
   const first = mergeVelocity({ people: {} }, { "Kyle King": 13 })
   assertEquals(first.people["Kyle King"].velocity, 13)
   assertEquals(first.people["Kyle King"].velocitySrc, "history")
@@ -147,4 +175,13 @@ Deno.test("mergeVelocity overwrites a prior velocity, hand-typed or not, once hi
   // No longer reported → the value this source wrote is cleared, not left stale.
   const third = mergeVelocity(second, {})
   assertEquals(third.people["Kyle King"], undefined)
+})
+
+Deno.test("mergeVelocity's locked flag blocks history from refreshing its own prior write", () => {
+  const base = { people: { "Kyle King": { cycles: {}, velocity: 13, velocitySrc: "history", locked: true } } }
+  const merged = mergeVelocity(base, { "Kyle King": 18 })
+  assertEquals(merged.people["Kyle King"].velocity, 13)
+  // Reporting nothing at all must not clear a locked person's velocity either.
+  const cleared = mergeVelocity(merged, {})
+  assertEquals(cleared.people["Kyle King"].velocity, 13)
 })

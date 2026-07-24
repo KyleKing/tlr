@@ -13,10 +13,13 @@
 // handoff file of named events (startDate, endDate, title) when a real reason is known. Velocity comes
 // from each person's completed points in past cycles, already present in this same data file — no
 // external fetch needed. All three feed the provenance-aware merges in web/lib/capacity.js: a value
-// typed by hand survives only until a source actually reports on that same person and cycle, then the
-// automated value wins. The free/busy heuristic can under-report real time off (being onsite doesn't
-// fill a calendar with meetings), so a hand-typed out-days note can regress in accuracy once gcal starts
-// reporting for that slot — there is no permanent override, by design.
+// typed by hand (no source marker) is protected by default, and a source only refreshes what it wrote
+// itself on an earlier run. The free/busy heuristic under-reports real time off when it isn't a
+// calendar-blocking event (an onsite doesn't necessarily fill a calendar with meetings, and an all-day
+// block set to Free/transparent is invisible to free/busy entirely) — that's why hand-typed protection
+// is the default rather than "automation always wins". Add `locked: true` to a person or a person's
+// cycle entry in cpu.json to also freeze a value a source previously wrote, if it's since been
+// hand-confirmed and should stop drifting on refresh.
 
 import { mergeCapacity, mergeVelocity, oncallByCycle, outDaysByCycle, outDaysFromFreeBusy, velocityByPerson } from "../web/lib/capacity.js"
 import { CLIENT_PATH, fetchFreeBusy, loadClient, tokenFor } from "./gcal-freebusy.ts"

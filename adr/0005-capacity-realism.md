@@ -59,6 +59,11 @@ leaving it hand-typed. This is the spike-to-productionize move the [ADR 0007](00
 rule describes, applied to identity: a hand-seeded value replaced by a keychain-keyed API read.
 
 Merging is provenance-aware. Each source owns its fields (Incident.io owns `oncall`, the calendar owns
-`outDays`/`reason`) and tags what it writes. A refresh overwrites its own prior data, clears entries it
-no longer reports, and leaves the other source and any hand-entered value alone. So a value typed by
-hand survives every refresh until a source reports on the same person and cycle.
+`outDays`/`reason`) and tags what it writes. A refresh only ever touches a person+cycle it wrote itself
+on an earlier run, or one that had nothing at all: a hand-typed value (no source marker) is protected by
+default and never silently overwritten. This matters in practice because the free/busy heuristic can
+under-report real time off — an onsite doesn't necessarily fill a calendar with meetings, and an all-day
+block set to Free/transparent is invisible to free/busy regardless of duration — so trusting automation
+over a hand-typed note would be a regression, not an improvement, for exactly the cases free/busy can't
+see. `locked: true` on a person or a cycle entry is the escape hatch for the opposite case: freezing a
+value a source previously wrote, once it's been hand-confirmed and should stop drifting on refresh.
