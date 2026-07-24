@@ -11,6 +11,7 @@ import {
   weeksBetween,
 } from "./lib/planning.js"
 import { pickProject } from "./lib/issues.js"
+import { ACCENTS, defaultFlavor, FLAVORS, themeVars } from "./lib/theme.js"
 
 const STATUS = {
   started: { label: "In progress", color: "var(--st-started)" },
@@ -120,6 +121,53 @@ if (projects.length > 1) {
     location.href = url.toString()
   })
 }
+
+// theme: flavor + accent picked from web/lib/theme.js's Catppuccin palette, persisted locally
+const THEME_KEY = "tlr.theme"
+const savedTheme = JSON.parse(localStorage.getItem(THEME_KEY) || "null")
+const theme = {
+  flavor: savedTheme?.flavor ?? defaultFlavor(matchMedia("(prefers-color-scheme: dark)").matches),
+  accent: savedTheme?.accent ?? "mauve",
+}
+
+function applyTheme() {
+  const root = document.documentElement
+  for (const [k, v] of Object.entries(themeVars(theme.flavor, theme.accent))) root.style.setProperty(k, v)
+  localStorage.setItem(THEME_KEY, JSON.stringify(theme))
+  for (const btn of flavorPicker.querySelectorAll(".flavor-btn")) {
+    btn.setAttribute("aria-pressed", String(btn.dataset.flavor === theme.flavor))
+  }
+  for (const sw of accentPicker.querySelectorAll(".swatch")) {
+    sw.style.background = themeVars(theme.flavor, sw.dataset.accent)["--accent"]
+    sw.setAttribute("aria-pressed", String(sw.dataset.accent === theme.accent))
+  }
+}
+
+const flavorPicker = document.getElementById("flavor-picker")
+flavorPicker.innerHTML = FLAVORS.map((f) =>
+  `<button class="flavor-btn" data-flavor="${f}">${f[0].toUpperCase()}${f.slice(1)}</button>`
+).join("")
+flavorPicker.addEventListener("click", (e) => {
+  const btn = e.target.closest(".flavor-btn")
+  if (!btn) return
+  theme.flavor = btn.dataset.flavor
+  applyTheme()
+})
+
+const accentPicker = document.getElementById("accent-picker")
+accentPicker.innerHTML = ACCENTS.map((a) => `<button class="swatch" data-accent="${a}" title="${a}"></button>`).join("")
+accentPicker.addEventListener("click", (e) => {
+  const sw = e.target.closest(".swatch")
+  if (!sw) return
+  theme.accent = sw.dataset.accent
+  applyTheme()
+})
+
+applyTheme()
+
+const configPanel = document.getElementById("config-panel")
+document.getElementById("config-btn").addEventListener("click", () => configPanel.showModal())
+document.getElementById("config-close").addEventListener("click", () => configPanel.close())
 
 const search = document.getElementById("search")
 search.oninput = () => {

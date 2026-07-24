@@ -8,10 +8,30 @@
 </head>
 <body>
   <header>
-    <h1 id="title">Planning board</h1>
-    <div class="sub" id="meta"></div>
+    <span class="avatar">KK</span>
+    <div>
+      <h1 id="title">Planning board</h1>
+      <div class="sub" id="meta"></div>
+    </div>
     <select id="project-picker" hidden></select>
+    <button class="pill" id="config-btn" aria-haspopup="dialog">⚙ Configure</button>
   </header>
+  <dialog id="config-panel">
+    <div class="cfg-head">
+      <h2>Configuration</h2>
+      <button class="cfg-close" id="config-close">Close</button>
+    </div>
+    <div class="cfg-body">
+      <div class="cfg-section">
+        <h3>Theme</h3>
+        <div class="cfg-row" id="flavor-picker"></div>
+      </div>
+      <div class="cfg-section">
+        <h3>Accent</h3>
+        <div class="cfg-row" id="accent-picker"></div>
+      </div>
+    </div>
+  </dialog>
   <div class="bar-controls">
     <input id="search" type="search" placeholder="Search id / title / description…" />
     <button class="chip" id="view" aria-pressed="false">Timeline</button>
