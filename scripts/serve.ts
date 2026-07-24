@@ -145,7 +145,7 @@ app.post("/api/config", async (c) => {
     const path = new URL(dataFile, DATA_ROOT)
     const data = await Deno.readTextFile(path).then(JSON.parse).catch(() => ({}))
     data.capacity = body.capacity
-    await Deno.writeTextFile(path, JSON.stringify(data, null, 2) + "\n")
+    await Deno.writeTextFile(path, `${JSON.stringify(data, null, 2)}\n`)
     return c.json({ ok: true })
   } catch (err) {
     return handleApiError(err, c, { message: "Failed to save configuration", context: { dataFile } })
@@ -178,7 +178,7 @@ app.post("/api/refresh", async (c) => {
 
     log.push(...(await refreshCapacity(data)))
 
-    await Deno.writeTextFile(path, JSON.stringify(data, null, 2) + "\n")
+    await Deno.writeTextFile(path, `${JSON.stringify(data, null, 2)}\n`)
 
     if (data.project?.name && Array.isArray((data as { issues?: unknown }).issues)) {
       const capture = captureSnapshot(data as unknown as Snapshot, "refresh")

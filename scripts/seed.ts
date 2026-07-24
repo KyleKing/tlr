@@ -18,12 +18,12 @@ async function upsertProject(entry: ProjectEntry): Promise<void> {
   const kept = existing.filter((p) => p.slug !== entry.slug)
   kept.push(entry)
   kept.sort((x, y) => x.name.localeCompare(y.name))
-  await Deno.writeTextFile(path, JSON.stringify(kept, null, 2) + "\n")
+  await Deno.writeTextFile(path, `${JSON.stringify(kept, null, 2)}\n`)
 }
 
 async function writeSnapshot(name: string, snapshot: Snapshot): Promise<void> {
   await Deno.mkdir(DATA_ROOT, { recursive: true })
-  await Deno.writeTextFile(new URL(name, DATA_ROOT), JSON.stringify(snapshot, null, 2) + "\n")
+  await Deno.writeTextFile(new URL(name, DATA_ROOT), `${JSON.stringify(snapshot, null, 2)}\n`)
 }
 
 if (import.meta.main) {
