@@ -51,6 +51,10 @@ product:
   the change (dry run), then applies it to Linear on confirm. This is the only write path, and only from
   the UI. Demo mode (`TLR_DEMO=1`) points it at the free/test workspace with a visible banner; live mode
   uses the real key
+- Demo workspace and live verification: `deno task seed:linear` seeds a throwaway "Horse Tinder" project
+  into the free workspace (guarded to `tlr-demo-workspace`, dry-run by default, archives on re-seed). The
+  full loop is verified end to end against real Linear: ingest → an edit from the Review UI → `issueUpdate`
+  → read back. This also fixed the `issues` query, which Linear now types as `ID` not `String`
 - E2E and screenshots: the Playwright suite seeds data and captures snapshots against an isolated
   store (no Linear key), covering the board and both new pages. `deno task screenshots` regenerates the
   committed README images on demand
@@ -90,16 +94,6 @@ need a name-to-UUID lookup (milestone, status, cycle, assignee), and a candidate
 Called out separately because these wait on you or an external resource, not on more code. Backlog
 items depending on them are marked below.
 
-- **Free Linear seed/test environment.** I cannot create accounts or API keys. `deno task seed`
-  generates offline synthetic fixtures, which covers testing today. Seeding a real free-tier workspace
-  (and a `--linear` mode for the seed script) needs you to create a free Linear account and store its
-  key in the keychain. Until then diff, review, and apply only run against synthetic or your existing
-  local data.
-- **Exercising the write path against a real workspace.** The adapter, the `/api/edit` endpoint, and
-  the Review-page edit UI are built and unit- and e2e-tested offline. A real `issueUpdate` needs a key
-  in the keychain (`demo-key` for the free/test workspace, `api-key` for the real one) and issues
-  ingested from that workspace so each carries its Linear UUID. Until a key is stored, the edit form
-  previews but refuses to write (it says so per ticket).
 - **Secrets story (`SecretStore` port, ADR 0007).** `KeychainSecrets` vs `HostedSecrets` is designed,
   not built. Every credential today is a keychain entry or a gitignored file. Needed before tlr runs
   for anyone but the current local user, and before any deploy.
