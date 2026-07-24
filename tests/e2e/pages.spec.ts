@@ -14,21 +14,31 @@ test("changes page renders the weekly report from two snapshots", async ({ page 
   await expect(page.locator(".rsec li.risk").first()).toBeVisible()
 })
 
-test("changes page's From/To pickers browse snapshot history, not just the latest pair", async ({ page }) => {
+test("changes page steps through snapshot history with ‹/› and a range picker", async ({ page }) => {
   await page.goto(`/changes${SEED}`)
   await expect(page.locator(".rsec")).toHaveCount(3)
 
-  const fromSelect = page.locator("#snap-from")
-  const toSelect = page.locator("#snap-to")
-  await expect(fromSelect).toBeVisible()
-  await expect(fromSelect.locator("option")).toHaveCount(2)
+  const prevBtn = page.locator("#snap-prev")
+  const nextBtn = page.locator("#snap-next")
+  await expect(prevBtn).toBeVisible()
+  await expect(page.locator("#snap-window")).toContainText("→")
 
-  // picking the same snapshot for both ends refuses to diff instead of showing nonsense
-  await toSelect.selectOption({ index: 0 })
-  await expect(page.locator(".page-body")).toContainText("nothing to diff")
+  // starting at the latest snapshot: stepping back is possible, forward isn't
+  await expect(prevBtn).toBeEnabled()
+  await expect(nextBtn).toBeDisabled()
 
-  // and picking two distinct ones (even reversed) still renders a real report
-  await toSelect.selectOption({ index: 1 })
+  // only two snapshots exist, so stepping "to" back to the oldest leaves nothing earlier to diff
+  await prevBtn.click()
+  await expect(page.locator(".page-body")).toContainText("Only one snapshot exists")
+  await expect(prevBtn).toBeDisabled()
+  await expect(nextBtn).toBeEnabled()
+
+  // stepping forward again lands back on a real, renderable diff
+  await nextBtn.click()
+  await expect(page.locator(".rsec")).toHaveCount(3)
+
+  // changing the range still resolves to a valid pair (only one older snapshot exists either way)
+  await page.selectOption("#snap-range", "30")
   await expect(page.locator(".rsec")).toHaveCount(3)
 })
 

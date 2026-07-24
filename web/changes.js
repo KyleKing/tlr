@@ -1,7 +1,9 @@
 // Changes page: renders the weekly-update narrative (shipped / moved / at risk) from the server's
-// /api/report. Defaults to a project's two most recent snapshots; the From/To pickers (populated from
-// /api/snapshots) let you diff any two captures instead, so snapshot history is browsable here rather
-// than only ever showing "since last time."
+// /api/report. Defaults to a project's two most recent snapshots; ‹/› step to an earlier or later "to"
+// snapshot and a Range picks how far back "from" should land (closest snapshot to that many days
+// earlier), so browsing snapshot history is "pick a date and a window" rather than picking two exact
+// snapshots out of a pair of dropdowns — a dropdown-of-timestamps doesn't give any sense of how far
+// apart two entries are, and two independent dropdowns make invalid pairs (from after to) easy to hit.
 
 import { escapeHtml, resolveProject } from "./lib/page.js"
 import { applyTheme, loadTheme } from "./lib/appearance.js"
@@ -12,9 +14,15 @@ const project = await resolveProject()
 const pageEl = document.getElementById("page")
 const captureBtn = document.getElementById("capture")
 const compareEl = document.getElementById("snap-compare")
-const fromSelect = document.getElementById("snap-from")
-const toSelect = document.getElementById("snap-to")
+const prevBtn = document.getElementById("snap-prev")
+const nextBtn = document.getElementById("snap-next")
+const windowEl = document.getElementById("snap-window")
+const rangeSelect = document.getElementById("snap-range")
 const snapHint = document.getElementById("snap-hint")
+
+// Chronological (oldest first) once loaded; toIndex is where "to" points into it.
+let snapshots = []
+let toIndex = -1
 
 if (!project) {
   document.getElementById("meta").textContent = "No project configured yet."
@@ -102,42 +110,70 @@ function snapshotLabel(row) {
   return `${when}${row.label ? ` (${row.label})` : ""}`
 }
 
-// Populates the From/To pickers with every stored snapshot for this project (newest last, so "To"
-// defaults to the latest), oldest→newest so the list reads chronologically top to bottom.
+// Fetches every stored snapshot for this project, oldest first, and points "to" at the latest one.
 async function loadSnapshots() {
   const r = await fetch(`/api/snapshots?project=${encodeURIComponent(project.name)}`, { cache: "no-store" })
   const rows = r.ok ? await r.json() : []
-  if (rows.length < 2) {
-    compareEl.hidden = true
-    return
-  }
-  const ordered = [...rows].reverse() // API returns newest-first; the pickers read oldest-first
-  const options = ordered.map((row) => `<option value="${row.id}">${escapeHtml(snapshotLabel(row))}</option>`).join(
-    "",
-  )
-  fromSelect.innerHTML = options
-  toSelect.innerHTML = options
-  fromSelect.value = ordered[ordered.length - 2].id
-  toSelect.value = ordered[ordered.length - 1].id
-  compareEl.hidden = false
-  fromSelect.onchange = load
-  toSelect.onchange = load
+  snapshots = [...rows].reverse() // API returns newest-first
+  toIndex = snapshots.length - 1
+  compareEl.hidden = snapshots.length < 2
+  syncStepButtons()
 }
+
+// The "from" snapshot for a given "to": among snapshots strictly older than `to`, the one whose
+// capturedAt is closest to (to's time - rangeDays). rangeDays 0 ("since last capture") always means
+// the one snapshot immediately before `to`. Falls back to the oldest available when the target predates
+// every snapshot, so a range longer than the project's whole history still resolves to something.
+function resolveFrom(to, rangeDays) {
+  const older = snapshots.filter((s) => s.capturedAt < to.capturedAt)
+  if (!older.length) return null
+  if (rangeDays === 0) return older[older.length - 1]
+  const targetMs = to.capturedAt - rangeDays * 86400000
+  return older.reduce((best, s) => Math.abs(s.capturedAt - targetMs) < Math.abs(best.capturedAt - targetMs) ? s : best)
+}
+
+function syncStepButtons() {
+  prevBtn.disabled = toIndex <= 0
+  nextBtn.disabled = toIndex >= snapshots.length - 1
+}
+
+prevBtn.onclick = () => {
+  if (toIndex > 0) toIndex--
+  syncStepButtons()
+  load()
+}
+nextBtn.onclick = () => {
+  if (toIndex < snapshots.length - 1) toIndex++
+  syncStepButtons()
+  load()
+}
+rangeSelect.onchange = load
 
 async function load() {
   pageEl.innerHTML = `<p class="empty">Loading…</p>`
-  const params = new URLSearchParams({ project: project.name })
-  const usingPicker = !compareEl.hidden
-  if (usingPicker) {
-    params.set("from", fromSelect.value)
-    params.set("to", toSelect.value)
-  }
   snapHint.textContent = ""
-  if (usingPicker && fromSelect.value === toSelect.value) {
-    snapHint.textContent = "Pick two different snapshots."
-    pageEl.innerHTML = `<p class="empty">From and To are the same snapshot — nothing to diff.</p>`
+
+  if (!snapshots.length) {
+    pageEl.innerHTML = `<p class="empty">Need at least two snapshots to compare. ` +
+      `Capture one now, refresh the board later, and a diff will show here.</p>`
     return
   }
+
+  const params = new URLSearchParams({ project: project.name })
+  if (!compareEl.hidden) {
+    const to = snapshots[toIndex]
+    const from = resolveFrom(to, Number(rangeSelect.value))
+    if (!from) {
+      windowEl.textContent = snapshotLabel(to)
+      snapHint.textContent = "No earlier snapshot to compare against."
+      pageEl.innerHTML = `<p class="empty">Only one snapshot exists at or before this point.</p>`
+      return
+    }
+    windowEl.textContent = `${snapshotLabel(from)} → ${snapshotLabel(to)}`
+    params.set("from", from.id)
+    params.set("to", to.id)
+  }
+
   const r = await fetch(`/api/report?${params}`, { cache: "no-store" })
   const body = await r.json()
   if (!body.report) {

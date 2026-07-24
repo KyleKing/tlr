@@ -6,8 +6,17 @@
     <button class="pill" id="capture">Capture snapshot</button>
   </header>
   <div class="snap-compare" id="snap-compare" hidden>
-    <label>From <select id="snap-from"></select></label>
-    <label>To <select id="snap-to"></select></label>
+    <button type="button" class="chip mini" id="snap-prev" title="Step to the previous snapshot">‹</button>
+    <span class="snap-window" id="snap-window"></span>
+    <button type="button" class="chip mini" id="snap-next" title="Step to the next snapshot">›</button>
+    <label>Range
+      <select id="snap-range">
+        <option value="1">1 day</option>
+        <option value="7" selected>7 days</option>
+        <option value="30">30 days</option>
+        <option value="0">Since last capture</option>
+      </select>
+    </label>
     <span class="snap-hint" id="snap-hint"></span>
   </div>
   <div id="page" class="page-body">

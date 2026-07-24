@@ -208,6 +208,14 @@ a {
   color: var(--text);
   font: 12px var(--font);
 }
+.snap-window {
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+.snap-compare .chip.mini:disabled {
+  opacity: .4;
+  cursor: default;
+}
 .snap-hint {
   color: var(--red);
 }
