@@ -8,6 +8,7 @@ import { Hono } from "hono"
 import { serveStatic } from "hono/deno"
 import { ingestProject, linearKey } from "./issues.ts"
 import { type CapacityData, refreshCapacity } from "./capacity.ts"
+import { renderPage } from "../web/templates/helpers.ts"
 
 const DATA_ROOT = new URL("../web/data/", import.meta.url)
 
@@ -65,6 +66,8 @@ app.post("/api/refresh", async (c) => {
     return c.json({ ok: false, log, error: err instanceof Error ? err.message : String(err) }, 500)
   }
 })
+
+app.get("/", (c) => renderPage("pages/board.vto", {}, "tlr — planning board (spike)", c))
 
 app.use("*", serveStatic({ root: "./web" }))
 
