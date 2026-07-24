@@ -35,6 +35,8 @@ Deno.test("bucketOf places issues by cycle, then milestone, then backlog", () =>
   assertEquals(bucketOf({ cycle: null, milestone: "M2" }), "M2")
   assertEquals(bucketOf({ cycle: null, milestone: null }), "BACKLOG")
   assertEquals(bucketOf({ cycle: 47, milestone: "M1" }), "C47")
+  // Any cycle number routes to its own column, not just a fixed 47-49 window (see buildBuckets).
+  assertEquals(bucketOf({ cycle: 112, milestone: "M1" }), "C112")
 })
 
 Deno.test("buildBuckets orders cycles then milestones then backlog", () => {
@@ -46,6 +48,17 @@ Deno.test("buildBuckets drops a cycle column with no issues in it", () => {
   const issues = [{ cycle: 48, milestone: null }, { cycle: null, milestone: "M1" }]
   const keys = buildBuckets(DATA, issues).map((b) => b.key)
   assertEquals(keys, ["C48", "M1", "M2", "BACKLOG"])
+})
+
+Deno.test("buildBuckets shows a cycle with tickets even when it sits past a gap outside the usual window", () => {
+  const dataWithGap = {
+    ...DATA,
+    cycles: [...DATA.cycles, { n: 52, start: "2026-08-17", end: "2026-08-24" }],
+  }
+  const issues = [{ cycle: 52, milestone: null }]
+  const keys = buildBuckets(dataWithGap, issues).map((b) => b.key)
+  assertEquals(keys, ["C52", "M1", "M2", "BACKLOG"])
+  assertEquals(buildBuckets(dataWithGap, issues)[0].sub, "next")
 })
 
 Deno.test("milestoneDisplayName drops an M#: prefix but keeps a plain name", () => {

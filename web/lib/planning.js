@@ -3,8 +3,7 @@
 export const ACTIVE_CYCLES = [48, 49]
 
 export function bucketOf(issue) {
-  if (issue.cycle === 47) return "C47"
-  if (ACTIVE_CYCLES.includes(issue.cycle)) return `C${issue.cycle}`
+  if (issue.cycle != null) return `C${issue.cycle}`
   if (issue.milestone) return issue.milestone
   return "BACKLOG"
 }
@@ -19,24 +18,17 @@ export function milestoneDisplayName(name, fallback) {
 
 // Ordered time buckets with an end date each, so cycles and milestones compare on one axis. `issues`
 // is optional; when given, a cycle column is dropped if no issue actually falls into it (milestone and
-// backlog columns always show, since those are meaningful even with zero issues today).
+// backlog columns always show, since those are meaningful even with zero issues today). Shows every
+// cycle the project has scheduled work in, in cycle-number order — including a gap between two cycles
+// the team didn't run back to back — rather than a fixed window around ACTIVE_CYCLES, which named two
+// specific cycle numbers that only ever matched the demo data.
 export function buildBuckets(data, issues) {
-  const cyc = Object.fromEntries(data.cycles.map((c) => [c.n, c]))
   const hasIssue = (key) => !Array.isArray(issues) || issues.some((i) => bucketOf(i) === key)
   const cols = []
-  if (cyc[47] && hasIssue("C47")) {
-    cols.push({ key: "C47", label: "Cycle 47", sub: "past", end: cyc[47].end, kind: "cycle" })
-  }
-  for (const n of ACTIVE_CYCLES) {
-    if (cyc[n] && hasIssue(`C${n}`)) {
-      cols.push({
-        key: `C${n}`,
-        label: `Cycle ${n}`,
-        sub: n === data.currentCycle ? "current" : "next",
-        end: cyc[n].end,
-        kind: "cycle",
-      })
-    }
+  for (const c of [...data.cycles].sort((a, b) => a.n - b.n)) {
+    if (!hasIssue(`C${c.n}`)) continue
+    const sub = c.n < data.currentCycle ? "past" : c.n === data.currentCycle ? "current" : "next"
+    cols.push({ key: `C${c.n}`, label: `Cycle ${c.n}`, sub, end: c.end, kind: "cycle" })
   }
   for (const m of data.milestones) {
     cols.push({
