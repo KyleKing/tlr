@@ -9,12 +9,18 @@ const pages: [path: string, name: string, ready: string][] = [
   ["/", "board", "#grid tr"],
   ["/changes", "changes", ".rsec"],
   ["/review", "review", ".rgroup"],
+  ["/settings", "settings", ".cfg-nav-item"],
 ]
 
 for (const [path, name, ready] of pages) {
   test(`screenshot: ${name}`, async ({ page }) => {
     await page.goto(path)
     await page.locator(ready).first().waitFor({ state: "visible" })
+    // Open the first edit form so the Review shot shows the in-flow fix, not just the change list.
+    if (name === "review") {
+      await page.locator("button[data-edit]").first().click()
+      await page.locator("form.editf").first().waitFor({ state: "visible" })
+    }
     await page.screenshot({ path: `${OUT}/${name}.png` })
   })
 }

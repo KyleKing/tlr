@@ -43,9 +43,10 @@ product:
 - Milestone naming: headers show the name (an "M1: " prefix stripped) truncated to a narrow column,
   full name and detail in the hover, so a project with plain milestone names renders correctly
 - Snapshot history and pages: the server captures a snapshot on refresh (into an env-overridable
-  store) and serves list, report, and review endpoints. The web app is now three routed pages behind a
-  shared nav (Board, Changes, Review). Changes renders the weekly update; Review groups edits by ticket
-  with a mark-reviewed toggle
+  store) and serves list, report, and review endpoints. The web app is now routed pages behind a shared
+  nav (Board, Changes, Review, Settings). Changes renders the weekly update; Review groups edits by
+  ticket with a mark-reviewed toggle; Settings holds appearance, capacity, roster, calendar overrides,
+  and integrations, moved off the board's old dialog
 - In-flow fixes: the Review page edits a ticket's title, description, estimate, or priority, previews
   the change (dry run), then applies it to Linear on confirm. This is the only write path, and only from
   the UI. Demo mode (`TLR_DEMO=1`) points it at the free/test workspace with a visible banner; live mode
@@ -110,9 +111,6 @@ items depending on them are marked below.
 
 Ordered by payoff. Unblocked unless a "(blocked: ...)" note says otherwise.
 
-- **Settings page.** The nav has Board, Changes, and Review today; the config still opens as a dialog
-  on the board. Give it its own routed Settings page with the same chrome, folding in appearance,
-  capacity, roster, calendar overrides, and integrations, then the secrets panel below.
 - **Editing the fields that need a name-to-UUID lookup.** The Review-page edit form covers title,
   description, estimate, and priority. Milestone, status, cycle, and assignee moves need their target
   resolved to a Linear UUID (the snapshot carries names, not ids for these). Add the resolution to

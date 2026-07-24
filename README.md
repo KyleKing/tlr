@@ -54,6 +54,10 @@ Writes run in one of two modes, chosen at launch. Live mode (the default) uses y
 Demo mode (`TLR_DEMO=1`) points every write at a free/test workspace and shows a banner, so you can try
 edits without touching real tickets. See [SETUP.md](SETUP.md) for storing each key in the keychain.
 
+Settings holds appearance, capacity, roster, calendar overrides, and integrations on its own page.
+
+![The settings page](docs/images/settings.png)
+
 Screenshots come from the end-to-end suite against seed data. They refresh only on demand, so they do
 not churn on every run. Regenerate them after a UI change with `deno task screenshots`.
 
