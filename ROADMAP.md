@@ -59,8 +59,9 @@ product:
   store (no Linear key), covering the board and both new pages. `deno task screenshots` regenerates the
   committed README images on demand
 
-Open items and tradeoffs are in [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md). The schema stays thin (the
-current Linear shape), not ADR 0006's normalized model, until a second tracker lands.
+Open items live in the Blocked, Backlog, and Open questions sections below; durable decisions are in
+[adr/](adr). The schema stays thin (the current Linear shape), not ADR 0006's normalized model, until a
+second tracker lands.
 
 ## Phases
 
