@@ -61,6 +61,139 @@ a {
   color: var(--base);
 }
 
+.topnav {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--surface0);
+  background: var(--mantle);
+  font-size: 13px;
+}
+.topnav .brand {
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: .02em;
+}
+.topnav a {
+  color: var(--subtext0);
+  text-decoration: none;
+  padding: 3px 2px;
+  border-bottom: 2px solid transparent;
+}
+.topnav a:hover {
+  color: var(--text);
+}
+.topnav a[aria-current="page"] {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+.page-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 1px solid var(--surface0);
+}
+.page-head h1 {
+  margin: 0;
+  font-size: 18px;
+}
+.page-head .sub {
+  color: var(--subtext0);
+  font-size: 12.5px;
+}
+.page-head .pill {
+  margin-left: auto;
+}
+.page-body {
+  padding: 16px;
+  max-width: 760px;
+}
+.page-body .empty {
+  color: var(--subtext0);
+}
+.page-body .window {
+  font-variant-numeric: tabular-nums;
+  color: var(--subtext0);
+  font-size: 12.5px;
+  margin-bottom: 12px;
+}
+.rsec {
+  margin: 0 0 18px;
+}
+.rsec h2 {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--subtext0);
+  margin: 0 0 6px;
+}
+.rsec ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.rsec li.risk {
+  color: var(--red);
+}
+.rsec .dim {
+  color: var(--subtext0);
+}
+.scope {
+  color: var(--subtext0);
+  font-size: 12.5px;
+  border-top: 1px solid var(--surface0);
+  padding-top: 10px;
+}
+.rgroup {
+  border: 1px solid var(--surface0);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  margin-bottom: 8px;
+}
+.rgroup.reviewed {
+  opacity: .55;
+}
+.rgroup-h {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.rgroup-h .rid {
+  font-weight: 600;
+  font-family: var(--mono);
+  font-size: 12.5px;
+}
+.rgroup-h .chip {
+  margin-left: auto;
+}
+.rchanges {
+  margin: 6px 0 0;
+  padding-left: 16px;
+  font-size: 13px;
+}
+.rchanges .kind {
+  display: inline-block;
+  min-width: 78px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--subtext0);
+}
+.rchanges .k-slop {
+  color: var(--peach);
+}
+.rchanges .k-status {
+  color: var(--yellow);
+}
+.rchanges .k-added {
+  color: var(--green);
+}
+.rchanges .k-removed {
+  color: var(--red);
+}
+
 header {
   display: flex;
   align-items: center;

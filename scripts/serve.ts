@@ -235,7 +235,18 @@ app.get("/api/review", (c) => {
   return c.json(reviewSince(pair.before, pair.after))
 })
 
-app.get("/", (c) => renderPage("pages/board.vto", {}, "tlr — planning board (spike)", c))
+app.get(
+  "/",
+  (c) => renderPage("pages/board.vto", {}, "tlr — planning board", c, { active: "board", script: "/app.js" }),
+)
+app.get(
+  "/changes",
+  (c) => renderPage("pages/changes.vto", {}, "tlr — changes", c, { active: "changes", script: "/changes.js" }),
+)
+app.get(
+  "/review",
+  (c) => renderPage("pages/review.vto", {}, "tlr — review", c, { active: "review", script: "/review.js" }),
+)
 
 app.use("*", serveStatic({ root: "./web" }))
 
