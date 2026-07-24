@@ -15,7 +15,7 @@ that keeps AI-made changes and sloppy ticket text from reaching a wider audience
 4. Pure logic is testable. Analysis lives in framework-free modules with Deno tests
 5. Insert new items alphabetically into unordered lists; do not re-sort existing ones
 
-## Status (2026-07-23)
+## Status (2026-07-24)
 
 A first pass at all three phases now runs offline through a CLI (`deno task cli`), driven by
 deterministic synthetic data (`deno task seed`). Shipped this session as scaffolding, not the finished
@@ -66,6 +66,42 @@ product:
 - E2E and screenshots: the Playwright suite seeds data and captures snapshots against an isolated
   store (no Linear key), covering the board and both new pages. `deno task screenshots` regenerates the
   committed README images on demand
+- UX/quality pass: the root cause behind several visual bugs was that `--st-*`/`--risk`/`--slop`/`--miss`
+  CSS vars were referenced everywhere but never defined (status colors, filter chips, and summary counts
+  all rendered unset). `web/lib/theme.js` now defines them per flavor plus a computed `--accent-fg` /
+  `--st-*-fg` (luminance-based) so filled buttons and pills stay legible regardless of which accent or
+  status color is in play; a few Latte accents were also darkened to clear WCAG AA as small text. Filter
+  chips repaint on press instead of only dimming unselected ones. `tests/e2e/a11y.spec.ts` runs an
+  axe-core color-contrast scan on every page so this class of bug gets caught going forward
+- Milestone filtering: a searchable multi-select popover (type to search, checkboxes, All/None, a count
+  badge) replaced one chip per milestone, which overflowed for a milestone name without the "M1: " short
+  form. Cycle chips stay a plain chip row
+- Ticket pills: the compact view now shows a leading flag glyph and a "·N" estimate suffix, not just a
+  ring color and a width nudge
+- Global project picker: moved from board-only into the shared nav (`web/lib/nav.js`), so Changes/
+  Review/Settings can switch projects too. `GET /api/projects/access` (`src/linearAccess.ts`) does a
+  best-effort, cached check of whether the current Linear key can still see each locally-ingested
+  project (deriving the real Linear slugId from the project's own stored url, not the manifest's own
+  slug field, which isn't guaranteed to match) and surfaces a ⚠ in the picker plus a banner on the
+  current project rather than silently showing stale data. Skipped under the e2e harness so tests never
+  reach Linear
+- Demo data: the offline seed generator (`src/seed.ts`) and `web/data-sample.json` were reflavored from
+  a "Reliability Program" theme (SLO specs, paging, incident grace mode — too close to real on-call
+  work) to the same fictional "Horse Tinder" theme already used by `scripts/seed-linear.ts`'s live-
+  workspace fixture, so there's one obviously-fake demo story instead of two
+- Client error visibility: `web/lib/errorBanner.js` installs a global error/unhandledrejection handler
+  and renders the message plus full stack into a dismissible banner, since a client-side failure has
+  nothing to log server-side and was previously just silent. Wired into every page, plus explicit
+  catches in the board's refresh and Settings' save/refresh actions
+- Changes page: From/To pickers (backed by the existing `/api/snapshots` list and a new optional
+  `from`/`to` on `GET /api/report`) let you diff any two captured snapshots, not just the latest pair.
+  Review is unchanged — its mark-reviewed and edit-in-place actions only make sense against the latest
+  window, so it keeps showing only that
+- Empty cycle columns (no issue scheduled into them) are now dropped from the board instead of showing
+  as a blank column
+- Clarified, not changed: the "graph showing ticket relationships" is the Timeline view's dependency-
+  wave grouping (`dependencyWaves` in `web/lib/planning.js`) — there is no node/edge graph UI, and none
+  was removed; "graph" has always meant that wave-card representation plus the hover-based relation text
 
 Open items live in the Blocked, Backlog, and Open questions sections below; durable decisions are in
 [adr/](adr). The schema stays thin (the current Linear shape), not ADR 0006's normalized model, until a
@@ -126,6 +162,8 @@ Ordered by payoff. Unblocked unless a "(blocked: ...)" note says otherwise.
 - **Vendored public assets** fetched by a build task and gitignored (`app-template`'s
   `download-assets.sh`), only if the web app ever depends on something like HTMX instead of the
   hand-rolled `app.js` it uses today.
+- **A real node/edge relationship graph**, if the Timeline view's dependency-wave grouping (see Status)
+  turns out not to be enough. Not started; raised as a question, not yet asked for as a feature.
 
 ## Decisions
 
