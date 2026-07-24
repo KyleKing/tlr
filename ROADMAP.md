@@ -15,9 +15,26 @@ that keeps AI-made changes and sloppy ticket text from reaching a wider audience
 4. Pure logic is testable. Analysis lives in framework-free modules with Deno tests
 5. Insert new items alphabetically into unordered lists; do not re-sort existing ones
 
+## Status (2026-07-23)
+
+A first pass at all three phases now runs offline through a CLI (`deno task cli`), driven by
+deterministic synthetic data (`deno task seed`). Shipped this session as scaffolding, not the finished
+product:
+
+- Phase 1: `src/snapshot.ts` (node:sqlite store), `src/diff.ts` (milestone-rollup diff), `src/review.ts`
+  (review queue with a stored pointer). CLI: `diff`, `review`, `snapshot`, `snapshots`
+- Phase 2: `src/ops.ts` (typed op model, validate against live state, in-memory apply) and `src/plan.ts`
+  (deterministic guidance parser). CLI: `plan` (previews the resulting diff). The real Linear mutation
+  adapter behind the tracker port is the remaining work, gated on a key
+- Phase 3: `src/export.ts` (`boardSvg`, `timelineSvg`). CLI: `export`
+- Also: `scan`, `capacity`, and `timeline` CLI commands for Claude Code to pull before a batch edit
+
+Open items and tradeoffs are in [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md). The schema stays thin (the
+current Linear shape), not ADR 0006's normalized model, until a second tracker lands.
+
 ## Phases
 
-### Phase 1 — snapshot, diff, review (next)
+### Phase 1 — snapshot, diff, review (scaffolded)
 
 Persist project state to SQLite on demand. `tlr diff` shows how the plan changed between two captures,
 rolled up to the milestone level. `tlr review` shows edits since the last review. Actor attribution
@@ -26,14 +43,14 @@ Claude Code hook that records intent at write time. See [adr/0006](adr/0006-norm
 and [adr/0007](adr/0007-productization-and-domains.md) for the normalized schema and domain split this
 builds on.
 
-### Phase 2 — write layer
+### Phase 2 — write layer (scaffolded; real apply pending a key)
 
 `tlr plan "<natural-language guidance>"` turns intent into structured ops (move milestone, set
 priority, add relation, rename, rescope). The tool validates each op against live state, renders a
 diff, and `tlr apply` runs the approved subset as idempotent mutations. Packages the manual
 staging-file workflow so it cannot go stale.
 
-### Phase 3 — in-flow editing
+### Phase 3 — in-flow editing (SVG export shipped; in-flow editing pending)
 
 Editing from inside the tool that feeds the same validate-and-apply path as Phase 2. Candidate: a
 pannable 2D layout instead of the grid. SVG export for weekly-update artifacts.
