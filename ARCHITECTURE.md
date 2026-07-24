@@ -57,7 +57,7 @@ tests/planning_test.ts  Deno tests for the pure logic
 ```
 
 The prior Python implementation (`src/tlr/`) is gone. `capacity`, `roster`, `gcal:freebusy`, and
-`issues` cover what it did for capacity, roster, out-days, and issue ingest. What's still missing is
-a way to list the Linear projects a user belongs to and switch between per-project data files; see the
-"project switcher" item in [NEXT_STEPS.md](NEXT_STEPS.md) and
-[ADR 0007](adr/0007-productization-and-domains.md).
+`issues` cover what it did for capacity, roster, out-days, and issue ingest. `scripts/serve.ts` also
+exposes a small write API (`POST /api/config`, `POST /api/refresh`) so the web app's configuration
+panel can edit and refresh capacity data without a CLI round trip. See [ADR 0007](adr/0007-productization-and-domains.md)
+for the domain split this fits into, and [ROADMAP.md](ROADMAP.md) for what's still open.

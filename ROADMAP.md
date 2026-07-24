@@ -17,21 +17,14 @@ that keeps AI-made changes and sloppy ticket text from reaching a wider audience
 
 ## Phases
 
-### Phase 0 — planning spike (done)
-
-Interactive board on real Contractual Product Uptime data: load per person per cycle and milestone,
-capacity heat against an adjustable knob, slop and ordering-risk and missing-data flags, search, and
-pinnable filters. Grounds the graph objectives in [adr/0002-planning-graph-objectives.md](adr/0002-planning-graph-objectives.md).
-
 ### Phase 1 — snapshot, diff, review (next)
 
-Port the reader to Deno as the Ingest domain's Linear adapter, normalizing to the shared issue schema
-so GitHub can follow as a second tracker (see [adr/0006-normalized-tracker-schema.md](adr/0006-normalized-tracker-schema.md)
-and [adr/0007-productization-and-domains.md](adr/0007-productization-and-domains.md)). Persist project
-state to SQLite on demand. `tlr diff` shows how the plan changed between two captures, rolled up to the
-milestone level. `tlr review` shows edits since the last review. Actor attribution cannot separate
-AI-via-MCP edits from mine (both land under my account), so AI-edit review leans on a Claude Code hook
-that records intent at write time.
+Persist project state to SQLite on demand. `tlr diff` shows how the plan changed between two captures,
+rolled up to the milestone level. `tlr review` shows edits since the last review. Actor attribution
+cannot separate AI-via-MCP edits from mine (both land under my account), so AI-edit review leans on a
+Claude Code hook that records intent at write time. See [adr/0006](adr/0006-normalized-tracker-schema.md)
+and [adr/0007](adr/0007-productization-and-domains.md) for the normalized schema and domain split this
+builds on.
 
 ### Phase 2 — write layer
 
@@ -40,16 +33,69 @@ priority, add relation, rename, rescope). The tool validates each op against liv
 diff, and `tlr apply` runs the approved subset as idempotent mutations. Packages the manual
 staging-file workflow so it cannot go stale.
 
-### Phase 3 — web views and in-flow editing
+### Phase 3 — in-flow editing
 
-A dependency-ordered forecast timeline alongside the capacity board, and editing from inside the
-tool that feeds the same validate-and-apply path. Candidate: a pannable 2D layout instead of the
-grid. SVG export for weekly-update artifacts.
+Editing from inside the tool that feeds the same validate-and-apply path as Phase 2. Candidate: a
+pannable 2D layout instead of the grid. SVG export for weekly-update artifacts.
+
+## Backlog
+
+Ordered by dependency and payoff; production deployment is last on purpose.
+
+1. **Data-freshness UX.** `loadData()` silently falls back to `data-sample.json` if the project's data
+   file is missing, and there's no visible signal when the shown data is stale (a snapshot taken hours
+   or days ago) versus the fallback sample. A visible banner or header state for "showing sample data" /
+   "data as of `<age>`" would prevent misreading stale or demo data as current.
+2. **Test coverage for the web app.** All current tests are pure-function unit tests (`web/lib/*.js`);
+   `web/app.js`'s DOM rendering and interaction code (filters, hover card, config panel, timeline
+   toggle) has zero automated coverage. Playwright end-to-end tests would close this and are the
+   standard `app-template` carries; a lightweight DOM smoke test is the minimum bar.
+3. **Keyboard navigation on the board.** The board's now keyboard-friendly in spirit (Linear-close
+   density), but the grid itself needs arrow-key movement between ticks/cards, a focus ring distinct
+   from the hover state, and ARIA roles so the hover card's content is reachable without a mouse.
+   Currently everything (search, filters, hover card) is mouse-only.
+4. **Narrow-viewport handling.** The board is a wide table; `.wrap` scrolls horizontally but the header,
+   filter bar, and legend haven't been checked below ~900px. Decide whether to explicitly scope tlr as
+   desktop-only (reasonable for a planning tool used at a desk) or invest in a real narrow layout, rather
+   than leaving it undefined.
+5. **CI** (`.github/workflows/ci.yml`): `deno test`, `deno check`, `deno fmt --check`, and `deno lint` on
+   every push and PR, plus Dependabot for GitHub Actions versions. Cheap and overdue given how much now
+   depends on the pre-commit hook alone.
+6. **Biome**, layered on top of `deno fmt`/`deno lint` for the TS/JS rules Deno's linter doesn't cover
+   (unused imports, `useConst`, import-type enforcement).
+7. **A fuller `.gitignore`** (coverage output, `*.tsbuildinfo`, editor cruft) beyond the current
+   data/sqlite exclusions.
+8. **Secrets story for more than one local user.** Every credential today is a macOS keychain entry or a
+   gitignored local file (Incident.io token, Google OAuth client/token, Linear API key), and the config
+   panel's refresh/save endpoints assume that same single-machine trust model. ADR 0007's `SecretStore`
+   port (`KeychainSecrets` vs `HostedSecrets`) is designed but not built. Needed before tlr can run for
+   anyone other than the current single local user, including the deployment below.
+9. **A `deno compile` production task** and a matching `prod` script, once tlr needs to run as a
+   standalone binary rather than `deno task dev`.
+10. **Production deployment.** Likely target: nested into the existing `yak-shears` Hetzner Cloud VPS
+    rather than a new server, for cost — same Caddy reverse proxy (new subdomain or path route), a new
+    systemd service alongside the existing ones, reusing the cloud-init/DNS/Let's Encrypt pattern already
+    proven there. Blocked on item 8 (no keychain access on a shared server).
+11. **Structured error handling and a request-scoped log context** (`AsyncLocalStorage`), once
+    `scripts/serve.ts` grows past its current three routes into something with real failure modes to
+    diagnose.
+12. **Zod-validated env config** with dev/prod defaults (`app-template`'s `env.ts`), once tlr grows
+    enough environment-dependent behavior to warrant it over ad hoc `Deno.env.get` calls.
+13. **Vendored public assets** fetched by a build task and gitignored (`app-template`'s
+    `download-assets.sh`), only if the web app ever depends on something like HTMX instead of the
+    hand-rolled `app.js` it uses today.
 
 ## Open questions
 
-None queued right now. Per-person capacity deflates for on-call (flat 45%, see
-[adr/0005-capacity-realism.md](adr/0005-capacity-realism.md)) and time off (straight day-fraction). Both
-Incident.io on-call and Google Calendar free/busy out-days are wired into `deno task capacity`, and
-per-person velocity comes from past-cycle throughput where a person has history. The dependency timeline
-and the capacity board stay two views, not merged.
+- **Incident.io on-call has two live gaps.** The configured API key currently returns zero schedules
+  (`GET /v2/schedules` → `total_record_count: 0`), so on-call refreshes see nothing at all regardless of
+  who's on call — check whether the key's "Read schedules" grant is scoped to a team rather than the
+  account level (SETUP.md's Incident.io section covers the fix). Separately, `oncallByCycle` only
+  tracks people already in `capacity.roster`, so even once schedules are visible, anyone not on the
+  roster (e.g. a teammate the board doesn't track, like David) is silently dropped — add them to the
+  roster to have their on-call shifts show up.
+- Per-person capacity deflates for on-call (flat 45%, see [adr/0005](adr/0005-capacity-realism.md)) and
+  time off (straight day-fraction). Both Incident.io on-call and Google Calendar free/busy out-days are
+  wired into `deno task capacity` (and the config panel's "Refresh all"), and per-person velocity comes
+  from past-cycle throughput where a person has history. The dependency timeline and the capacity board
+  stay two views, not merged.

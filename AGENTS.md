@@ -4,13 +4,12 @@ The front door for anyone (human or agent) making changes. This file stays short
 at the canonical source for each topic instead of restating it, so nothing here goes stale when a
 decision changes.
 
-| To understand                     | Read                               |
-| --------------------------------- | ---------------------------------- |
-| The shape and the stack           | [ARCHITECTURE.md](ARCHITECTURE.md) |
-| Direction and phases              | [ROADMAP.md](ROADMAP.md)           |
-| Near-term work and open questions | [NEXT_STEPS.md](NEXT_STEPS.md)     |
-| Credentials and how to get them   | [SETUP.md](SETUP.md)               |
-| Why a thing is the way it is      | [adr/](adr)                        |
+| To understand                                  | Read                               |
+| ---------------------------------------------- | ---------------------------------- |
+| The shape and the stack                        | [ARCHITECTURE.md](ARCHITECTURE.md) |
+| Direction, phases, backlog, and open questions | [ROADMAP.md](ROADMAP.md)           |
+| Credentials and how to get them                | [SETUP.md](SETUP.md)               |
+| Why a thing is the way it is                   | [adr/](adr)                        |
 
 ## The one rule: spike, then productionize
 
