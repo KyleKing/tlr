@@ -12,18 +12,25 @@ export const PALETTE = {
     mantle: "#e6e9ef",
     crust: "#dce0e8",
     text: "#4c4f69",
-    subtext0: "#6c6f85",
+    // Darkened from stock Catppuccin (#6c6f85, 4.36:1 on --base) to clear WCAG AA 4.5:1 on --mantle too.
+    subtext0: "#65687a",
     surface1: "#bcc0cc",
     surface0: "#ccd0da",
-    mauve: "#8839ef",
-    red: "#d20f39",
-    peach: "#fe640b",
-    yellow: "#df8e1d",
-    green: "#40a02b",
+    // Darkened from stock Catppuccin (#8839ef) so bold nav-link text clears 4.5:1 on --mantle (was 4.45:1).
+    mauve: "#8035e0",
+    // Every color below this line is darkened from stock Catppuccin Latte. These double as small
+    // status/flag text (10-11px) on --base/--mantle, and Latte's own accents are pastel — tuned for
+    // icons and fills, not body text — so most failed WCAG AA 4.5:1 (as low as 2.15:1). Darkened only
+    // enough to clear it; still used as pill/badge fill backgrounds elsewhere, which stays legible
+    // regardless via a computed contrasting foreground (see --*-fg in themeVars).
+    red: "#cd0e37",
+    peach: "#b14607",
+    yellow: "#905c12",
+    green: "#2f761f",
     teal: "#179299",
     sky: "#04a5e5",
-    blue: "#1e66f5",
-    pink: "#ea76cb",
+    blue: "#1b5de1",
+    pink: "#984c83",
     lavender: "#7287fd",
   },
   frappe: {
@@ -85,6 +92,26 @@ export const PALETTE = {
   },
 }
 
+// Status/flag semantic colors, mapped from each flavor's fixed palette (not user-selectable).
+const SEMANTIC = {
+  "st-started": "blue",
+  "st-unstarted": "subtext0",
+  "st-triage": "yellow",
+  "st-backlog": "surface1",
+  "st-completed": "green",
+  "st-canceled": "red",
+  risk: "peach",
+  slop: "pink",
+  miss: "red",
+}
+
+// Relative luminance (WCAG) of a "#rrggbb" hex color, 0 (black) to 1 (white).
+function luminance(hex) {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+  const lin = (c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4)
+  return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)
+}
+
 // { "--base": "#1e1e2e", ..., "--accent": "<accent hex>" } for setting as CSS custom properties.
 export function themeVars(flavor, accent) {
   const p = PALETTE[flavor]
@@ -92,6 +119,15 @@ export function themeVars(flavor, accent) {
   const vars = {}
   for (const [k, v] of Object.entries(p)) vars[`--${k}`] = v
   vars["--accent"] = p[accent]
+  // Text drawn on a solid --accent background (filled buttons, selected pills): pick whichever
+  // extreme contrasts with the chosen accent, since accents range from dark (mauve) to pastel
+  // (yellow, pink) across flavors and a fixed --base/--text pairing goes unreadable on the light ones.
+  vars["--accent-fg"] = luminance(p[accent]) > 0.5 ? "#111111" : "#f5f5f5"
+  for (const [k, source] of Object.entries(SEMANTIC)) {
+    const color = p[source] ?? p.red
+    vars[`--${k}`] = color
+    vars[`--${k}-fg`] = luminance(color) > 0.5 ? "#111111" : "#f5f5f5"
+  }
   return vars
 }
 

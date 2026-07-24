@@ -423,9 +423,16 @@ h1 {
 .chip[aria-pressed="false"] {
   color: var(--subtext0);
 }
-.chip.flag[aria-pressed="true"] {
-  border-color: currentColor;
+.chip[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--accent-fg);
+  border-color: var(--accent);
   font-weight: 600;
+}
+.chip.flag[aria-pressed="true"] {
+  background: var(--mantle);
+  color: var(--text);
+  border-color: currentColor;
 }
 .chip.mini {
   padding: 2px 7px;
@@ -454,7 +461,7 @@ h1 {
 }
 .pill[aria-pressed="true"] {
   background: var(--accent);
-  color: var(--base);
+  color: var(--accent-fg);
   border-color: var(--accent);
   font-weight: 600;
 }
@@ -931,7 +938,7 @@ td.past {
   width: 100%;
   border: 1px solid var(--accent);
   background: var(--accent);
-  color: var(--base);
+  color: var(--accent-fg);
   border-radius: var(--radius);
   padding: 5px 8px;
   font: 600 12px var(--font);

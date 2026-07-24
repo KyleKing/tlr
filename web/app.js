@@ -16,12 +16,12 @@ import { pickProject } from "./lib/issues.js"
 import { applyTheme, loadTheme } from "./lib/appearance.js"
 
 const STATUS = {
-  started: { label: "In progress", color: "var(--st-started)" },
-  unstarted: { label: "Todo", color: "var(--st-unstarted)" },
-  triage: { label: "Triage", color: "var(--st-triage)" },
-  backlog: { label: "Backlog", color: "var(--st-backlog)" },
-  completed: { label: "Done", color: "var(--st-completed)" },
-  canceled: { label: "Canceled", color: "var(--st-canceled)" },
+  started: { label: "In progress", color: "var(--st-started)", fg: "var(--st-started-fg)" },
+  unstarted: { label: "Todo", color: "var(--st-unstarted)", fg: "var(--st-unstarted-fg)" },
+  triage: { label: "Triage", color: "var(--st-triage)", fg: "var(--st-triage-fg)" },
+  backlog: { label: "Backlog", color: "var(--st-backlog)", fg: "var(--st-backlog-fg)" },
+  completed: { label: "Done", color: "var(--st-completed)", fg: "var(--st-completed-fg)" },
+  canceled: { label: "Canceled", color: "var(--st-canceled)", fg: "var(--st-canceled-fg)" },
 }
 const FLAGS = { slop: "⚠ slop", risk: "⛔ ordering risk", miss: "◑ missing (in cycle)" }
 const DEFAULT_STATUSES = ["started", "unstarted", "triage", "backlog"]
@@ -163,16 +163,30 @@ viewBtn.onclick = () => {
 const refreshBtn = document.getElementById("refresh")
 refreshBtn.onclick = () => refresh()
 
+// Paint a chip's pressed/unpressed look from its semantic color, so selected vs unselected reads
+// clearly regardless of which color a status/bucket/flag happens to carry: unselected dims to plain
+// gray text, selected gets full text plus a color-mix tint (never a solid fill, which would need a
+// per-color contrast check we can't do from a CSS var string).
+function paintChip(b, color, pressed) {
+  const tint = color || "var(--accent)"
+  b.style.color = pressed ? "var(--text)" : "var(--subtext0)"
+  b.style.borderColor = pressed ? tint : ""
+  b.style.background = pressed ? `color-mix(in srgb, ${tint} 22%, var(--mantle))` : ""
+}
+
 function chipButton(host, label, on, color, cls, toggle, onSolo) {
   const b = document.createElement("button")
   b.className = `chip ${cls || ""}`
   b.textContent = label
   b.setAttribute("aria-pressed", on)
-  if (color) b.style.color = color
+  b.dataset.chipColor = color || ""
+  paintChip(b, color, on)
   if (onSolo) b.title = "double-click to show only this"
   b.onclick = () => {
-    b.setAttribute("aria-pressed", b.getAttribute("aria-pressed") !== "true")
-    toggle(b.getAttribute("aria-pressed") === "true")
+    const pressed = b.getAttribute("aria-pressed") !== "true"
+    b.setAttribute("aria-pressed", pressed)
+    paintChip(b, color, pressed)
+    toggle(pressed)
     render()
   }
   if (onSolo) {
@@ -189,8 +203,16 @@ function chipButton(host, label, on, color, cls, toggle, onSolo) {
 const statusChipEls = new Map()
 const bucketChipEls = new Map()
 function syncChips() {
-  for (const [k, b] of statusChipEls) b.setAttribute("aria-pressed", state.statuses.has(k))
-  for (const [k, b] of bucketChipEls) b.setAttribute("aria-pressed", state.bucketKeys.has(k))
+  for (const [k, b] of statusChipEls) {
+    const pressed = state.statuses.has(k)
+    b.setAttribute("aria-pressed", pressed)
+    paintChip(b, b.dataset.chipColor, pressed)
+  }
+  for (const [k, b] of bucketChipEls) {
+    const pressed = state.bucketKeys.has(k)
+    b.setAttribute("aria-pressed", pressed)
+    paintChip(b, b.dataset.chipColor, pressed)
+  }
 }
 
 const statusHost = document.getElementById("status-chips")
@@ -618,13 +640,22 @@ function flagBadges(i) {
   return s
 }
 
+// Compact-pill label: a leading flag glyph (so a flag reads even without color), the ticket number,
+// and the estimate as "·N" — the only room a pill this small has for a second data point.
+function tickLabel(i) {
+  const flag = i._risk ? "⛔" : isSlop(i) ? "⚠" : i._miss.blocking ? "◑" : ""
+  const num = i.id.replace(/^[A-Z]+-/, "")
+  const pts = i.estimate ? `·${i.estimate}` : ""
+  return `${flag}${num}${pts}`
+}
+
 function renderItems(items) {
   if (!state.expanded) {
     return `<div class="ticks">${
       items.map((i) => {
-        const num = i.id.replace(/^[A-Z]+-/, "")
+        const st = STATUS[i.statusType]
         return `<span class="tick ${warnClass(i)}" data-id="${i.id}" onclick="window.open('${i.url}','_blank')" ` +
-          `style="min-width:${20 + i.estimate * 5}px;background:${STATUS[i.statusType]?.color}">${num}</span>`
+          `style="min-width:${20 + i.estimate * 5}px;background:${st?.color};color:${st?.fg}">${tickLabel(i)}</span>`
       }).join("")
     }</div>`
   }
