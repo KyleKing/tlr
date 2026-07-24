@@ -5,6 +5,7 @@
 // Commands:
 //   scan   --text "<t>" | --file <path> | --project <file>   slop score for text, or every issue
 //   capacity --project <file>                                 per-person load vs capacity per cycle
+//   balance  --project <file> [--weekly n] [--start c] [--end c] [--weeks n]  propose assignee+cycle
 //   timeline --project <file>                                 dependency waves and ordering risks
 //   diff   --a <file> --b <file> | --from <id> --to <id>      plan-level change between two snapshots
 //   report --a <file> --b <file> | --from <id> --to <id>      weekly-update narrative from a diff
@@ -19,6 +20,7 @@
 
 import { scanIssues, scanText } from "@/commands/scan.ts"
 import { projectCapacity } from "@/commands/capacity.ts"
+import { balance } from "@/commands/balance.ts"
 import { projectTimeline } from "@/commands/timeline.ts"
 import { diffSnapshots } from "@/diff.ts"
 import { renderReport, weeklyReport } from "@/report.ts"
@@ -85,6 +87,18 @@ async function run(cmd: string | undefined, f: Flags): Promise<void> {
       return out(projectCapacity(await loadData(str(f, "project") ?? "data-sample.json")))
     case "timeline":
       return out(projectTimeline(await loadData(str(f, "project") ?? "data-sample.json")))
+    case "balance": {
+      const snap = await loadData(str(f, "project") ?? "data-sample.json")
+      const num = (k: string) => (str(f, k) !== undefined ? Number(str(f, k)) : undefined)
+      const start = num("start")
+      const weeks = num("weeks")
+      return out(balance(snap, {
+        weeklyPerPerson: num("weekly"),
+        start,
+        end: num("end") ?? (start !== undefined && weeks !== undefined ? start + weeks - 1 : undefined),
+        maxLeadCycles: num("lead"),
+      }))
+    }
     case "diff": {
       const { before, after } = await twoSnapshots(f)
       return out(diffSnapshots(before, after))
@@ -181,6 +195,7 @@ function usage(): void {
       "",
       "  scan      --text <t> | --file <path> | --project <file>",
       "  capacity  --project <file>",
+      "  balance   --project <file> [--weekly <n>] [--start <cycle>] [--end <cycle>] [--weeks <n>] [--lead <cycles>]",
       "  timeline  --project <file>",
       "  diff      --a <file> --b <file> | --from <id> --to <id>",
       "  report    --a <file> --b <file> | --from <id> --to <id> [--json]",
