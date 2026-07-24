@@ -27,6 +27,8 @@ product:
   (deterministic guidance parser). CLI: `plan` (previews the resulting diff). The real Linear mutation
   adapter behind the tracker port is the remaining work, gated on a key
 - Phase 3: `src/export.ts` (`boardSvg`, `timelineSvg`). CLI: `export`
+- Reporting: `src/report.ts` (`tlr report`, weekly shipped/moved/at-risk narrative from a diff) and
+  `src/forecast.ts` (`tlr forecast`, per-milestone landing date vs target, labeled a forecast)
 - Also: `scan`, `capacity`, and `timeline` CLI commands for Claude Code to pull before a batch edit
 
 Open items and tradeoffs are in [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md). The schema stays thin (the
@@ -95,11 +97,9 @@ Ordered by payoff. Unblocked unless a "(blocked: ...)" note says otherwise.
   column label and a no-op strip. Derive a short display key independent of the name, and support
   arbitrary, long milestone names end to end. (The naming fix is blocked on the display-key strategy
   above; the wrapping and hover work is not.)
-- **Weekly-update report generation** (the "report backward" job in ARCHITECTURE.md). Generate the
-  narrative (shipped / moved / at-risk) from a Phase 1 diff. Ready to build now that `tlr diff` exists.
-- **Milestone slip forecast.** Realistic landing date vs. target, labeled as a forecast, computed
-  from remaining scope, capacity, and per-person velocity. Cheap on top of the existing capacity
-  engine.
+- **Surface report and forecast in the UI.** `tlr report` and `tlr forecast` are CLI-only today.
+  Bring the weekly narrative and the per-milestone landing dates into a page (ties to the cohesive-app
+  work below), so a slip shows on the board next to its target, marked as a forecast.
 - **Round the board into a cohesive app.** It is one page today. Candidate surfaces: a project
   overview (health, slip forecast, at-risk), a diff and review page that brings Phase 1's diff and
   review queue into the UI rather than only the CLI, a per-person load page, and a real settings area.

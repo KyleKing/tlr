@@ -7,6 +7,8 @@
 //   capacity --project <file>                                 per-person load vs capacity per cycle
 //   timeline --project <file>                                 dependency waves and ordering risks
 //   diff   --a <file> --b <file> | --from <id> --to <id>      plan-level change between two snapshots
+//   report --a <file> --b <file> | --from <id> --to <id>      weekly-update narrative from a diff
+//   forecast --project <file>                                 realistic landing date per milestone
 //   review --a <file> --b <file> | --db <path>                what changed worth a look since last review
 //   plan   --project <file> --text "<guidance>"              parse guidance to ops and preview the diff
 //   snapshot --project <file> [--label <l>] [--db <path>]     capture a snapshot into the local store
@@ -19,6 +21,8 @@ import { scanIssues, scanText } from "@/commands/scan.ts"
 import { projectCapacity } from "@/commands/capacity.ts"
 import { projectTimeline } from "@/commands/timeline.ts"
 import { diffSnapshots } from "@/diff.ts"
+import { renderReport, weeklyReport } from "@/report.ts"
+import { milestoneForecast } from "@/forecast.ts"
 import { reviewSince } from "@/review.ts"
 import { openStore } from "@/snapshot.ts"
 import { planFromText } from "@/plan.ts"
@@ -85,6 +89,13 @@ async function run(cmd: string | undefined, f: Flags): Promise<void> {
       const { before, after } = await twoSnapshots(f)
       return out(diffSnapshots(before, after))
     }
+    case "report": {
+      const { before, after } = await twoSnapshots(f)
+      const report = weeklyReport(diffSnapshots(before, after))
+      return out(f.json ? report : renderReport(report))
+    }
+    case "forecast":
+      return out(milestoneForecast(await loadData(str(f, "project") ?? "data-sample.json")))
     case "review": {
       const { before, after, window } = await twoSnapshots(f, true)
       const review = reviewSince(before, after)
@@ -172,6 +183,8 @@ function usage(): void {
       "  capacity  --project <file>",
       "  timeline  --project <file>",
       "  diff      --a <file> --b <file> | --from <id> --to <id>",
+      "  report    --a <file> --b <file> | --from <id> --to <id> [--json]",
+      "  forecast  --project <file>",
       "  review    --a <file> --b <file> | --db <path> [--no-advance]",
       "  plan      --project <file> --text <guidance>",
       "  snapshot  --project <file> [--label <l>] [--db <path>]",
