@@ -223,6 +223,12 @@ a {
   padding: 16px;
   max-width: 760px;
 }
+/* Settings: a two-pane layout (nav + form fields) reads better filling most of the page than boxed to
+   the same 760px a plain list (Changes/Review) uses — it was a fixed-size popup dialog before Settings
+   became its own routed page, and kept that width even after moving. */
+.page-body.wide {
+  max-width: 1100px;
+}
 .page-body .empty {
   color: var(--subtext0);
 }
@@ -1202,7 +1208,7 @@ td.past {
 .cfg-layout {
   display: flex;
   min-height: 320px;
-  max-width: 760px;
+  width: 100%;
   border: 1px solid var(--surface0);
   border-radius: var(--radius);
   background: var(--mantle);
@@ -1313,6 +1319,7 @@ td.past {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  max-width: 420px;
 }
 .cfg-fields label {
   display: flex;
