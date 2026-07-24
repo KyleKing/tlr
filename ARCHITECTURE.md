@@ -56,9 +56,8 @@ web/data-sample.json    synthetic fixture so the public demo runs
 tests/planning_test.ts  Deno tests for the pure logic
 ```
 
-The prior Python implementation (`src/tlr/`) is gone. `capacity`, `roster`, and `gcal:freebusy` cover
-what it did for capacity, roster, and out-days. Fetching a project's issues and building the
-`data.issues` block that `web/app.js` reads is not yet ported: `web/data/cpu.json` is still hand- or
-script-maintained per project, not refreshed from a live Linear query. That gap is the "project
-switcher" and Ingest-domain work in [NEXT_STEPS.md](NEXT_STEPS.md) and
+The prior Python implementation (`src/tlr/`) is gone. `capacity`, `roster`, `gcal:freebusy`, and
+`issues` cover what it did for capacity, roster, out-days, and issue ingest. What's still missing is
+a way to list the Linear projects a user belongs to and switch between per-project data files; see the
+"project switcher" item in [NEXT_STEPS.md](NEXT_STEPS.md) and
 [ADR 0007](adr/0007-productization-and-domains.md).

@@ -46,7 +46,8 @@ LINEAR_API_KEY=$(op read "op://<vault>/<item>/<field>") deno task roster --dry-r
 A personal key inherits your own access, enough to read issues and resolve the roster. The auth header
 is the raw key (`Authorization: <key>`), not a Bearer token, which is a Linear quirk.
 
-Verify: `deno task roster --dry-run --force` prints each assignee resolved to an email.
+Verify: `deno task roster --dry-run --force` prints each assignee resolved to an email, and
+`deno task issues "<project name>" --dry-run` prints the project's issue count.
 
 ## Incident.io
 
