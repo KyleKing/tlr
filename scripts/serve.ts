@@ -18,6 +18,8 @@ import { openStore } from "@/snapshot.ts"
 import { diffSnapshots } from "@/diff.ts"
 import { weeklyReport } from "@/report.ts"
 import { reviewSince } from "@/review.ts"
+import { applyOps, type Op } from "@/ops.ts"
+import { applyIssueEdits, isWritableOp } from "@/linear_write.ts"
 import type { Snapshot } from "@/seed.ts"
 
 const config = getEnvConfig()
@@ -205,6 +207,50 @@ app.post("/api/snapshot", async (c) => {
     return c.json({ ok: true, ...capture })
   } catch (err) {
     return handleApiError(err, c, { message: "Failed to capture snapshot", context: { dataFile } })
+  }
+})
+
+// Apply reviewed fixes to a ticket. This is the one write path to Linear, and only from the UI. Body
+// is { dataFile, ops, confirm? }. Without confirm it is a dry run: ops are validated in memory and the
+// resulting change previewed, nothing leaves the process. With confirm it writes each op to the mode's
+// workspace (demo or live), then mirrors the edits that succeeded into the local data file so the board
+// matches Linear. Ops outside the v1 writable set (title, description, estimate, priority) are refused
+// rather than applied locally, so the file never drifts from Linear.
+app.post("/api/edit", async (c) => {
+  const body = await c.req.json().catch(() => null)
+  const dataFile = safeDataFile(body?.dataFile)
+  if (!dataFile || !Array.isArray(body?.ops)) return c.json({ error: "expected { dataFile: string, ops: [] }" }, 400)
+
+  const ops = body.ops as Op[]
+  const confirm = body?.confirm === true
+  const path = new URL(dataFile, DATA_ROOT)
+
+  try {
+    const snapshot = await Deno.readTextFile(path).then(JSON.parse) as Snapshot
+    if (!snapshot?.project?.name || !Array.isArray(snapshot.issues)) {
+      return c.json({ error: "data file is not a snapshot" }, 400)
+    }
+
+    const writable = ops.filter(isWritableOp)
+    const unsupported = ops.filter((op) => !isWritableOp(op)).map((op) => ({ op, reason: "field not editable yet" }))
+    const { applied, skipped } = applyOps(snapshot, writable)
+    const preview = [...skipped, ...unsupported]
+
+    if (!confirm) {
+      return c.json({ mode: DEMO ? "demo" : "live", dryRun: true, willApply: applied, skipped: preview })
+    }
+
+    const key = await linearKey(KEY_ACCOUNT)
+    const results = await applyIssueEdits(key, applied, snapshot.issues)
+    const okIds = new Set(results.filter((r) => r.ok).map((r) => r.id))
+    const okOps = applied.filter((op) => okIds.has(op.id))
+    if (okOps.length) {
+      const updated = applyOps(snapshot, okOps).after
+      await Deno.writeTextFile(path, `${JSON.stringify(updated, null, 2)}\n`)
+    }
+    return c.json({ mode: DEMO ? "demo" : "live", dryRun: false, results, skipped: preview })
+  } catch (err) {
+    return handleApiError(err, c, { message: "Failed to apply edit", context: { dataFile } })
   }
 })
 

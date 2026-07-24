@@ -67,6 +67,7 @@ Deno.test("currentCycleNumber is null before any cycle starts", () => {
 Deno.test("transformIssue maps fields and splits relations into blocks/blockedBy", () => {
   const milestoneKeyById = new Map([["mile-1", "M1"]])
   const raw = {
+    id: "uuid-eng-1",
     identifier: "ENG-1",
     title: "Fix the thing",
     url: "https://linear.app/team/issue/ENG-1",
@@ -88,6 +89,7 @@ Deno.test("transformIssue maps fields and splits relations into blocks/blockedBy
   }
   assertEquals(transformIssue(raw, milestoneKeyById), {
     id: "ENG-1",
+    linearId: "uuid-eng-1",
     title: "Fix the thing",
     url: "https://linear.app/team/issue/ENG-1",
     description: "some description",
@@ -108,6 +110,7 @@ Deno.test("transformIssue maps fields and splits relations into blocks/blockedBy
 
 Deno.test("transformIssue defaults missing optionals to null/empty", () => {
   const raw = {
+    id: "uuid-eng-9",
     identifier: "ENG-9",
     title: "No frills",
     url: "https://linear.app/team/issue/ENG-9",
@@ -124,6 +127,7 @@ Deno.test("transformIssue defaults missing optionals to null/empty", () => {
   }
   assertEquals(transformIssue(raw, new Map()), {
     id: "ENG-9",
+    linearId: "uuid-eng-9",
     title: "No frills",
     url: "https://linear.app/team/issue/ENG-9",
     description: "",

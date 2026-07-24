@@ -14,6 +14,7 @@ export type Op =
   | { kind: "set_milestone"; id: string; milestone: string | null }
   | { kind: "set_cycle"; id: string; cycle: number | null }
   | { kind: "rename"; id: string; title: string }
+  | { kind: "set_description"; id: string; description: string }
   | { kind: "add_relation"; id: string; relation: RelationKind; target: string }
   | { kind: "remove_relation"; id: string; relation: RelationKind; target: string }
 
@@ -98,6 +99,9 @@ export function validateOp(op: Op, snapshot: Snapshot): ValidationResult {
       if (op.title.trim().length === 0) return { ok: false, reason: "title cannot be empty" }
       return { ok: true }
     }
+    case "set_description": {
+      return { ok: true }
+    }
     case "add_relation":
     case "remove_relation": {
       if (op.target === op.id) return { ok: false, reason: "relation cannot point at itself" }
@@ -161,6 +165,9 @@ function mutate(op: Op, snapshot: Snapshot) {
       return
     case "rename":
       issue.title = op.title
+      return
+    case "set_description":
+      issue.description = op.description
       return
     case "add_relation":
       applyRelation(issue, findIssue(snapshot, op.target)!, op.relation, true)

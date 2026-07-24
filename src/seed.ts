@@ -10,6 +10,9 @@
 
 export type Issue = {
   id: string
+  // Linear's internal UUID, captured only on a real ingest. Absent in offline seed data. A write
+  // needs it because issueUpdate keys on the UUID, not the human identifier held in `id`.
+  linearId?: string
   title: string
   url: string
   estimate: number

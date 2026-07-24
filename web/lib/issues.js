@@ -48,6 +48,7 @@ export function transformIssue(raw, milestoneKeyById) {
   }
   return {
     id: raw.identifier,
+    linearId: raw.id,
     title: raw.title,
     url: raw.url,
     description: raw.description ?? "",

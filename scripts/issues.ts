@@ -47,6 +47,7 @@ const ISSUES_QUERY = `
     issues(filter: { project: { id: { eq: $projectId } } }, first: 100, after: $after) {
       pageInfo { hasNextPage endCursor }
       nodes {
+        id
         identifier
         title
         url
@@ -80,6 +81,7 @@ type ProjectNode = {
 type ProjectsResponse = { projects: { nodes: ProjectNode[] } }
 
 type IssueNode = {
+  id: string
   identifier: string
   title: string
   url: string
