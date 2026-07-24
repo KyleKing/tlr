@@ -112,7 +112,7 @@ function parseArgs(argv: string[]) {
   return { ...(args as { data: string; dryRun?: boolean }), project: positional[0] }
 }
 
-async function linearKey(): Promise<string> {
+export async function linearKey(): Promise<string> {
   const env = Deno.env.get("LINEAR_API_KEY")
   if (env) return env.trim()
   const cmd = new Deno.Command("security", {
@@ -168,12 +168,12 @@ async function fetchAllIssues(key: string, projectId: string): Promise<IssueNode
   return issues
 }
 
-async function main() {
-  const args = parseArgs(Deno.args)
-  if (!args.project) throw new Error("usage: deno task issues <project name or slug> [--data path] [--dry-run]")
-
-  const key = await linearKey()
-  const project = await findProject(key, args.project)
+// Fetches projectQuery's issues/cycles/milestones from Linear, merges them into existingData, resolves
+// the roster, and upserts the projects.json manifest entry for dataFile (its basename). Returns the
+// merged data (not yet written) and a human-readable log. Used by both the CLI (main, below) and the
+// config panel's /api/refresh endpoint (scripts/serve.ts).
+export async function ingestProject(key: string, projectQuery: string, existingData: unknown, dataFile: string) {
+  const project = await findProject(key, projectQuery)
   const rawIssues = await fetchAllIssues(key, project.id)
 
   const milestones = buildMilestones(project.projectMilestones.nodes)
@@ -190,32 +190,43 @@ async function main() {
     asOf,
   }
 
-  console.log(`issues: ${project.name} — ${fresh.issues.length} issues, ${milestones.length} milestones`)
+  const log = [`issues: ${project.name} — ${fresh.issues.length} issues, ${milestones.length} milestones`]
+  const merged = mergeIngest(existingData ?? {}, fresh)
+
+  const roster = await resolveRoster(key, merged)
+  log.push(`roster: ${roster.total} assignees, ${roster.resolved.length} resolved, ${roster.missing.length} unresolved`)
+  for (const r of roster.resolved) log.push(`  ${r}`)
+  if (roster.missing.length) log.push(`  unresolved (left blank): ${roster.missing.join(", ")}`)
+
+  const manifest = await Deno.readTextFile(MANIFEST_PATH).then(JSON.parse).catch(() => [])
+  const updatedManifest = upsertProjectManifest(manifest, { slug: project.slugId, name: project.name, dataFile })
+  await Deno.writeTextFile(MANIFEST_PATH, JSON.stringify(updatedManifest, null, 2) + "\n")
+  log.push(`wrote ${MANIFEST_PATH}`)
+
+  return { data: merged, project, log }
+}
+
+async function main() {
+  const args = parseArgs(Deno.args)
+  if (!args.project) throw new Error("usage: deno task issues <project name or slug> [--data path] [--dry-run]")
+
+  const key = await linearKey()
 
   if (args.dryRun) {
-    console.log("--dry-run: would write:")
-    console.log(JSON.stringify(fresh, null, 2))
+    const project = await findProject(key, args.project)
+    const rawIssues = await fetchAllIssues(key, project.id)
+    const milestones = buildMilestones(project.projectMilestones.nodes)
+    console.log(`issues: ${project.name} — ${rawIssues.length} issues, ${milestones.length} milestones`)
+    console.log("--dry-run: not writing")
     return
   }
 
   const existing = await Deno.readTextFile(args.data).then(JSON.parse).catch(() => ({}))
-  const merged = mergeIngest(existing, fresh)
+  const { data, log } = await ingestProject(key, args.project, existing, args.data.split("/").pop()!)
+  for (const line of log) console.log(line)
 
-  const roster = await resolveRoster(key, merged)
-  console.log(
-    `roster: ${roster.total} assignees, ${roster.resolved.length} resolved, ${roster.missing.length} unresolved`,
-  )
-  for (const r of roster.resolved) console.log(`  ${r}`)
-  if (roster.missing.length) console.log(`  unresolved (left blank): ${roster.missing.join(", ")}`)
-
-  await Deno.writeTextFile(args.data, JSON.stringify(merged, null, 2) + "\n")
+  await Deno.writeTextFile(args.data, JSON.stringify(data, null, 2) + "\n")
   console.log(`wrote ${args.data}`)
-
-  const manifest = await Deno.readTextFile(MANIFEST_PATH).then(JSON.parse).catch(() => [])
-  const dataFile = args.data.split("/").pop()!
-  const updated = upsertProjectManifest(manifest, { slug: project.slugId, name: project.name, dataFile })
-  await Deno.writeTextFile(MANIFEST_PATH, JSON.stringify(updated, null, 2) + "\n")
-  console.log(`wrote ${MANIFEST_PATH}`)
 }
 
 if (import.meta.main) {

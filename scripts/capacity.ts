@@ -113,66 +113,95 @@ function windowFor(cycles: { start: string; end: string }[]) {
   return { winStart: starts[0], winEnd: ends[ends.length - 1] }
 }
 
-async function main() {
-  const args = parseArgs(Deno.args)
-  const data = JSON.parse(await Deno.readTextFile(args.data))
-  const cycles = data.cycles as { n: number; start: string; end: string }[]
+export type CapacityData = {
+  cycles: { n: number; start: string; end: string }[]
+  currentCycle?: number | null
+  issues?: unknown[]
+  capacity?: {
+    defaultVelocity?: number
+    config?: { workdaysPerCycle?: number; oncallPenalty?: number }
+    roster?: Record<string, { email?: string }>
+    people?: Record<string, unknown>
+  }
+}
+
+export type RefreshCapacityOpts = {
+  source?: string
+  calendarFile?: string
+  reauth?: boolean
+}
+
+// Refreshes data.capacity in place from the requested source(s) ("all" by default) and returns a log
+// of what changed. Used by both the CLI (main, below) and the config panel's /api/refresh endpoint
+// (scripts/serve.ts).
+export async function refreshCapacity(data: CapacityData, opts: RefreshCapacityOpts = {}) {
+  const source = opts.source ?? "all"
+  const cycles = data.cycles
   const roster = data.capacity?.roster ?? {}
   const workdays = data.capacity?.config?.workdaysPerCycle ?? 5
   const { winStart, winEnd } = windowFor(cycles)
   let capacity = data.capacity ?? { defaultVelocity: 20, people: {} }
-  const wantIncident = args.source === "all" || args.source === "incident"
-  const wantGcal = args.source === "all" || args.source === "gcal"
-  const wantHistory = args.source === "all" || args.source === "history"
+  const wantIncident = source === "all" || source === "incident"
+  const wantGcal = source === "all" || source === "gcal"
+  const wantHistory = source === "all" || source === "history"
+  const log: string[] = []
 
   if (wantIncident) {
     const token = await incidentToken()
     const entries = await fetchOncallEntries(token, winStart, winEnd)
     const oncall = oncallByCycle(entries, cycles, roster)
     capacity = mergeCapacity(capacity, oncall, "incident.io")
-    console.log(`incident.io: ${entries.length} shifts → on-call for ${Object.keys(oncall).join(", ") || "nobody"}`)
+    log.push(`incident.io: ${entries.length} shifts → on-call for ${Object.keys(oncall).join(", ") || "nobody"}`)
   }
 
   if (wantGcal) {
-    const file = args["calendar-file"]
+    const file = opts.calendarFile
     if (file) {
       const events = JSON.parse(await Deno.readTextFile(file))
       const outDays = outDaysByCycle(events, cycles, roster, workdays)
       capacity = mergeCapacity(capacity, outDays, "gcal")
-      console.log(`gcal: ${events.length} events → out-days for ${Object.keys(outDays).join(", ") || "nobody"}`)
+      log.push(`gcal: ${events.length} events → out-days for ${Object.keys(outDays).join(", ") || "nobody"}`)
     } else {
       const rosterEntries = Object.values(roster) as { email?: string }[]
       const emails = [...new Set(rosterEntries.map((p) => p.email).filter(Boolean))] as string[]
       if (!emails.length) {
-        console.log("gcal: no roster emails to query; skipping out-of-office refresh")
+        log.push("gcal: no roster emails to query; skipping out-of-office refresh")
       } else {
         const client = await loadClient(CLIENT_PATH)
-        const token = await tokenFor(client, args.reauth)
+        const token = await tokenFor(client, opts.reauth)
         const calendars = await fetchFreeBusy(token, emails, `${winStart}T00:00:00Z`, `${winEnd}T00:00:00Z`)
         const outDays = outDaysFromFreeBusy(calendars, cycles, roster, workdays)
         capacity = mergeCapacity(capacity, outDays, "gcal")
-        console.log(
-          `gcal: free/busy for ${emails.length} — out-days for ${Object.keys(outDays).join(", ") || "nobody"}`,
-        )
+        log.push(`gcal: free/busy for ${emails.length} — out-days for ${Object.keys(outDays).join(", ") || "nobody"}`)
       }
     }
   }
 
   if (wantHistory) {
-    const velocity = velocityByPerson(data.issues ?? [], cycles, data.currentCycle)
+    const velocity = velocityByPerson(data.issues ?? [], cycles, data.currentCycle ?? null)
     capacity = mergeVelocity(capacity, velocity)
-    console.log(
-      `history: past-cycle throughput → velocity for ${Object.keys(velocity).join(", ") || "nobody"}`,
-    )
+    log.push(`history: past-cycle throughput → velocity for ${Object.keys(velocity).join(", ") || "nobody"}`)
   }
 
   data.capacity = capacity
-  const out = JSON.stringify(data, null, 2) + "\n"
+  return log
+}
+
+async function main() {
+  const args = parseArgs(Deno.args)
+  const data = JSON.parse(await Deno.readTextFile(args.data))
+  const log = await refreshCapacity(data, {
+    source: args.source,
+    calendarFile: args["calendar-file"],
+    reauth: args.reauth,
+  })
+  for (const line of log) console.log(line)
+
   if (args.dryRun) {
     console.log("--dry-run: capacity block that would be written:")
-    console.log(JSON.stringify(capacity, null, 2))
+    console.log(JSON.stringify(data.capacity, null, 2))
   } else {
-    await Deno.writeTextFile(args.data, out)
+    await Deno.writeTextFile(args.data, JSON.stringify(data, null, 2) + "\n")
     console.log(`wrote ${args.data}`)
   }
 }
