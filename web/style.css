@@ -834,9 +834,11 @@ td.past {
 }
 .cf.oncall {
   color: var(--mauve);
+  cursor: pointer;
 }
 .cf.out {
   color: var(--blue);
+  cursor: pointer;
 }
 .cf.over {
   color: var(--red);
@@ -1126,6 +1128,44 @@ td.past {
 #tip.tip-editing {
   width: 340px;
 }
+.ov-popup {
+  position: fixed;
+  z-index: 21;
+  background: var(--mantle);
+  border: 1px solid var(--surface1);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  width: 220px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .22);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ov-popup h4 {
+  margin: 0;
+  font-size: 12.5px;
+}
+.ov-popup label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ov-popup input[type="number"],
+.ov-popup input[type="text"] {
+  width: 100%;
+  box-sizing: border-box;
+  font: 12.5px var(--font);
+  color: var(--text);
+  background: var(--base);
+  border: 1px solid var(--surface1);
+  border-radius: var(--radius);
+  padding: 4px 6px;
+}
+.ov-popup-actions {
+  display: flex;
+  gap: 6px;
+}
 .tip-h {
   display: flex;
   align-items: baseline;
@@ -1370,56 +1410,6 @@ td.past {
   color: var(--subtext0);
   font-size: 12px;
 }
-.cfg-overrides {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  max-height: 320px;
-  overflow: auto;
-}
-.cfg-override-person {
-  border: 1px solid var(--surface0);
-  border-radius: var(--radius);
-  padding: 8px 10px;
-}
-.cfg-override-person > .name {
-  font-weight: 600;
-  font-size: 12.5px;
-  margin-bottom: 6px;
-}
-.cfg-override-cycle {
-  display: grid;
-  grid-template-columns: 44px 1fr 1fr 1fr auto;
-  gap: 6px;
-  align-items: center;
-  font-size: 11.5px;
-  padding: 3px 0;
-}
-.cfg-override-cycle .n {
-  color: var(--subtext0);
-  font-variant-numeric: tabular-nums;
-}
-.cfg-override-cycle input[type="number"],
-.cfg-override-cycle input[type="text"] {
-  width: 100%;
-  background: var(--base);
-  border: 1px solid var(--surface1);
-  color: var(--text);
-  border-radius: var(--radius);
-  padding: 3px 6px;
-  font: 11.5px var(--font);
-}
-.cfg-override-cycle label {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  white-space: nowrap;
-}
-.cfg-src {
-  color: var(--subtext0);
-  font-size: 10px;
-}
-
 /* Desktop-first. tlr is a planning tool used at a desk, so the board stays a wide table that scrolls
    horizontally inside .wrap. Below ~900px the chrome around it (header, controls, filters, legend)
    reflows so it stays usable on a narrow window without a dedicated mobile layout. */

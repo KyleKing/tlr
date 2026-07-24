@@ -59,6 +59,17 @@ function safeDataFile(name: unknown): string | null {
   return name
 }
 
+// Writes JSON to `path` atomically (write a sibling temp file, then rename over the target) so a
+// concurrent reader — the board's own polling, another write in flight, a snapshot capture — never
+// observes a half-written file. A plain writeTextFile can otherwise be read mid-write and throw
+// "Unexpected end of JSON input", which is a real risk here: three different POST handlers write the
+// same project data file, and nothing serializes them against each other or against a GET.
+async function writeJsonAtomic(path: URL, data: unknown): Promise<void> {
+  const tmp = new URL(`${path.href}.${crypto.randomUUID()}.tmp`)
+  await Deno.writeTextFile(tmp, `${JSON.stringify(data, null, 2)}\n`)
+  await Deno.rename(tmp, path)
+}
+
 // The comparable shape of a snapshot: what a plan-level diff would notice. Used to skip a capture that
 // would be identical to the latest one already stored for the project.
 function snapshotSignature(s: Snapshot): string {
@@ -167,7 +178,7 @@ app.post("/api/config", async (c) => {
     const path = new URL(dataFile, DATA_ROOT)
     const data = await Deno.readTextFile(path).then(JSON.parse).catch(() => ({}))
     data.capacity = body.capacity
-    await Deno.writeTextFile(path, `${JSON.stringify(data, null, 2)}\n`)
+    await writeJsonAtomic(path, data)
     return c.json({ ok: true })
   } catch (err) {
     return handleApiError(err, c, { message: "Failed to save configuration", context: { dataFile } })
@@ -200,7 +211,7 @@ app.post("/api/refresh", async (c) => {
 
     log.push(...(await refreshCapacity(data)))
 
-    await Deno.writeTextFile(path, `${JSON.stringify(data, null, 2)}\n`)
+    await writeJsonAtomic(path, data)
 
     if (data.project?.name && Array.isArray((data as { issues?: unknown }).issues)) {
       const capture = captureSnapshot(data as unknown as Snapshot, "refresh")
@@ -266,7 +277,7 @@ app.post("/api/edit", async (c) => {
     const okOps = applied.filter((op) => okIds.has(op.id))
     if (okOps.length) {
       const updated = applyOps(snapshot, okOps).after
-      await Deno.writeTextFile(path, `${JSON.stringify(updated, null, 2)}\n`)
+      await writeJsonAtomic(path, updated)
     }
     return c.json({ mode: DEMO ? "demo" : "live", dryRun: false, results, skipped: preview })
   } catch (err) {

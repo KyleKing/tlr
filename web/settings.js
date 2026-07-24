@@ -1,12 +1,14 @@
-// Settings page: appearance, capacity, roster, calendar overrides, and integrations. This is the config
-// that used to open as a dialog on the board, moved to its own routed page. Appearance writes the theme
-// to localStorage so every page picks it up; the rest saves the capacity block back to the project's
-// data file (POST /api/config) or re-runs the Linear/Incident.io/Calendar fetches (POST /api/refresh),
-// the same handlers the board's refresh used.
+// Settings page: appearance, capacity, roster, and integrations. This is the config that used to open
+// as a dialog on the board, moved to its own routed page. Appearance writes the theme to localStorage
+// so every page picks it up; the rest saves the capacity block back to the project's data file (POST
+// /api/config) or re-runs the Linear/Incident.io/Calendar fetches (POST /api/refresh), the same
+// handlers the board's refresh used. On-call/out-days overrides are edited on the Board itself now
+// (click a 📟/🧳 badge, or right-click a cycle cell), not here — that's where the data already shows,
+// so a separate per-person/per-cycle grid of inputs for the same thing was one editor too many.
 
 import { ACCENTS, FLAVORS, themeVars } from "./lib/theme.js"
 import { applyTheme, loadTheme } from "./lib/appearance.js"
-import { setPersonCycle, updateCapacityConfig, updateRosterEmail } from "./lib/config.js"
+import { updateCapacityConfig, updateRosterEmail } from "./lib/config.js"
 import { resolveProject } from "./lib/page.js"
 import { showError } from "./lib/errorBanner.js"
 
@@ -19,12 +21,11 @@ const workdaysInput = document.getElementById("cfg-workdays")
 const oncallPenaltyInput = document.getElementById("cfg-oncall-penalty")
 const defaultVelocityInput = document.getElementById("cfg-default-velocity")
 const rosterEl = document.getElementById("cfg-roster")
-const overridesEl = document.getElementById("cfg-overrides")
 const cfgStatus = document.getElementById("cfg-status")
 const cfgNav = document.getElementById("cfg-nav")
 const cfgRefreshLog = document.getElementById("cfg-refresh-log")
 
-let data = { cycles: [], capacity: {} }
+let data = { capacity: {} }
 
 function paintTheme() {
   applyTheme(theme)
@@ -62,28 +63,6 @@ cfgNav.addEventListener("click", (e) => {
   for (const pane of document.querySelectorAll(".cfg-pane")) pane.hidden = pane.dataset.pane !== btn.dataset.pane
 })
 
-function renderOverridesForm() {
-  const cap = data.capacity ?? {}
-  const names = new Set([...Object.keys(cap.roster ?? {}), ...Object.keys(cap.people ?? {})])
-  const cycles = data.cycles ?? []
-  overridesEl.innerHTML = [...names].sort().map((name) => {
-    const cycleRows = cycles.map((c) => {
-      const entry = cap.people?.[name]?.cycles?.[c.n] ?? {}
-      return `<div class="cfg-override-cycle" data-name="${name}" data-cycle="${c.n}">` +
-        `<span class="n">C${c.n}</span>` +
-        `<label><input type="checkbox" class="ov-oncall" ${entry.oncall ? "checked" : ""} /> on-call</label>` +
-        `<input type="number" class="ov-outdays" placeholder="out days" min="0" value="${entry.outDays ?? ""}" />` +
-        `<input type="text" class="ov-reason" placeholder="reason" value="${entry.reason ?? ""}" />` +
-        `<label><input type="checkbox" class="ov-locked" ${entry.locked ? "checked" : ""} /> locked` +
-        `${
-          entry.oncallSrc || entry.outSrc ? ` <span class="cfg-src">(${entry.oncallSrc ?? entry.outSrc})</span>` : ""
-        }</label>` +
-        `</div>`
-    }).join("")
-    return `<div class="cfg-override-person"><div class="name">${name}</div>${cycleRows}</div>`
-  }).join("") || `<p class="cfg-hint">No roster entries yet — run a refresh first.</p>`
-}
-
 function renderConfigForm() {
   const cap = data.capacity ?? {}
   workdaysInput.value = cap.config?.workdaysPerCycle ?? 5
@@ -93,7 +72,6 @@ function renderConfigForm() {
     `<div class="cfg-roster-row"><span class="name">${name}</span>` +
     `<input type="email" data-name="${name}" value="${info.email ?? ""}" /></div>`
   ).join("")
-  renderOverridesForm()
   cfgStatus.textContent = ""
   cfgRefreshLog.hidden = true
 }
@@ -106,16 +84,6 @@ document.getElementById("cfg-save").addEventListener("click", async () => {
   for (const input of rosterEl.querySelectorAll("input")) {
     capacity = updateRosterEmail(capacity, input.dataset.name, input.value.trim())
   }
-  for (const row of overridesEl.querySelectorAll(".cfg-override-cycle")) {
-    const outDays = row.querySelector(".ov-outdays").value
-    const reason = row.querySelector(".ov-reason").value.trim()
-    capacity = setPersonCycle(capacity, row.dataset.name, row.dataset.cycle, {
-      oncall: row.querySelector(".ov-oncall").checked ? true : null,
-      outDays: outDays === "" ? null : Number(outDays),
-      reason: reason === "" ? null : reason,
-      locked: row.querySelector(".ov-locked").checked ? true : null,
-    })
-  }
 
   cfgStatus.textContent = "Saving…"
   try {
@@ -126,7 +94,6 @@ document.getElementById("cfg-save").addEventListener("click", async () => {
     })
     if (!res.ok) throw new Error(`save failed: ${res.status}`)
     data.capacity = capacity
-    renderOverridesForm()
     cfgStatus.textContent = "Saved"
   } catch (err) {
     cfgStatus.textContent = err instanceof Error ? err.message : "Save failed"
@@ -165,7 +132,7 @@ document.getElementById("cfg-refresh").addEventListener("click", async (e) => {
 
 async function loadData() {
   const r = await fetch(`/data/${project.dataFile}`, { cache: "no-store" })
-  data = r.ok ? await r.json() : { cycles: [], capacity: {} }
+  data = r.ok ? await r.json() : { capacity: {} }
 }
 
 // Entry point last, so the top-level await runs after every const/function above is initialized.

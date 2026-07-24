@@ -129,6 +129,36 @@ test("a ticket can be edited in place from the board's hover card", async ({ pag
   await expect(page.locator("#tip form.editf")).toHaveCount(0)
 })
 
+test("on-call/out-days overrides are edited on the board, not in Settings", async ({ page }) => {
+  await page.goto("/?project=seeded-reliability")
+  await expect(page.locator("#grid tr").first()).toBeVisible()
+
+  // Grace Hopper is on-call in Cycle 48 in the seed data (see src/seed.ts) — click that badge to edit.
+  const badge = page.locator(".cf.oncall").first()
+  await expect(badge).toBeVisible()
+  await badge.click()
+
+  const popup = page.locator("#ov-popup")
+  await expect(popup).toBeVisible()
+  await expect(popup.locator("#ov-oncall")).toBeChecked()
+
+  // Turning it off and saving removes the badge.
+  await popup.locator("#ov-oncall").uncheck()
+  await popup.locator('[data-act="save"]').click()
+  await expect(popup).toBeHidden()
+  await expect(page.locator(".cf.oncall")).toHaveCount(0)
+
+  // Right-click an eligible (but now override-free) cycle cell adds a fresh entry.
+  const cell = page.locator("td[data-name]").first()
+  await cell.click({ button: "right" })
+  await expect(popup).toBeVisible()
+  await popup.locator("#ov-outdays").fill("3")
+  await popup.locator("#ov-reason").fill("Conference")
+  await popup.locator('[data-act="save"]').click()
+  await expect(popup).toBeHidden()
+  await expect(page.locator(".cf.out").filter({ hasText: "Conference" })).toBeVisible()
+})
+
 test("grid tickets are keyboard reachable and arrow-navigable", async ({ page }) => {
   await page.goto("/")
 

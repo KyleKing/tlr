@@ -15,6 +15,7 @@ import { applyTheme, loadTheme } from "./lib/appearance.js"
 import { resolveProjectSlug, wireProjectPicker } from "./lib/nav.js"
 import { showError } from "./lib/errorBanner.js"
 import { editFormHTML, wireForm } from "./lib/editForm.js"
+import { setPersonCycle } from "./lib/config.js"
 
 const STATUS = {
   started: { label: "In progress", color: "var(--st-started)", fg: "var(--st-started-fg)" },
@@ -502,6 +503,86 @@ document.addEventListener("keydown", (e) => {
     tipPinned = false
     hideTip()
   }
+  if (e.key === "Escape" && !ovPopup.hidden) closeOvPopup()
+})
+
+// On-call/out-days editing, right on the board: click an existing 📟/🧳 badge to edit that person's
+// cycle entry, or right-click anywhere else in an eligible cell to add one. Replaces the old Settings
+// "Calendar overrides" form/page (a big per-person/per-cycle grid of inputs for something a refresh
+// mostly fills in anyway) with editing exactly where the data already shows.
+const ovPopup = document.getElementById("ov-popup")
+
+function ovEntry(name, cycleN) {
+  return data.capacity?.people?.[name]?.cycles?.[cycleN] ?? {}
+}
+
+function openOvPopup(name, cycleN, x, y) {
+  const entry = ovEntry(name, cycleN)
+  ovPopup.innerHTML = `<h4>${escapeHtml(name)} · Cycle ${cycleN}</h4>` +
+    `<label><input type="checkbox" id="ov-oncall" ${entry.oncall ? "checked" : ""} /> On-call</label>` +
+    `<label>Out days<input type="number" id="ov-outdays" min="0" value="${entry.outDays ?? ""}" /></label>` +
+    `<label>Reason<input type="text" id="ov-reason" value="${escapeHtml(entry.reason ?? "")}" /></label>` +
+    `<label><input type="checkbox" id="ov-locked" ${
+      entry.locked ? "checked" : ""
+    } /> Locked (a refresh won't overwrite)</label>` +
+    `<div class="ov-popup-actions">` +
+    `<button type="button" class="chip mini" data-act="save">Save</button>` +
+    `<button type="button" class="chip mini ghost" data-act="delete">Clear</button>` +
+    `<button type="button" class="chip mini ghost" data-act="cancel">Cancel</button>` +
+    `</div>`
+  ovPopup.hidden = false
+  const w = ovPopup.offsetWidth, h = ovPopup.offsetHeight
+  ovPopup.style.left = `${Math.max(8, Math.min(x, innerWidth - w - 8))}px`
+  ovPopup.style.top = `${Math.max(8, Math.min(y, innerHeight - h - 8))}px`
+
+  const save = (patch) => saveOverride(name, cycleN, patch)
+  ovPopup.querySelector('[data-act="save"]').onclick = () =>
+    save({
+      oncall: ovPopup.querySelector("#ov-oncall").checked ? true : null,
+      outDays: ovPopup.querySelector("#ov-outdays").value || null,
+      reason: ovPopup.querySelector("#ov-reason").value.trim() || null,
+      locked: ovPopup.querySelector("#ov-locked").checked ? true : null,
+    })
+  ovPopup.querySelector('[data-act="delete"]').onclick = () =>
+    save({ oncall: null, outDays: null, reason: null, locked: null })
+  ovPopup.querySelector('[data-act="cancel"]').onclick = closeOvPopup
+}
+
+function closeOvPopup() {
+  ovPopup.hidden = true
+}
+
+async function saveOverride(name, cycleN, patch) {
+  const capacity = setPersonCycle(data.capacity, name, cycleN, patch)
+  try {
+    const res = await fetch("/api/config", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ dataFile: currentDataFile, capacity }),
+    })
+    if (!res.ok) throw new Error(`save failed: ${res.status} ${res.statusText}`)
+    data.capacity = capacity
+    closeOvPopup()
+    render()
+  } catch (err) {
+    showError(err, "Saving the on-call/out-days override failed")
+  }
+}
+
+document.addEventListener("click", (e) => {
+  const badge = e.target.closest(".cf.oncall, .cf.out")
+  if (badge) {
+    const td = badge.closest("td[data-name]")
+    if (td) openOvPopup(td.dataset.name, td.dataset.cycle, e.clientX, e.clientY)
+    return
+  }
+  if (!ovPopup.hidden && !ovPopup.contains(e.target)) closeOvPopup()
+})
+document.addEventListener("contextmenu", (e) => {
+  const td = e.target.closest("td[data-name]")
+  if (!td || e.target.closest(".cf.oncall, .cf.out")) return
+  e.preventDefault()
+  openOvPopup(td.dataset.name, td.dataset.cycle, e.clientX, e.clientY)
 })
 
 function passes(i) {
@@ -571,9 +652,14 @@ function cellHTML(person, b) {
     }"></div>`
   }
   const foot = capFootHTML(factors, capacity, load)
-  return `<td class="${cls}" data-load="${load}" data-cap="${capacity ?? ""}">${heat}<div class="cellbody">${foot}${
-    renderItems(items)
-  }</div></td>`
+  // Only a real (non-Unassigned) person's active-cycle cell has an on-call/out-days override to edit —
+  // matches cellCapacity's own eligibility so a data-name/data-cycle attribute never points at a cell
+  // that can't actually carry one.
+  const editable = person !== "Unassigned" && b.kind === "cycle" && b.key !== "C47"
+  const ovAttrs = editable ? ` data-name="${escapeHtml(person)}" data-cycle="${b.key.slice(1)}"` : ""
+  return `<td class="${cls}" data-load="${load}" data-cap="${
+    capacity ?? ""
+  }"${ovAttrs}>${heat}<div class="cellbody">${foot}${renderItems(items)}</div></td>`
 }
 
 function render() {
