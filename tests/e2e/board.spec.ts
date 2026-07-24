@@ -166,7 +166,11 @@ test("the board defaults to rows: buckets", async ({ page }) => {
 })
 
 test("the combined bucket filter is a searchable multi-select that narrows the board's rows", async ({ page }) => {
-  await page.goto("/")
+  // Pinned (unlike the other tests here): this one asserts on how many milestones carry a
+  // default-visible issue, which depends on the specific project's data, not just "some project
+  // loaded" — the default (first-in-manifest) project can be a real, locally-ingested one too, since
+  // the manifest lives in the same web/data/ a real `deno task issues` run also writes to.
+  await page.goto("/?project=seeded-reliability")
   await expect(page.locator("#grid tr").first()).toBeVisible()
 
   const rowCount = await page.locator(".rowhead.horizon").count()

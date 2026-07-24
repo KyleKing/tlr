@@ -534,9 +534,12 @@ function render() {
   syncUrl()
   const wrap = document.querySelector(".wrap")
   const sx = wrap ? wrap.scrollLeft : 0, sy = wrap ? wrap.scrollTop : 0
-  const visible = buckets.filter((b) => state.bucketKeys.has(b.key))
   const shown = data.issues.filter(passes)
   passesShown = new Set(shown)
+  // A bucket selected in the filter can still have zero issues once status/search/flag filters also
+  // apply — hide it from the grid too, the same way an assignee with nothing currently shown already
+  // drops out of `people` below, rather than leaving an empty column/row for whatever's selected.
+  const visible = buckets.filter((b) => state.bucketKeys.has(b.key) && shown.some((i) => i._bucket === b.key))
   const people = [...new Set(shown.map((i) => i.assignee))].sort((a, b) =>
     (a === "Unassigned") - (b === "Unassigned") || a.localeCompare(b)
   )
@@ -556,7 +559,7 @@ function render() {
 
   const grid = document.getElementById("grid")
   grid.className = state.transpose ? "transposed" : ""
-  grid.innerHTML = state.transpose ? buildTransposed(people) : buildBoard(people, visible)
+  grid.innerHTML = state.transpose ? buildTransposed(people, visible) : buildBoard(people, visible)
   wireNodes(grid)
   if (wrap) {
     wrap.scrollLeft = sx
@@ -583,14 +586,13 @@ function buildBoard(people, visible) {
   return `${h}</tbody>`
 }
 
-function buildTransposed(people) {
-  const visible = buckets.filter((b) => state.bucketKeys.has(b.key))
+function buildTransposed(people, visible) {
   let h = "<thead><tr class='col'><th>Bucket</th>"
   for (const person of people) h += `<th>${escapeHtml(person)}${personPts(person)}</th>`
   h += "</tr></thead><tbody>"
   for (const b of visible) {
     const kindTag = b.kind === "cycle" ? "now" : b.kind === "milestone" ? "horizon" : "backlog"
-    h += `<tr><th class="rowhead ${kindTag}" title="${escapeHtml(bucketDetail(b))}">` +
+    h += `<tr><th class="rowhead ${kindTag}" data-key="${b.key}" title="${escapeHtml(bucketDetail(b))}">` +
       `<span class="mlabel">${escapeHtml(b.label)}</span>` +
       `<span class="s">${bucketSub(b)}</span>${forecastBadge(b)}</th>`
     for (const person of people) h += cellHTML(person, b)
@@ -733,11 +735,11 @@ function forecastBadge(b) {
 function bucketTh(b) {
   const title = escapeHtml(bucketDetail(b))
   if (b.kind === "milestone") {
-    return `<th class="mile" title="${title}"><span class="mlabel">${escapeHtml(b.label)}</span>${
+    return `<th class="mile" data-key="${b.key}" title="${title}"><span class="mlabel">${escapeHtml(b.label)}</span>${
       forecastBadge(b)
     }</th>`
   }
-  return `<th title="${title}">${b.label}<span class="s">${bucketSub(b)}</span></th>`
+  return `<th data-key="${b.key}" title="${title}">${b.label}<span class="s">${bucketSub(b)}</span></th>`
 }
 
 function flagBadges(i) {
@@ -892,3 +894,12 @@ setInterval(async () => {
 
 updateSync()
 render()
+
+// Land on the current cycle instead of the leftmost/topmost bucket — with many past cycles that still
+// carry tickets (see buildBuckets), "today" can otherwise be scrolled well out of view on first load.
+// Only runs once: render() already preserves scroll position across re-renders on its own.
+if (data.currentCycle != null) {
+  const key = `C${data.currentCycle}`
+  const target = document.querySelector(`[data-key="${key}"]`)
+  target?.scrollIntoView({ block: "nearest", inline: "nearest" })
+}
