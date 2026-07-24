@@ -12,7 +12,7 @@ import {
 } from "./lib/planning.js"
 import { pickProject } from "./lib/issues.js"
 import { ACCENTS, defaultFlavor, FLAVORS, themeVars } from "./lib/theme.js"
-import { updateCapacityConfig, updateRosterEmail } from "./lib/config.js"
+import { setPersonCycle, updateCapacityConfig, updateRosterEmail } from "./lib/config.js"
 
 const STATUS = {
   started: { label: "In progress", color: "var(--st-started)" },
@@ -171,7 +171,39 @@ const workdaysInput = document.getElementById("cfg-workdays")
 const oncallPenaltyInput = document.getElementById("cfg-oncall-penalty")
 const defaultVelocityInput = document.getElementById("cfg-default-velocity")
 const rosterEl = document.getElementById("cfg-roster")
+const overridesEl = document.getElementById("cfg-overrides")
 const cfgStatus = document.getElementById("cfg-status")
+const cfgNav = document.getElementById("cfg-nav")
+const cfgRefreshLog = document.getElementById("cfg-refresh-log")
+
+cfgNav.addEventListener("click", (e) => {
+  const btn = e.target.closest(".cfg-nav-item")
+  if (!btn) return
+  for (const b of cfgNav.querySelectorAll(".cfg-nav-item")) b.setAttribute("aria-current", String(b === btn))
+  for (const pane of configPanel.querySelectorAll(".cfg-pane")) pane.hidden = pane.dataset.pane !== btn.dataset.pane
+})
+
+function renderOverridesForm() {
+  const cap = data.capacity ?? {}
+  const names = new Set([...Object.keys(cap.roster ?? {}), ...Object.keys(cap.people ?? {})])
+  const cycles = data.cycles ?? []
+  overridesEl.innerHTML = [...names].sort().map((name) => {
+    const cycleRows = cycles.map((c) => {
+      const entry = cap.people?.[name]?.cycles?.[c.n] ?? {}
+      return `<div class="cfg-override-cycle" data-name="${name}" data-cycle="${c.n}">` +
+        `<span class="n">C${c.n}</span>` +
+        `<label><input type="checkbox" class="ov-oncall" ${entry.oncall ? "checked" : ""} /> on-call</label>` +
+        `<input type="number" class="ov-outdays" placeholder="out days" min="0" value="${entry.outDays ?? ""}" />` +
+        `<input type="text" class="ov-reason" placeholder="reason" value="${entry.reason ?? ""}" />` +
+        `<label><input type="checkbox" class="ov-locked" ${entry.locked ? "checked" : ""} /> locked` +
+        `${
+          entry.oncallSrc || entry.outSrc ? ` <span class="cfg-src">(${entry.oncallSrc ?? entry.outSrc})</span>` : ""
+        }</label>` +
+        `</div>`
+    }).join("")
+    return `<div class="cfg-override-person"><div class="name">${name}</div>${cycleRows}</div>`
+  }).join("") || `<p class="cfg-hint">No roster entries yet — run a refresh first.</p>`
+}
 
 function renderConfigForm() {
   const cap = data.capacity ?? {}
@@ -182,7 +214,9 @@ function renderConfigForm() {
     `<div class="cfg-roster-row"><span class="name">${name}</span>` +
     `<input type="email" data-name="${name}" value="${info.email ?? ""}" /></div>`
   ).join("")
+  renderOverridesForm()
   cfgStatus.textContent = ""
+  cfgRefreshLog.hidden = true
 }
 
 document.getElementById("config-btn").addEventListener("click", () => {
@@ -199,6 +233,16 @@ document.getElementById("cfg-save").addEventListener("click", async () => {
   for (const input of rosterEl.querySelectorAll("input")) {
     capacity = updateRosterEmail(capacity, input.dataset.name, input.value.trim())
   }
+  for (const row of overridesEl.querySelectorAll(".cfg-override-cycle")) {
+    const outDays = row.querySelector(".ov-outdays").value
+    const reason = row.querySelector(".ov-reason").value.trim()
+    capacity = setPersonCycle(capacity, row.dataset.name, row.dataset.cycle, {
+      oncall: row.querySelector(".ov-oncall").checked ? true : null,
+      outDays: outDays === "" ? null : Number(outDays),
+      reason: reason === "" ? null : reason,
+      locked: row.querySelector(".ov-locked").checked ? true : null,
+    })
+  }
 
   cfgStatus.textContent = "Saving…"
   try {
@@ -209,9 +253,38 @@ document.getElementById("cfg-save").addEventListener("click", async () => {
     })
     if (!res.ok) throw new Error(`save failed: ${res.status}`)
     data.capacity = capacity
+    renderOverridesForm()
     cfgStatus.textContent = "Saved"
   } catch (err) {
     cfgStatus.textContent = err instanceof Error ? err.message : "Save failed"
+  }
+})
+
+document.getElementById("cfg-refresh").addEventListener("click", async (e) => {
+  const btn = e.currentTarget
+  btn.disabled = true
+  btn.textContent = "Refreshing…"
+  cfgRefreshLog.hidden = false
+  cfgRefreshLog.textContent = ""
+  try {
+    const res = await fetch("/api/refresh", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ dataFile: currentDataFile }),
+    })
+    const body = await res.json()
+    cfgRefreshLog.textContent = (body.log ?? []).join("\n") || "(no output)"
+    if (!res.ok || !body.ok) {
+      cfgRefreshLog.textContent += `\n\nerror: ${body.error ?? res.status}`
+    } else {
+      await refresh()
+      renderConfigForm()
+    }
+  } catch (err) {
+    cfgRefreshLog.textContent = err instanceof Error ? err.message : "Refresh failed"
+  } finally {
+    btn.disabled = false
+    btn.textContent = "Refresh all"
   }
 })
 
@@ -609,6 +682,7 @@ async function refresh() {
     data.asOf = fresh.asOf
     data.currentCycle = fresh.currentCycle
     data.project = fresh.project
+    data.capacity = fresh.capacity
     deriveBuckets()
     enrich()
     for (const k of buckets.map((b) => b.key)) if (!bucketChipEls.has(k)) state.bucketKeys.add(k)

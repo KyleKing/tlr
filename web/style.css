@@ -144,13 +144,23 @@ td.now { background: color-mix(in srgb, var(--accent) 8%, var(--mantle)); } td.p
 .tip-link { color: var(--subtext0); }
 
 /* configuration panel (theme, and later: capacity/roster editing) */
-#config-panel { border: none; border-radius: 10px; padding: 0; background: var(--mantle); color: var(--text); max-width: 420px; width: calc(100vw - 40px); }
-#config-panel::backdrop { background: rgba(0, 0, 0, .35); }
+#config-panel { border: 1.5px solid var(--surface1); border-radius: 10px; padding: 0; background: var(--mantle); color: var(--text); max-width: 480px; width: calc(100vw - 40px); box-shadow: 0 16px 40px rgba(0, 0, 0, .35); }
+#config-panel::backdrop { background: rgba(0, 0, 0, .15); backdrop-filter: blur(1px); }
 .cfg-head { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--surface0); }
 .cfg-head h2 { margin: 0; font-size: 14px; }
 .cfg-close { margin-left: auto; border: 1px solid var(--surface1); background: var(--base); color: var(--text); border-radius: var(--radius); padding: 3px 9px; font: 12px var(--font); cursor: pointer; }
-.cfg-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 16px; }
+.cfg-layout { display: flex; min-height: 320px; max-height: 60vh; }
+.cfg-nav { display: flex; flex-direction: column; gap: 2px; width: 150px; flex: none; padding: 10px; border-right: 1px solid var(--surface0); overflow: auto; }
+.cfg-nav-item { text-align: left; border: none; background: none; color: var(--subtext0); border-radius: var(--radius); padding: 6px 9px; font: 12.5px var(--font); cursor: pointer; }
+.cfg-nav-item:hover { background: var(--surface0); color: var(--text); }
+.cfg-nav-item[aria-current="true"] { background: var(--accent); color: var(--base); font-weight: 600; }
+.cfg-panes { flex: 1; padding: 14px 16px; overflow: auto; }
+.cfg-pane { display: flex; flex-direction: column; gap: 16px; }
 .cfg-section h3 { margin: 0 0 8px; font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--subtext0); }
+.cfg-hint { margin: 0 0 10px; font-size: 12px; color: var(--subtext0); line-height: 1.5; }
+.cfg-hint code { font: 11px var(--mono); background: var(--surface0); padding: 1px 4px; border-radius: 4px; }
+.cfg-refresh-log { margin-top: 10px; font: 11px var(--mono); background: var(--base); border: 1px solid var(--surface0); border-radius: var(--radius); padding: 8px; max-height: 160px; overflow: auto; white-space: pre-wrap; }
+.cfg-actions { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-top: 1px solid var(--surface0); }
 .cfg-row { display: flex; flex-wrap: wrap; gap: 6px; }
 .flavor-btn { border: 1px solid var(--surface1); background: var(--base); color: var(--text); border-radius: 999px; padding: 4px 12px; font: 12.5px var(--font); cursor: pointer; }
 .flavor-btn[aria-pressed="true"] { background: var(--accent); color: var(--base); border-color: var(--accent); font-weight: 600; }
@@ -163,5 +173,12 @@ td.now { background: color-mix(in srgb, var(--accent) 8%, var(--mantle)); } td.p
 .cfg-roster-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; }
 .cfg-roster-row .name { flex: 1 1 40%; color: var(--subtext0); }
 .cfg-roster-row input { flex: 1 1 60%; background: var(--base); border: 1px solid var(--surface1); color: var(--text); border-radius: var(--radius); padding: 4px 8px; font: 12.5px var(--font); }
-.cfg-actions { display: flex; align-items: center; gap: 10px; }
 .cfg-status { color: var(--subtext0); font-size: 12px; }
+.cfg-overrides { display: flex; flex-direction: column; gap: 10px; max-height: 320px; overflow: auto; }
+.cfg-override-person { border: 1px solid var(--surface0); border-radius: var(--radius); padding: 8px 10px; }
+.cfg-override-person > .name { font-weight: 600; font-size: 12.5px; margin-bottom: 6px; }
+.cfg-override-cycle { display: grid; grid-template-columns: 44px 1fr 1fr 1fr auto; gap: 6px; align-items: center; font-size: 11.5px; padding: 3px 0; }
+.cfg-override-cycle .n { color: var(--subtext0); font-variant-numeric: tabular-nums; }
+.cfg-override-cycle input[type="number"], .cfg-override-cycle input[type="text"] { width: 100%; background: var(--base); border: 1px solid var(--surface1); color: var(--text); border-radius: var(--radius); padding: 3px 6px; font: 11.5px var(--font); }
+.cfg-override-cycle label { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+.cfg-src { color: var(--subtext0); font-size: 10px; }

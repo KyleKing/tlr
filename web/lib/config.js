@@ -18,3 +18,23 @@ export function updateRosterEmail(capacity, name, email) {
     roster: { ...capacity.roster, [name]: { ...capacity.roster?.[name], email } },
   }
 }
+
+// Patch one person's one-cycle capacity entry (oncall, outDays, reason, locked, oncallSrc, outSrc).
+// A key set to "" or null/undefined is removed rather than stored, so clearing a field back to blank
+// (including a *Src marker) is how a value goes back to hand-typed/protected — the same "no marker
+// means hand-typed" rule mergeCapacity already applies on refresh (see web/lib/capacity.js).
+export function setPersonCycle(capacity, name, cycleNumber, patch) {
+  const people = { ...(capacity.people ?? {}) }
+  const person = { ...(people[name] ?? { cycles: {} }) }
+  const cycles = { ...(person.cycles ?? {}) }
+  const key = String(cycleNumber)
+  const entry = { ...(cycles[key] ?? {}) }
+  for (const [k, v] of Object.entries(patch)) {
+    if (v === "" || v == null) delete entry[k]
+    else entry[k] = v
+  }
+  cycles[key] = entry
+  person.cycles = cycles
+  people[name] = person
+  return { ...capacity, people }
+}

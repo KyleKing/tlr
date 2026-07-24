@@ -1,5 +1,13 @@
+// Dev server for the board, plus a small write API for the configuration panel: POST /api/config
+// saves hand-edited capacity/roster values, POST /api/refresh re-runs the same Linear/Incident.io/
+// Google Calendar fetches deno task issues and deno task capacity do from the CLI. That's why `deno
+// task dev` carries their permissions too (--allow-run=security,open, unrestricted --allow-net,
+// --allow-write scoped to ./web/data) rather than just --allow-read for static files.
+
 import { Hono } from "hono"
 import { serveStatic } from "hono/deno"
+import { ingestProject, linearKey } from "./issues.ts"
+import { type CapacityData, refreshCapacity } from "./capacity.ts"
 
 const DATA_ROOT = new URL("../web/data/", import.meta.url)
 
@@ -23,6 +31,39 @@ app.post("/api/config", async (c) => {
   data.capacity = body.capacity
   await Deno.writeTextFile(path, JSON.stringify(data, null, 2) + "\n")
   return c.json({ ok: true })
+})
+
+// "Refresh all" button: re-fetches issues/roster from Linear (deno task issues), then on-call/out-days/
+// velocity (deno task capacity), for the requesting project's data file. project defaults to the file's
+// existing data.project.name.
+app.post("/api/refresh", async (c) => {
+  const body = await c.req.json().catch(() => null)
+  const dataFile = safeDataFile(body?.dataFile)
+  if (!dataFile) return c.json({ error: "expected { dataFile: string }" }, 400)
+
+  type BoardData = CapacityData & { project?: { name?: string } }
+  const path = new URL(dataFile, DATA_ROOT)
+  let data: BoardData = await Deno.readTextFile(path).then(JSON.parse).catch(() => ({ cycles: [] }))
+  const log: string[] = []
+
+  try {
+    const projectQuery = typeof body?.project === "string" ? body.project : data.project?.name
+    if (projectQuery) {
+      const key = await linearKey()
+      const result = await ingestProject(key, projectQuery, data, dataFile)
+      data = result.data
+      log.push(...result.log)
+    } else {
+      log.push("issues: no project name to refresh — pass { project } or set data.project.name first")
+    }
+
+    log.push(...(await refreshCapacity(data)))
+
+    await Deno.writeTextFile(path, JSON.stringify(data, null, 2) + "\n")
+    return c.json({ ok: true, log })
+  } catch (err) {
+    return c.json({ ok: false, log, error: err instanceof Error ? err.message : String(err) }, 500)
+  }
 })
 
 app.use("*", serveStatic({ root: "./web" }))
