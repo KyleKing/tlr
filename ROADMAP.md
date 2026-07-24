@@ -85,6 +85,38 @@ Ordered by dependency and payoff; production deployment is last on purpose.
     `download-assets.sh`), only if the web app ever depends on something like HTMX instead of the
     hand-rolled `app.js` it uses today.
 
+### Added 2026-07-23
+
+- **Seed a free Linear workspace for testing.** A `deno task seed` that creates a throwaway free-tier
+  project with synthetic milestones, issues, cycles, and relations, so Phase 1 diff/review can run
+  end-to-end without touching real ticket data. Doubles as a richer public-demo fixture than the
+  hand-written `data-sample.json`. Unblocks Phase 1 testing, so it ranks high despite the late add.
+- **Weekly-update report generation** (the "report backward" job in ARCHITECTURE.md). Generate the
+  narrative (shipped / moved / at-risk) from a Phase 1 diff. SVG export stays Phase 3; the text
+  report can come as soon as `tlr diff` exists.
+- **Milestone slip forecast.** Realistic landing date vs. target, labeled as a forecast, computed
+  from remaining scope, capacity, and per-person velocity. Cheap on top of the existing capacity
+  engine.
+- **What-if planning.** Toggle a person's PTO or move scope and watch the forecast shift, in-tool.
+  Fits Phase 3's in-flow editing.
+- **Faster filter controls.** Changing the shown status, bucket, or flag set takes too many clicks
+  today (one per chip, with a hidden double-click-to-solo). Revisit the interaction: candidates are
+  select-all/clear-all per group, a shift-click range, keyboard access to the chips, and surfacing the
+  double-click-to-solo affordance so it is discoverable.
+- **A tlr MCP server (and matching CLI) for Claude Code.** Expose tlr's aggregated analysis that the
+  Linear MCP does not give you, so an agent making batch edits to Linear can query tlr first. Two
+  concrete tools to start: slop detection as a service (`scan_text` over provided ticket text, reusing
+  `slopScan`), and capacity plus dependency timeline per project (`project_capacity`, `project_timeline`)
+  so the agent can combine tlr's forecast with a user's stated preferences to schedule and assign each
+  ticket. The engine already computes all of this for the board (`web/lib/planning.js`, `deno task
+  capacity`), so this is a thin transport over existing pure functions, which keeps it aligned with the
+  spike-then-productionize rule (a read-only surface, no write path). The read-through analysis feeds
+  the reviewed batch-edit path in Phase 2, where the agent proposes ops and tlr validates them.
+
+Explicitly out of scope for now (Linear's own views cover them): a GitHub adapter or any third
+tracker (ADR 0006 stays the target, not a near-term build), cross-project load view, and
+stale-issue detection.
+
 ## Open questions
 
 - **Incident.io on-call has two live gaps.** The configured API key currently returns zero schedules
