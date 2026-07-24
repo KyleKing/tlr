@@ -97,12 +97,14 @@ category (two "started" states) needs the specific state chosen by name later.
 Called out separately because these wait on you or an external resource, not on more code. Backlog
 items depending on them are marked below.
 
-- **Secrets story (`SecretStore` port, ADR 0007).** `KeychainSecrets` vs `HostedSecrets` is designed,
-  not built. Every credential today is a keychain entry or a gitignored file. Needed before tlr runs
-  for anyone but the current local user, and before any deploy.
 - **Production deployment.** Plan written in [adr/0008](adr/0008-deployment.md): a separate systemd
-  unit on the yak-shears-managed VM, pulled in and started the same way, sharing the CPU. Blocked on
-  the secrets story (no macOS keychain on the Linux host).
+  unit on the yak-shears-managed VM, pulled in and started the same way, sharing the CPU. Secrets no
+  longer block it (`src/secrets.ts` reads env vars on Linux, the same seam the keychain uses locally).
+  Remaining prep: a production `serve` task, Google Calendar off the browser-OAuth flow, and the GitOps
+  `deno cache` step. Waits on you to do the VM setup.
+- **A managed secret store.** `src/secrets.ts` covers the API keys today (env var, else keychain). A
+  hosted, multi-user tlr would swap the env backend for Vault/Infisical/a cloud manager behind the same
+  `getSecret` call. Not needed while tlr holds only the owner's own credentials.
 
 ## Backlog
 
