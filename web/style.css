@@ -1123,6 +1123,9 @@ td.past {
   box-shadow: 0 8px 24px rgba(0,0,0,.22);
   display: none;
 }
+#tip.tip-editing {
+  width: 340px;
+}
 .tip-h {
   display: flex;
   align-items: baseline;

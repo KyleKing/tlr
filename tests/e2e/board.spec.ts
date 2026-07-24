@@ -94,6 +94,41 @@ test("Refresh re-ingests from Linear first, and a failure there shows up instead
   await expect(page.locator("#refresh")).toHaveText("Refresh")
 })
 
+test("a ticket can be edited in place from the board's hover card", async ({ page }) => {
+  await page.goto("/?project=seeded-reliability")
+  const ticket = page.locator("#grid [data-id]").first()
+  await expect(ticket).toBeVisible()
+  const id = await ticket.getAttribute("data-id")
+
+  await ticket.hover()
+  await page.click('#tip [data-act="edit"]')
+
+  const form = page.locator("#tip form.editf")
+  await expect(form).toBeVisible()
+  await expect(form).toHaveAttribute("data-id", id ?? "")
+  await expect(form.locator('input[name="title"]')).not.toHaveValue("")
+  for (const name of ["milestone", "status", "cycle", "assignee"]) {
+    await expect(form.locator(`select[name="${name}"]`)).toBeVisible()
+  }
+
+  // Preview is a dry run: it reports the change without writing.
+  await form.locator('input[name="title"]').fill("An edited title")
+  await form.locator('[data-act="preview"]').click()
+  await expect(form.locator(".editf-out")).toContainText("title →")
+
+  // Hovering a different ticket while editing doesn't clobber the open form (the tip is pinned) — fired
+  // directly rather than a real pointer hover, since the tip (now form-sized) may cover other tickets.
+  await page.locator("#grid [data-id]").nth(1).dispatchEvent("mouseenter")
+  await expect(page.locator("#tip form.editf")).toBeVisible()
+
+  // Cancel un-pins the tip: it hides, and a fresh hover works normally again.
+  await form.locator('[data-act="cancel"]').click()
+  await expect(page.locator("#tip")).toBeHidden()
+  await ticket.hover()
+  await expect(page.locator("#tip")).toBeVisible()
+  await expect(page.locator("#tip form.editf")).toHaveCount(0)
+})
+
 test("grid tickets are keyboard reachable and arrow-navigable", async ({ page }) => {
   await page.goto("/")
 

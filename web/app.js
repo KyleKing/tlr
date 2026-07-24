@@ -14,6 +14,7 @@ import {
 import { applyTheme, loadTheme } from "./lib/appearance.js"
 import { resolveProjectSlug, wireProjectPicker } from "./lib/nav.js"
 import { showError } from "./lib/errorBanner.js"
+import { editFormHTML, wireForm } from "./lib/editForm.js"
 
 const STATUS = {
   started: { label: "In progress", color: "var(--st-started)", fg: "var(--st-started-fg)" },
@@ -411,6 +412,13 @@ document.getElementById("status-none").onclick = () => bulk(() => (state.statuse
 const tip = document.getElementById("tip")
 let hoverIssue = null
 let hideTimer = null
+// While an edit form is open in the tip, it stops auto-hiding on mouseleave/blur (typing/selecting
+// naturally moves focus off the ticket and the mouse off the tip's original bounds) and hovering a
+// different ticket is ignored instead of clobbering the open form.
+let tipPinned = false
+let mode = { demo: false, workspace: "live" }
+fetch("/api/mode", { cache: "no-store" }).then((r) => r.ok && r.json()).then((m) => m && (mode = m))
+
 function relText(i) {
   const parts = []
   if (i.blockedBy.length) parts.push(`blocked by ${i.blockedBy.join(", ")}`)
@@ -419,6 +427,7 @@ function relText(i) {
   return parts.join(" · ")
 }
 function showTip(e, i) {
+  if (tipPinned) return
   const rel = relText(i)
   const mile = i.milestone || (i._bucket === "BACKLOG" ? "backlog" : i._bucket)
   tip.innerHTML = `<div class="tip-h"><b>${i.id}</b><span class="tip-pt">${i.estimate || "–"}pt</span></div>` +
@@ -437,6 +446,7 @@ function showTip(e, i) {
       ? `<div class="tip-f slop">⚠ ${i._slop.flags.join(", ")}</div>` +
         `<button class="tip-act" data-act="slop">${isDismissed(i) ? "Re-flag as slop" : "Mark not slop"}</button>`
       : "") +
+    `<button class="tip-act" data-act="edit">Edit</button>` +
     `<a class="tip-act tip-link" href="${i.url}" target="_blank">Open in Linear ↗</a>`
   const btn = tip.querySelector('[data-act="slop"]')
   if (btn) {
@@ -445,18 +455,54 @@ function showTip(e, i) {
       hideTip()
     }
   }
+  tip.querySelector('[data-act="edit"]').onclick = () => openTipEdit(i)
   tip.style.display = "block"
   const w = tip.offsetWidth || 300, h = tip.offsetHeight || 120
   tip.style.left = `${Math.max(8, Math.min(e.clientX + 14, innerWidth - w - 8))}px`
   tip.style.top = `${Math.max(8, Math.min(e.clientY + 16, innerHeight - h - 8))}px`
 }
+
+function openTipEdit(i) {
+  tipPinned = true
+  tip.classList.add("tip-editing")
+  tip.innerHTML = `<div class="tip-h"><b>${i.id}</b></div>` +
+    editFormHTML(i, { milestones: data.milestones, cycles: data.cycles, capacity: data.capacity }, mode)
+  // The form is much taller than a normal hover card, and showTip() only ever positioned for that
+  // smaller size — reclamp so Preview/Apply/Cancel can't land below the viewport.
+  const left = parseFloat(tip.style.left) || 8
+  const top = parseFloat(tip.style.top) || 8
+  const h = tip.offsetHeight
+  tip.style.left = `${Math.max(8, Math.min(left, innerWidth - tip.offsetWidth - 8))}px`
+  tip.style.top = `${Math.max(8, Math.min(top, innerHeight - h - 8))}px`
+  const form = tip.querySelector("form.editf")
+  wireForm(form, i, currentDataFile, mode, {
+    onApplied: async () => {
+      tipPinned = false
+      hideTip()
+      await reloadFromFile()
+    },
+    onCancel: () => {
+      tipPinned = false
+      hideTip()
+    },
+  })
+}
+
 function hideTip() {
+  if (tipPinned) return
   tip.style.display = "none"
+  tip.classList.remove("tip-editing")
   if (hoverIssue) hoverDeps(hoverIssue, false)
   hoverIssue = null
 }
 tip.onmouseenter = () => clearTimeout(hideTimer)
 tip.onmouseleave = () => hideTip()
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && tipPinned) {
+    tipPinned = false
+    hideTip()
+  }
+})
 
 function passes(i) {
   if (!state.statuses.has(i.statusType)) return false
@@ -678,6 +724,7 @@ function wireNodes(container) {
     el.setAttribute("role", "button")
     el.setAttribute("aria-label", nodeLabel(i))
     el.addEventListener("mouseenter", (e) => {
+      if (tipPinned) return
       clearTimeout(hideTimer)
       hoverIssue = i
       showTip(e, i)
@@ -687,6 +734,7 @@ function wireNodes(container) {
       hideTimer = setTimeout(hideTip, 160)
     })
     el.addEventListener("focus", () => {
+      if (tipPinned) return
       clearTimeout(hideTimer)
       hoverIssue = i
       showTipForEl(el, i)
