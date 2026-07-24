@@ -8,7 +8,7 @@
 // that does not fit inside the horizon is returned assigned but unscheduled, so a later cycle can pick
 // it up without losing the owner decision.
 
-import { CAPACITY_DEFAULTS } from "../../web/lib/planning.js"
+import { personCycleCapacity } from "../../web/lib/planning.js"
 import type { Issue, Snapshot } from "@/seed.ts"
 import type { Op } from "@/ops.ts"
 
@@ -103,21 +103,11 @@ function affinityScore(i: Issue, affinities: Affinity[]): Record<string, number>
   return out
 }
 
-// Per-person capacity for one cycle: a base velocity deflated by out-days (pro rata over the work
-// week) and by an on-call week (a flat penalty), matching planning.js so a hand run and the board
-// agree. Base is the person's own velocity by default (so a slower teammate holds less), overridden by
-// `weeklyOverride` when the caller wants a flat ceiling for this project.
+// Per-person capacity for one cycle: the person's velocity (or the flat project ceiling when a caller
+// passes one) after the shared on-call/OOO deflation. Delegates to planning.js so the board, the
+// capacity report, and balance all agree on the math.
 function cycleCapacity(person: string, cycle: number, snapshot: Snapshot, weeklyOverride?: number): number {
-  const cap = snapshot.capacity
-  const cfg = { ...CAPACITY_DEFAULTS, ...(cap?.config) }
-  const base = weeklyOverride ?? cap?.people?.[person]?.velocity ?? cap?.defaultVelocity ?? 20
-  const ev = cap?.people?.[person]?.cycles?.[String(cycle)] ?? {}
-  let points = base
-  if (ev.outDays && ev.outDays > 0) {
-    points *= Math.max(0, (cfg.workdaysPerCycle - ev.outDays) / cfg.workdaysPerCycle)
-  }
-  if (ev.oncall) points *= 1 - cfg.oncallPenalty
-  return Math.round(points)
+  return personCycleCapacity(person, cycle, snapshot.capacity, weeklyOverride).points
 }
 
 // Depth in the blocking graph: a blocker gets a lower depth than what it blocks, so blockers are
@@ -275,8 +265,7 @@ export function balance(snapshot: Snapshot, options: BalanceOptions = {}): {
   // balance term is in weeks-of-work, so a one-keyword lean (1.0) is worth ~one week of imbalance and
   // an owned chain (1.5) a bit more; neither lets one person run far ahead of the other.
   const AFFINITY_W = 1.0, CONTINUITY_W = 1.5, BALANCE_W = 1.0
-  const pick = (issue: Issue): string => {
-    const score = affinityScore(issue, affinities)
+  const pick = (issue: Issue, score: Record<string, number>): string => {
     const owns = (p: string) =>
       owned[p].has(issue.milestone ?? "") ||
       [...(issue.blockedBy ?? []), ...(issue.blocks ?? []), ...(issue.related ?? [])]
@@ -291,7 +280,7 @@ export function balance(snapshot: Snapshot, options: BalanceOptions = {}): {
   for (const issue of candidates) {
     const est = issue.estimate || 0
     const score = affinityScore(issue, affinities)
-    const person = pick(issue)
+    const person = pick(issue, score)
 
     const leadFloor = options.maxLeadCycles !== undefined
       ? cycleForDate(snapshot, MILESTONE_TARGET(snapshot, issue.milestone)) - options.maxLeadCycles

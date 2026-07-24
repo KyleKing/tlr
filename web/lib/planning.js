@@ -74,12 +74,14 @@ function maxDate(a, b) {
 const _DAY_MS = 24 * 3600 * 1000
 const _WEEK_MS = 7 * _DAY_MS
 
-function teamWeeklyPoints(snapshot) {
+// The people to plan for: the roster if one is set, otherwise every real assignee on the issues.
+export function rosterOrAssignees(snapshot) {
   const roster = Object.keys(snapshot.capacity?.roster ?? {})
-  const people = roster.length
-    ? roster
-    : [...new Set(snapshot.issues.map((i) => i.assignee))].filter((p) => p !== "Unassigned")
-  return people.reduce((sum, p) => sum + personCycleCapacity(p, null, snapshot.capacity).base, 0)
+  return roster.length ? roster : [...new Set(snapshot.issues.map((i) => i.assignee))].filter((p) => p !== "Unassigned")
+}
+
+function teamWeeklyPoints(snapshot) {
+  return rosterOrAssignees(snapshot).reduce((sum, p) => sum + personCycleCapacity(p, null, snapshot.capacity).base, 0)
 }
 
 function forecastStatus(slipDays) {
@@ -132,10 +134,7 @@ export function milestoneForecast(snapshot, weeklyPoints) {
 // Falls back to 0 when there is no roster or no active cycle, which milestoneForecast reads as "no
 // throughput" and leaves landings at asOf.
 export function teamWeeklyThroughput(snapshot) {
-  const roster = Object.keys(snapshot.capacity?.roster ?? {})
-  const people = roster.length
-    ? roster
-    : [...new Set(snapshot.issues.map((i) => i.assignee))].filter((p) => p !== "Unassigned")
+  const people = rosterOrAssignees(snapshot)
   if (!people.length || !ACTIVE_CYCLES.length) return 0
   let sum = 0
   for (const c of ACTIVE_CYCLES) {
@@ -202,10 +201,12 @@ export const CAPACITY_DEFAULTS = { workdaysPerCycle: 5, oncallPenalty: 0.45, def
 // Effective points a person can deliver in one cycle, after time off and on-call. Returns
 // { base, points, factors } where factors describe each deflation so the board can show why.
 // A null cycleN means "no cycle events" (used to size milestone windows off base velocity).
-export function personCycleCapacity(person, cycleN, capacity) {
+// baseOverride replaces the person's velocity as the starting point (e.g. a flat per-project ceiling),
+// while still applying the same deflations, so callers don't re-implement the on-call/OOO math.
+export function personCycleCapacity(person, cycleN, capacity, baseOverride) {
   const cfg = { ...CAPACITY_DEFAULTS, ...(capacity?.config) }
   const p = (capacity?.people?.[person]) || {}
-  const base = p.velocity ?? (capacity?.defaultVelocity) ?? cfg.defaultVelocity
+  const base = baseOverride ?? p.velocity ?? (capacity?.defaultVelocity) ?? cfg.defaultVelocity
   const ev = cycleN == null ? {} : (p.cycles?.[String(cycleN)]) || {}
   const factors = []
   let points = base
