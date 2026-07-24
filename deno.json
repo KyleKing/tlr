@@ -7,6 +7,9 @@
     "gcal:freebusy": "deno run --allow-read --allow-write --allow-net=accounts.google.com,oauth2.googleapis.com,www.googleapis.com,127.0.0.1 --allow-run=open ./scripts/gcal-freebusy.ts",
     "roster": "deno run --allow-read --allow-write --allow-env --allow-net=api.linear.app --allow-run=security ./scripts/roster.ts"
   },
+  "imports": {
+    "hono": "npm:hono@^4.9.8"
+  },
   "fmt": {
     "indentWidth": 2,
     "lineWidth": 120,

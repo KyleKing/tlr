@@ -2,7 +2,8 @@
   "version": "5",
   "specifiers": {
     "jsr:@std/assert@1": "1.0.19",
-    "jsr:@std/internal@^1.0.12": "1.0.14"
+    "jsr:@std/internal@^1.0.12": "1.0.14",
+    "npm:hono@^4.9.8": "4.12.31"
   },
   "jsr": {
     "@std/assert@1.0.19": {
@@ -14,5 +15,15 @@
     "@std/internal@1.0.14": {
       "integrity": "291516b3d4c35024d6ffbc0a9df5bf4c64116e05b50012cf846710152d2ffdf7"
     }
+  },
+  "npm": {
+    "hono@4.12.31": {
+      "integrity": "sha512-zJIHFrl6bq3RDd2YusFNCDlM8qUprxKswyi/OPzPyzKDdyBXDqWx8bZlZ7R+saTdSTatUmb3O7K4SspGPaEOQg=="
+    }
+  },
+  "workspace": {
+    "dependencies": [
+      "npm:hono@^4.9.8"
+    ]
   }
 }
