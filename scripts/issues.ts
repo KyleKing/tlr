@@ -5,9 +5,10 @@
 //
 // Fetches the project (and its team's cycles and its milestones) by name or slug, then every issue
 // on the project, and replaces the project/cycles/currentCycle/milestones/issues blocks in the data
-// file. capacity, teamVelocity, and teamCapacityPerCycle are left alone — `deno task capacity` and
-// `deno task roster` own those. Bearer key from the macOS keychain, service `tlr-linear`, account
-// `api-key`, or the LINEAR_API_KEY env var.
+// file. Also resolves any new assignee names to emails in capacity.roster (see scripts/roster.ts's
+// resolveRoster), so a single run keeps the roster current without a separate step. capacity.people,
+// teamVelocity, and teamCapacityPerCycle are left alone — `deno task capacity` owns those. Bearer key
+// from the macOS keychain, service `tlr-linear`, account `api-key`, or the LINEAR_API_KEY env var.
 
 import {
   buildCycles,
@@ -18,6 +19,7 @@ import {
   transformIssue,
   upsertProjectManifest,
 } from "../web/lib/issues.js"
+import { resolveRoster } from "./roster.ts"
 
 const LINEAR_API_URL = "https://api.linear.app/graphql"
 const DEFAULT_DATA = new URL("../web/data/cpu.json", import.meta.url).pathname
@@ -197,8 +199,16 @@ async function main() {
   }
 
   const existing = await Deno.readTextFile(args.data).then(JSON.parse).catch(() => ({}))
-  const out = JSON.stringify(mergeIngest(existing, fresh), null, 2) + "\n"
-  await Deno.writeTextFile(args.data, out)
+  const merged = mergeIngest(existing, fresh)
+
+  const roster = await resolveRoster(key, merged)
+  console.log(
+    `roster: ${roster.total} assignees, ${roster.resolved.length} resolved, ${roster.missing.length} unresolved`,
+  )
+  for (const r of roster.resolved) console.log(`  ${r}`)
+  if (roster.missing.length) console.log(`  unresolved (left blank): ${roster.missing.join(", ")}`)
+
+  await Deno.writeTextFile(args.data, JSON.stringify(merged, null, 2) + "\n")
   console.log(`wrote ${args.data}`)
 
   const manifest = await Deno.readTextFile(MANIFEST_PATH).then(JSON.parse).catch(() => [])

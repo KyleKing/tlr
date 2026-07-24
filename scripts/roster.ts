@@ -88,21 +88,23 @@ function resolveEmail(name: string, users: LinearUser[]): string | null {
   return hit?.email ?? null
 }
 
-async function main() {
-  const args = parseArgs(Deno.args)
-  const data = JSON.parse(await Deno.readTextFile(args.data))
+export type RosterData = {
+  capacity?: { defaultVelocity?: number; people?: Record<string, unknown>; roster?: Record<string, { email: string }> }
+  issues?: { assignee?: string | null }[]
+}
+
+export async function resolveRoster(key: string, data: RosterData, opts: { force?: boolean } = {}) {
   const capacity = data.capacity ?? (data.capacity = { defaultVelocity: 20, people: {} })
   const roster: Record<string, { email: string }> = capacity.roster ?? (capacity.roster = {})
 
   const names = assigneeNames(data.issues ?? [])
-  const key = await linearKey()
   const users = await fetchUsers(key)
 
   const resolved: string[] = []
   const missing: string[] = []
   for (const name of names) {
     const existing = roster[name]?.email
-    if (existing && !args.force) continue
+    if (existing && !opts.force) continue
     const email = resolveEmail(name, users)
     if (email) {
       roster[name] = { email }
@@ -113,17 +115,24 @@ async function main() {
     }
   }
 
-  console.log(`roster: ${names.length} assignees, ${resolved.length} resolved, ${missing.length} unresolved`)
+  return { total: names.length, resolved, missing }
+}
+
+async function main() {
+  const args = parseArgs(Deno.args)
+  const data = JSON.parse(await Deno.readTextFile(args.data))
+  const key = await linearKey()
+  const { total, resolved, missing } = await resolveRoster(key, data, { force: args.force })
+
+  console.log(`roster: ${total} assignees, ${resolved.length} resolved, ${missing.length} unresolved`)
   for (const r of resolved) console.log(`  ${r}`)
   if (missing.length) console.log(`  unresolved (left blank): ${missing.join(", ")}`)
 
-  data.capacity = capacity
-  const out = JSON.stringify(data, null, 2) + "\n"
   if (args.dryRun) {
     console.log("--dry-run: roster block that would be written:")
-    console.log(JSON.stringify(roster, null, 2))
+    console.log(JSON.stringify(data.capacity.roster, null, 2))
   } else {
-    await Deno.writeTextFile(args.data, out)
+    await Deno.writeTextFile(args.data, JSON.stringify(data, null, 2) + "\n")
     console.log(`wrote ${args.data}`)
   }
 }
