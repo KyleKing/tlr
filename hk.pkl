@@ -1,0 +1,27 @@
+amends "package://github.com/jdx/hk/releases/download/v1.2.0/hk@1.2.0#/Config.pkl"
+
+hooks {
+    ["pre-commit"] {
+        fix = true
+        steps {
+            ["dprint"] {
+                glob = List("*.json", "*.md", "*.toml")
+                check = "dprint check {{files}}"
+                fix = "dprint fmt {{files}}"
+            }
+            ["fmt"] {
+                glob = List("*.ts", "*.js")
+                check = "deno task fmt --check {{files}}"
+                fix = "deno task fmt {{files}}"
+            }
+            ["lint"] {
+                glob = List("*.ts", "*.js")
+                check = "deno task lint {{files}}"
+            }
+            ["test"] {
+                glob = "*_test.ts"
+                check = "deno task test"
+            }
+        }
+    }
+}

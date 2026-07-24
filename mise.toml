@@ -1,0 +1,4 @@
+[tools]
+deno = "latest"
+dprint = "latest"
+hk = "latest"
