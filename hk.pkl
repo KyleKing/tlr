@@ -31,6 +31,10 @@ hooks {
                 glob = "*_test.ts"
                 check = "deno task test"
             }
+            ["test:e2e"] {
+                glob = "*.ts"
+                check = "deno task test:e2e --project=chrome"
+            }
         }
     }
 }

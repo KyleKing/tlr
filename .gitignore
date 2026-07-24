@@ -1,6 +1,10 @@
 # Deno
 node_modules/
 
+# Playwright
+/test-results/
+/playwright-report/
+
 # Local Linear data (public repo — never commit real ticket data)
 web/data/
 *.tlr.sqlite

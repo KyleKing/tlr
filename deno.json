@@ -9,10 +9,14 @@
     "issues": "deno run --allow-read --allow-write --allow-env --allow-net=api.linear.app --allow-run=security ./scripts/issues.ts",
     "lint": "deno lint",
     "roster": "deno run --allow-read --allow-write --allow-env --allow-net=api.linear.app --allow-run=security ./scripts/roster.ts",
-    "test": "deno test"
+    "test": "deno test",
+    "test:e2e": "deno run --allow-all npm:playwright test",
+    "test:e2e:install": "deno install && deno run --allow-all npm:playwright install chromium --only-shell",
+    "test:e2e:ui": "deno task test:e2e --ui"
   },
   "imports": {
     "@biomejs/biome": "npm:@biomejs/biome@^2.2.4",
+    "@playwright/test": "npm:@playwright/test@^1.55.1",
     "hono": "npm:hono@^4.9.8",
     "vento/": "https://deno.land/x/vento@v2.4.0/"
   },
