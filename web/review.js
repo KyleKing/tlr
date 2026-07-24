@@ -19,10 +19,29 @@ const captureBtn = document.getElementById("capture")
 let queue = { window: null, items: [] }
 let mode = { demo: false, workspace: "live" }
 let issuesById = new Map()
+let boardData = { milestones: [], cycles: [], capacity: {} }
 const editing = new Set()
 const reviewed = JSON.parse(localStorage.getItem(REVIEWED_KEY) || "{}")
 
 const PRIORITIES = [[0, "No priority"], [1, "Urgent"], [2, "High"], [3, "Medium"], [4, "Low"]]
+const STATUSES = [
+  ["unstarted", "Todo"],
+  ["started", "In Progress"],
+  ["triage", "Triage"],
+  ["backlog", "Backlog"],
+  ["completed", "Done"],
+  ["canceled", "Canceled"],
+]
+
+function optionTags(pairs, selected) {
+  return pairs
+    .map(([value, label]) =>
+      `<option value="${escapeHtml(String(value))}"${String(value) === String(selected) ? " selected" : ""}>${
+        escapeHtml(label)
+      }</option>`
+    )
+    .join("")
+}
 
 function windowKey() {
   return queue.window ? `${queue.window.from}_${queue.window.to}` : "none"
@@ -63,6 +82,17 @@ function editFormHTML(id) {
   const opts = PRIORITIES
     .map(([v, label]) => `<option value="${v}"${(cur.priorityValue ?? 0) === v ? " selected" : ""}>${label}</option>`)
     .join("")
+  const milestoneOpts = `<option value="">— none —</option>` +
+    optionTags((boardData.milestones ?? []).map((m) => [m.key, m.name]), cur.milestone ?? "")
+  const cycleOpts = `<option value="">— none —</option>` +
+    optionTags((boardData.cycles ?? []).map((c) => [c.n, `Cycle ${c.n}`]), cur.cycle ?? "")
+  // Roster names, plus the ticket's current assignee if it is not on the roster, so it stays selectable.
+  const names = new Set(Object.keys(boardData.capacity?.roster ?? {}))
+  if (cur.assignee) names.add(cur.assignee)
+  const assigneeOpts = optionTags(
+    [["Unassigned", "Unassigned"], ...[...names].sort().map((n) => [n, n])],
+    cur.assignee ?? "Unassigned",
+  )
   const applyLabel = mode.demo ? "Apply to demo workspace" : "Apply to live workspace"
   return `<form class="editf" data-id="${escapeHtml(id)}"${cur.linearId ? "" : ' data-nouuid="1"'}>
     <label>Title<input name="title" type="text" value="${escapeHtml(cur.title)}" /></label>
@@ -70,6 +100,14 @@ function editFormHTML(id) {
     <div class="editf-row">
       <label>Estimate<input name="estimate" type="number" min="0" step="1" value="${cur.estimate ?? ""}" /></label>
       <label>Priority<select name="priority">${opts}</select></label>
+    </div>
+    <div class="editf-row">
+      <label>Milestone<select name="milestone">${milestoneOpts}</select></label>
+      <label>Status<select name="status">${optionTags(STATUSES, cur.statusType)}</select></label>
+    </div>
+    <div class="editf-row">
+      <label>Cycle<select name="cycle">${cycleOpts}</select></label>
+      <label>Assignee<select name="assignee">${assigneeOpts}</select></label>
     </div>
     ${
     cur.linearId ? "" : `<p class="editf-warn">No Linear link for this ticket — refresh from Linear before editing.</p>`
@@ -150,6 +188,14 @@ function formOps(form) {
   if (estimate != null && estimate !== cur.estimate) ops.push({ kind: "set_estimate", id, estimate })
   const priority = Number(form.priority.value)
   if (priority !== (cur.priorityValue ?? 0)) ops.push({ kind: "set_priority", id, priority })
+  const milestone = form.milestone.value || null
+  if (milestone !== (cur.milestone ?? null)) ops.push({ kind: "set_milestone", id, milestone })
+  const status = form.status.value
+  if (status !== cur.statusType) ops.push({ kind: "set_status", id, status })
+  const cycle = form.cycle.value === "" ? null : Number(form.cycle.value)
+  if (cycle !== (cur.cycle ?? null)) ops.push({ kind: "set_cycle", id, cycle })
+  const assignee = form.assignee.value
+  if (assignee !== (cur.assignee ?? "Unassigned")) ops.push({ kind: "set_assignee", id, assignee })
   return ops
 }
 
@@ -226,6 +272,14 @@ function describeOp(op) {
       return `estimate → ${op.estimate}`
     case "set_priority":
       return `priority → ${PRIORITIES[op.priority][1]}`
+    case "set_milestone":
+      return `milestone → ${op.milestone ?? "none"}`
+    case "set_status":
+      return `status → ${op.status}`
+    case "set_cycle":
+      return `cycle → ${op.cycle ?? "none"}`
+    case "set_assignee":
+      return `assignee → ${op.assignee}`
     default:
       return op.kind
   }
@@ -235,6 +289,7 @@ function describeOp(op) {
 async function refreshData() {
   const r = await fetch(`/data/${project.dataFile}`, { cache: "no-store" })
   const data = r.ok ? await r.json() : { issues: [] }
+  boardData = { milestones: data.milestones ?? [], cycles: data.cycles ?? [], capacity: data.capacity ?? {} }
   issuesById = new Map((data.issues ?? []).map((i) => [i.id, i]))
 }
 

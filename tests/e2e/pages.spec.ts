@@ -33,9 +33,12 @@ test("review page edits a ticket: form pre-fills, previews a dry run, and guards
   const form = page.locator("form.editf").first()
   await expect(form).toBeVisible()
 
-  // The form starts from the ticket's current values.
+  // The form starts from the ticket's current values, and offers every writable field.
   const title = form.locator('input[name="title"]')
   await expect(title).not.toHaveValue("")
+  for (const name of ["milestone", "status", "cycle", "assignee"]) {
+    await expect(form.locator(`select[name="${name}"]`)).toBeVisible()
+  }
   await title.fill("A clearer title")
 
   // Preview is a dry run: it reports the change without writing.
