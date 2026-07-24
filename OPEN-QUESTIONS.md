@@ -57,6 +57,24 @@ Unchanged from the roadmap. The configured API key returns zero schedules (`GET 
 `total_record_count: 0`); likely the "Read schedules" grant is team-scoped, not account-level. And
 `oncallByCycle` only tracks people already in `capacity.roster`. Both need your access to fix.
 
-## Phase 1 tradeoffs
+## Phase 1–3 build tradeoffs (2026-07-23)
 
-(To be filled in when Phase 1 scaffolding starts — schema choice, snapshot fixture strategy.)
+Choices I made building the CLI and Phases 1–3, for you to confirm or redirect:
+
+- **Thin schema, not ADR 0006.** Snapshot, diff, review, and the ops model all read the current
+  Linear-shaped data (`src/seed.ts` defines the `Snapshot`/`Issue` types). No `Grouping`/`Relation`/
+  `Meta` normalization yet, per your "no GitHub, no third tracker" call. ADR 0006 stays the target for
+  when a second tracker actually lands.
+- **Offline synthetic data.** `deno task seed` writes two dated snapshots (`web/data/seed-a.json`,
+  `seed-b.json`) with a week of drift and registers a `seeded-reliability` project so the board and CLI
+  run end-to-end with no Linear key. When you provision a free workspace, a `--linear` mode can push the
+  same data through the tracker port. Open: do you want that mode built now, or is offline enough?
+- **Phase 2 apply is in-memory only.** `planFromText` parses guidance into ops, `validateOp` checks
+  each against live snapshot state, and `applyOps` produces the resulting snapshot so `tlr diff` can
+  preview it. It does NOT mutate Linear (no key here, and a real write is a side effect I will not take
+  without you). The real mutation adapter behind the tracker port is the remaining Phase 2 work, gated
+  on your key. This is the honest limit of what I can finish autonomously.
+- **CLI, not MCP, for now.** Per your choice. Subcommands emit JSON for Claude Code to pipe. The MCP
+  stdio transport over the same handlers stays a roadmap item.
+- **Phase 3 is the SVG export slice.** `boardSvg`/`timelineSvg` render deterministic artifacts from a
+  snapshot. The pannable 2D layout candidate from the roadmap is a larger UI effort left open.
