@@ -17,13 +17,18 @@ export function milestoneDisplayName(name, fallback) {
   return name.replace(/^M\d+:\s*/, "") || fallback
 }
 
-// Ordered time buckets with an end date each, so cycles and milestones compare on one axis.
-export function buildBuckets(data) {
+// Ordered time buckets with an end date each, so cycles and milestones compare on one axis. `issues`
+// is optional; when given, a cycle column is dropped if no issue actually falls into it (milestone and
+// backlog columns always show, since those are meaningful even with zero issues today).
+export function buildBuckets(data, issues) {
   const cyc = Object.fromEntries(data.cycles.map((c) => [c.n, c]))
+  const hasIssue = (key) => !Array.isArray(issues) || issues.some((i) => bucketOf(i) === key)
   const cols = []
-  if (cyc[47]) cols.push({ key: "C47", label: "Cycle 47", sub: "past", end: cyc[47].end, kind: "cycle" })
+  if (cyc[47] && hasIssue("C47")) {
+    cols.push({ key: "C47", label: "Cycle 47", sub: "past", end: cyc[47].end, kind: "cycle" })
+  }
   for (const n of ACTIVE_CYCLES) {
-    if (cyc[n]) {
+    if (cyc[n] && hasIssue(`C${n}`)) {
       cols.push({
         key: `C${n}`,
         label: `Cycle ${n}`,

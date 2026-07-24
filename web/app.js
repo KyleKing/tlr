@@ -31,7 +31,7 @@ const REVIEW_KEY = "tlr.notslop"
 let buckets, bucketByKey, bucketWeeks, byId, riskIds, forecastByKey
 
 function deriveBuckets() {
-  buckets = buildBuckets(data)
+  buckets = buildBuckets(data, data.issues)
   bucketByKey = Object.fromEntries(buckets.map((b) => [b.key, b]))
   forecastByKey = Object.fromEntries(
     milestoneForecast(data, teamWeeklyThroughput(data)).milestones.map((m) => [m.key, m]),

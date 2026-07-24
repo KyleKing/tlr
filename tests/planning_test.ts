@@ -42,6 +42,12 @@ Deno.test("buildBuckets orders cycles then milestones then backlog", () => {
   assertEquals(keys, ["C47", "C48", "C49", "M1", "M2", "BACKLOG"])
 })
 
+Deno.test("buildBuckets drops a cycle column with no issues in it", () => {
+  const issues = [{ cycle: 48, milestone: null }, { cycle: null, milestone: "M1" }]
+  const keys = buildBuckets(DATA, issues).map((b) => b.key)
+  assertEquals(keys, ["C48", "M1", "M2", "BACKLOG"])
+})
+
 Deno.test("milestoneDisplayName drops an M#: prefix but keeps a plain name", () => {
   assertEquals(milestoneDisplayName("M1: Measure and page", "M1"), "Measure and page")
   assertEquals(milestoneDisplayName("M12: Chaos", "M12"), "Chaos")
