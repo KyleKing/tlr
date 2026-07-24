@@ -157,9 +157,10 @@ export function velocityByPerson(issues, cycles, currentCycle) {
 }
 
 // Merge computed base velocities into the capacity block. Velocity is a per-person value, not a
-// per-cycle event, so it gets its own small merge instead of going through mergeCapacity: a hand-typed
-// velocity (no velocitySrc marker) is never touched, a "history" marker is refreshed, and a person this
-// source no longer has data for loses only the value it wrote.
+// per-cycle event, so it gets its own small merge instead of going through mergeCapacity. History
+// always wins once it has an answer for a person, same as on-call and out-days: a prior value (typed
+// by hand or computed on an earlier run) is replaced, and a person this run has no data for loses only
+// the value this source wrote.
 export function mergeVelocity(capacity, velocityByName) {
   const cap = structuredClone(capacity || {})
   cap.people ||= {}
@@ -173,7 +174,6 @@ export function mergeVelocity(capacity, velocityByName) {
 
   for (const [name, v] of Object.entries(velocityByName)) {
     const person = (cap.people[name] ||= { cycles: {} })
-    if (person.velocity != null && person.velocitySrc !== "history") continue // hand-entered, keep
     person.velocity = v
     person.velocitySrc = "history"
   }
@@ -190,9 +190,12 @@ function _isEmptyEvent(ev) {
 }
 
 // Merge freshly fetched data into the capacity block for one source. The source owns a fixed set of
-// fields (on-call, or out-days+reason): it overwrites those where it has data, clears its own stale
-// entries where it no longer does, and never touches fields owned by the other source or hand-entered
-// values (which carry no source marker). Returns a new capacity object; the input is not mutated.
+// fields (on-call, or out-days+reason) and never touches fields owned by the other source. Within its
+// own fields it always wins: it overwrites whatever was there (typed by hand or written by an earlier
+// run) for any person+cycle it has data for, and clears its own stale entries where it no longer
+// reports — a value with no source marker is left alone only because no run has reported on that
+// person+cycle yet, not because it is protected. Returns a new capacity object; the input is not
+// mutated.
 export function mergeCapacity(capacity, incoming, source) {
   const owned = OWNED[source]
   if (!owned) throw new Error(`unknown capacity source: ${source}`)

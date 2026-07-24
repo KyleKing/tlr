@@ -135,9 +135,10 @@ Deno.test("velocityByPerson averages completed points across past cycles", () =>
   assertEquals(velocityByPerson(issues, cycles, 48), { "Kyle King": 13 })
 })
 
-Deno.test("mergeVelocity keeps a hand-typed velocity and refreshes its own", () => {
-  const withHand = mergeVelocity({ people: { "Marissa TK": { cycles: {}, velocity: 25 } } }, { "Marissa TK": 10 })
-  assertEquals(withHand.people["Marissa TK"].velocity, 25)
+Deno.test("mergeVelocity overwrites a prior velocity, hand-typed or not, once history reports", () => {
+  const overHand = mergeVelocity({ people: { "Marissa TK": { cycles: {}, velocity: 25 } } }, { "Marissa TK": 10 })
+  assertEquals(overHand.people["Marissa TK"].velocity, 10)
+  assertEquals(overHand.people["Marissa TK"].velocitySrc, "history")
   const first = mergeVelocity({ people: {} }, { "Kyle King": 13 })
   assertEquals(first.people["Kyle King"].velocity, 13)
   assertEquals(first.people["Kyle King"].velocitySrc, "history")

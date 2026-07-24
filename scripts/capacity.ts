@@ -12,8 +12,11 @@
 // >=5-busy-hour-or-all-day heuristic in outDaysFromFreeBusy); passing --calendar-file instead uses a
 // handoff file of named events (startDate, endDate, title) when a real reason is known. Velocity comes
 // from each person's completed points in past cycles, already present in this same data file — no
-// external fetch needed. All three feed the provenance-aware merges in web/lib/capacity.js, so a
-// refresh updates sourced data and leaves hand-entered values alone.
+// external fetch needed. All three feed the provenance-aware merges in web/lib/capacity.js: a value
+// typed by hand survives only until a source actually reports on that same person and cycle, then the
+// automated value wins. The free/busy heuristic can under-report real time off (being onsite doesn't
+// fill a calendar with meetings), so a hand-typed out-days note can regress in accuracy once gcal starts
+// reporting for that slot — there is no permanent override, by design.
 
 import { mergeCapacity, mergeVelocity, oncallByCycle, outDaysByCycle, outDaysFromFreeBusy, velocityByPerson } from "../web/lib/capacity.js"
 import { CLIENT_PATH, fetchFreeBusy, loadClient, tokenFor } from "./gcal-freebusy.ts"
