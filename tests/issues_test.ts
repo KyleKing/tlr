@@ -5,8 +5,10 @@ import {
   currentCycleNumber,
   mergeIngest,
   milestoneKey,
+  pickProject,
   priorityLabel,
   transformIssue,
+  upsertProjectManifest,
 } from "../web/lib/issues.js"
 
 Deno.test("priorityLabel maps Linear's 0-4 scale, null passes through", () => {
@@ -138,6 +140,39 @@ Deno.test("transformIssue defaults missing optionals to null/empty", () => {
     blocks: [],
     blockedBy: [],
   })
+})
+
+Deno.test("upsertProjectManifest adds a new project and sorts by name", () => {
+  const manifest = [{ slug: "b-proj", name: "B Project", dataFile: "b.json" }]
+  const out = upsertProjectManifest(manifest, { slug: "a-proj", name: "A Project", dataFile: "a.json" })
+  assertEquals(out, [
+    { slug: "a-proj", name: "A Project", dataFile: "a.json" },
+    { slug: "b-proj", name: "B Project", dataFile: "b.json" },
+  ])
+})
+
+Deno.test("upsertProjectManifest replaces an existing entry for the same slug", () => {
+  const manifest = [{ slug: "a-proj", name: "Old Name", dataFile: "a.json" }]
+  const out = upsertProjectManifest(manifest, { slug: "a-proj", name: "New Name", dataFile: "a.json" })
+  assertEquals(out, [{ slug: "a-proj", name: "New Name", dataFile: "a.json" }])
+})
+
+Deno.test("pickProject returns the requested slug when present", () => {
+  const projects = [
+    { slug: "a-proj", name: "A", dataFile: "a.json" },
+    { slug: "b-proj", name: "B", dataFile: "b.json" },
+  ]
+  assertEquals(pickProject(projects, "b-proj"), { slug: "b-proj", name: "B", dataFile: "b.json" })
+})
+
+Deno.test("pickProject falls back to the first entry when the slug is missing or unrequested", () => {
+  const projects = [{ slug: "a-proj", name: "A", dataFile: "a.json" }]
+  assertEquals(pickProject(projects, "nope"), { slug: "a-proj", name: "A", dataFile: "a.json" })
+  assertEquals(pickProject(projects, null), { slug: "a-proj", name: "A", dataFile: "a.json" })
+})
+
+Deno.test("pickProject returns null for an empty manifest", () => {
+  assertEquals(pickProject([], null), null)
 })
 
 Deno.test("mergeIngest replaces the Linear-sourced blocks and keeps everything else", () => {

@@ -16,10 +16,12 @@ import {
   mergeIngest,
   milestoneKey,
   transformIssue,
+  upsertProjectManifest,
 } from "../web/lib/issues.js"
 
 const LINEAR_API_URL = "https://api.linear.app/graphql"
 const DEFAULT_DATA = new URL("../web/data/cpu.json", import.meta.url).pathname
+const MANIFEST_PATH = new URL("../web/data/projects.json", import.meta.url).pathname
 
 const PROJECT_QUERY = `
   query Projects($filter: ProjectFilter) {
@@ -198,6 +200,12 @@ async function main() {
   const out = JSON.stringify(mergeIngest(existing, fresh), null, 2) + "\n"
   await Deno.writeTextFile(args.data, out)
   console.log(`wrote ${args.data}`)
+
+  const manifest = await Deno.readTextFile(MANIFEST_PATH).then(JSON.parse).catch(() => [])
+  const dataFile = args.data.split("/").pop()!
+  const updated = upsertProjectManifest(manifest, { slug: project.slugId, name: project.name, dataFile })
+  await Deno.writeTextFile(MANIFEST_PATH, JSON.stringify(updated, null, 2) + "\n")
+  console.log(`wrote ${MANIFEST_PATH}`)
 }
 
 if (import.meta.main) {

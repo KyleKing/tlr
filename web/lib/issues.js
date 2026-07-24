@@ -66,6 +66,20 @@ export function transformIssue(raw, milestoneKeyById) {
   }
 }
 
+// Add or update a project's entry in the projects.json manifest (keyed by slug), so the switcher can
+// discover every project that's been ingested regardless of what data file it was written to.
+export function upsertProjectManifest(manifest, entry) {
+  const others = manifest.filter((p) => p.slug !== entry.slug)
+  return [...others, entry].sort((a, b) => a.name.localeCompare(b.name))
+}
+
+// Pick a project from the manifest (see scripts/issues.ts's projects.json upsert): the requested slug
+// if it's in the list, else the first entry, else null if the manifest is empty.
+export function pickProject(projects, requestedSlug) {
+  if (!projects.length) return null
+  return projects.find((p) => p.slug === requestedSlug) ?? projects[0]
+}
+
 // Replace the Linear-sourced blocks (project, cycles, currentCycle, milestones, issues, asOf) in an
 // existing data file, keeping everything else (capacity, teamVelocity, teamCapacityPerCycle, ...)
 // untouched — those are refreshed by their own scripts, not by ingest.

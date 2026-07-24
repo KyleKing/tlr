@@ -10,6 +10,7 @@ import {
   statusRank,
   weeksBetween,
 } from "./lib/planning.js"
+import { pickProject } from "./lib/issues.js"
 
 const STATUS = {
   started: { label: "In progress", color: "var(--st-started)" },
@@ -56,8 +57,16 @@ function enrich() {
   byId = Object.fromEntries(data.issues.map((i) => [i.id, i]))
 }
 
-async function loadData() {
-  const r = await fetch("/data/cpu.json", { cache: "no-store" })
+async function loadProjects() {
+  const r = await fetch("/data/projects.json", { cache: "no-store" })
+  return r.ok ? r.json() : []
+}
+
+let currentDataFile = "cpu.json"
+
+async function loadData(dataFile = currentDataFile) {
+  currentDataFile = dataFile
+  const r = await fetch(`/data/${dataFile}`, { cache: "no-store" })
   return (r.ok ? r : await fetch("/data-sample.json", { cache: "no-store" })).json()
 }
 
@@ -82,7 +91,10 @@ const state = {
   view: "board", // or "timeline"
 }
 
-const data = await loadData()
+const projects = await loadProjects()
+const requestedSlug = new URLSearchParams(location.search).get("project")
+const currentProject = pickProject(projects, requestedSlug)
+const data = await loadData(currentProject?.dataFile)
 deriveBuckets()
 enrich()
 state.bucketKeys = new Set(buckets.map((b) => b.key))
@@ -96,6 +108,18 @@ function renderMeta() {
     `<a href="${data.project.url}" target="_blank">Linear ↗</a>`
 }
 renderMeta()
+
+const projectPicker = document.getElementById("project-picker")
+if (projects.length > 1) {
+  projectPicker.hidden = false
+  projectPicker.innerHTML = projects.map((p) => `<option value="${p.slug}">${p.name}</option>`).join("")
+  projectPicker.value = currentProject.slug
+  projectPicker.addEventListener("change", () => {
+    const url = new URL(location.href)
+    url.searchParams.set("project", projectPicker.value)
+    location.href = url.toString()
+  })
+}
 
 const search = document.getElementById("search")
 search.oninput = () => {

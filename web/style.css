@@ -18,6 +18,7 @@ a { color: inherit; }
 header { padding: 12px 16px 8px; border-bottom: 1px solid var(--line); }
 h1 { margin: 0; font-size: 16px; }
 .sub { color: var(--muted); font-size: 12px; margin-top: 2px; }
+#project-picker { margin-top: 6px; background: var(--cell); border: 1px solid var(--line); color: var(--fg); border-radius: 6px; padding: 3px 6px; font-size: 12px; }
 .bar-controls { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--line); }
 #search { background: var(--cell); border: 1px solid var(--line); color: var(--fg); border-radius: 6px; padding: 5px 9px; width: 230px; font-size: 13px; }
 .sync-box { margin-left: auto; display: inline-flex; gap: 8px; align-items: center; }
