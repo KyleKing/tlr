@@ -28,6 +28,49 @@ test("shows the sample-data banner when the project data file is missing", async
   await expect(banner).toContainText("sample data")
 })
 
+// Regression: transformIssue used to leave a real `null` assignee instead of the "Unassigned" sentinel
+// every render/sort path expects, so an issue ingested straight from Linear (where an unassigned issue
+// really is null, not the string "Unassigned") crashed render()'s people sort with
+// `a.localeCompare is not a function` — surfaced by the new error banner as "Refresh failed", not a
+// silent hang. This exercises that shape end to end instead of only at the transformIssue unit level.
+test("a null assignee (as a real Linear ingest produces) does not crash the board", async ({ page }) => {
+  const data = {
+    project: { name: "Null Assignee Co", start: "2026-07-01", target: "2026-11-30", url: "https://linear.app/" },
+    cycles: [{ n: 48, start: "2026-07-20", end: "2026-07-27" }],
+    asOf: "2026-07-23",
+    currentCycle: 48,
+    milestones: [],
+    issues: [{
+      id: "NUL-1",
+      title: "Untriaged issue",
+      url: "https://linear.app/",
+      estimate: 2,
+      assignee: null,
+      status: "Backlog",
+      statusType: "backlog",
+      priority: null,
+      priorityValue: null,
+      labels: [],
+      parentId: null,
+      milestone: null,
+      cycle: null,
+    }],
+    capacity: { config: { workdaysPerCycle: 5, oncallPenalty: 0.35 }, defaultVelocity: 20, roster: {}, people: {} },
+  }
+  // Leave /data/projects.json (the manifest) alone — only the project's own board data is this fixture.
+  await page.route("**/data/**", (route) => {
+    if (route.request().url().endsWith("projects.json")) return route.continue()
+    return route.fulfill({ json: data })
+  })
+  await page.goto("/")
+
+  await expect(page.locator("#grid tr").first()).toBeVisible()
+  await expect(page.locator(".js-error")).toBeHidden()
+
+  await page.click("#refresh")
+  await expect(page.locator(".js-error")).toBeHidden()
+})
+
 test("grid tickets are keyboard reachable and arrow-navigable", async ({ page }) => {
   await page.goto("/")
 

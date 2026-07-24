@@ -53,7 +53,9 @@ export function transformIssue(raw, milestoneKeyById) {
     url: raw.url,
     description: raw.description ?? "",
     estimate: raw.estimate ?? null,
-    assignee: raw.assignee?.name ?? null,
+    // "Unassigned" (not null) is the sentinel every consumer expects — board.js sorts/groups/compares
+    // against the literal string, and a real null crashed that sort (a.localeCompare on null).
+    assignee: raw.assignee?.name ?? "Unassigned",
     status: raw.state?.name ?? null,
     statusType: raw.state?.type ?? null,
     priority: priorityLabel(raw.priority),

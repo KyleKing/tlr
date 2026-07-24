@@ -88,7 +88,7 @@ function editFormHTML(id) {
     optionTags((boardData.cycles ?? []).map((c) => [c.n, `Cycle ${c.n}`]), cur.cycle ?? "")
   // Roster names, plus the ticket's current assignee if it is not on the roster, so it stays selectable.
   const names = new Set(Object.keys(boardData.capacity?.roster ?? {}))
-  if (cur.assignee) names.add(cur.assignee)
+  if (cur.assignee && cur.assignee !== "Unassigned") names.add(cur.assignee)
   const assigneeOpts = optionTags(
     [["Unassigned", "Unassigned"], ...[...names].sort().map((n) => [n, n])],
     cur.assignee ?? "Unassigned",

@@ -108,7 +108,7 @@ Deno.test("transformIssue maps fields and splits relations into blocks/blockedBy
   })
 })
 
-Deno.test("transformIssue defaults missing optionals to null/empty", () => {
+Deno.test("transformIssue defaults missing optionals to null/empty, and a missing assignee to the Unassigned sentinel", () => {
   const raw = {
     id: "uuid-eng-9",
     identifier: "ENG-9",
@@ -132,7 +132,7 @@ Deno.test("transformIssue defaults missing optionals to null/empty", () => {
     url: "https://linear.app/team/issue/ENG-9",
     description: "",
     estimate: null,
-    assignee: null,
+    assignee: "Unassigned",
     status: null,
     statusType: null,
     priority: null,

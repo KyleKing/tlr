@@ -51,6 +51,9 @@ function deriveBuckets() {
 
 function enrich() {
   for (const i of data.issues) {
+    // Every render/sort/group path below keys off the "Unassigned" sentinel string, not a real Linear
+    // ingest's null (transformIssue normalizes it, but a hand-edited or older data file might not).
+    i.assignee ||= "Unassigned"
     i.blocks ||= []
     i.blockedBy ||= []
     i.related ||= []
