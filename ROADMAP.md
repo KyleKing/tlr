@@ -32,6 +32,8 @@ product:
 - Also: `scan`, `capacity`, and `timeline` CLI commands for Claude Code to pull before a batch edit
 - Board UX: per-group All/None filter toggles with a visible double-click-to-solo hint, and milestone
   headers that wrap into a narrow column with target and progress moved to the hover
+- Forecast on the board: each milestone header carries a slip marker (early/late vs. target) with the
+  forecast landing date in the hover, from the shared `milestoneForecast` in web/lib/planning.js
 
 Open items and tradeoffs are in [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md). The schema stays thin (the
 current Linear shape), not ADR 0006's normalized model, until a second tracker lands.
@@ -88,9 +90,9 @@ items depending on them are marked below.
 
 Ordered by payoff. Unblocked unless a "(blocked: ...)" note says otherwise.
 
-- **Surface report and forecast in the UI.** `tlr report` and `tlr forecast` are CLI-only today.
-  Bring the weekly narrative and the per-milestone landing dates into a page (ties to the cohesive-app
-  work below), so a slip shows on the board next to its target, marked as a forecast.
+- **Surface the weekly report in the UI.** The slip forecast now shows on the board (see Status); the
+  weekly narrative from `tlr report` is still CLI-only. Bring it into a page (ties to the cohesive-app
+  work below), rendered from a Phase 1 diff between two stored snapshots.
 - **Round the board into a cohesive app.** It is one page today. Candidate surfaces: a project
   overview (health, slip forecast, at-risk), a diff and review page that brings Phase 1's diff and
   review queue into the UI rather than only the CLI, a per-person load page, and a real settings area.

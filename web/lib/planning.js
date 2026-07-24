@@ -59,6 +59,58 @@ function maxDate(a, b) {
   return new Date(a) > new Date(b) ? a : b
 }
 
+// Milestone slip forecast: a realistic landing date per milestone, always a forecast, never a real
+// date. Milestones deliver in target-date order, each starting when the one before finishes (or asOf,
+// whichever is later). Weeks of work = a milestone's remaining (open) points over team weekly
+// throughput, where throughput sums each rostered person's base velocity per one-week cycle.
+const _DAY_MS = 24 * 3600 * 1000
+const _WEEK_MS = 7 * _DAY_MS
+
+function teamWeeklyPoints(snapshot) {
+  const roster = Object.keys(snapshot.capacity?.roster ?? {})
+  const people = roster.length
+    ? roster
+    : [...new Set(snapshot.issues.map((i) => i.assignee))].filter((p) => p !== "Unassigned")
+  return people.reduce((sum, p) => sum + personCycleCapacity(p, null, snapshot.capacity).base, 0)
+}
+
+function forecastStatus(slipDays) {
+  if (slipDays <= -3) return "ahead"
+  if (slipDays <= 3) return "on-track"
+  return "at-risk"
+}
+
+export function milestoneForecast(snapshot) {
+  const weekly = teamWeeklyPoints(snapshot)
+  const ordered = [...snapshot.milestones].sort((a, b) => a.target.localeCompare(b.target))
+  let cursor = snapshot.asOf
+  const milestones = ordered.map((m) => {
+    const open = snapshot.issues.filter((i) =>
+      i.milestone === m.key && i.statusType !== "completed" && i.statusType !== "canceled"
+    )
+    const done = snapshot.issues.filter((i) => i.milestone === m.key && i.statusType === "completed")
+    const remainingPoints = open.reduce((s, i) => s + (i.estimate || 0), 0)
+    const completedPoints = done.reduce((s, i) => s + (i.estimate || 0), 0)
+    const weeksNeeded = weekly > 0 ? remainingPoints / weekly : 0
+    const start = new Date(cursor) > new Date(snapshot.asOf) ? cursor : snapshot.asOf
+    const landing = new Date(new Date(start).getTime() + weeksNeeded * _WEEK_MS).toISOString().slice(0, 10)
+    cursor = landing
+    const slipDays = Math.round((new Date(landing) - new Date(m.target)) / _DAY_MS)
+    return {
+      key: m.key,
+      name: m.name,
+      target: m.target,
+      remainingPoints,
+      completedPoints,
+      weeksNeeded: Math.round(weeksNeeded * 10) / 10,
+      landing,
+      slipDays,
+      status: forecastStatus(slipDays),
+    }
+  })
+  return { asOf: snapshot.asOf, teamWeeklyPoints: weekly, milestones }
+}
+
 const TELLS = [
   "comprehensive",
   "robust",

@@ -310,6 +310,19 @@ thead .col th.mile .s {
   white-space: normal;
   overflow-wrap: anywhere;
 }
+/* Forecast marker under a milestone header: only shown when the landing deviates from the target. */
+.fc {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+.fc.late {
+  color: var(--risk);
+}
+.fc.early {
+  color: var(--st-completed);
+}
 tbody th {
   position: sticky;
   left: 0;

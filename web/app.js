@@ -2,6 +2,7 @@ import {
   bucketOf,
   buildBuckets,
   dependencyWaves,
+  milestoneForecast,
   missingData,
   orderingRisks,
   personCycleCapacity,
@@ -27,11 +28,12 @@ const DEFAULT_STATUSES = ["started", "unstarted", "triage", "backlog"]
 const REVIEW_KEY = "tlr.notslop"
 
 // mutable module data, replaced on refresh
-let buckets, bucketByKey, bucketWeeks, byId, riskIds
+let buckets, bucketByKey, bucketWeeks, byId, riskIds, forecastByKey
 
 function deriveBuckets() {
   buckets = buildBuckets(data)
   bucketByKey = Object.fromEntries(buckets.map((b) => [b.key, b]))
+  forecastByKey = Object.fromEntries(milestoneForecast(data).milestones.map((m) => [m.key, m]))
   bucketWeeks = {}
   data.milestones.forEach((m, idx) => {
     const start = idx === 0
@@ -597,7 +599,7 @@ function buildTransposed(people) {
   for (const b of visible) {
     const kindTag = b.kind === "cycle" ? "now" : b.kind === "milestone" ? "horizon" : "backlog"
     h += `<tr><th class="rowhead ${kindTag}" title="${escapeHtml(bucketDetail(b))}">${b.label}` +
-      `<span class="s">${bucketSub(b)}</span></th>`
+      `<span class="s">${bucketSub(b)}</span>${forecastBadge(b)}</th>`
     for (const person of people) h += cellHTML(person, b)
     h += "</tr>"
   }
@@ -740,18 +742,34 @@ function milestoneName(b) {
 function bucketSub(b) {
   return b.kind === "milestone" ? milestoneName(b) : b.sub
 }
-// Full detail for the hover title: target and progress live here, not in the header, for milestones.
+// How the forecast landing compares to the target, in words, for the hover.
+function forecastPhrase(fc) {
+  if (fc.status === "on-track") return "on track"
+  return fc.slipDays > 0 ? `${fc.slipDays}d late` : `${-fc.slipDays}d early`
+}
+// Full detail for the hover title: target, progress, and the forecast landing live here, not in the
+// header, for milestones.
 function bucketDetail(b) {
   if (b.kind !== "milestone") return `${b.label} · ${b.sub}`
   const parts = [b.name ? b.name.replace(/^M\d: /, "") : b.label, b.sub]
   if (b.progress != null) parts.push(`${Math.round(b.progress)}%`)
+  const fc = forecastByKey?.[b.key]
+  if (fc) parts.push(`forecast lands ${fc.landing} (${forecastPhrase(fc)})`)
   return parts.join(" · ")
+}
+// A compact forecast marker under a milestone key, only when the landing deviates from the target.
+function forecastBadge(b) {
+  const fc = b.kind === "milestone" ? forecastByKey?.[b.key] : null
+  if (!fc || fc.status === "on-track") return ""
+  const cls = fc.status === "at-risk" ? "late" : "early"
+  const glyph = fc.status === "at-risk" ? "▲" : "▼"
+  return `<span class="fc ${cls}">${glyph} ~${Math.abs(fc.slipDays)}d</span>`
 }
 function bucketTh(b) {
   const cls = b.kind === "milestone" ? "mile" : ""
-  return `<th class="${cls}" title="${escapeHtml(bucketDetail(b))}">${b.label}<span class="s">${
-    bucketSub(b)
-  }</span></th>`
+  return `<th class="${cls}" title="${escapeHtml(bucketDetail(b))}">${b.label}<span class="s">${bucketSub(b)}</span>${
+    forecastBadge(b)
+  }</th>`
 }
 
 function flagBadges(i) {
