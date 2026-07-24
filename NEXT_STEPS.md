@@ -85,14 +85,14 @@ Ordered roughly by dependency and payoff; production deployment is last on purpo
      non-purple accent so it's recognizably "the same designer" as yak-shears rather than a Linear clone.
      Worth a small throwaway mockup (a static HTML comp, not wired to real data) before touching
      `web/style.css` for real, since this is a taste call that's easy to get wrong in code first.
-2. **Project switcher.** Today the web app only ever reads one static `/data/cpu.json`, and the Python
-   ingest script takes a single project name/slug per run — there's no concept of "list the projects I'm
-   a member of" anywhere. Needs: a Linear GraphQL query for the viewer's member projects (similar shape
-   to `_find_project` in `_tlr-linear_progress.py`, but listing rather than searching), a per-project data
-   file convention (e.g. `web/data/<slug>.json`) so switching is instant client-side, and a picker in the
-   header (a natural fit for the command palette from item 1, if that lands first — "switch to project"
-   as one of its actions). This is also the first real motivation to move the ingest step off the
-   single-project Python script and toward the Ingest domain ADR 0007 already describes.
+2. **Project switcher.** Today the web app only ever reads one static `/data/cpu.json`, and nothing in
+   the repo fetches a project's issues from Linear per run — there's no concept of "list the projects
+   I'm a member of" anywhere, and no live-issue ingest at all now that the old Python script is gone.
+   Needs: a Linear GraphQL query for the viewer's member projects (listing rather than searching), an
+   issue-fetch script producing `data.issues` for a given project, a per-project data file convention
+   (e.g. `web/data/<slug>.json`) so switching is instant client-side, and a picker in the header (a
+   natural fit for the command palette from item 1, if that lands first — "switch to project" as one of
+   its actions). This is the Ingest domain ADR 0007 already describes, still unbuilt.
 3. **Data-freshness UX.** `loadData()` silently falls back to `data-sample.json` if `cpu.json` is missing,
    and there's no visible signal when the shown data is stale (a snapshot taken hours or days ago) versus
    the fallback sample. A visible banner or header state for "showing sample data" / "data as of

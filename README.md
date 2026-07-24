@@ -2,102 +2,51 @@
 
 TLR, pronounced "Teller"
 
-Generate progress reports from Linear, Jira, and other project management tools.
+A capacity- and dependency-aware planning board for Linear projects: one Deno/TypeScript core, a
+static web front-end, and a handful of scripts that refresh its data from Linear, Incident.io, and
+Google Calendar. See [ARCHITECTURE.md](ARCHITECTURE.md) for the shape and [AGENTS.md](AGENTS.md) for
+where to start.
 
-## Installation
+## Setup
 
-```bash
-uv sync
+```sh
+mise install
+deno install
+hk install
 ```
+
+`mise install` pins Deno, [hk](https://hk.jdx.dev) (git hooks), and [dprint](https://dprint.dev)
+(JSON/Markdown/TOML formatting) to this repo's versions. `hk install` wires `hk.pkl`'s `pre-commit`
+hook into git so fmt/lint/test run automatically.
+
+See [SETUP.md](SETUP.md) for the credentials (Linear, Incident.io, Google Calendar) the data-refresh
+scripts need.
 
 ## Usage
 
-### Linear Reports
-
-Generate a progress report for Linear projects:
-
-```bash
-# Single project, last 7 days (default)
-tlr linear "My Project"
-
-# Multiple projects
-tlr linear "Engineering" "Infrastructure" --days 14
-
-# Output to file
-tlr linear "ENG" --days 7 --output report.md
+```sh
+deno task dev              # serve the web board at localhost:8000
+deno task capacity         # refresh on-call / out-days / velocity into web/data/cpu.json
+deno task roster           # resolve assignee names to emails from Linear
+deno task gcal:freebusy    # spike: read teammates' free/busy from Google Calendar
 ```
-
-### API Key Setup
-
-The Linear API key is stored in Mac Keychain. On first run, you'll be prompted to enter your API key.
-
-Get your Linear API key from: https://linear.app/settings/api
 
 ## Development
 
-### Setup
-
-```bash
-uv sync
-```
-
-### Run Tests
-
-```bash
-uv run pytest
-```
-
-### Type Checking
-
-```bash
-uv run mypy
-```
-
-### Linting
-
-```bash
-uv run ruff check .
-uv run ruff format .
+```sh
+deno task test           # run tests
+deno task fmt             # format *.ts/*.js
+deno task lint            # lint *.ts/*.js
+deno task check           # type-check
+hk run pre-commit --all   # everything the pre-commit hook runs, on the whole repo
 ```
 
 ## Architecture
 
 ```
-tlr/
-├── linear/          # Linear service (API client, models)
-├── reporters/       # Output formatters (markdown, json)
-├── models.py        # Common data structures
-├── secrets.py       # Credential management
-└── cli.py           # CLI interface
-```
-
-### Adding a New Service
-
-1. Create service directory (e.g., `tlr/jira/`)
-2. Implement API client functions
-3. Define service-specific Pydantic models
-4. Write `transform_to_report()` function returning `ProjectReport`
-5. Add CLI subcommand in `cli.py`
-
-The reporting layer (`reporters/markdown.py`) works with any service that returns `ProjectReport`.
-
-## Project Structure
-
-- **Services are NOT interchangeable** - each has unique functionality
-- **Composable design** - reporters can combine output from multiple services
-- **Testing focus** - comprehensive tests for reporting layer
-
-## Migration from Script
-
-The original `tlr-linear_progress.py` script has been refactored into:
-
-- `tlr/linear/client.py` - Linear API functions
-- `tlr/linear/models.py` - Pydantic models for validation
-- `tlr/reporters/markdown.py` - Report generation
-- `tlr/cli.py` - CLI interface
-
-Run the new version:
-
-```bash
-tlr linear "Project Name" --days 7
+scripts/          data-refresh and dev-server scripts (capacity, roster, gcal-freebusy, serve)
+web/              the board: index.html, style.css, app.js
+web/lib/          pure logic (capacity.js, planning.js), imported by both the browser and Deno tests
+tests/            Deno tests for web/lib
+adr/              decisions and why
 ```
