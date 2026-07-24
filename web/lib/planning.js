@@ -125,6 +125,25 @@ export function milestoneForecast(snapshot, weeklyPoints) {
   return { asOf: snapshot.asOf, teamWeeklyPoints: weekly, milestones }
 }
 
+// A realistic weekly throughput for the forecast: the team's average per-cycle capacity across the
+// active cycles, using each rostered person's deflated points (on-call and OOO hold it down) rather
+// than raw base velocity. `teamWeeklyPoints` (the default) assumes everyone is fully available every
+// week; pass this into milestoneForecast when a near-term on-call or PTO week should be reflected.
+// Falls back to 0 when there is no roster or no active cycle, which milestoneForecast reads as "no
+// throughput" and leaves landings at asOf.
+export function teamWeeklyThroughput(snapshot) {
+  const roster = Object.keys(snapshot.capacity?.roster ?? {})
+  const people = roster.length
+    ? roster
+    : [...new Set(snapshot.issues.map((i) => i.assignee))].filter((p) => p !== "Unassigned")
+  if (!people.length || !ACTIVE_CYCLES.length) return 0
+  let sum = 0
+  for (const c of ACTIVE_CYCLES) {
+    for (const p of people) sum += personCycleCapacity(p, c, snapshot.capacity).points
+  }
+  return Math.round(sum / ACTIVE_CYCLES.length)
+}
+
 const TELLS = [
   "comprehensive",
   "robust",

@@ -12,6 +12,7 @@ import {
   slopHash,
   slopScan,
   statusRank,
+  teamWeeklyThroughput,
   weeksBetween,
 } from "../web/lib/planning.js"
 
@@ -73,6 +74,21 @@ Deno.test("milestoneForecast lands milestones sequentially by target date", () =
   // A non-positive override is meaningless and falls back to the roster sum, not a nonsense date.
   assertEquals(milestoneForecast(data, 0).teamWeeklyPoints, 20)
   assertEquals(milestoneForecast(data, -5).teamWeeklyPoints, 20)
+})
+
+Deno.test("teamWeeklyThroughput averages deflated per-cycle capacity and drops below the base sum", () => {
+  const data = {
+    ...DATA,
+    issues: [],
+    capacity: {
+      config: { workdaysPerCycle: 5, oncallPenalty: 0.45 },
+      defaultVelocity: 20,
+      roster: { A: { email: "a@x" }, B: { email: "b@x" } },
+      people: { A: { cycles: { "48": { oncall: true } } } }, // A on-call in cycle 48 only
+    },
+  }
+  // C48: A 20*(1-0.45)=11, B 20 -> 31. C49: A 20, B 20 -> 40. Average -> 36, under the 40 base sum.
+  assertEquals(teamWeeklyThroughput(data), 36)
 })
 
 Deno.test("weeksBetween is roughly right and never negative", () => {

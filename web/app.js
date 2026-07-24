@@ -9,6 +9,7 @@ import {
   slopHash,
   slopScan,
   statusRank,
+  teamWeeklyThroughput,
   weeksBetween,
 } from "./lib/planning.js"
 import { pickProject } from "./lib/issues.js"
@@ -32,7 +33,9 @@ let buckets, bucketByKey, bucketWeeks, byId, riskIds, forecastByKey
 function deriveBuckets() {
   buckets = buildBuckets(data)
   bucketByKey = Object.fromEntries(buckets.map((b) => [b.key, b]))
-  forecastByKey = Object.fromEntries(milestoneForecast(data).milestones.map((m) => [m.key, m]))
+  forecastByKey = Object.fromEntries(
+    milestoneForecast(data, teamWeeklyThroughput(data)).milestones.map((m) => [m.key, m]),
+  )
   bucketWeeks = {}
   data.milestones.forEach((m, idx) => {
     const start = idx === 0
