@@ -42,6 +42,25 @@ test("grid tickets are keyboard reachable and arrow-navigable", async ({ page })
   expect(focusedId).not.toBe(firstId)
 })
 
+test("an uncaught client error surfaces in a visible, dismissible banner", async ({ page }) => {
+  await page.goto("/")
+  await expect(page.locator("#grid tr").first()).toBeVisible()
+
+  await page.evaluate(() => {
+    setTimeout(() => {
+      throw new Error("injected test error")
+    }, 0)
+  })
+
+  const banner = page.locator(".js-error-entry")
+  await expect(banner).toBeVisible()
+  await expect(banner).toContainText("injected test error")
+  await expect(page.locator(".js-error-stack")).toContainText("injected test error")
+
+  await page.click(".js-error-dismiss")
+  await expect(banner).toHaveCount(0)
+})
+
 test("milestone filter is a searchable multi-select that narrows the board's columns", async ({ page }) => {
   await page.goto("/")
   await expect(page.locator("#grid tr").first()).toBeVisible()

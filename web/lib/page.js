@@ -3,6 +3,7 @@
 
 import { pickProject } from "./issues.js"
 import { wireProjectPicker } from "./nav.js"
+import "./errorBanner.js"
 
 // The project this page is about: honor ?project=<slug>, else the first in the manifest. Null when the
 // manifest is empty (no projects configured yet). Also wires the shared nav's project picker, so every

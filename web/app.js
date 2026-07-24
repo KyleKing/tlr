@@ -15,6 +15,7 @@ import {
 import { pickProject } from "./lib/issues.js"
 import { applyTheme, loadTheme } from "./lib/appearance.js"
 import { wireProjectPicker } from "./lib/nav.js"
+import { showError } from "./lib/errorBanner.js"
 
 const STATUS = {
   started: { label: "In progress", color: "var(--st-started)", fg: "var(--st-started-fg)" },
@@ -777,6 +778,8 @@ async function refresh() {
     loadedAt = new Date()
     renderMeta()
     render()
+  } catch (err) {
+    showError(err, "Refresh failed")
   } finally {
     refreshBtn.disabled = false
     refreshBtn.textContent = "Refresh"

@@ -8,6 +8,7 @@ import { ACCENTS, FLAVORS, themeVars } from "./lib/theme.js"
 import { applyTheme, loadTheme } from "./lib/appearance.js"
 import { setPersonCycle, updateCapacityConfig, updateRosterEmail } from "./lib/config.js"
 import { resolveProject } from "./lib/page.js"
+import { showError } from "./lib/errorBanner.js"
 
 const project = await resolveProject()
 const theme = loadTheme()
@@ -129,6 +130,7 @@ document.getElementById("cfg-save").addEventListener("click", async () => {
     cfgStatus.textContent = "Saved"
   } catch (err) {
     cfgStatus.textContent = err instanceof Error ? err.message : "Save failed"
+    showError(err, "Settings save failed")
   }
 })
 
@@ -154,6 +156,7 @@ document.getElementById("cfg-refresh").addEventListener("click", async (e) => {
     }
   } catch (err) {
     cfgRefreshLog.textContent = err instanceof Error ? err.message : "Refresh failed"
+    showError(err, "Settings refresh failed")
   } finally {
     btn.disabled = false
     btn.textContent = "Refresh all"
