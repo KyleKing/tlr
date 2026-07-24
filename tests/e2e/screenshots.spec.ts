@@ -16,6 +16,13 @@ const pages: [path: string, name: string, ready: string][] = [
   [`/settings${SEED}`, "settings", ".cfg-nav-item"],
 ]
 
+// Pin the clock so any "loaded HH:MM" / relative-age text renders the same every run. Without this the
+// board shot churns on its load timestamp even when nothing visual changed. setFixedTime pins Date
+// without faking timers, so fetches and the app still run normally.
+test.beforeEach(async ({ page }) => {
+  await page.clock.setFixedTime(new Date("2026-07-24T09:00:00"))
+})
+
 for (const [path, name, ready] of pages) {
   test(`screenshot: ${name}`, async ({ page }) => {
     await page.goto(path)
