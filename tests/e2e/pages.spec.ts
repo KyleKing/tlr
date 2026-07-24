@@ -71,8 +71,9 @@ test("review page edits a ticket: form pre-fills, previews a dry run, and guards
 test("settings page switches panes and saves the capacity block", async ({ page }) => {
   await page.goto("/settings")
 
-  // appearance pane is open first, with the theme pickers rendered
+  // appearance pane is open first, with the theme pickers rendered, and a note that it's global
   await expect(page.locator("#flavor-picker .flavor-btn").first()).toBeVisible()
+  await expect(page.locator(".cfg-pane[data-pane='appearance']")).toContainText("browser setting")
 
   // switching panes hides the others
   await page.click('.cfg-nav-item[data-pane="capacity"]')
