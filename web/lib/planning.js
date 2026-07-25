@@ -67,18 +67,30 @@ function maxDate(a, b) {
 // Milestone slip forecast: a realistic landing date per milestone, always a forecast, never a real
 // date. Milestones deliver in target-date order, each starting when the one before finishes (or asOf,
 // whichever is later). Weeks of work = a milestone's remaining (open) points over team weekly
-// throughput, where throughput sums each rostered person's base velocity per one-week cycle.
+// throughput, where throughput sums the base velocity of everyone owning work here, per one-week
+// cycle. See planningPeople for why that is not the roster.
 const _DAY_MS = 24 * 3600 * 1000
 const _WEEK_MS = 7 * _DAY_MS
 
-// The people to plan for: the roster if one is set, otherwise every real assignee on the issues.
-export function rosterOrAssignees(snapshot) {
-  const roster = Object.keys(snapshot.capacity?.roster ?? {})
-  return roster.length ? roster : [...new Set(snapshot.issues.map((i) => i.assignee))].filter((p) => p !== "Unassigned")
+// The people to plan for: whoever actually owns work in this project.
+//
+// The roster is deliberately not this list. A roster entry maps a display name to an email so on-call
+// and calendar identities resolve, and it is meant to cover every engineer, including people who might
+// join the project later. Summing velocity across all of them would credit the forecast with capacity
+// nobody is spending here. Ownership of a live ticket is the thing that makes someone a planning
+// target, so that is what this reads.
+export function planningPeople(snapshot) {
+  const owners = new Set()
+  for (const i of snapshot.issues ?? []) {
+    // Archived work is history. Its owner is not a planning target unless they hold something live.
+    if (i.archived) continue
+    if (i.assignee && i.assignee !== "Unassigned") owners.add(i.assignee)
+  }
+  return [...owners].sort()
 }
 
 function teamWeeklyPoints(snapshot) {
-  return rosterOrAssignees(snapshot).reduce((sum, p) => sum + personCycleCapacity(p, null, snapshot.capacity).base, 0)
+  return planningPeople(snapshot).reduce((sum, p) => sum + personCycleCapacity(p, null, snapshot.capacity).base, 0)
 }
 
 function forecastStatus(slipDays) {
@@ -88,12 +100,12 @@ function forecastStatus(slipDays) {
 }
 
 // weeklyPoints overrides the team throughput used for the landing math. Omit for the default (sum of
-// each rostered person's base velocity). Pass a realistic figure (e.g. a per-person ceiling deflated
+// each owner's base velocity). Pass a realistic figure (e.g. a per-person ceiling deflated
 // for on-call and OOO) when the project is only a slice of the team's work, so the forecast does not
 // assume everyone spends their whole week on it.
 export function milestoneForecast(snapshot, weeklyPoints) {
   // A non-positive override is meaningless (it would land everything at asOf or before), so fall back
-  // to the roster sum rather than emit a nonsense date.
+  // to the owner sum rather than emit a nonsense date.
   const weekly = weeklyPoints != null && weeklyPoints > 0 ? weeklyPoints : teamWeeklyPoints(snapshot)
   const ordered = [...snapshot.milestones].sort((a, b) => a.target.localeCompare(b.target))
   let cursor = snapshot.asOf
@@ -124,14 +136,14 @@ export function milestoneForecast(snapshot, weeklyPoints) {
   return { asOf: snapshot.asOf, teamWeeklyPoints: weekly, milestones }
 }
 
-// A realistic weekly throughput for the forecast: the team's average per-cycle capacity across the
-// active cycles, using each rostered person's deflated points (on-call and OOO hold it down) rather
-// than raw base velocity. `teamWeeklyPoints` (the default) assumes everyone is fully available every
-// week; pass this into milestoneForecast when a near-term on-call or PTO week should be reflected.
-// Falls back to 0 when there is no roster or no active cycle, which milestoneForecast reads as "no
-// throughput" and leaves landings at asOf.
+// A realistic weekly throughput for the forecast: the average per-cycle capacity across the active
+// cycles of everyone owning work here, using each person's deflated points (on-call and OOO hold it
+// down) rather than raw base velocity. `teamWeeklyPoints` (the default) assumes everyone is fully
+// available every week; pass this into milestoneForecast when a near-term on-call or PTO week should
+// be reflected. Falls back to 0 when nobody owns work or there is no active cycle, which
+// milestoneForecast reads as "no throughput" and leaves landings at asOf.
 export function teamWeeklyThroughput(snapshot) {
-  const people = rosterOrAssignees(snapshot)
+  const people = planningPeople(snapshot)
   if (!people.length || !ACTIVE_CYCLES.length) return 0
   let sum = 0
   for (const c of ACTIVE_CYCLES) {
@@ -348,11 +360,12 @@ function heaviestPath(ids, byId) {
 // capacity. A chain running months out should not inherit whichever on-call week happens to land in
 // the active cycles, and on a small roster every active cycle can hold one.
 //
-// Unassigned work is charged at the roster's median rate. Leaving it on the default velocity made
-// unowned chains the fastest work in the plan, which is backwards: nobody is working them at all.
+// Unassigned work is charged at the median rate of the people who own work here. Leaving it on the
+// default velocity made unowned chains the fastest work in the plan, which is backwards: nobody is
+// working them at all.
 function chainRate(person, snapshot) {
   if (person !== "Unassigned") return personCycleCapacity(person, null, snapshot.capacity).base
-  const rates = rosterOrAssignees(snapshot)
+  const rates = planningPeople(snapshot)
     .filter((p) => p !== "Unassigned")
     .map((p) => personCycleCapacity(p, null, snapshot.capacity).base)
     .sort((a, b) => a - b)

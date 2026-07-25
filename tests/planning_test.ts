@@ -9,6 +9,7 @@ import {
   milestoneForecast,
   missingData,
   personCycleCapacity,
+  planningPeople,
   slopHash,
   slopScan,
   statusRank,
@@ -98,7 +99,11 @@ Deno.test("milestoneForecast lands milestones sequentially by target date", () =
 Deno.test("teamWeeklyThroughput averages deflated per-cycle capacity and drops below the base sum", () => {
   const data = {
     ...DATA,
-    issues: [],
+    // Throughput counts whoever owns work here, not whoever is on the roster.
+    issues: [
+      { assignee: "A", statusType: "unstarted", estimate: 5, milestone: "M1" },
+      { assignee: "B", statusType: "unstarted", estimate: 5, milestone: "M1" },
+    ],
     capacity: {
       config: { workdaysPerCycle: 5, oncallPenalty: 0.45 },
       defaultVelocity: 20,
@@ -254,10 +259,13 @@ Deno.test("chainRisks leaves completed work out of the chain", () => {
   assertEquals(chain, undefined)
 })
 
-Deno.test("chainRisks charges unassigned work at the roster median, not the default velocity", () => {
+// Ada at 10 and Bo at 5 own work here, so unowned work is charged at their median rather than the
+// default velocity, which would have made it the fastest work in the plan.
+Deno.test("chainRisks charges unassigned work at the median of the people who own work", () => {
   const snap = chainSnapshot([
     chained("A", 15, "Unassigned", ["B"]),
     chained("B", 0, "Ada", []),
+    chained("C", 3, "Bo", []),
   ])
   const [chain] = chainRisks(snap)
   assertEquals(chain.owners.find((o) => o.person === "Unassigned")!.perCycle, 7.5)
@@ -290,4 +298,34 @@ Deno.test("chainRisks counts what the chain spans, which is the part worth a bad
   ])
   const [chain] = chainRisks(snap)
   assertEquals(chain.spans, { milestones: 2, cycles: 2, assignees: 2 })
+})
+
+// The roster is an identity directory covering every engineer, so that people who join later already
+// resolve for on-call and calendar. Planning against it would credit the forecast with capacity nobody
+// spends on this project.
+Deno.test("planningPeople reads ownership of live work, not the roster", () => {
+  const snapshot = {
+    capacity: { roster: { Ada: {}, Bo: {}, "Never Here": {} }, people: {} },
+    issues: [
+      { assignee: "Ada", statusType: "unstarted" },
+      { assignee: "Bo", statusType: "completed" },
+      { assignee: "Unassigned", statusType: "unstarted" },
+      { assignee: "Departed", statusType: "unstarted", archived: true },
+    ],
+  }
+  assertEquals(planningPeople(snapshot), ["Ada", "Bo"])
+})
+
+Deno.test("teamWeeklyThroughput ignores a rostered person who owns nothing here", () => {
+  const base = {
+    ...DATA,
+    capacity: { roster: { A: {}, B: {} }, defaultVelocity: 20, people: {}, config: {} },
+  }
+  const onlyA = teamWeeklyThroughput({ ...base, issues: [{ assignee: "A", statusType: "unstarted" }] })
+  const both = teamWeeklyThroughput({
+    ...base,
+    issues: [{ assignee: "A", statusType: "unstarted" }, { assignee: "B", statusType: "unstarted" }],
+  })
+  assertEquals(onlyA, 20)
+  assertEquals(both, 40)
 })

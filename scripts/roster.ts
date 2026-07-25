@@ -8,6 +8,12 @@
 // the Linear GraphQL API (bearer key from the macOS keychain, service `tlr-linear`, account `api-key`,
 // or the LINEAR_API_KEY env var) so the roster is never hand-maintained. Existing roster entries are
 // kept; a name already carrying an email is left alone unless --force is passed.
+//
+// Every active Linear user goes in, not only this project's assignees. The roster is an identity
+// directory: it resolves an Incident.io or Calendar identity to a display name, and someone on call
+// who is missing from it has their on-call week silently ignored. It is not the set of people the
+// forecast plans for, which is ownership of live work (planning.js's planningPeople), so a broad
+// roster costs nothing in the forecast and covers anyone who joins the project later.
 
 import { liveIssues } from "../web/lib/issues.js"
 import { fetchWithRetry } from "@/httpRetry.ts"
@@ -17,7 +23,7 @@ const LINEAR_API_URL = "https://api.linear.app/graphql"
 const DEFAULT_DATA = new URL("../web/data/cpu.json", import.meta.url).pathname
 
 const USERS_QUERY =
-  `query Users($after: String) { users(first: 250, after: $after) { nodes { name displayName email active } pageInfo { hasNextPage endCursor } } }`
+  `query Users($after: String) { users(first: 250, after: $after) { nodes { name displayName email active app guest } pageInfo { hasNextPage endCursor } } }`
 
 function parseArgs(argv: string[]) {
   const args: Record<string, string | boolean> = { data: DEFAULT_DATA }
@@ -34,7 +40,7 @@ function linearKey(): Promise<string> {
   return getSecret("linear")
 }
 
-type LinearUser = { name: string; displayName: string; email: string; active: boolean }
+type LinearUser = { name: string; displayName: string; email: string; active: boolean; app: boolean; guest: boolean }
 
 type UsersResponse = {
   errors?: { message: string }[]
@@ -67,9 +73,8 @@ async function fetchUsers(key: string): Promise<LinearUser[]> {
   return users
 }
 
-// Archived tickets are skipped: a roster entry is what makes someone a person the board plans for
-// (planning.js's rosterOrAssignees reads the roster keys), so resolving an owner who only appears on
-// archived work adds a capacity row and inflates team throughput for someone off the project.
+// This project's live assignees. Kept because an assignee whose name Linear cannot resolve is worth
+// reporting: they own work here and their on-call and out-days will never land.
 export function assigneeNames(issues: { archived?: boolean; assignee?: string | null }[]): string[] {
   const names = new Set<string>()
   for (const i of liveIssues(issues)) {
@@ -77,13 +82,6 @@ export function assigneeNames(issues: { archived?: boolean; assignee?: string | 
     if (a && a !== "Unassigned") names.add(a)
   }
   return [...names].sort()
-}
-
-function resolveEmail(name: string, users: LinearUser[]): string | null {
-  const lower = name.toLowerCase()
-  const hit = users.find((u) => u.name?.toLowerCase() === lower) ??
-    users.find((u) => u.displayName?.toLowerCase() === lower)
-  return hit?.email ?? null
 }
 
 export type RosterData = {
@@ -95,25 +93,31 @@ export async function resolveRoster(key: string, data: RosterData, opts: { force
   const capacity = data.capacity ?? (data.capacity = { defaultVelocity: 20, people: {} })
   const roster: Record<string, { email: string }> = capacity.roster ?? (capacity.roster = {})
 
-  const names = assigneeNames(data.issues ?? [])
   const users = await fetchUsers(key)
+  const owners = new Set(assigneeNames(data.issues ?? []))
 
   const resolved: string[] = []
-  const missing: string[] = []
-  for (const name of names) {
-    const existing = roster[name]?.email
-    if (existing && !opts.force) continue
-    const email = resolveEmail(name, users)
-    if (email) {
-      roster[name] = { email }
-      resolved.push(`${name} → ${email}`)
-    } else {
-      if (!roster[name]) roster[name] = { email: "" }
-      missing.push(name)
-    }
+  for (const user of users) {
+    // `app` marks Linear's integration and bot accounts (Slack, Sentry, Codex, incident.io), which
+    // carry synthetic @*.linear.app addresses and are never on call or out of office. A guest is an
+    // external collaborator, not an engineer to plan around.
+    if (!user.active || user.app || user.guest) continue
+    // Keyed by Linear's `name`, because that is what transformIssue stores as an issue's assignee and
+    // what the board groups people by. displayName is a different string for some users, and keying on
+    // it would file a person's on-call under a name no ticket carries.
+    const name = user.name || user.displayName
+    if (!name || !user.email) continue
+    if (roster[name]?.email && !opts.force) continue
+    roster[name] = { email: user.email }
+    resolved.push(`${name} → ${user.email}`)
   }
 
-  return { total: names.length, resolved, missing }
+  // An owner Linear did not return is the case worth shouting about: they hold work in this project,
+  // so their on-call and out-days will never resolve until the name is reconciled by hand.
+  const missing = [...owners].filter((name) => !roster[name]?.email).sort()
+  for (const name of missing) roster[name] ??= { email: "" }
+
+  return { total: users.filter((u) => u.active && !u.app && !u.guest).length, resolved, missing }
 }
 
 async function main() {
@@ -122,9 +126,9 @@ async function main() {
   const key = await linearKey()
   const { total, resolved, missing } = await resolveRoster(key, data, { force: args.force })
 
-  console.log(`roster: ${total} assignees, ${resolved.length} resolved, ${missing.length} unresolved`)
+  console.log(`roster: ${total} active Linear members, ${resolved.length} written, ${missing.length} unresolved`)
   for (const r of resolved) console.log(`  ${r}`)
-  if (missing.length) console.log(`  unresolved (left blank): ${missing.join(", ")}`)
+  if (missing.length) console.log(`  owns work here but unresolved (left blank): ${missing.join(", ")}`)
 
   if (args.dryRun) {
     console.log("--dry-run: roster block that would be written:")
