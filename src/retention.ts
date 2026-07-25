@@ -60,7 +60,8 @@ function groupByProject(rows: SnapshotRow[]): Map<string, SnapshotRow[]> {
 }
 
 // Decide what survives. Within a bucket the newest capture wins. The newest capture of every project
-// and every id in `keepIds` (the review pointer) are never dropped, whatever bucket they land in.
+// and every id in `keepIds` (every project's review pointer) are never dropped, whatever bucket they
+// land in.
 export function planPrune(rows: SnapshotRow[], options: RetentionOptions = {}): PrunePlan {
   const bounds = {
     fullDays: options.fullDays ?? RETENTION.fullDays,
@@ -100,8 +101,7 @@ export type PruneResult = PrunePlan & { dryRun: boolean; deleted: number }
 // transaction keeps a concurrent capture from reading a half-pruned history.
 export function pruneStore(store: SnapshotStore, options: RetentionOptions & { dryRun?: boolean } = {}): PruneResult {
   const dryRun = options.dryRun ?? true
-  const pointer = store.getReviewPointer()
-  const keepIds = [...(options.keepIds ?? []), ...(pointer === null ? [] : [pointer])]
+  const keepIds = [...(options.keepIds ?? []), ...store.listReviewPointers()]
   const plan = planPrune(store.listSnapshots(), { ...options, keepIds })
   if (dryRun || plan.drop.length === 0) return { ...plan, dryRun, deleted: 0 }
   const deleted = store.transaction(() => store.deleteSnapshots(plan.drop))

@@ -36,3 +36,9 @@ Deno.test("renderReport produces the three narrative sections", () => {
   assertStringIncludes(md, "## Moved")
   assertStringIncludes(md, "## At risk")
 })
+
+Deno.test("renderReport names one date when both captures share an asOf", () => {
+  const { a, b } = generateSnapshots()
+  const md = renderReport(weeklyReport(diffSnapshots(a, { ...b, asOf: a.asOf })))
+  assertStringIncludes(md, `# Weekly update: ${a.asOf}\n`)
+})

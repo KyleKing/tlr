@@ -57,7 +57,7 @@ src/                  core: seed (data contract), snapshot, diff, review, ops, p
                       (the one write adapter), report, forecast, export, secrets, capture (store
                       locations + the shared capture), runLog, runLock, schedule, commands/, utils/env
 scripts/              serve (dev server + JSON API), issues, roster, capacity, gcal-freebusy,
-                      seed, seed-linear (fill the demo workspace), snapshot (the daily scheduled
+                      seed, seed-linear (fill the demo workspace), snapshot (the scheduled
                       capture), schedule.sh + launchagent.plist.template (its launchd timer), cli
 web/app.js            board: rendering, filters, interaction
 web/changes.js        weekly-update page       web/review.js   review-and-fix page

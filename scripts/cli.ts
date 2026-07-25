@@ -116,7 +116,7 @@ async function run(cmd: string | undefined, f: Flags): Promise<void> {
       const { before, after, history, window } = await twoSnapshots(f, true)
       const review = reviewSince(before, after, history)
       if (window) {
-        if (window.advance) window.store.setReviewPointer(window.toId)
+        if (window.advance) window.store.setReviewPointer(window.toId, window.projectKey)
         window.store.close()
       }
       return out(review)
@@ -167,7 +167,7 @@ async function twoSnapshots(
   before: Snapshot
   after: Snapshot
   history: Snapshot[]
-  window?: { store: ReturnType<typeof openStore>; toId: number; advance: boolean }
+  window?: { store: ReturnType<typeof openStore>; toId: number; advance: boolean; projectKey: string }
 }> {
   const a = str(f, "a")
   const b = str(f, "b")
@@ -179,12 +179,17 @@ async function twoSnapshots(
     if (rows.length === 0) fail("no snapshots stored. run `tlr snapshot --project <file>` first.")
     const latest = rows[0]
     const mine = rows.filter((r) => r.projectKey === latest.projectKey)
-    const pointer = store.getReviewPointer()
+    const pointer = store.getReviewPointer(latest.projectKey)
     const anchor = mine.find((r) => r.id === pointer) ?? mine[mine.length - 1]
     const before = store.loadSnapshot(anchor.id)
     const after = store.loadSnapshot(latest.id)
     const history = store.loadHistoryBefore(latest.projectKey, anchor.capturedAt)
-    return { before, after, history, window: { store, toId: latest.id, advance: f["no-advance"] !== true } }
+    return {
+      before,
+      after,
+      history,
+      window: { store, toId: latest.id, advance: f["no-advance"] !== true, projectKey: latest.projectKey },
+    }
   }
   const fromId = Number(str(f, "from"))
   const toId = Number(str(f, "to"))

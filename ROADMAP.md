@@ -32,9 +32,19 @@ writer of a project data file goes through `writeJsonAtomic` (temp file, then re
 `/api/config`, `/api/refresh`, and `/api/edit` all write the same file and a reader could otherwise
 observe a half-written one.
 
-`src/snapshot.ts` persists project state to SQLite (`node:sqlite`) on demand. `src/diff.ts` rolls a pair
-of snapshots up to the milestone level; `src/review.ts` tracks a stored pointer for what has been
-reviewed.
+Each project succeeds or fails on its own, so a bad manifest entry cannot end the run, and a capture
+whose issue count collapses is refused rather than stored as a mass deletion. Ambiguous project-name
+matches, a page that reports more results with no cursor, and a hung Linear connection all error instead
+of quietly producing a short issue list.
+
+`src/snapshot.ts` persists project state to SQLite (`node:sqlite`) on demand, keyed by a stable project
+key so a rename in Linear does not fork the history. `src/diff.ts` rolls a pair of snapshots up to the
+milestone level, matching on `linearId` so a ticket moved between teams reads as a rename rather than a
+delete plus an add. Archived tickets are fetched and reported as archived, distinct from removed from
+the project and from cancelled, and filtered out of every view that plans forward. A ticket that leaves
+and comes back carries its prior estimate and milestone instead of arriving as new work.
+`src/retention.ts` thins captures beyond 14 days to one a day and beyond a year to one a week, reporting
+by default and deleting only with `--prune`.
 
 ### The web app
 
@@ -50,10 +60,12 @@ a 📟/🧳 badge or right-clicking a cycle cell. What-if mode overlays PTO and 
 shows the resulting forecast shift per milestone; it cannot reach `/api/edit` or `/api/config`, and
 leaving the mode drops every overlay.
 
-**Changes** browses snapshot history with ‹/› steps and a day-range picker (1/7/30/since-last) that
-resolves "from" to whichever snapshot lands closest to that many days back. **Review** groups edits by
-ticket since the last review pointer, with a mark-reviewed toggle; it only ever shows the latest window,
-because its actions only make sense there. **Roadmap** lays tickets on a pannable, zoomable plane, x by
+**Changes** browses snapshot history by capture or by day, in local time, with a day-range picker
+(1/7/30/since-last) that resolves "from" to whichever snapshot lands closest to that many days back.
+**Review** runs from that project's review pointer to the newest capture, so unreviewed changes
+accumulate rather than expiring at the next capture; marking the last open ticket advances the pointer,
+and reviewed marks are keyed by window and change-set so clearing a ticket in the morning does not
+suppress a different change to it that afternoon. **Roadmap** lays tickets on a pannable, zoomable plane, x by
 cycle or forecast landing date, y by dependency wave, with lane packing so no two cards overlap and
 edges drawn between blockers. **Settings** holds appearance, capacity, roster, integrations, and
 secrets.
@@ -81,9 +93,9 @@ the task to run.
 
 ### Scheduled capture
 
-`deno task snapshot` refreshes every project in the manifest and captures, run daily by a launchd
-LaunchAgent (`scripts/schedule.sh install`). launchd fires a missed run on wake, so a sleeping laptop
-still gets its capture; a lock file and a 12-hour minimum interval (`src/runLock.ts`) keep a catch-up run
+`deno task snapshot` refreshes every project in the manifest and captures, run every three hours by a
+launchd LaunchAgent (`scripts/schedule.sh install`). launchd fires a missed run on wake, so a sleeping
+laptop still gets its capture; a lock file and a 2-hour minimum interval (`src/runLock.ts`) keep a catch-up run
 from colliding with or duplicating one that already landed. Every run appends to a capped run log
 (`src/runLog.ts`), `GET /api/schedule/health` reads it back, and `web/lib/scheduleBanner.js` banners a
 failed or overdue run. No schedule installed means no banner. The hosted equivalent is a systemd timer,
@@ -117,6 +129,12 @@ on every page. The Playwright suite seeds data against an isolated store with no
 - Status resolves by workflow-state type and picks the first state of that type, so a team with two
   states in one category (two "started" states) needs the specific state chosen by name
 - The LaunchAgent's wake-up catch-up rests on `man launchd.plist`, not on an observed overnight sleep
+- Retention reports what it would drop but never deletes until `--prune` is passed by hand, because
+  project keys were only just introduced and a mis-keyed row would be thinned against the wrong history
+- `renderReport`'s markdown window is only as precise as `asOf`, so two captures on the same day print
+  one date; real intra-day precision needs capture timestamps threaded through `SnapshotDiff.project`
+- The Google token exchange and refresh in `scripts/gcal-freebusy.ts` still use a bare `fetch`, so they
+  are the last ingest calls with no per-attempt timeout
 - Incident.io returns zero schedules for the configured key, and `oncallByCycle` only tracks people
   already in `capacity.roster` (see Open questions)
 

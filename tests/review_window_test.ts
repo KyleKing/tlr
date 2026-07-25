@@ -1,8 +1,8 @@
 // The Review page's window is the review pointer to the newest capture, not the last two captures.
 // These cover how the anchor is chosen, which is what decides whether a change you never looked at
 // stays in the queue or falls out of it: the pointer's own row when it is still there, and the
-// project's oldest capture when it is not (a first run, a pruned pointer, or a pointer another
-// project left behind, since the pointer is one global key).
+// project's oldest capture when it is not (a first run, a pruned pointer, or a legacy pointer another
+// project left behind before pointers were per-project).
 
 import { assertEquals } from "@std/assert"
 import { generateSnapshots, type Snapshot } from "@/seed.ts"
@@ -93,6 +93,22 @@ Deno.test("a pointer left by another project is ignored rather than diffed acros
     const rows = projectRows(store, a.project.name)
     assertEquals(rows.some((r) => r.id === theirs), false)
     assertEquals(reviewAnchor(store, rows).id, mine[0])
+  })
+})
+
+Deno.test("switching projects keeps each project's own pointer instead of restarting its queue", () => {
+  withStore((store) => {
+    const { a } = generateSnapshots()
+    const other = named(a, "Other Project", "https://linear.app/acme/project/other-abcdef001122")
+    const mine = captureDay(store, named(a, a.project.name))
+    const theirs = captureDay(store, other)
+    const myRows = projectRows(store, a.project.name)
+    const theirRows = projectRows(store, "Other Project")
+    store.setReviewPointer(mine[4], myRows[0].projectKey)
+    store.setReviewPointer(theirs[5], theirRows[0].projectKey)
+
+    assertEquals(reviewAnchor(store, myRows).id, mine[4])
+    assertEquals(reviewAnchor(store, theirRows).id, theirs[5])
   })
 })
 

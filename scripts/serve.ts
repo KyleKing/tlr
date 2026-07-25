@@ -101,12 +101,12 @@ export function projectRows(store: SnapshotStore, projectName: string): Snapshot
   return byKey.length ? byKey : store.listSnapshots().filter((r) => r.projectName === projectName)
 }
 
-// Where the review queue starts: the stored pointer when it still names a capture of this project,
-// else the project's oldest capture. The pointer is a single global key rather than one per project,
-// so a pointer another project left behind is ignored here instead of diffing across two projects.
-// The same membership check covers a pointer whose snapshot was pruned out from under it.
+// Where the review queue starts: this project's stored pointer when it still names a capture of the
+// project, else the project's oldest capture. The membership check covers a pointer whose snapshot was
+// pruned out from under it, and the legacy pointer a store may still carry from before the pointer was
+// per-project.
 export function reviewAnchor(store: SnapshotStore, rows: SnapshotRow[]): SnapshotRow {
-  const pointer = store.getReviewPointer()
+  const pointer = store.getReviewPointer(rows[0]?.projectKey)
   return rows.find((r) => r.id === pointer) ?? rows[rows.length - 1]
 }
 
@@ -363,17 +363,18 @@ app.post("/api/review/pointer", async (c) => {
   }
   const store = openStore(SNAPSHOT_DB)
   try {
-    if (!projectRows(store, project).some((r) => r.id === snapshotId)) {
+    const row = projectRows(store, project).find((r) => r.id === snapshotId)
+    if (!row) {
       return c.json({ error: "no such snapshot for this project" }, 400)
     }
-    store.setReviewPointer(snapshotId)
+    store.setReviewPointer(snapshotId, row.projectKey)
     return c.json({ ok: true, pointer: snapshotId })
   } finally {
     store.close()
   }
 })
 
-// How the daily snapshot schedule is doing, for the banner in web/lib/scheduleBanner.js. A machine
+// How the snapshot schedule is doing, for the banner in web/lib/scheduleBanner.js. A machine
 // with no LaunchAgent installed answers "unscheduled" with no message, which is the ordinary state.
 app.get("/api/schedule/health", async (c) => {
   const [installed, entries] = await Promise.all([isScheduleInstalled(), readRunLog(RUN_LOG_PATH)])

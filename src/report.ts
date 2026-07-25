@@ -75,9 +75,15 @@ function signed(n: number): string {
   return n > 0 ? `+${n}` : String(n)
 }
 
+// Two captures from the same day carry the same asOf date, and "2026-07-24 to 2026-07-24" reads as a
+// bug rather than as a window shorter than a day. The window is only ever as precise as asOf.
+function windowPhrase(window: WeeklyReport["window"]): string {
+  return window.from === window.to ? window.from : `${window.from} to ${window.to}`
+}
+
 export function renderReport(report: WeeklyReport): string {
   const lines: string[] = []
-  lines.push(`# Weekly update: ${report.window.from} to ${report.window.to}`)
+  lines.push(`# Weekly update: ${windowPhrase(report.window)}`)
   lines.push("")
 
   lines.push("## Shipped")

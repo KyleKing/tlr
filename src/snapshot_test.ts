@@ -169,6 +169,44 @@ Deno.test("deleteSnapshots refuses the snapshot the review pointer references", 
   })
 })
 
+const OTHER_URL = "https://linear.app/acme/project/other-beef00112233"
+
+function twoProjects(store: ReturnType<typeof openStore>) {
+  const { a, b } = generateSnapshots()
+  const mine = store.saveSnapshot(renamed(a, a.project.name, SLUG_URL), 1_000)
+  const theirs = store.saveSnapshot(renamed(b, "Other", OTHER_URL), 2_000)
+  return { mine, mineKey: "slug:c0ffee001122", theirs, theirsKey: "slug:beef00112233" }
+}
+
+Deno.test("each project keeps its own review pointer, falling back to the legacy one", () => {
+  withStore((store) => {
+    const { mine, mineKey, theirs, theirsKey } = twoProjects(store)
+
+    store.setReviewPointer(mine.id, mineKey)
+    store.setReviewPointer(theirs.id, theirsKey)
+    assertEquals(store.getReviewPointer(mineKey), mine.id)
+    assertEquals(store.getReviewPointer(theirsKey), theirs.id)
+    assertEquals(store.getReviewPointer("slug:unknown00000000"), null)
+
+    store.setReviewPointer(theirs.id)
+    assertEquals(store.getReviewPointer(), theirs.id)
+    assertEquals(store.getReviewPointer("slug:unknown00000000"), theirs.id)
+    assertEquals(store.getReviewPointer(mineKey), mine.id)
+  })
+})
+
+Deno.test("deleteSnapshots refuses a snapshot any project's pointer references", () => {
+  withStore((store) => {
+    const { mine, mineKey, theirs, theirsKey } = twoProjects(store)
+    store.setReviewPointer(mine.id, mineKey)
+    store.setReviewPointer(theirs.id, theirsKey)
+
+    assertEquals(store.listReviewPointers().sort((x, y) => x - y), [mine.id, theirs.id])
+    assertEquals(store.deleteSnapshots([mine.id, theirs.id]), 0)
+    assertEquals(store.listSnapshots().length, 2)
+  })
+})
+
 Deno.test("loadHistoryBefore reads only older captures, newest first, up to the limit", () => {
   const { a, b } = generateSnapshots()
   withStore((store) => {

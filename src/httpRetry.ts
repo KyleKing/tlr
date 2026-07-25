@@ -7,8 +7,8 @@
 // 4xx is the caller's fault and repeating it just burns rate limit, so those come straight back.
 //
 // The delay schedule is a pure function of the attempt number and the Retry-After header, with no
-// random jitter, so a test asserts exact delays. A single-process daily run has no thundering herd to
-// spread out, which is the only thing jitter buys.
+// random jitter, so a test asserts exact delays. A single-process scheduled run has no thundering herd
+// to spread out, which is the only thing jitter buys.
 
 export const DEFAULT_ATTEMPTS = 3
 export const DEFAULT_TIMEOUT_MS = 15_000

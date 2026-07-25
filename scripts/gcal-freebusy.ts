@@ -10,6 +10,8 @@
 // The first run opens a browser once for consent and caches a refresh token in web/data/gcal-token.json
 // (both gitignored); later runs are silent.
 
+import { fetchWithRetry } from "@/httpRetry.ts"
+
 export const CLIENT_PATH = new URL("../web/data/gcal-client.json", import.meta.url).pathname
 const TOKEN_PATH = new URL("../web/data/gcal-token.json", import.meta.url).pathname
 const DATA_PATH = new URL("../web/data/cpu.json", import.meta.url).pathname
@@ -157,7 +159,7 @@ export async function fetchFreeBusy(
   timeMin: string,
   timeMax: string,
 ): Promise<Record<string, { busy?: { start: string; end: string }[]; errors?: { reason: string }[] }>> {
-  const res = await fetch(FREEBUSY_URI, {
+  const res: Response = await fetchWithRetry(FREEBUSY_URI, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}`, "content-type": "application/json" },
     body: JSON.stringify({ timeMin, timeMax, items: emails.map((id) => ({ id })) }),

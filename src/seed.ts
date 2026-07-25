@@ -32,7 +32,9 @@ export type Issue = {
 }
 
 export type Snapshot = {
-  project: { name: string; start: string; target: string; url: string }
+  // id and slugId come from a real Linear ingest (scripts/issues.ts) and key the snapshot history in
+  // src/projectIdentity.ts. Offline seed data has neither.
+  project: { id?: string; name: string; slugId?: string; start: string; target: string; url: string }
   cycles: { n: number; start: string; end: string }[]
   asOf: string
   currentCycle: number

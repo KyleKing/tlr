@@ -1,6 +1,11 @@
 // Local snapshot store backed by node:sqlite. Holds each capture as JSON plus a few queryable
-// columns, and a small key-value table for the review pointer. All SQL is parameterized and errors
+// columns, and a small key-value table for the review pointers. All SQL is parameterized and errors
 // propagate to the caller.
+//
+// Each project carries its own review pointer under `reviewPointer:<project_key>`, so switching
+// projects does not restart another project's review queue. The bare `reviewPointer` key is the
+// pre-per-project one: a project with no pointer of its own falls back to it, and it is still the key
+// a no-argument read or write uses.
 //
 // The store runs in WAL mode with a busy timeout, and exposes transaction() so a caller doing a
 // read-modify-write (the dedupe in captureSnapshot) can hold the write lock across the whole
@@ -39,8 +44,9 @@ export type SnapshotStore = {
   deleteSnapshots(ids: number[]): number
   projectKeyForName(name: string): string | null
   rekeyProject(fromKey: string, toKey: string): number
-  getReviewPointer(): number | null
-  setReviewPointer(snapshotId: number): void
+  getReviewPointer(projectKey?: string): number | null
+  setReviewPointer(snapshotId: number, projectKey?: string): void
+  listReviewPointers(): number[]
   transaction<T>(fn: () => T): T
   vacuum(): void
   close(): void
@@ -61,6 +67,15 @@ function toRow(r: Row): SnapshotRow {
 }
 
 const ROW_COLUMNS = "id, captured_at, label, project_name, project_key, as_of, length(json) AS bytes"
+
+function pointerKey(projectKey?: string): string {
+  return projectKey ? `${REVIEW_POINTER_KEY}:${projectKey}` : REVIEW_POINTER_KEY
+}
+
+function readMeta(db: DatabaseSync, key: string): number | null {
+  const row = db.prepare("SELECT value FROM meta WHERE key = ?").get(key) as { value: string } | undefined
+  return row ? Number(row.value) : null
+}
 
 function hasColumn(db: DatabaseSync, table: string, column: string): boolean {
   const cols = db.prepare(`PRAGMA table_info(${table})`).all() as Row[]
@@ -194,8 +209,8 @@ export function openStore(path: string = DEFAULT_DB_PATH): SnapshotStore {
 
     deleteSnapshots(ids) {
       if (!ids.length) return 0
-      const pointer = store.getReviewPointer()
-      const deletable = ids.filter((id) => id !== pointer)
+      const pointers = new Set(store.listReviewPointers())
+      const deletable = ids.filter((id) => !pointers.has(id))
       if (!deletable.length) return 0
       const placeholders = deletable.map(() => "?").join(", ")
       const info = db.prepare(`DELETE FROM snapshots WHERE id IN (${placeholders})`).run(...deletable)
@@ -221,17 +236,23 @@ export function openStore(path: string = DEFAULT_DB_PATH): SnapshotStore {
       })
     },
 
-    getReviewPointer() {
-      const row = db.prepare("SELECT value FROM meta WHERE key = ?").get(REVIEW_POINTER_KEY) as
-        | { value: string }
-        | undefined
-      return row ? Number(row.value) : null
+    getReviewPointer(key) {
+      const own = readMeta(db, pointerKey(key))
+      if (own !== null || key === undefined) return own
+      return readMeta(db, REVIEW_POINTER_KEY)
     },
 
-    setReviewPointer(snapshotId) {
+    setReviewPointer(snapshotId, key) {
       db.prepare(
         "INSERT INTO meta (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
-      ).run(REVIEW_POINTER_KEY, String(snapshotId))
+      ).run(pointerKey(key), String(snapshotId))
+    },
+
+    listReviewPointers() {
+      const rows = db.prepare(
+        "SELECT value FROM meta WHERE key = ? OR key LIKE ?",
+      ).all(REVIEW_POINTER_KEY, `${REVIEW_POINTER_KEY}:%`) as Row[]
+      return rows.map((r) => Number(r.value)).filter(Number.isInteger)
     },
 
     transaction(fn) {
@@ -266,7 +287,7 @@ export function openStore(path: string = DEFAULT_DB_PATH): SnapshotStore {
 // A project that only ever yielded a name key gets folded into its stable key the first time one
 // appears, so history captured before the URL carried a slugId does not sit in a separate bucket.
 function bindProjectKey(db: DatabaseSync, store: SnapshotStore, snapshot: Snapshot): string {
-  const project = snapshot.project as Snapshot["project"] & { id?: string; slugId?: string }
+  const project = snapshot.project
   const derived = projectKey(project)
   const bound = store.projectKeyForName(project.name)
 

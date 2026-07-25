@@ -11,8 +11,8 @@
 // Every project runs on its own: one project's failure is recorded against that project and the rest
 // still run, so a local seed file or one broken project cannot cost the others their capture.
 //
-// This is what the launchd LaunchAgent runs daily (scripts/schedule.sh). launchd fires a missed
-// StartCalendarInterval once on wake, so a laptop that was asleep at the scheduled hour still gets its
+// This is what the launchd LaunchAgent runs every three hours (scripts/schedule.sh). launchd fires a
+// missed StartCalendarInterval once on wake, so a laptop that was asleep at the scheduled hour still gets its
 // capture — which makes an overlapping run and a redundant run both realistic, hence the lock and the
 // minimum interval in src/runLock.ts. Every run, including a refusal, appends one line to the run log
 // that the board reads back through /api/schedule/health.

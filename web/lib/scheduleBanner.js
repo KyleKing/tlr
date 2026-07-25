@@ -1,4 +1,4 @@
-// A sibling of errorBanner.js for a failure nobody is watching: the daily snapshot run happens with no
+// A sibling of errorBanner.js for a failure nobody is watching: the scheduled snapshot run happens with no
 // terminal open, so a Linear key that expired overnight would otherwise show up only as a board that
 // quietly stopped gaining history. Every page loads this module (the shared layout pulls it in), asks
 // the server how the schedule is doing, and shows one dismissible line when the last run failed or

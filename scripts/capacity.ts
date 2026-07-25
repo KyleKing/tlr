@@ -30,6 +30,7 @@ import {
   velocityByPerson,
 } from "../web/lib/capacity.js"
 import { CLIENT_PATH, fetchFreeBusy, loadClient, tokenFor } from "./gcal-freebusy.ts"
+import { fetchWithRetry } from "@/httpRetry.ts"
 import { getSecret } from "@/secrets.ts"
 
 const INCIDENT_HOST = "https://api.incident.io"
@@ -56,8 +57,10 @@ function incidentToken(): Promise<string> {
   return getSecret("incidentio")
 }
 
+// Through fetchWithRetry for the per-attempt timeout: the scheduled run holds the snapshot lock while
+// this fetches, and a hung connection here would outlast the stale-lock window.
 async function incidentGet(path: string, token: string) {
-  const res = await fetch(`${INCIDENT_HOST}${path}`, {
+  const res: Response = await fetchWithRetry(`${INCIDENT_HOST}${path}`, {
     headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
   })
   if (!res.ok) throw new Error(`Incident.io ${path} → ${res.status} ${res.statusText}`)
