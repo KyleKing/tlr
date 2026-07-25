@@ -1,5 +1,6 @@
 import { assert, assertEquals } from "jsr:@std/assert@1"
 import { fieldOptions } from "../web/lib/fieldOptions.js"
+import { buildTeams } from "../web/lib/issues.js"
 import {
   changedFields,
   issueValues,
@@ -24,6 +25,7 @@ const ISSUE = {
   id: "FC-1",
   milestone: "M1",
   priorityValue: 2,
+  status: "Todo",
   statusType: "unstarted",
   title: "Ticket one",
 }
@@ -53,7 +55,7 @@ Deno.test("form strings normalize to the field's real type", () => {
     estimate: "",
     milestone: "",
     priority: "3",
-    status: "started",
+    status: "In Progress",
     title: "  spaced  ",
   })
   assertEquals(values.assignee, "Unassigned")
@@ -102,7 +104,7 @@ Deno.test("a cycle outside the issue's team is refused", () => {
 
 Deno.test("a status, milestone, assignee, or priority off its list is refused", () => {
   const { errors } = validateEdit(
-    { ...untouched(), assignee: "Nobody", milestone: "M9", priority: 7, status: "shipped" },
+    { ...untouched(), assignee: "Nobody", milestone: "M9", priority: 7, status: "Shipped" },
     OPTIONS,
   )
   assertEquals(Object.keys(errors).sort(), ["assignee", "milestone", "priority", "status"])
@@ -138,18 +140,18 @@ Deno.test("clearing the cycle and the milestone reads as none", () => {
 })
 
 Deno.test("changes become the ops the write path takes", () => {
-  const values = { ...untouched(), assignee: "Bob Kahn", cycle: null, status: "started", title: "A clearer title" }
+  const values = { ...untouched(), assignee: "Bob Kahn", cycle: null, status: "Done", title: "A clearer title" }
   const changed = changedFields(ISSUE, values, OPTIONS)
   assertEquals(opsForChanges(ISSUE.id, changed), [
     { kind: "set_assignee", id: "FC-1", assignee: "Bob Kahn" },
     { kind: "set_cycle", id: "FC-1", cycle: null },
-    { kind: "set_status", id: "FC-1", status: "started" },
+    { kind: "set_status", id: "FC-1", status: "completed", statusName: "Done" },
     { kind: "rename", id: "FC-1", title: "A clearer title" },
   ])
   assertEquals(pendingEdit(changed), {
     assignee: "Bob Kahn",
     cycle: null,
-    status: "started",
+    status: "Done",
     title: "A clearer title",
   })
 })
@@ -158,4 +160,30 @@ Deno.test("a ticket with no estimate reads as blank rather than zero", () => {
   const values = issueValues({ ...ISSUE, estimate: undefined })
   assertEquals(values.estimate, null)
   assert(validateEdit(values, OPTIONS).ok)
+})
+
+// The reason status is picked by name: a category alone cannot tell a team's two "started" states
+// apart, so the op carries the name and the category resolves behind it.
+Deno.test("a move between two states of the same category is a real change and names the state", () => {
+  const teams = buildTeams([{
+    id: "t-dev",
+    key: "DEV",
+    name: "Product Development",
+    issueEstimationType: "fibonacci",
+    issueEstimationAllowZero: true,
+    issueEstimationExtended: false,
+    states: {
+      nodes: [
+        { id: "s-prog", name: "In Progress", type: "started", position: 1 },
+        { id: "s-review", name: "In Review", type: "started", position: 2 },
+      ],
+    },
+  }])
+  const issue = { ...ISSUE, id: "DEV-1", teamKey: "DEV", status: "In Progress", statusType: "started" }
+  const options = fieldOptions(issue, { ...SNAPSHOT, teams })
+  const changed = changedFields(issue, { ...issueValues(issue), status: "In Review" }, options)
+  assertEquals(changed.map((c) => [c.from, c.to]), [["In Progress", "In Review"]])
+  assertEquals(opsForChanges(issue.id, changed), [
+    { kind: "set_status", id: "DEV-1", status: "started", statusName: "In Review" },
+  ])
 })

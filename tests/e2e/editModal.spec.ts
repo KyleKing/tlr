@@ -1,5 +1,5 @@
 import type { Page } from "@playwright/test"
-import { expect, test } from "./fixtures.ts"
+import { expect, FORECAST_BOARD, stubBoard, test } from "./fixtures.ts"
 
 // The seed project's data is deterministic (see src/seed.ts): estimates come from 0/1/2/3/5/8, and no
 // ticket carries a Linear UUID, so nothing in this file can reach a real write even by accident.
@@ -126,4 +126,65 @@ test("the description toggles between plain markdown and its rendered form", asy
   await expect(textarea).toBeVisible()
   await expect(preview).toBeHidden()
   await expect(textarea).toHaveValue("## Why\n\n- **fast** path\n- `code` path")
+})
+
+// The impact pane reads the same stubbed board the what-if tests use (see fixtures.ts), so every
+// number below is arithmetic off two people at 20 points a cycle rather than off whatever the seeded
+// project happens to hold today.
+async function openFromStubbedBoard(page: Page) {
+  await stubBoard(page)
+  await page.goto("/")
+  await page.waitForSelector("#grid tr")
+  await page.locator('#grid [data-id="FC-1"]').hover()
+  await page.click('#tip [data-act="edit"]')
+  await expect(page.locator("#edit-modal form.editf")).toBeVisible()
+}
+
+test("the impact pane follows the form and never issues a write", async ({ page }) => {
+  let writes = 0
+  await page.route("**/api/edit", (route) => {
+    writes++
+    return route.abort()
+  })
+  await openFromStubbedBoard(page)
+  const pane = page.locator("#edit-impact")
+  await expect(pane).toContainText("No changes yet")
+
+  // FC-1 is Ada's only work in cycle 48, so re-estimating it moves her whole load for that cycle and
+  // pulls M1's landing in with it.
+  await page.locator("#ef-estimate").fill("8")
+  await expect(pane).toContainText("Ada Lovelace, cycle 48")
+  await expect(pane.locator(".eimpact-num.down").first()).toBeVisible()
+  await expect(pane).toContainText("Forecast")
+  await expect(pane).toContainText("M1: Engine")
+
+  // Handing it to Bob, who already carries a full cycle 49, is the warning case.
+  await page.locator("#ef-assignee").selectOption("Bob Kahn")
+  await page.locator("#ef-cycle").selectOption("49")
+  await expect(pane.locator(".eimpact-alert")).toContainText("over capacity")
+
+  await page.locator("#ef-description").fill("Utilize a holistic, robust approach; it delves into the realm.")
+  await expect(pane).toContainText("Slop score")
+  await expect(pane).toContainText("worse")
+
+  expect(writes).toBe(0)
+})
+
+test("the ticket's blockers show in the pane with the date they land", async ({ page }) => {
+  await stubBoard(page, {
+    ...FORECAST_BOARD,
+    issues: FORECAST_BOARD.issues.map((i) =>
+      i.id === "FC-1" ? { ...i, blocks: ["FC-2"] } : i.id === "FC-2" ? { ...i, blockedBy: ["FC-1"] } : i
+    ),
+  })
+  await page.goto("/")
+  await page.waitForSelector("#grid tr")
+  await page.locator('#grid [data-id="FC-1"]').hover()
+  await page.click('#tip [data-act="edit"]')
+  const pane = page.locator("#edit-impact")
+
+  await page.locator("#ef-cycle").selectOption("")
+  await page.locator("#ef-milestone").selectOption("M2")
+  await expect(pane).toContainText("blocks FC-2")
+  await expect(pane).toContainText("ordering risk")
 })

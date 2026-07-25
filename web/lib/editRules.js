@@ -2,7 +2,7 @@
 // holds, say whether that is allowed, say what actually changed, and turn those changes into the ops
 // POST /api/edit takes. The modal renders these results; it never decides any of them itself.
 
-import { labelFor } from "./fieldOptions.js"
+import { labelFor, statusTypeFor } from "./fieldOptions.js"
 
 export const TITLE_MAX = 255
 
@@ -40,7 +40,9 @@ export function issueValues(issue) {
     estimate: typeof issue?.estimate === "number" ? issue.estimate : null,
     milestone: issue?.milestone ?? null,
     priority: issue?.priorityValue ?? 0,
-    status: issue?.statusType ?? "",
+    // The state's own name, not its category: a team can hold several states of one category and only
+    // the name says which of them the ticket is in.
+    status: issue?.status ?? "",
     title: issue?.title ?? "",
   }
 }
@@ -118,32 +120,36 @@ export function changedFields(issue, values, options) {
   for (const field of Object.keys(FIELD_LABELS).sort()) {
     if (field === "estimate" && next.estimate === null) continue
     if (next[field] === current[field]) continue
-    changed.push({
+    const change = {
       field,
       label: FIELD_LABELS[field],
       from: displayValue(field, current[field], options),
       to: displayValue(field, next[field], options),
       fromValue: current[field],
       toValue: next[field],
-    })
+    }
+    // A status change is the one row that needs more than the value a reader sees: the write takes the
+    // state's name and its category, and only the options list knows which category a name belongs to.
+    if (field === "status") change.toType = statusTypeFor(options, next.status)
+    changed.push(change)
   }
   return changed
 }
 
 const OP_FOR = {
-  assignee: (id, assignee) => ({ kind: "set_assignee", id, assignee }),
-  cycle: (id, cycle) => ({ kind: "set_cycle", id, cycle }),
-  description: (id, description) => ({ kind: "set_description", id, description }),
-  estimate: (id, estimate) => ({ kind: "set_estimate", id, estimate }),
-  milestone: (id, milestone) => ({ kind: "set_milestone", id, milestone }),
-  priority: (id, priority) => ({ kind: "set_priority", id, priority }),
-  status: (id, status) => ({ kind: "set_status", id, status }),
-  title: (id, title) => ({ kind: "rename", id, title }),
+  assignee: (id, c) => ({ kind: "set_assignee", id, assignee: c.toValue }),
+  cycle: (id, c) => ({ kind: "set_cycle", id, cycle: c.toValue }),
+  description: (id, c) => ({ kind: "set_description", id, description: c.toValue }),
+  estimate: (id, c) => ({ kind: "set_estimate", id, estimate: c.toValue }),
+  milestone: (id, c) => ({ kind: "set_milestone", id, milestone: c.toValue }),
+  priority: (id, c) => ({ kind: "set_priority", id, priority: c.toValue }),
+  status: (id, c) => ({ kind: "set_status", id, status: c.toType, statusName: c.toValue }),
+  title: (id, c) => ({ kind: "rename", id, title: c.toValue }),
 }
 
 /** The /api/edit ops for a changedFields() list. Only changed fields become ops. */
 export function opsForChanges(id, changed) {
-  return changed.map((c) => OP_FOR[c.field](id, c.toValue))
+  return changed.map((c) => OP_FOR[c.field](id, c))
 }
 
 /** The pending edit as a plain field → new value map, for anything that wants it without the labels. */

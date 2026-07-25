@@ -120,6 +120,34 @@ test("the open ticket editor passes automated color-contrast checks", async ({ p
   expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([])
 })
 
+// The impact pane only paints once the form has been touched, and its warning colouring (an
+// over-capacity cell, a description that got worse) is exactly the small peach-on-base text a contrast
+// regression would land in. Driven off the stubbed board so the numbers reach the warning state every
+// run rather than only when the seeded data happens to.
+test("the editor's impact pane passes automated color-contrast checks, warnings and all", async ({ page }) => {
+  await stubBoard(page)
+  await page.goto("/")
+  await page.waitForSelector("#grid tr")
+  await page.locator('#grid [data-id="FC-1"]').hover()
+  await page.click('#tip [data-act="edit"]')
+  await expect(page.locator("#edit-modal form.editf")).toBeVisible()
+
+  await page.locator("#ef-estimate").fill("5")
+  await page.locator("#ef-assignee").selectOption("Bob Kahn")
+  await page.locator("#ef-cycle").selectOption("49")
+  await page.locator("#ef-description").fill("Utilize a holistic, robust approach; it delves into the realm.")
+  await expect(page.locator("#edit-impact .eimpact-alert")).toContainText("over capacity")
+  await expect(page.locator("#edit-impact .eimpact-list li.warn").first()).toBeVisible()
+  await expect(page.locator("#edit-impact .eimpact-num.down").first()).toBeVisible()
+
+  const results = await new AxeBuilder({ page })
+    .withTags(["wcag2aa"])
+    .options({ runOnly: { type: "rule", values: ["color-contrast"] } })
+    .analyze()
+
+  expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([])
+})
+
 test("review and changes pages pass automated color-contrast checks", async ({ page }) => {
   for (const path of ["/review", "/changes", "/roadmap", "/settings"]) {
     await page.goto(path)

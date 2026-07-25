@@ -576,6 +576,60 @@ a {
   font-size: 12px;
   color: var(--subtext0);
 }
+.eimpact-sec {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--surface0);
+}
+.eimpact-sec-h {
+  margin: 0 0 5px;
+  font: 600 11px var(--font);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--subtext0);
+}
+.eimpact-list {
+  margin: 0 0 4px;
+  padding-left: 16px;
+  font-size: 12px;
+}
+.eimpact-list li {
+  margin: 3px 0;
+}
+.eimpact-list li.warn {
+  color: var(--peach);
+}
+.eimpact-alert {
+  color: var(--peach);
+}
+.eimpact-num {
+  font-weight: 600;
+}
+.eimpact-num.up {
+  color: var(--peach);
+}
+.eimpact-num.down {
+  color: var(--green);
+}
+.eimpact-dim {
+  color: var(--subtext0);
+}
+.eimpact-kind {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  color: var(--subtext0);
+}
+.eimpact-warn {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--peach);
+}
+.eimpact-good {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--green);
+}
 .emodal-foot {
   border-top: 1px solid var(--surface0);
   padding: 10px 16px;

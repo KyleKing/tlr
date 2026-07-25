@@ -202,6 +202,9 @@ function wire(groups = []) {
           render()
         },
         returnFocus: () => pageEl.querySelector(`button[data-edit="${CSS.escape(id)}"]`),
+        // The queue is already loaded here, so the editor's impact pane reads this ticket's rows from
+        // it rather than fetching the window back a second time.
+        reviewItems: byId.get(id)?.changes ?? [],
         snapshot,
         source: "review",
       })

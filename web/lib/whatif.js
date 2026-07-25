@@ -4,7 +4,7 @@
 //
 // Two overlay kinds:
 //   { kind: "capacity", person, cycle, patch: { oncall, outDays, reason } }
-//   { kind: "scope",    id,     patch: { assignee, cycle, milestone } }
+//   { kind: "scope",    id,     patch: { assignee, cycle, estimate, milestone } }
 // A capacity patch follows setPersonCycle's rule (a null or "" value clears that field), so marking a
 // person out and clearing an existing out/on-call entry are the same gesture. Later overlays win over
 // earlier ones on the same target, so a stack reads as a sequence of edits.

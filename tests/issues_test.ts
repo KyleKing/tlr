@@ -9,7 +9,6 @@ import {
   estimateOptions,
   identifierTeamKey,
   isArchivedIssue,
-  issueFieldOptions,
   liveIssues,
   liveSnapshot,
   mergeIngest,
@@ -17,10 +16,10 @@ import {
   pickProject,
   priorityLabel,
   projectEstimateScale,
-  statusOptions,
   teamForIssue,
   transformIssue,
   upsertProjectManifest,
+  workflowStates,
 } from "../web/lib/issues.js"
 
 Deno.test("priorityLabel maps Linear's 0-4 scale, null passes through", () => {
@@ -343,59 +342,18 @@ Deno.test("teamForIssue matches on teamKey, falls back to the identifier, then t
 
 // The point of ingesting states by name: a team with two "started" states can now be sent to the
 // specific one, which resolving by category alone could never do.
-Deno.test("statusOptions offers a team's own states in its order and drops types the app cannot store", () => {
+Deno.test("workflowStates offers a team's own states in its order and drops types the app cannot store", () => {
   const teams = buildTeams(RAW_TEAMS)
-  assertEquals(statusOptions(teams, { id: "DEV-1", teamKey: "DEV" }), [
+  assertEquals(workflowStates(teams, { id: "DEV-1", teamKey: "DEV" }), [
     { name: "Todo", type: "unstarted" },
     { name: "In Progress", type: "started" },
     { name: "In Review", type: "started" },
   ])
 })
 
-Deno.test("statusOptions falls back to one state per category when the snapshot has no team data", () => {
-  assertEquals(statusOptions(undefined, { id: "DEV-1" }), DEFAULT_STATUS_OPTIONS)
-  assertEquals(statusOptions([], { id: "DEV-1" }), DEFAULT_STATUS_OPTIONS)
-})
-
-const BOARD = {
-  teams: buildTeams(RAW_TEAMS),
-  cycles: [{ n: 48, start: "2026-07-20", end: "2026-07-27" }],
-  milestones: [{ key: "M1", name: "M1: Foundations", target: "2026-07-31", progress: 10 }],
-  capacity: { roster: { "Ada Lovelace": { email: "ada@example.com" } } },
-}
-
-Deno.test("issueFieldOptions derives every editable field from the board data the page already has", () => {
-  const options = issueFieldOptions(BOARD, { id: "DEV-1", teamKey: "DEV", assignee: "Grace Hopper" })
-  assertEquals(options.teamKey, "DEV")
-  assertEquals(options.statuses.map((s: { name: string }) => s.name), ["Todo", "In Progress", "In Review"])
-  assertEquals(options.estimates.map((e: { value: number }) => e.value), [0, 1, 2, 3, 5, 8])
-  assertEquals(options.estimatesFree, false)
-  assertEquals(options.milestones, [{ key: "M1", name: "M1: Foundations" }])
-  assertEquals(options.cycles, [{ n: 48, label: "Cycle 48" }])
-  assertEquals(options.assignees, ["Unassigned", "Ada Lovelace", "Grace Hopper"])
-  assertEquals(options.priorities, [
-    { value: 0, label: "No priority" },
-    { value: 1, label: "Urgent" },
-    { value: 2, label: "High" },
-    { value: 3, label: "Medium" },
-    { value: 4, label: "Low" },
-  ])
-})
-
-Deno.test("issueFieldOptions asks for free-text estimates on a team that does not use them", () => {
-  const options = issueFieldOptions(BOARD, { id: "CUS-1", teamKey: "CUS" })
-  assertEquals(options.estimates, [])
-  assertEquals(options.estimatesFree, true)
-})
-
-Deno.test("issueFieldOptions degrades to defaults on an empty board and a missing issue", () => {
-  const options = issueFieldOptions({}, undefined)
-  assertEquals(options.statuses, DEFAULT_STATUS_OPTIONS)
-  assertEquals(options.estimatesFree, true)
-  assertEquals(options.milestones, [])
-  assertEquals(options.cycles, [])
-  assertEquals(options.assignees, ["Unassigned"])
-  assertEquals(options.teamKey, null)
+Deno.test("workflowStates falls back to one state per category when the snapshot has no team data", () => {
+  assertEquals(workflowStates(undefined, { id: "DEV-1" }), DEFAULT_STATUS_OPTIONS)
+  assertEquals(workflowStates([], { id: "DEV-1" }), DEFAULT_STATUS_OPTIONS)
 })
 
 Deno.test("mergeIngest replaces the Linear-sourced blocks and keeps everything else", () => {

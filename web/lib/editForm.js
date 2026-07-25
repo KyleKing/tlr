@@ -27,6 +27,7 @@ import { renderImpact } from "./editImpact.js"
 import { renderMarkdown } from "./markdown.js"
 
 const DIALOG_ID = "edit-modal"
+const IMPACT_DEBOUNCE_MS = 150
 const FIELD_NAMES = ["assignee", "cycle", "description", "estimate", "milestone", "priority", "status", "title"]
 
 function optionTags(options, selected) {
@@ -186,7 +187,9 @@ function freshDialog() {
  * again when the modal closes — the Board re-renders on apply, so it passes a lookup rather than a
  * node. `onApplied(results)` fires once a write lands; the caller decides what to refresh.
  */
-export function openEditModal({ dataFile, issue, mode = {}, onApplied, returnFocus, snapshot, source }) {
+export function openEditModal(
+  { dataFile, issue, mode = {}, onApplied, returnFocus, reviewItems, snapshot, source },
+) {
   const options = fieldOptions(issue, snapshot)
   const dialog = freshDialog()
   dialog.innerHTML = modalHTML(issue, options, mode)
@@ -229,7 +232,17 @@ export function openEditModal({ dataFile, issue, mode = {}, onApplied, returnFoc
     outEl.innerHTML = html
   }
 
-  function sync() {
+  // Validation and the buttons follow the keystroke; the impact pane trails it. Every character typed
+  // into the description would otherwise re-simulate the whole plan, which is the one recompute here
+  // big enough to be felt in a textarea.
+  let impactTimer = null
+  function drawImpact(ctx, defer) {
+    clearTimeout(impactTimer)
+    if (!defer) return renderImpact(impactEl, ctx)
+    impactTimer = setTimeout(() => renderImpact(impactEl, ctx), IMPACT_DEBOUNCE_MS)
+  }
+
+  function sync(defer = false) {
     const values = readValues()
     const { ok, errors } = validateEdit(values, options)
     const changed = changedFields(issue, values, options)
@@ -238,7 +251,7 @@ export function openEditModal({ dataFile, issue, mode = {}, onApplied, returnFoc
     showErrors(errors)
     previewBtn.disabled = applied || !ok || changed.length === 0
     applyBtn.disabled = applied || noUuid || !previewed || !ok || changed.length === 0 || willApplyCount === 0
-    renderImpact(impactEl, {
+    drawImpact({
       changed,
       dataFile,
       edit: pendingEdit(changed),
@@ -247,11 +260,12 @@ export function openEditModal({ dataFile, issue, mode = {}, onApplied, returnFoc
       ops,
       options,
       phase,
+      reviewItems,
       snapshot,
       source,
       valid: ok,
       values,
-    })
+    }, defer)
     return { changed, ok, ops }
   }
 
@@ -287,7 +301,7 @@ export function openEditModal({ dataFile, issue, mode = {}, onApplied, returnFoc
     outEl.hidden = true
     phase = applied ? "applied" : "editing"
     autogrow(textarea)
-    sync()
+    sync(true)
   })
   form.addEventListener("change", () => {
     previewed = false

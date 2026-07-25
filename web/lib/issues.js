@@ -84,8 +84,9 @@ export function estimateOptions(estimation) {
 
 // Every estimate value any of the project's teams allows, sorted and deduped. A project-wide list is
 // only exactly right when the project sits on one team or its teams share a scale; per-team precision
-// comes from issueFieldOptions below. Null when no team uses estimates, so a caller can tell "this
-// project does not estimate" from "this project estimates in 1, 2, 3, 5, 8".
+// comes from estimateOptions above, which web/lib/fieldOptions.js prefers when the snapshot carries
+// team data. Null when no team uses estimates, so a caller can tell "this project does not estimate"
+// from "this project estimates in 1, 2, 3, 5, 8".
 export function projectEstimateScale(teams) {
   const values = new Set()
   for (const team of teams ?? []) {
@@ -126,39 +127,15 @@ export const DEFAULT_STATUS_OPTIONS = [
   { name: "Canceled", type: "canceled" },
 ]
 
-export const PRIORITY_OPTIONS = PRIORITY_LABELS.map((label, value) => ({ value, label }))
-
-// The statuses an issue may be moved to: its own team's workflow states in the team's order, else the
-// generic one-per-category list when the snapshot has no team data yet.
-export function statusOptions(teams, issue) {
+// The workflow states an issue may be moved to, as { name, type }: its own team's states in the team's
+// order, else the generic one-per-category list when the snapshot has no team data yet. Two states of
+// the same category (a DEV team's In Progress and In Review) both appear, which is the whole reason
+// the editor picks a status by name. web/lib/fieldOptions.js turns this into the editor's option list.
+export function workflowStates(teams, issue) {
   const team = teamForIssue(teams, issue)
   const states = (team?.states ?? []).filter((s) => KNOWN_STATUS_TYPES.includes(s.type))
   if (!states.length) return DEFAULT_STATUS_OPTIONS.map((s) => ({ ...s }))
   return states.map((s) => ({ name: s.name, type: s.type }))
-}
-
-/**
- * Every field choice the in-flow editor needs for one issue, derived from the board data the page
- * already loads. Pure: no fetch, so it works the same offline, under the e2e harness, and in what-if
- * mode. `estimatesFree` is true when the team's scale is unknown or unused and the caller should keep
- * a free-text number input instead of a select.
- */
-export function issueFieldOptions(boardData, issue) {
-  const data = boardData ?? {}
-  const team = teamForIssue(data.teams, issue)
-  const estimates = estimateOptions(team?.estimation)
-  const names = new Set(Object.keys(data.capacity?.roster ?? {}))
-  if (issue?.assignee && issue.assignee !== "Unassigned") names.add(issue.assignee)
-  return {
-    assignees: ["Unassigned", ...[...names].sort()],
-    cycles: (data.cycles ?? []).map((c) => ({ n: c.n, label: `Cycle ${c.n}` })),
-    estimates,
-    estimatesFree: estimates.length === 0,
-    milestones: (data.milestones ?? []).map((m) => ({ key: m.key, name: m.name })),
-    priorities: PRIORITY_OPTIONS.map((p) => ({ ...p })),
-    statuses: statusOptions(data.teams, issue),
-    teamKey: team?.key ?? null,
-  }
 }
 
 // Raw Linear issue (see scripts/issues.ts's GraphQL query) → the board's issue shape.

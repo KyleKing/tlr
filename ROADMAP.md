@@ -82,12 +82,19 @@ banner, since a client-side failure has nothing to log server-side.
 
 `src/ops.ts` is the typed op model: validate against live state, apply in memory, then `src/linear_write.ts`
 turns a validated op into a Linear `issueUpdate`. `POST /api/edit` is dry-run by default and writes on
-confirm. `web/lib/editForm.js` is the shared form (title, description, estimate, priority, milestone,
+confirm. `web/lib/editForm.js` is the shared modal (title, description, estimate, priority, milestone,
 status, cycle, assignee → preview → apply), reached from both the Review page and the Board's hover card.
-Status resolves by the state's own name on the issue's team, so a team with two "started" states can be
-sent to the specific one; an op with no name, or a name that team no longer has, still moves the ticket
-by workflow-state category, which is what every snapshot captured before team states were ingested
-needs. This is the only write path, and only from the UI. `TLR_DEMO=1` points writes at the free/test workspace
+`web/lib/fieldOptions.js` is the single source for what each field may be set to, narrowed to the
+issue's own team where the snapshot has team data, and a value the ticket already holds stays on its
+list even when the project no longer offers it. Status is picked by the state's own name, so a team
+with two "started" states can be sent to the specific one; the op carries the name and the category
+behind it, and an op with no name, or a name that team no longer has, still moves the ticket by
+category, which is what every snapshot captured before team states were ingested needs. The modal's
+right-hand column (`web/lib/editImpact.js` over the pure `web/lib/impact.js`) answers what the edit
+costs: the owner's load in the cycle before and after, any milestone whose forecast landing moves,
+the ticket's blockers and what it blocks with an ordering warning, and a live slop scan of the
+rewritten description. It simulates through the same in-memory what-if overlays the Board uses, so
+the pane never writes and never touches the snapshot. This is the only write path, and only from the UI. `TLR_DEMO=1` points writes at the free/test workspace
 (keychain account `demo-key`) behind a visible banner; live mode uses `api-key`. `GET /api/mode` reports
 which.
 
@@ -140,7 +147,8 @@ on every page. The Playwright suite seeds data against an isolated store with no
 
 - A team may define a workflow state outside the six categories the op model stores (Linear's
   "duplicate"); the editor leaves those out of its choices rather than write a status the board has no
-  rank, colour, or label for
+  rank, colour, or label for. A ticket already sitting in one still shows it, so the form reads true;
+  it just cannot be moved into one from here
 - The LaunchAgent's wake-up catch-up rests on `man launchd.plist`, not on an observed overnight sleep
 - Retention reports what it would drop but never deletes until `--prune` is passed by hand, because
   project keys were only just introduced and a mis-keyed row would be thinned against the wrong history
