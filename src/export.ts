@@ -2,6 +2,7 @@
 // artifacts. Pure string generation: no browser, no I/O, no clock, no random. Same snapshot in gives
 // the same bytes out, so a re-export diffs cleanly and a test can assert on it.
 
+import { liveIssues } from "../web/lib/issues.js"
 import { bucketOf, buildBuckets, dependencyWaves, personCycleCapacity, weeksBetween } from "../web/lib/planning.js"
 import type { Issue, Snapshot } from "@/seed.ts"
 
@@ -65,9 +66,10 @@ function boardPeople(issues: Issue[]): string[] {
 }
 
 export function boardSvg(snapshot: Snapshot): string {
+  const issues = liveIssues(snapshot.issues) as Issue[]
   const buckets = buildBuckets(snapshot) as Bucket[]
   const bucketWeeks = milestoneWeeks(snapshot)
-  const people = boardPeople(snapshot.issues)
+  const people = boardPeople(issues)
 
   const nameW = 160
   const colW = 96
@@ -109,7 +111,7 @@ export function boardSvg(snapshot: Snapshot): string {
     )
     buckets.forEach((b, ci) => {
       const x = nameW + ci * colW
-      const load = snapshot.issues
+      const load = issues
         .filter((i) => i.assignee === person && bucketOf(i) === b.key)
         .reduce((sum, i) => sum + (i.estimate || 0), 0)
       const capacity = cellCapacity(person, b, snapshot, bucketWeeks)
@@ -134,8 +136,9 @@ export function boardSvg(snapshot: Snapshot): string {
 }
 
 export function timelineSvg(snapshot: Snapshot): string {
-  const byId = Object.fromEntries(snapshot.issues.map((i) => [i.id, i]))
-  const waves = dependencyWaves(snapshot.issues) as string[][]
+  const issues = liveIssues(snapshot.issues) as Issue[]
+  const byId = Object.fromEntries(issues.map((i) => [i.id, i]))
+  const waves = dependencyWaves(issues) as string[][]
 
   const colW = 200
   const gap = 16

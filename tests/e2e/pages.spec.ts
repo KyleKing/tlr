@@ -42,6 +42,30 @@ test("changes page steps through snapshot history with ‹/› and a range picke
   await expect(page.locator(".rsec")).toHaveCount(3)
 })
 
+// Captures land every few hours, so the window has to name a time, not a date: the seed pair is
+// captured seconds apart and would otherwise print the same string on both sides.
+test("changes page dates the window by local capture time, and jumps a day at a time", async ({ page }) => {
+  await page.goto(`/changes${SEED}`)
+  await expect(page.locator(".rsec")).toHaveCount(3)
+
+  const clock = /\d{1,2}:\d{2}/
+  await expect(page.locator("#snap-window")).toHaveText(clock)
+  await expect(page.locator(".page-body .window")).toHaveText(clock)
+  // asOf-only rendering printed the snapshot's date twice for an intra-day pair.
+  await expect(page.locator(".page-body .window")).not.toHaveText(/^(\S+ \d+) → \1$/)
+
+  // The day jump is the coarse control over the same list: forward is at the end, back is not.
+  await expect(page.locator("#snap-next-day")).toBeDisabled()
+  await page.locator("#snap-prev-day").click()
+  // Only two captures exist, seconds apart, so a day back falls back to one step: the oldest.
+  await expect(page.locator(".page-body")).toContainText("Only one snapshot exists")
+  await expect(page.locator("#snap-prev-day")).toBeDisabled()
+  await expect(page.locator("#snap-next-day")).toBeEnabled()
+
+  await page.locator("#snap-next-day").click()
+  await expect(page.locator(".rsec")).toHaveCount(3)
+})
+
 test("review page groups changes by ticket and marks them reviewed", async ({ page }) => {
   await page.goto(`/review${SEED}`)
 
@@ -50,8 +74,27 @@ test("review page groups changes by ticket and marks them reviewed", async ({ pa
   const count = await groups.count()
   expect(count).toBeGreaterThan(0)
 
+  // The window runs from the review pointer to the newest capture and is named by local time, so two
+  // captures on the same date are told apart.
+  await expect(page.locator("#meta")).toHaveText(/\d{1,2}:\d{2}.* tickets to review/)
+
   await page.locator("button[data-review]").first().click()
   await expect(page.locator(".rgroup.reviewed")).toHaveCount(1)
+
+  // The mark survives a reload: it is keyed by the window's starting snapshot, not by the date pair.
+  await page.reload()
+  await expect(page.locator(".rgroup.reviewed")).toHaveCount(1)
+})
+
+// Marking every ticket is what moves the pointer, and the pointer is a single global key the whole
+// suite shares, so this asserts the window's shape and the rejection path without moving it.
+test("the review pointer only accepts a capture of the named project", async ({ request }) => {
+  const queue = await (await request.get(`/api/review?project=${encodeURIComponent("Horse Tinder (seed)")}`)).json()
+  expect(queue.window.fromId).toBeLessThan(queue.window.toId)
+  expect(queue.window.toCapturedAt).toBeGreaterThan(0)
+
+  const bad = await request.post("/api/review/pointer", { data: { project: "Nope", snapshotId: queue.window.toId } })
+  expect(bad.status()).toBe(400)
 })
 
 test("review page edits a ticket: form pre-fills, previews a dry run, and guards apply without a Linear link", async ({ page }) => {

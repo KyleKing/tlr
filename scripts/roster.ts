@@ -9,6 +9,8 @@
 // or the LINEAR_API_KEY env var) so the roster is never hand-maintained. Existing roster entries are
 // kept; a name already carrying an email is left alone unless --force is passed.
 
+import { liveIssues } from "../web/lib/issues.js"
+import { fetchWithRetry } from "@/httpRetry.ts"
 import { getSecret } from "@/secrets.ts"
 
 const LINEAR_API_URL = "https://api.linear.app/graphql"
@@ -43,7 +45,7 @@ async function fetchUsers(key: string): Promise<LinearUser[]> {
   const users: LinearUser[] = []
   let after: string | null = null
   do {
-    const res: Response = await fetch(LINEAR_API_URL, {
+    const res: Response = await fetchWithRetry(LINEAR_API_URL, {
       method: "POST",
       headers: { Authorization: key, "Content-Type": "application/json" },
       body: JSON.stringify({ query: USERS_QUERY, variables: { after } }),
@@ -55,14 +57,22 @@ async function fetchUsers(key: string): Promise<LinearUser[]> {
     }
     const page = json.data.users
     users.push(...page.nodes)
+    // A next page with no cursor to reach it would otherwise end the loop quietly, leaving every
+    // assignee past the truncation point unresolved and their email blank. Fail the run instead.
+    if (page.pageInfo.hasNextPage && !page.pageInfo.endCursor) {
+      throw new Error(`Linear paginated ${users.length} users then reported another page with no cursor`)
+    }
     after = page.pageInfo.hasNextPage ? page.pageInfo.endCursor : null
   } while (after)
   return users
 }
 
-function assigneeNames(issues: { assignee?: string | null }[]): string[] {
+// Archived tickets are skipped: a roster entry is what makes someone a person the board plans for
+// (planning.js's rosterOrAssignees reads the roster keys), so resolving an owner who only appears on
+// archived work adds a capacity row and inflates team throughput for someone off the project.
+export function assigneeNames(issues: { archived?: boolean; assignee?: string | null }[]): string[] {
   const names = new Set<string>()
-  for (const i of issues) {
+  for (const i of liveIssues(issues)) {
     const a = i.assignee
     if (a && a !== "Unassigned") names.add(a)
   }
@@ -78,7 +88,7 @@ function resolveEmail(name: string, users: LinearUser[]): string | null {
 
 export type RosterData = {
   capacity?: { defaultVelocity?: number; people?: Record<string, unknown>; roster?: Record<string, { email: string }> }
-  issues?: { assignee?: string | null }[]
+  issues?: { archived?: boolean; assignee?: string | null }[]
 }
 
 export async function resolveRoster(key: string, data: RosterData, opts: { force?: boolean } = {}) {

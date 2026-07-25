@@ -38,6 +38,21 @@ test("a failed scheduled run raises a dismissible banner", async ({ page }) => {
   await expect(page.locator("#schedule-notice")).toHaveCount(0)
 })
 
+test("a partial run raises a banner that blames the projects, not the run", async ({ page }) => {
+  await stubHealth(page, {
+    state: "partial",
+    lastRun: { ...FAILED_HEALTH.lastRun, outcome: "partial", detail: "1 of 2 projects failed; b.json: Linear → 500" },
+    lastSuccessAt: "2026-07-24T06:00:00.000Z",
+    message: "Some projects failed in the scheduled snapshot 2 hours ago: 1 of 2 projects failed; b.json: Linear → 500",
+  })
+  await page.goto("/")
+
+  const banner = page.locator("#schedule-notice")
+  await expect(banner).toBeVisible()
+  await expect(banner).toContainText("Some projects failed in the scheduled snapshot")
+  await expect(banner).toContainText("b.json: Linear → 500")
+})
+
 test("no banner when nothing is scheduled, which is the normal state", async ({ page }) => {
   await stubHealth(page, { state: "unscheduled", lastRun: null, lastSuccessAt: null, message: null })
   await page.goto("/")
@@ -50,6 +65,6 @@ test("no banner when nothing is scheduled, which is the normal state", async ({ 
 // nothing at all.
 test("the real health route answers without a run log or a LaunchAgent", async ({ page }) => {
   const health = await page.request.get("/api/schedule/health").then((r) => r.json())
-  expect(["failed", "never-run", "ok", "stale", "unscheduled"]).toContain(health.state)
+  expect(["failed", "never-run", "ok", "partial", "stale", "unscheduled"]).toContain(health.state)
   if (health.state === "unscheduled") expect(health.message).toBeNull()
 })

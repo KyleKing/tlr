@@ -1,15 +1,17 @@
+import { liveIssues } from "../../web/lib/issues.js"
 import { ACTIVE_CYCLES, personCycleCapacity } from "../../web/lib/planning.js"
-import type { Snapshot } from "@/seed.ts"
+import type { Issue, Snapshot } from "@/seed.ts"
 
 export function projectCapacity(snapshot: Snapshot) {
-  const people = [...new Set(snapshot.issues.map((i) => i.assignee))]
+  const issues = liveIssues(snapshot.issues) as Issue[]
+  const people = [...new Set(issues.map((i) => i.assignee))]
     .filter((p) => p !== "Unassigned")
     .sort()
   const rows = []
   for (const person of people) {
     for (const cycle of ACTIVE_CYCLES) {
       const { points, factors } = personCycleCapacity(person, cycle, snapshot.capacity)
-      const load = snapshot.issues
+      const load = issues
         .filter((i) => i.assignee === person && i.cycle === cycle)
         .reduce((acc, i) => acc + (i.estimate || 0), 0)
       rows.push({ person, cycle, capacity: points, load, over: Math.max(0, load - points), factors })

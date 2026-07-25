@@ -333,6 +333,12 @@ a {
 .rchanges .k-removed {
   color: var(--red);
 }
+.rchanges .k-archived {
+  color: var(--mauve);
+}
+.rchanges .k-returning {
+  color: var(--blue);
+}
 .editf {
   margin-top: 10px;
   padding-top: 10px;

@@ -3,6 +3,10 @@ import {
   buildCycles,
   buildMilestones,
   currentCycleNumber,
+  dedupeByDataFile,
+  isArchivedIssue,
+  liveIssues,
+  liveSnapshot,
   mergeIngest,
   milestoneKey,
   pickProject,
@@ -79,6 +83,7 @@ Deno.test("transformIssue maps fields and splits relations into blocks/blockedBy
   const raw = {
     id: "uuid-eng-1",
     identifier: "ENG-1",
+    archivedAt: "2026-07-20T09:00:00.000Z",
     title: "Fix the thing",
     url: "https://linear.app/team/issue/ENG-1",
     description: "some description",
@@ -100,6 +105,7 @@ Deno.test("transformIssue maps fields and splits relations into blocks/blockedBy
   assertEquals(transformIssue(raw, milestoneKeyById), {
     id: "ENG-1",
     linearId: "uuid-eng-1",
+    archived: true,
     title: "Fix the thing",
     url: "https://linear.app/team/issue/ENG-1",
     description: "some description",
@@ -138,6 +144,7 @@ Deno.test("transformIssue defaults missing optionals to null/empty, and a missin
   assertEquals(transformIssue(raw, new Map()), {
     id: "ENG-9",
     linearId: "uuid-eng-9",
+    archived: false,
     title: "No frills",
     url: "https://linear.app/team/issue/ENG-9",
     description: "",
@@ -154,6 +161,42 @@ Deno.test("transformIssue defaults missing optionals to null/empty, and a missin
     blocks: [],
     blockedBy: [],
   })
+})
+
+Deno.test("transformIssue reads archivedAt as an archived flag, so a diff can tell it from a removal", () => {
+  const base = { id: "u", identifier: "ENG-2", title: "t", url: "u", labels: { nodes: [] }, relations: { nodes: [] } }
+  assertEquals(transformIssue({ ...base, archivedAt: null }, new Map()).archived, false)
+  assertEquals(transformIssue({ ...base, archivedAt: "2026-07-20T09:00:00.000Z" }, new Map()).archived, true)
+})
+
+Deno.test("isArchivedIssue only reads a literal true, so a snapshot from before the field is live", () => {
+  assertEquals(isArchivedIssue({ id: "ENG-1", archived: true }), true)
+  assertEquals(isArchivedIssue({ id: "ENG-1", archived: false }), false)
+  assertEquals(isArchivedIssue({ id: "ENG-1" }), false)
+  assertEquals(isArchivedIssue(undefined), false)
+})
+
+Deno.test("liveIssues and liveSnapshot drop archived work and tolerate a missing list", () => {
+  const issues = [{ id: "ENG-1" }, { id: "ENG-2", archived: true }, { id: "ENG-3", archived: false }]
+  const ids = (list: { id: string }[]) => list.map((i) => i.id)
+  assertEquals(ids(liveIssues(issues)), ["ENG-1", "ENG-3"])
+  assertEquals(liveIssues(undefined), [])
+  const snapshot = { asOf: "2026-07-23", issues }
+  assertEquals(ids(liveSnapshot(snapshot).issues), ["ENG-1", "ENG-3"])
+  assertEquals(liveSnapshot(snapshot).asOf, "2026-07-23")
+  assertEquals(snapshot.issues.length, 3)
+})
+
+Deno.test("dedupeByDataFile keeps the newest manifest entry when two slugs point at one data file", () => {
+  const manifest = [
+    { slug: "old-name-slug", name: "Product Reliability 2026", dataFile: "pr2026.json" },
+    { slug: "1c60eac693e8", name: "Product Reliability 2026", dataFile: "pr2026.json" },
+    { slug: "seeded-reliability", name: "Horse Tinder (seed)", dataFile: "seed-b.json" },
+  ]
+  assertEquals(dedupeByDataFile(manifest), [
+    { slug: "1c60eac693e8", name: "Product Reliability 2026", dataFile: "pr2026.json" },
+    { slug: "seeded-reliability", name: "Horse Tinder (seed)", dataFile: "seed-b.json" },
+  ])
 })
 
 Deno.test("upsertProjectManifest adds a new project and sorts by name", () => {

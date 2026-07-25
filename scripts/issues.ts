@@ -21,17 +21,21 @@ import {
   buildCycles,
   buildMilestones,
   currentCycleNumber,
+  dedupeByDataFile,
   mergeIngest,
   milestoneKey,
   transformIssue,
   upsertProjectManifest,
 } from "../web/lib/issues.js"
 import { resolveRoster } from "./roster.ts"
+import { writeJsonAtomic } from "@/capture.ts"
+import { fetchWithRetry } from "@/httpRetry.ts"
 import { getSecret } from "@/secrets.ts"
 
 const LINEAR_API_URL = "https://api.linear.app/graphql"
 const DEFAULT_DATA = new URL("../web/data/cpu.json", import.meta.url).pathname
-const MANIFEST_PATH = new URL("../web/data/projects.json", import.meta.url).pathname
+const MANIFEST_URL = new URL("../web/data/projects.json", import.meta.url)
+const MANIFEST_PATH = MANIFEST_URL.pathname
 
 // first: 10 (not 50) on the outer projects connection — fetching every team's cycles for each
 // candidate makes this query's complexity scale with outer * teams * cycles, and Linear rejects
@@ -53,13 +57,17 @@ const PROJECT_QUERY = `
   }
 `
 
+// includeArchived: true because Linear's issues connection hides archived issues by default, which
+// makes an archived ticket byte-identical to one deleted or moved off the project. The diff has to be
+// able to tell those apart, so ingest fetches both and marks each issue with archivedAt.
 const ISSUES_QUERY = `
   query ProjectIssues($projectId: ID!, $after: String) {
-    issues(filter: { project: { id: { eq: $projectId } } }, first: 100, after: $after) {
+    issues(filter: { project: { id: { eq: $projectId } } }, first: 100, after: $after, includeArchived: true) {
       pageInfo { hasNextPage endCursor }
       nodes {
         id
         identifier
+        archivedAt
         title
         url
         description
@@ -94,6 +102,7 @@ type ProjectsResponse = { projects: { nodes: ProjectNode[] } }
 type IssueNode = {
   id: string
   identifier: string
+  archivedAt: string | null
   title: string
   url: string
   description: string | null
@@ -131,7 +140,7 @@ export function linearKey(account: "api-key" | "demo-key" = "api-key"): Promise<
 }
 
 async function gql<T>(key: string, query: string, variables: Record<string, unknown>): Promise<T> {
-  const res: Response = await fetch(LINEAR_API_URL, {
+  const res: Response = await fetchWithRetry(LINEAR_API_URL, {
     method: "POST",
     headers: { Authorization: key, "Content-Type": "application/json" },
     body: JSON.stringify({ query, variables }),
@@ -151,10 +160,16 @@ async function findProject(key: string, query: string): Promise<ProjectNode> {
   }
   if (!nodes.length) throw new Error(`no Linear project matches "${query}"`)
   if (nodes.length === 1) return nodes[0]
-  return nodes.find((p) =>
+
+  // Guessing here is the expensive mistake: ingest writes project.name, the data file, and the
+  // manifest entry, so picking the wrong candidate overwrites the real project's history under its
+  // own name. An exact match settles it; anything else is the caller's to disambiguate.
+  const exact = nodes.find((p) =>
     p.name.toLowerCase() === query.toLowerCase() || p.slugId.toLowerCase() === query.toLowerCase()
-  ) ??
-    nodes[0]
+  )
+  if (exact) return exact
+  const candidates = nodes.map((p) => `${p.name} (${p.slugId})`).join(", ")
+  throw new Error(`"${query}" matches ${nodes.length} Linear projects: ${candidates} — pass an exact name or slug`)
 }
 
 async function fetchAllIssues(key: string, projectId: string): Promise<IssueNode[]> {
@@ -163,6 +178,11 @@ async function fetchAllIssues(key: string, projectId: string): Promise<IssueNode
   do {
     const page: IssuesResponse["issues"] = (await gql<IssuesResponse>(key, ISSUES_QUERY, { projectId, after })).issues
     issues.push(...page.nodes)
+    // A next page with no cursor to reach it would otherwise end the loop quietly, and a truncated
+    // issue list captured as a snapshot reads as a mass deletion. Fail the ingest instead.
+    if (page.pageInfo.hasNextPage && !page.pageInfo.endCursor) {
+      throw new Error(`Linear paginated ${issues.length} issues then reported another page with no cursor`)
+    }
     after = page.pageInfo.hasNextPage ? page.pageInfo.endCursor : null
   } while (after)
   return issues
@@ -191,8 +211,18 @@ export async function ingestProject(key: string, projectQuery: string, existingD
     referencedCycles.has(c.n)
   )
 
+  // id and slugId ride along so src/projectIdentity.ts keys the snapshot history off Linear's own
+  // identifiers instead of parsing a slugId back out of the URL or falling through to the display
+  // name, which forks the history the moment someone renames the project.
   const fresh = {
-    project: { name: project.name, start: project.startDate, target: project.targetDate, url: project.url },
+    project: {
+      id: project.id,
+      name: project.name,
+      slugId: project.slugId,
+      start: project.startDate,
+      target: project.targetDate,
+      url: project.url,
+    },
     cycles,
     currentCycle: currentCycleNumber(cycles, asOf),
     milestones,
@@ -209,8 +239,10 @@ export async function ingestProject(key: string, projectQuery: string, existingD
   if (roster.missing.length) log.push(`  unresolved (left blank): ${roster.missing.join(", ")}`)
 
   const manifest = await Deno.readTextFile(MANIFEST_PATH).then(JSON.parse).catch(() => [])
-  const updatedManifest = upsertProjectManifest(manifest, { slug: project.slugId, name: project.name, dataFile })
-  await Deno.writeTextFile(MANIFEST_PATH, `${JSON.stringify(updatedManifest, null, 2)}\n`)
+  const updatedManifest = dedupeByDataFile(
+    upsertProjectManifest(manifest, { slug: project.slugId, name: project.name, dataFile }),
+  )
+  await writeJsonAtomic(MANIFEST_URL, updatedManifest)
   log.push(`wrote ${MANIFEST_PATH}`)
 
   return { data: merged, project, log }

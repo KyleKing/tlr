@@ -1,14 +1,16 @@
   <header class="page-head">
     <div>
       <h1 id="title">Changes</h1>
-      <div class="sub" id="meta">Weekly update from the two most recent snapshots</div>
+      <div class="sub" id="meta">Weekly update between two captures</div>
     </div>
     <button class="pill" id="capture">Capture snapshot</button>
   </header>
   <div class="snap-compare" id="snap-compare" hidden>
-    <button type="button" class="chip mini" id="snap-prev" title="Step to the previous snapshot">‹</button>
+    <button type="button" class="chip mini" id="snap-prev-day" title="Jump back a day" aria-label="Jump back a day">‹‹</button>
+    <button type="button" class="chip mini" id="snap-prev" title="Step to the previous snapshot" aria-label="Step to the previous snapshot">‹</button>
     <span class="snap-window" id="snap-window"></span>
-    <button type="button" class="chip mini" id="snap-next" title="Step to the next snapshot">›</button>
+    <button type="button" class="chip mini" id="snap-next" title="Step to the next snapshot" aria-label="Step to the next snapshot">›</button>
+    <button type="button" class="chip mini" id="snap-next-day" title="Jump forward a day" aria-label="Jump forward a day">››</button>
     <label>Range
       <select id="snap-range">
         <option value="1">1 day</option>

@@ -22,9 +22,29 @@ Deno.test("scheduleHealth stays quiet on a fresh install with no runs yet", () =
 })
 
 Deno.test("scheduleHealth stays quiet after a recent success", () => {
-  const health = scheduleHealth({ entries: [entry(20, "captured")], installed: true, nowMs: NOW })
+  const health = scheduleHealth({ entries: [entry(3, "captured")], installed: true, nowMs: NOW })
   assertEquals(health.state, "ok")
   assertEquals(health.message, null)
+})
+
+// Four missed runs at the three-hour cadence, and long enough that a laptop shut overnight does not
+// raise a banner before its wake catch-up run clears it.
+Deno.test("the staleness window spans several missed runs without tripping on a night's sleep", () => {
+  assertEquals(STALE_AFTER_MS / 3600000, 12)
+  assertEquals(scheduleHealth({ entries: [entry(11, "captured")], installed: true, nowMs: NOW }).state, "ok")
+  assertEquals(scheduleHealth({ entries: [entry(13, "captured")], installed: true, nowMs: NOW }).state, "stale")
+})
+
+Deno.test("scheduleHealth says which part of a partial run failed, not that the run failed", () => {
+  const health = scheduleHealth({
+    entries: [entry(4, "captured"), entry(1, "partial", "1 of 2 projects failed; b.json: Linear → 500")],
+    installed: true,
+    nowMs: NOW,
+  })
+  assertEquals(health.state, "partial")
+  assert(health.message?.startsWith("Some projects failed in the scheduled snapshot 1 hour ago"))
+  assert(health.message?.includes("b.json: Linear → 500"))
+  assertEquals(health.lastSuccessAt, entry(4, "captured").finishedAt)
 })
 
 Deno.test("scheduleHealth names the failure and when it happened", () => {
@@ -40,14 +60,13 @@ Deno.test("scheduleHealth names the failure and when it happened", () => {
 })
 
 Deno.test("scheduleHealth reports a stale store when the last success fell too far behind", () => {
-  const days = STALE_AFTER_MS / 86400000 + 1
   const health = scheduleHealth({
-    entries: [entry(days * 24, "captured"), entry(1, "skipped", "lock held")],
+    entries: [entry(STALE_AFTER_MS / 3600000 + 6, "captured"), entry(1, "skipped", "lock held")],
     installed: true,
     nowMs: NOW,
   })
   assertEquals(health.state, "stale")
-  assert(health.message?.includes("3 days ago"))
+  assert(health.message?.includes("18 hours ago"))
 })
 
 Deno.test("scheduleHealth reports stale when every run so far refused to do anything", () => {

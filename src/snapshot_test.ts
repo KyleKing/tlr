@@ -1,6 +1,30 @@
-import { assertEquals } from "@std/assert"
-import { generateSnapshots } from "@/seed.ts"
+import { assertEquals, assertThrows } from "@std/assert"
+import { DatabaseSync } from "node:sqlite"
+import { generateSnapshots, type Snapshot } from "@/seed.ts"
 import { openStore } from "@/snapshot.ts"
+
+const SLUG_URL = "https://linear.app/acme/project/horse-tinder-c0ffee001122"
+
+function renamed(snapshot: Snapshot, name: string, url: string): Snapshot {
+  return { ...snapshot, project: { ...snapshot.project, name, url } }
+}
+
+function withStore(fn: (store: ReturnType<typeof openStore>, path: string) => void): void {
+  const path = Deno.makeTempFileSync({ suffix: ".tlr.sqlite" })
+  const store = openStore(path)
+  try {
+    fn(store, path)
+  } finally {
+    store.close()
+    for (const suffix of ["", "-wal", "-shm"]) {
+      try {
+        Deno.removeSync(`${path}${suffix}`)
+      } catch {
+        // the wal and shm siblings only exist while the connection is open
+      }
+    }
+  }
+}
 
 Deno.test("snapshot store saves, lists, reloads, and round-trips the review pointer", () => {
   const { a, b } = generateSnapshots()
@@ -32,4 +56,129 @@ Deno.test("snapshot store saves, lists, reloads, and round-trips the review poin
     store.close()
     Deno.removeSync(path)
   }
+})
+
+Deno.test("the store runs in WAL mode so a reader is not blocked by a capture", () => {
+  withStore((_store, path) => {
+    const db = new DatabaseSync(path)
+    try {
+      const mode = db.prepare("PRAGMA journal_mode").get() as { journal_mode: string }
+      assertEquals(mode.journal_mode, "wal")
+    } finally {
+      db.close()
+    }
+  })
+})
+
+Deno.test("a second connection cannot write while a capture holds the transaction", () => {
+  const { a } = generateSnapshots()
+  withStore((store, path) => {
+    const other = new DatabaseSync(path)
+    other.exec("PRAGMA busy_timeout = 50")
+    try {
+      store.transaction(() => {
+        store.saveSnapshot(a, 1_700_000_000_000)
+        assertThrows(() => other.exec("BEGIN IMMEDIATE"))
+      })
+      assertEquals(store.listSnapshots().length, 1)
+    } finally {
+      other.close()
+    }
+  })
+})
+
+Deno.test("transaction rolls back everything a failed capture wrote", () => {
+  const { a, b } = generateSnapshots()
+  withStore((store) => {
+    store.saveSnapshot(a, 1_700_000_000_000, "before")
+    assertThrows(() =>
+      store.transaction(() => {
+        store.saveSnapshot(b, 1_700_000_600_000, "after")
+        throw new Error("capture failed")
+      })
+    )
+    assertEquals(store.listSnapshots().length, 1)
+  })
+})
+
+Deno.test("a renamed project keeps one history under one key", () => {
+  const { a } = generateSnapshots()
+  withStore((store) => {
+    store.saveSnapshot(renamed(a, "Horse Tinder", SLUG_URL), 1_700_000_000_000)
+    store.saveSnapshot(
+      renamed(a, "Pony Match", "https://linear.app/acme/project/pony-match-c0ffee001122"),
+      1_700_000_600_000,
+    )
+    const key = store.projectKeyForName("Pony Match")!
+    assertEquals(key, "slug:c0ffee001122")
+    assertEquals(store.listProjectSnapshots(key).length, 2)
+  })
+})
+
+Deno.test("rows captured before the stable key existed fold into it", () => {
+  const { a } = generateSnapshots()
+  withStore((store) => {
+    store.saveSnapshot(renamed(a, "Horse Tinder", "https://linear.app/acme"), 1_700_000_000_000)
+    assertEquals(store.listSnapshots()[0].projectKey, "name:horse tinder")
+    store.saveSnapshot(renamed(a, "Horse Tinder", SLUG_URL), 1_700_000_600_000)
+    const keys = new Set(store.listSnapshots().map((r) => r.projectKey))
+    assertEquals([...keys], ["slug:c0ffee001122"])
+  })
+})
+
+Deno.test("an existing store missing project_key migrates without losing a row", () => {
+  const { a } = generateSnapshots()
+  const path = Deno.makeTempFileSync({ suffix: ".tlr.sqlite" })
+  const legacy = new DatabaseSync(path)
+  legacy.exec(`
+    CREATE TABLE snapshots (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      captured_at INTEGER NOT NULL,
+      label TEXT,
+      project_name TEXT NOT NULL,
+      as_of TEXT NOT NULL,
+      json TEXT NOT NULL
+    );
+    CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+  `)
+  legacy.prepare("INSERT INTO snapshots (captured_at, label, project_name, as_of, json) VALUES (?, ?, ?, ?, ?)")
+    .run(1_700_000_000_000, "old", a.project.name, a.asOf, JSON.stringify(renamed(a, a.project.name, SLUG_URL)))
+  legacy.close()
+
+  const store = openStore(path)
+  try {
+    const rows = store.listSnapshots()
+    assertEquals(rows.length, 1)
+    assertEquals(rows[0].projectKey, "slug:c0ffee001122")
+    assertEquals(store.loadSnapshot(rows[0].id).issues.length, a.issues.length)
+  } finally {
+    store.close()
+    Deno.removeSync(path)
+  }
+})
+
+Deno.test("deleteSnapshots refuses the snapshot the review pointer references", () => {
+  const { a, b } = generateSnapshots()
+  withStore((store) => {
+    const first = store.saveSnapshot(a, 1_700_000_000_000)
+    const second = store.saveSnapshot(b, 1_700_000_600_000)
+    store.setReviewPointer(first.id)
+    assertEquals(store.deleteSnapshots([first.id]), 0)
+    assertEquals(store.deleteSnapshots([first.id, second.id]), 1)
+    assertEquals(store.listSnapshots().map((r) => r.id), [first.id])
+  })
+})
+
+Deno.test("loadHistoryBefore reads only older captures, newest first, up to the limit", () => {
+  const { a, b } = generateSnapshots()
+  withStore((store) => {
+    store.saveSnapshot(a, 1_000)
+    store.saveSnapshot(b, 2_000)
+    const latest = store.saveSnapshot(a, 3_000)
+    const key = store.listSnapshots().find((r) => r.id === latest.id)!.projectKey
+
+    const history = store.loadHistoryBefore(key, 3_000)
+    assertEquals(history.map((s) => s.asOf), [b.asOf, a.asOf])
+    assertEquals(store.loadHistoryBefore(key, 3_000, 1).length, 1)
+  })
 })

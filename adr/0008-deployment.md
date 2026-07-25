@@ -117,18 +117,19 @@ WantedBy=multi-user.target
 `serve` here is a production task that does not yet exist (see prep work). `EnvironmentFile` supplies the
 API secrets that `src/secrets.ts` reads by env var on the host (see "Secrets on the VM" below).
 
-### The daily snapshot on the host
+### The scheduled snapshot on the host
 
-Locally the daily `deno task snapshot` run is a per-user launchd LaunchAgent with a
-`StartCalendarInterval` (`scripts/schedule.sh`, [SETUP.md](../SETUP.md)), chosen because launchd fires a
-missed interval when the laptop wakes and coalesces several missed ones into a single run. On the VM that
-problem does not exist, since the box does not sleep, so the hosted equivalent is a systemd timer beside
-the service unit: a `tlr-snapshot.service` of `Type=oneshot` running the same task under the same user
-and `EnvironmentFile`, plus a `tlr-snapshot.timer` with `OnCalendar=daily` and `Persistent=true` (which
-covers a run missed while the VM was down, the same catch-up launchd gives). No unit file ships in this
-repo: an untested unit committed next to a working LaunchAgent invites someone to trust it, and the
-run-level guards that matter (the lock and the minimum interval, in `src/runLock.ts`) live in the task
-itself rather than in the scheduler, so they carry over to systemd unchanged.
+Locally the `deno task snapshot` run is a per-user launchd LaunchAgent that fires every three hours,
+eight `StartCalendarInterval` entries in an array (`scripts/schedule.sh`, [SETUP.md](../SETUP.md)). The
+calendar form is deliberate over `StartInterval`: launchd fires a missed calendar interval when the
+laptop wakes and coalesces several missed ones into a single run. On the VM that problem does not exist,
+since the box does not sleep, so the hosted equivalent is a systemd timer beside the service unit: a
+`tlr-snapshot.service` of `Type=oneshot` running the same task under the same user and
+`EnvironmentFile`, plus a `tlr-snapshot.timer` with `OnCalendar=*-*-* 00/3:00:00` and `Persistent=true`
+(which covers a run missed while the VM was down, the same catch-up launchd gives). No unit file ships
+in this repo: an untested unit committed next to a working LaunchAgent invites someone to trust it, and
+the run-level guards that matter (the lock and the minimum interval, in `src/runLock.ts`) live in the
+task itself rather than in the scheduler, so they carry over to systemd unchanged.
 
 ### The Caddy route
 

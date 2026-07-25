@@ -162,20 +162,25 @@ A teammate query returns real data only if you can see their availability: Works
 for an OAuth user, or domain-wide delegation for the service account. Without one, a peer query comes
 back empty.
 
-## Daily snapshots on a schedule
+## Snapshots on a schedule
 
 `deno task snapshot` refreshes every project in `web/data/projects.json` from Linear and Incident.io and
 captures a snapshot, the same work the board's Refresh button does. Run it by hand any time; the section
-below puts it on a daily launchd timer so the history builds without anyone remembering.
+below puts it on a launchd timer that fires every three hours, so the history builds without anyone
+remembering.
 
 Out-of-office is left out of a scheduled run. Google Calendar consent can need a browser, which a
 background job cannot answer, so out-days stay whatever the last interactive `deno task capacity` wrote.
 
 ```sh
-./scripts/schedule.sh install              # daily at 09:00
-./scripts/schedule.sh install --at 07:30   # pick the hour
+./scripts/schedule.sh install              # 00:00, 03:00, 06:00 … 21:00
+./scripts/schedule.sh install --at 07:30   # 01:30, 04:30, 07:30 … 22:30
 ./scripts/schedule.sh install --dry-run    # print the plist and the commands, change nothing
 ```
+
+Eight runs a day, three hours apart. `--at` names one of them and the other seven follow every three
+hours, so only the minute and the hour's remainder mod 3 change anything: `--at 07:30` and `--at 22:30`
+install the same schedule.
 
 Install is safe to re-run, and you have to re-run it after upgrading Deno: the plist holds the absolute
 path to the `deno` binary, because a LaunchAgent gets no shell `PATH`.
@@ -195,15 +200,19 @@ Remove it:
 ./scripts/schedule.sh uninstall
 ```
 
-macOS fires a missed daily run once when the machine wakes, and folds several missed days into that one
-run, so a closed laptop does not lose its snapshot. Two guards keep that from turning into duplicate
-work: a lock file (`web/data/snapshot-run.lock`) so a catch-up run cannot collide with a run already
-going, and a 12-hour minimum interval so a catch-up landing right after a good run does nothing. A lock
-older than 30 minutes is treated as abandoned and taken over, so a killed run does not wedge the
-schedule. `--force` overrides the interval; nothing overrides the lock.
+macOS fires a missed run once when the machine wakes, and folds several missed ones into that single
+run, so a closed laptop does not lose its snapshot. That catch-up is why the schedule is eight
+`StartCalendarInterval` entries rather than a `StartInterval` timer, which has no such catch-up. Two
+guards keep the catch-up from turning into duplicate work: a lock file
+(`web/data/snapshot-run.lock`) so a catch-up run cannot collide with a run already going, and a
+two-hour minimum interval, measured start to start, so a catch-up landing right after a good run does
+nothing. A lock older than 90 minutes is treated as abandoned and taken over, which outlasts the
+worst-case bounded run and still expires before the next scheduled one; a holder that has been robbed
+leaves the new lock alone. `--force` overrides the interval; nothing overrides the lock.
 
-Failures surface in the app. Every run appends a line to `web/data/snapshot-runs.jsonl`, and the board
-shows a dismissible banner when the last run failed or nothing has been captured for two days. With no
+Failures surface in the app. Every run appends a line to `web/data/snapshot-runs.jsonl` (the last 1000
+runs, about four months), and the board shows a dismissible banner when the last run failed, when it
+captured some projects and lost others, or when nothing has been captured for 12 hours. With no
 schedule installed there is no banner, which is the normal state, not a warning.
 
 ## Long-term: a hosted runner

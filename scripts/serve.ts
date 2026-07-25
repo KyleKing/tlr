@@ -14,7 +14,7 @@ import { handleApiError } from "@/utils/errorHandler.ts"
 import { ingestProject, linearKey } from "./issues.ts"
 import { type CapacityData, refreshCapacity } from "./capacity.ts"
 import { renderPage } from "../web/templates/helpers.ts"
-import { openStore } from "@/snapshot.ts"
+import { openStore, type SnapshotRow, type SnapshotStore } from "@/snapshot.ts"
 import { captureSnapshot, DATA_ROOT, RUN_LOG_PATH, SNAPSHOT_DB, writeJsonAtomic } from "@/capture.ts"
 import { readRunLog } from "@/runLog.ts"
 import { isScheduleInstalled, scheduleHealth } from "@/schedule.ts"
@@ -90,6 +90,34 @@ function pairById(
     return { before: store.loadSnapshot(olderId), after: store.loadSnapshot(newerId) }
   } finally {
     store.close()
+  }
+}
+
+// Every stored capture of one project, newest first. Grouped by project_key so a rename does not fork
+// the history, falling back to the display name for a store whose rows predate the key.
+export function projectRows(store: SnapshotStore, projectName: string): SnapshotRow[] {
+  const key = store.projectKeyForName(projectName)
+  const byKey = key ? store.listProjectSnapshots(key) : []
+  return byKey.length ? byKey : store.listSnapshots().filter((r) => r.projectName === projectName)
+}
+
+// Where the review queue starts: the stored pointer when it still names a capture of this project,
+// else the project's oldest capture. The pointer is a single global key rather than one per project,
+// so a pointer another project left behind is ignored here instead of diffing across two projects.
+// The same membership check covers a pointer whose snapshot was pruned out from under it.
+export function reviewAnchor(store: SnapshotStore, rows: SnapshotRow[]): SnapshotRow {
+  const pointer = store.getReviewPointer()
+  return rows.find((r) => r.id === pointer) ?? rows[rows.length - 1]
+}
+
+function reviewWindow(from: SnapshotRow, to: SnapshotRow) {
+  return {
+    from: from.asOf,
+    to: to.asOf,
+    fromId: from.id,
+    toId: to.id,
+    fromCapturedAt: from.capturedAt,
+    toCapturedAt: to.capturedAt,
   }
 }
 
@@ -296,14 +324,53 @@ app.get("/api/report", (c) => {
   return c.json({ report: weeklyReport(diffSnapshots(pair.before, pair.after)) })
 })
 
-// Review queue (added, removed, moved, re-estimated, status, slop) between a project's two most recent
-// snapshots. Read-only: the review pointer is not advanced here.
+// Review queue (added, returning, removed, archived, moved, re-estimated, status, slop) from the last
+// reviewed capture to the newest one, so the queue accumulates across captures instead of only ever
+// showing the last few hours. Reading never moves the pointer; POST /api/review/pointer does, once the
+// page has no open tickets left. Earlier captures of the project ride along as history so a ticket that
+// left and came back is reported as returning rather than as brand new.
 app.get("/api/review", (c) => {
   const project = c.req.query("project")
   if (!project) return c.json({ error: "expected ?project=<name>" }, 400)
-  const pair = recentPair(project)
-  if (!pair) return c.json({ window: null, items: [], reason: "need at least two snapshots" })
-  return c.json(reviewSince(pair.before, pair.after))
+  const store = openStore(SNAPSHOT_DB)
+  try {
+    const rows = projectRows(store, project)
+    if (rows.length < 2) return c.json({ window: null, items: [], reason: "need at least two snapshots" })
+    const latest = rows[0]
+    const anchor = reviewAnchor(store, rows)
+    if (anchor.id === latest.id) {
+      return c.json({ window: reviewWindow(latest, latest), items: [], reason: "nothing new since the last review" })
+    }
+    const before = store.loadSnapshot(anchor.id)
+    const after = store.loadSnapshot(latest.id)
+    const history = store.loadHistoryBefore(latest.projectKey, anchor.capturedAt)
+    const queue = reviewSince(before, after, history)
+    return c.json({ ...queue, window: reviewWindow(anchor, latest) })
+  } finally {
+    store.close()
+  }
+})
+
+// Move the review pointer. The Review page posts this when the last open ticket in the queue is marked
+// reviewed, and again with the previous window's start to undo that. Only a capture of the named
+// project is accepted, so a stale client cannot point one project's queue at another's history.
+app.post("/api/review/pointer", async (c) => {
+  const body = await c.req.json().catch(() => null)
+  const project = typeof body?.project === "string" ? body.project : null
+  const snapshotId = Number(body?.snapshotId)
+  if (!project || !Number.isInteger(snapshotId)) {
+    return c.json({ error: "expected { project: string, snapshotId: number }" }, 400)
+  }
+  const store = openStore(SNAPSHOT_DB)
+  try {
+    if (!projectRows(store, project).some((r) => r.id === snapshotId)) {
+      return c.json({ error: "no such snapshot for this project" }, 400)
+    }
+    store.setReviewPointer(snapshotId)
+    return c.json({ ok: true, pointer: snapshotId })
+  } finally {
+    store.close()
+  }
 })
 
 // How the daily snapshot schedule is doing, for the banner in web/lib/scheduleBanner.js. A machine
@@ -405,11 +472,15 @@ app.use("*", serveStatic({ root: "./web" }))
 
 app.notFound((c) => c.json({ error: "not found", path: c.req.path }, 404))
 
-Deno.serve({
-  port: config.PORT,
-  hostname: config.HOST,
-  onListen: ({ hostname, port }) => {
-    console.log(`tlr demo on http://${hostname}:${port}`)
-    console.log(`Environment: ${config.NODE_ENV}`)
-  },
-}, app.fetch)
+// Only when run as the entry point, so a test can import the review-window helpers above without
+// binding a port.
+if (import.meta.main) {
+  Deno.serve({
+    port: config.PORT,
+    hostname: config.HOST,
+    onListen: ({ hostname, port }) => {
+      console.log(`tlr demo on http://${hostname}:${port}`)
+      console.log(`Environment: ${config.NODE_ENV}`)
+    },
+  }, app.fetch)
+}

@@ -8,6 +8,7 @@
 // that does not fit inside the horizon is returned assigned but unscheduled, so a later cycle can pick
 // it up without losing the owner decision.
 
+import { liveSnapshot } from "../../web/lib/issues.js"
 import { personCycleCapacity } from "../../web/lib/planning.js"
 import type { Issue, Snapshot } from "@/seed.ts"
 import type { Op } from "@/ops.ts"
@@ -167,6 +168,7 @@ export function balance(snapshot: Snapshot, options: BalanceOptions = {}): {
   perCycle: { cycle: number; end: string; byPerson: Record<string, number> }[]
   ops: Op[]
 } {
+  snapshot = liveSnapshot(snapshot) as Snapshot
   const weekly = options.weeklyPerPerson ?? snapshot.capacity?.defaultVelocity ?? 20
   const start = options.start ?? snapshot.currentCycle + 1
   const end = options.end ?? start + 7

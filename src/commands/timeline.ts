@@ -1,10 +1,12 @@
+import { liveIssues } from "../../web/lib/issues.js"
 import { bucketOf, buildBuckets, dependencyWaves, orderingRisks } from "../../web/lib/planning.js"
-import type { Snapshot } from "@/seed.ts"
+import type { Issue, Snapshot } from "@/seed.ts"
 
 export function projectTimeline(snapshot: Snapshot) {
+  const issues = liveIssues(snapshot.issues) as Issue[]
   const buckets = buildBuckets(snapshot)
   const bucketByKey = Object.fromEntries(buckets.map((b) => [b.key, b]))
-  for (const i of snapshot.issues) {
+  for (const i of issues) {
     i.blocks ||= []
     i.blockedBy ||= []
     i.related ||= []
@@ -12,8 +14,8 @@ export function projectTimeline(snapshot: Snapshot) {
     ;(i as { _bucketEnd?: string })._bucketEnd = (bucketByKey[bucketOf(i)] || { end: "9999-12-31" }).end
   }
 
-  const byId = Object.fromEntries(snapshot.issues.map((i) => [i.id, i]))
-  const waves = dependencyWaves(snapshot.issues).map((ids: string[], n: number) => ({
+  const byId = Object.fromEntries(issues.map((i) => [i.id, i]))
+  const waves = dependencyWaves(issues).map((ids: string[], n: number) => ({
     wave: n,
     issues: ids.map((id) => {
       const i = byId[id]
@@ -21,7 +23,7 @@ export function projectTimeline(snapshot: Snapshot) {
     }),
   }))
 
-  const risks = orderingRisks(snapshot.issues).map((r: { issue: string; blocker: string }) => ({
+  const risks = orderingRisks(issues).map((r: { issue: string; blocker: string }) => ({
     issue: r.issue,
     blocker: r.blocker,
     detail: `${r.issue} is blocked by ${r.blocker}, which finishes later`,

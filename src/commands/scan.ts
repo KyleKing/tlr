@@ -1,5 +1,6 @@
+import { liveIssues } from "../../web/lib/issues.js"
 import { slopHash, slopScan } from "../../web/lib/planning.js"
-import type { Snapshot } from "@/seed.ts"
+import type { Issue, Snapshot } from "@/seed.ts"
 
 export function scanText(text: string) {
   const { score, flags } = slopScan(text)
@@ -7,7 +8,7 @@ export function scanText(text: string) {
 }
 
 export function scanIssues(snapshot: Snapshot) {
-  const scored = snapshot.issues.map((i) => {
+  const scored = (liveIssues(snapshot.issues) as Issue[]).map((i) => {
     const { score, flags } = slopScan(i.description)
     return { id: i.id, title: i.title, score, flags }
   })

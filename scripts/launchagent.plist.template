@@ -20,12 +20,9 @@
     <string>__PATH__</string>
   </dict>
   <key>StartCalendarInterval</key>
-  <dict>
-    <key>Hour</key>
-    <integer>__HOUR__</integer>
-    <key>Minute</key>
-    <integer>__MINUTE__</integer>
-  </dict>
+  <array>
+__CALENDAR_INTERVALS__
+  </array>
   <key>StandardOutPath</key>
   <string>__LOGFILE__</string>
   <key>StandardErrorPath</key>

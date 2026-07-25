@@ -139,6 +139,10 @@ export function outDaysFromFreeBusy(calendars, cycles, roster, workdaysPerCycle 
 // Completed issues in past cycles → { displayName: avgPointsPerCycle }, rounded. Only cycles strictly
 // before currentCycle count as history; a person with no completed points in that window is omitted
 // so the caller's default velocity applies instead of a false zero.
+//
+// Archived tickets count here, unlike everywhere else that reads the issue list. This measures work
+// already delivered, and a team that tidies its board by archiving finished tickets would otherwise
+// watch its own recorded throughput fall as a result.
 export function velocityByPerson(issues, cycles, currentCycle) {
   const past = cycles.filter((c) => c.n < currentCycle)
   if (!past.length) return {}

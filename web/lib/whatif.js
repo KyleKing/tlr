@@ -10,6 +10,7 @@
 // earlier ones on the same target, so a stack reads as a sequence of edits.
 
 import { setPersonCycle } from "./config.js"
+import { liveIssues, liveSnapshot } from "./issues.js"
 import { milestoneForecast, teamWeeklyThroughput } from "./planning.js"
 
 const _DAY_MS = 24 * 3600 * 1000
@@ -22,7 +23,7 @@ export function applyOverlays(snapshot, overlays) {
     else if (ov.kind === "scope") moves[ov.id] = { ...moves[ov.id], ...ov.patch }
     else throw new Error(`unknown what-if overlay: ${ov.kind}`)
   }
-  const issues = snapshot.issues.map((i) => (moves[i.id] ? { ...i, ...moves[i.id] } : i))
+  const issues = liveIssues(snapshot.issues).map((i) => (moves[i.id] ? { ...i, ...moves[i.id] } : i))
   return { ...snapshot, capacity, issues }
 }
 
@@ -37,9 +38,12 @@ function _forecastOf(snapshot) {
 // The simulated snapshot plus both forecasts, with a per-milestone delta so a caller can show the
 // baseline landing, the what-if landing, and the shift between them rather than only the new number.
 // A positive shiftDays means the milestone lands later than it did without the overlays.
+// The baseline is forecast from the same live-only issue list the simulation runs on. Reading the raw
+// snapshot here instead would price archived work into the baseline and not into the what-if, so every
+// shiftDays would report a saving the overlays did not make.
 export function whatIfPlan(snapshot, overlays) {
   const simulated = applyOverlays(snapshot, overlays)
-  const baseline = _forecastOf(snapshot)
+  const baseline = _forecastOf(liveSnapshot(snapshot))
   const forecast = _forecastOf(simulated)
   const baselineByKey = Object.fromEntries(baseline.milestones.map((m) => [m.key, m]))
   const milestones = forecast.milestones.map((m) => {

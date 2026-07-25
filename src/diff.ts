@@ -1,13 +1,25 @@
-// Plan-level diff between two snapshots. Pure, no I/O. Issues are matched by id, rolled up to the
-// milestone level, with a flat list of field-level changes for the issues that survive both captures.
+// Plan-level diff between two snapshots. Pure, no I/O. Issues are matched by Linear's stable UUID
+// (`linearId`) so a ticket that moves to another team reads as a rename rather than a delete plus an
+// add, rolled up to the milestone level, with a flat list of field-level changes for the issues that
+// survive both captures.
 
 import type { Issue, Snapshot } from "@/seed.ts"
 
 export type FieldChange = {
   id: string
-  field: "status" | "estimate" | "milestone" | "cycle" | "priority" | "assignee" | "title"
+  field: "status" | "estimate" | "milestone" | "cycle" | "priority" | "assignee" | "title" | "identifier"
   from: string | number | null
   to: string | number | null
+}
+
+// An issue absent from `before` that a bounded window of earlier snapshots has seen. `estimate` and
+// `milestone` are what it carried when it was last present, so a reader sees what it used to be.
+export type ReturningIssue = {
+  id: string
+  lastSeenAsOf: string
+  estimate: number | null
+  milestone: string | null
+  descriptionUnchanged: boolean
 }
 
 export type MilestoneDiff = {
@@ -22,6 +34,7 @@ export type MilestoneDiff = {
   issuesIn: string[]
   issuesOut: string[]
   added: string[]
+  archived: string[]
   removed: string[]
   completed: string[]
 }
@@ -40,14 +53,24 @@ export type SnapshotDiff = {
   milestones: MilestoneDiff[]
   issues: {
     added: string[]
+    archived: string[]
     removed: string[]
+    returning: ReturningIssue[]
     changes: FieldChange[]
   }
 }
 
 const DAY_MS = 24 * 3600 * 1000
 
-const FIELDS: FieldChange["field"][] = [
+// How far back a return is recognised. Both bounds apply, whichever bites first: at eight captures a
+// day the count keeps the scan cheap, and the day window keeps a ticket that vanished a quarter ago
+// from resurfacing as "returning" when it is really new work under an old identifier.
+export const RETURN_LOOKBACK_SNAPSHOTS = 24
+export const RETURN_LOOKBACK_DAYS = 45
+
+type ComparedField = Exclude<FieldChange["field"], "identifier">
+
+const FIELDS: ComparedField[] = [
   "status",
   "estimate",
   "milestone",
@@ -57,8 +80,54 @@ const FIELDS: FieldChange["field"][] = [
   "title",
 ]
 
-function byId(issues: Issue[]): Map<string, Issue> {
-  return new Map(issues.map((i) => [i.id, i]))
+// Set at the ingest boundary. Snapshots captured before the field existed have no `archived` key at
+// all, and a missing flag means the issue is live.
+type IngestedIssue = Issue & { archived?: boolean }
+
+export function isArchived(issue: Issue): boolean {
+  return (issue as IngestedIssue).archived === true
+}
+
+function isLive(issue: Issue): boolean {
+  return !isArchived(issue)
+}
+
+export type IssuePair = { was: Issue; now: Issue }
+
+export type IssueMatch = { pairs: IssuePair[]; addedOnly: Issue[]; removedOnly: Issue[] }
+
+function sameTicket(was: Issue, now: Issue): boolean {
+  if (was.linearId && now.linearId) return was.linearId === now.linearId
+  return true
+}
+
+// Match on `linearId`, falling back to the human identifier for snapshots captured before ingest
+// recorded the UUID. The fallback never pairs two issues whose UUIDs are both known and disagree,
+// so a recycled identifier stays an add plus a remove.
+export function matchIssues(before: Issue[], after: Issue[]): IssueMatch {
+  const byLinearId = new Map<string, Issue>()
+  const byIdentifier = new Map<string, Issue>()
+  for (const issue of before) {
+    if (issue.linearId) byLinearId.set(issue.linearId, issue)
+    byIdentifier.set(issue.id, issue)
+  }
+
+  const taken = new Set<Issue>()
+  const pairs: IssuePair[] = []
+  const addedOnly: Issue[] = []
+  for (const now of after) {
+    const byUuid = now.linearId ? byLinearId.get(now.linearId) : undefined
+    const fallback = byIdentifier.get(now.id)
+    const was = byUuid ?? (fallback && sameTicket(fallback, now) ? fallback : undefined)
+    if (!was || taken.has(was)) {
+      addedOnly.push(now)
+      continue
+    }
+    taken.add(was)
+    pairs.push({ was, now })
+  }
+
+  return { pairs, addedOnly, removedOnly: before.filter((issue) => !taken.has(issue)) }
 }
 
 function totalPoints(issues: Issue[]): number {
@@ -74,21 +143,79 @@ function slipDays(before: string | null, after: string | null): number | null {
   return Math.round((new Date(after).getTime() - new Date(before).getTime()) / DAY_MS)
 }
 
-function fieldValue(issue: Issue, field: FieldChange["field"]): string | number | null {
+function fieldValue(issue: Issue, field: ComparedField): string | number | null {
   return issue[field] as string | number | null
 }
 
-export function diffSnapshots(before: Snapshot, after: Snapshot): SnapshotDiff {
-  const beforeById = byId(before.issues)
-  const afterById = byId(after.issues)
+function lookbackCutoff(asOf: string): string {
+  return new Date(new Date(asOf).getTime() - RETURN_LOOKBACK_DAYS * DAY_MS).toISOString().slice(0, 10)
+}
 
-  const added = after.issues.filter((i) => !beforeById.has(i.id)).map((i) => i.id).sort()
-  const removed = before.issues.filter((i) => !afterById.has(i.id)).map((i) => i.id).sort()
-  const survivors = after.issues.filter((i) => beforeById.has(i.id))
+function boundedHistory(history: Snapshot[], asOf: string): Snapshot[] {
+  const cutoff = lookbackCutoff(asOf)
+  return history
+    .filter((s) => s.asOf < asOf && s.asOf >= cutoff)
+    .sort((a, b) => b.asOf.localeCompare(a.asOf))
+    .slice(0, RETURN_LOOKBACK_SNAPSHOTS)
+}
+
+function findCounterpart(issues: Issue[], issue: Issue): Issue | undefined {
+  const byUuid = issue.linearId ? issues.find((i) => i.linearId === issue.linearId) : undefined
+  if (byUuid) return byUuid
+  const fallback = issues.find((i) => i.id === issue.id)
+  return fallback && sameTicket(fallback, issue) ? fallback : undefined
+}
+
+function priorSighting(history: Snapshot[], issue: Issue): ReturningIssue | null {
+  for (const snapshot of history) {
+    const was = findCounterpart(snapshot.issues.filter(isLive), issue)
+    if (!was) continue
+    return {
+      id: issue.id,
+      lastSeenAsOf: snapshot.asOf,
+      estimate: was.estimate ?? null,
+      milestone: was.milestone,
+      descriptionUnchanged: was.description === issue.description,
+    }
+  }
+  return null
+}
+
+// `history` holds earlier captures of the same project, oldest or newest first; only the bounded
+// window nearest `before` is read, and only to recognise an added issue as a return.
+export function diffSnapshots(before: Snapshot, after: Snapshot, history: Snapshot[] = []): SnapshotDiff {
+  const beforeLive = before.issues.filter(isLive)
+  const afterLive = after.issues.filter(isLive)
+  const { pairs, addedOnly, removedOnly } = matchIssues(before.issues, after.issues)
+
+  const survivors: IssuePair[] = []
+  const archivedIssues: Issue[] = []
+  const restored: Issue[] = []
+  for (const pair of pairs) {
+    if (isArchived(pair.now)) {
+      if (isLive(pair.was)) archivedIssues.push(pair.now)
+      continue
+    }
+    if (isArchived(pair.was)) restored.push(pair.now)
+    else survivors.push(pair)
+  }
+
+  const addedIssues = [...addedOnly.filter(isLive), ...restored]
+  const added = addedIssues.map((i) => i.id).sort()
+  const archived = archivedIssues.map((i) => i.id).sort()
+  const removed = removedOnly.filter(isLive).map((i) => i.id).sort()
+
+  const window = boundedHistory(history, before.asOf)
+  const returning: ReturningIssue[] = []
+  for (const issue of addedIssues) {
+    const sighting = priorSighting(window, issue)
+    if (sighting) returning.push(sighting)
+  }
+  returning.sort((a, b) => a.id.localeCompare(b.id))
 
   const changes: FieldChange[] = []
-  for (const now of survivors) {
-    const was = beforeById.get(now.id)!
+  for (const { was, now } of survivors) {
+    if (was.id !== now.id) changes.push({ id: now.id, field: "identifier", from: was.id, to: now.id })
     for (const field of FIELDS) {
       const from = fieldValue(was, field)
       const to = fieldValue(now, field)
@@ -107,37 +234,31 @@ export function diffSnapshots(before: Snapshot, after: Snapshot): SnapshotDiff {
   for (const m of after.milestones) keys.push(m.key)
   for (const m of before.milestones) if (!keys.includes(m.key)) keys.push(m.key)
 
-  const addedSet = new Set(added)
-  const removedSet = new Set(removed)
-
   const milestones: MilestoneDiff[] = keys.map((key) => {
     const tb = targetBefore.get(key) ?? null
     const ta = targetAfter.get(key) ?? null
     const issuesIn = survivors
-      .filter((i) => i.milestone === key && beforeById.get(i.id)!.milestone !== key)
-      .map((i) => i.id)
+      .filter(({ was, now }) => now.milestone === key && was.milestone !== key)
+      .map(({ now }) => now.id)
       .sort()
     const issuesOut = survivors
-      .filter((i) => i.milestone !== key && beforeById.get(i.id)!.milestone === key)
-      .map((i) => i.id)
+      .filter(({ was, now }) => now.milestone !== key && was.milestone === key)
+      .map(({ now }) => now.id)
       .sort()
-    const addedHere = after.issues
-      .filter((i) => addedSet.has(i.id) && i.milestone === key)
-      .map((i) => i.id)
-      .sort()
-    const removedHere = before.issues
-      .filter((i) => removedSet.has(i.id) && i.milestone === key)
+    const addedHere = addedIssues.filter((i) => i.milestone === key).map((i) => i.id).sort()
+    const archivedHere = archivedIssues.filter((i) => i.milestone === key).map((i) => i.id).sort()
+    const removedHere = removedOnly
+      .filter((i) => isLive(i) && i.milestone === key)
       .map((i) => i.id)
       .sort()
     const completed = survivors
-      .filter((i) =>
-        i.milestone === key && i.statusType === "completed" &&
-        beforeById.get(i.id)!.statusType !== "completed"
+      .filter(({ was, now }) =>
+        now.milestone === key && now.statusType === "completed" && was.statusType !== "completed"
       )
-      .map((i) => i.id)
+      .map(({ now }) => now.id)
       .sort()
-    const pointsBefore = pointsInMilestone(before.issues, key)
-    const pointsAfter = pointsInMilestone(after.issues, key)
+    const pointsBefore = pointsInMilestone(beforeLive, key)
+    const pointsAfter = pointsInMilestone(afterLive, key)
     return {
       key,
       name: names.get(key) ?? key,
@@ -150,13 +271,14 @@ export function diffSnapshots(before: Snapshot, after: Snapshot): SnapshotDiff {
       issuesIn,
       issuesOut,
       added: addedHere,
+      archived: archivedHere,
       removed: removedHere,
       completed,
     }
   })
 
-  const pointsBefore = totalPoints(before.issues)
-  const pointsAfter = totalPoints(after.issues)
+  const pointsBefore = totalPoints(beforeLive)
+  const pointsAfter = totalPoints(afterLive)
 
   return {
     project: {
@@ -165,11 +287,11 @@ export function diffSnapshots(before: Snapshot, after: Snapshot): SnapshotDiff {
       pointsBefore,
       pointsAfter,
       pointsDelta: pointsAfter - pointsBefore,
-      issuesBefore: before.issues.length,
-      issuesAfter: after.issues.length,
-      issueCountDelta: after.issues.length - before.issues.length,
+      issuesBefore: beforeLive.length,
+      issuesAfter: afterLive.length,
+      issueCountDelta: afterLive.length - beforeLive.length,
     },
     milestones,
-    issues: { added, removed, changes },
+    issues: { added, archived, removed, returning, changes },
   }
 }

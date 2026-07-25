@@ -10,9 +10,12 @@
 import { lastRun, lastSuccessAt, type RunEntry } from "@/runLog.ts"
 
 export const SCHEDULE_LABEL = "me.kyleking.tlr.snapshot"
-export const STALE_AFTER_MS = 2 * 24 * 60 * 60 * 1000
 
-export type ScheduleState = "failed" | "never-run" | "ok" | "stale" | "unscheduled"
+// Four missed runs at the three-hour cadence. Tighter than that and a laptop closed overnight raises a
+// banner every morning, before the wake catch-up run has had a chance to clear it.
+export const STALE_AFTER_MS = 12 * 60 * 60 * 1000
+
+export type ScheduleState = "failed" | "never-run" | "ok" | "partial" | "stale" | "unscheduled"
 
 export type ScheduleHealth = {
   state: ScheduleState
@@ -59,10 +62,20 @@ function failedMessage(entry: RunEntry, nowMs: number): string {
     : `The scheduled snapshot failed ${when}.`
 }
 
+// A partial run captured some projects and lost others, so the wording has to name the part that
+// failed without implying the run as a whole did. The detail already lists which projects and why.
+function partialMessage(entry: RunEntry, nowMs: number): string {
+  const when = relativeTime(entry.finishedAt, nowMs)
+  return entry.detail
+    ? `Some projects failed in the scheduled snapshot ${when}: ${entry.detail}`
+    : `Some projects failed in the scheduled snapshot ${when}.`
+}
+
 function staleMessage(successAt: string | null, nowMs: number): string {
+  const cadence = "though the snapshot runs every three hours"
   return successAt
-    ? `No snapshot has been captured since ${relativeTime(successAt, nowMs)}, though the daily run is scheduled.`
-    : "The daily snapshot is scheduled but has never captured anything."
+    ? `No snapshot has been captured since ${relativeTime(successAt, nowMs)}, ${cadence}.`
+    : "The snapshot is scheduled every three hours but has never captured anything."
 }
 
 export function scheduleHealth(
@@ -81,6 +94,9 @@ export function scheduleHealth(
   if (!latest) return quiet("never-run")
   if (latest.outcome === "failed") {
     return { state: "failed", lastRun: latest, lastSuccessAt: successAt, message: failedMessage(latest, nowMs) }
+  }
+  if (latest.outcome === "partial") {
+    return { state: "partial", lastRun: latest, lastSuccessAt: successAt, message: partialMessage(latest, nowMs) }
   }
   if (!successAt || nowMs - Date.parse(successAt) >= staleAfterMs) {
     return { state: "stale", lastRun: latest, lastSuccessAt: successAt, message: staleMessage(successAt, nowMs) }

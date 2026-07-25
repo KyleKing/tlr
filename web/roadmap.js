@@ -8,6 +8,7 @@
 // (also shown on focus), the same trade the Board already makes.
 
 import { bucketOf, buildBuckets, missingData, orderingRisks, slopHash, slopScan } from "./lib/planning.js"
+import { liveSnapshot } from "./lib/issues.js"
 import { roadmapLayout } from "./lib/roadmap.js"
 import { applyTheme, loadTheme } from "./lib/appearance.js"
 import { escapeHtml, resolveProject } from "./lib/page.js"
@@ -53,9 +54,11 @@ let hoverIssue = null
 let hideTimer = null
 const elById = new Map()
 
+// Archived tickets are dropped on the way in: the plane draws the plan as it stands, and an archived
+// card would sit in a wave and a time column as if it were still work to do.
 async function loadData(dataFile) {
   const r = await fetch(`/data/${dataFile ?? "cpu.json"}`, { cache: "no-store" })
-  return (r.ok ? r : await fetch("/data-sample.json", { cache: "no-store" })).json()
+  return liveSnapshot(await (r.ok ? r : await fetch("/data-sample.json", { cache: "no-store" })).json())
 }
 
 function enrich() {

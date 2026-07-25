@@ -12,6 +12,7 @@ import {
   teamWeeklyThroughput,
   weeksBetween,
 } from "./lib/planning.js"
+import { liveSnapshot } from "./lib/issues.js"
 import { applyTheme, loadTheme } from "./lib/appearance.js"
 import { resolveProjectSlug, wireProjectPicker } from "./lib/nav.js"
 import { showError } from "./lib/errorBanner.js"
@@ -91,11 +92,14 @@ let currentDataFile = "cpu.json"
 // true when the project's own data file was missing and we fell back to the bundled sample
 let isSampleData = false
 
+// Archived tickets are dropped on the way in, once, so nothing downstream — buckets, capacity, the
+// forecast, the slop scan, the issue count in the header — has to remember to exclude them. The
+// Changes and Review pages read the same file and keep them, which is the point of ingesting them.
 async function loadData(dataFile = currentDataFile) {
   currentDataFile = dataFile
   const r = await fetch(`/data/${dataFile}`, { cache: "no-store" })
   isSampleData = !r.ok
-  return (r.ok ? r : await fetch("/data-sample.json", { cache: "no-store" })).json()
+  return liveSnapshot(await (r.ok ? r : await fetch("/data-sample.json", { cache: "no-store" })).json())
 }
 
 // not-slop dismissals persist locally, keyed by content hash so an edit re-flags

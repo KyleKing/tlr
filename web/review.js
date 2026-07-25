@@ -1,14 +1,20 @@
-// Review page: the UI for Phase 1's review queue plus in-flow fixes. Renders /api/review (a diff between
-// a project's two most recent snapshots) grouped by ticket, so every change to one issue reads as a
-// unit. A change-set can be marked reviewed; reviewed groups dim and sink to the bottom. Each ticket can
-// also be fixed in place: edit its title, description, estimate, or priority, preview the change (a dry
-// run, nothing leaves the process), then apply it to the current workspace. That write is the one path
-// tlr has to Linear, and it only runs from here. Actor attribution (AI vs. me) is out of scope: a
-// snapshot-diff cannot tell them apart.
+// Review page: the UI for Phase 1's review queue plus in-flow fixes. Renders /api/review (everything
+// that changed between the last reviewed capture and the newest one) grouped by ticket, so every change
+// to one issue reads as a unit. A change-set can be marked reviewed; reviewed groups dim and sink to the
+// bottom, and clearing the last open one advances the server-side review pointer, which is what closes
+// the window. Each ticket can also be fixed in place: edit its title, description, estimate, or
+// priority, preview the change (a dry run, nothing leaves the process), then apply it to the current
+// workspace. That write is the one path tlr has to Linear, and it only runs from here. Actor
+// attribution (AI vs. me) is out of scope: a snapshot-diff cannot tell them apart.
+//
+// Per-ticket marks live in localStorage; the durable "reviewed up to here" fact is the server pointer.
+// They are keyed by the window's starting snapshot id and by a fingerprint of the ticket's change-set,
+// so a later, genuinely different change to the same ticket is never suppressed by an earlier mark.
 
 import { escapeHtml, resolveProject } from "./lib/page.js"
 import { applyTheme, loadTheme } from "./lib/appearance.js"
 import { editFormHTML, wireForm } from "./lib/editForm.js"
+import { showError } from "./lib/errorBanner.js"
 
 applyTheme(loadTheme())
 
@@ -21,29 +27,72 @@ let queue = { window: null, items: [] }
 let mode = { demo: false, workspace: "live" }
 let issuesById = new Map()
 let boardData = { milestones: [], cycles: [], capacity: {} }
+let undoTo = null
 const editing = new Set()
 const reviewed = JSON.parse(localStorage.getItem(REVIEWED_KEY) || "{}")
 
+function fingerprint(changes) {
+  const text = changes.map((c) => `${c.kind}:${c.summary}`).sort().join("|")
+  let hash = 5381
+  for (let i = 0; i < text.length; i++) hash = (hash * 33 ^ text.charCodeAt(i)) >>> 0
+  return hash.toString(36)
+}
+
+function windowPrefix() {
+  return `${project?.name ?? "?"}#`
+}
 function windowKey() {
-  return queue.window ? `${queue.window.from}_${queue.window.to}` : "none"
+  return `${windowPrefix()}${queue.window?.fromId ?? "none"}`
 }
-function isReviewed(id) {
-  return Boolean(reviewed[windowKey()]?.[id])
+
+// Marks belong to one window. Once the pointer moves the window's start changes, so every other entry
+// for this project is dead weight and is dropped rather than left to grow without bound.
+function pruneWindows() {
+  const keep = windowKey()
+  for (const key of Object.keys(reviewed)) {
+    if (key.startsWith(windowPrefix()) && key !== keep) delete reviewed[key]
+  }
+  localStorage.setItem(REVIEWED_KEY, JSON.stringify(reviewed))
 }
-function setReviewed(id, done) {
+
+function isReviewed(group) {
+  return reviewed[windowKey()]?.[group.id] === fingerprint(group.changes)
+}
+function setReviewed(group, done) {
   const forWindow = (reviewed[windowKey()] ||= {})
-  if (done) forWindow[id] = true
-  else delete forWindow[id]
+  if (done) forWindow[group.id] = fingerprint(group.changes)
+  else delete forWindow[group.id]
   localStorage.setItem(REVIEWED_KEY, JSON.stringify(reviewed))
 }
 
 const KIND_LABEL = {
   added: "added",
-  removed: "removed",
+  archived: "archived",
   moved: "moved",
   reestimated: "re-estimated",
-  status: "status",
+  removed: "removed",
+  returning: "returning",
   slop: "slop",
+  status: "status",
+}
+
+// The year is written only when it isn't the current one, so the common case stays short without
+// making a capture from a previous year ambiguous.
+function localDay(ms) {
+  const d = new Date(ms)
+  const withYear = d.getFullYear() !== new Date().getFullYear()
+  return d.toLocaleDateString([], { day: "numeric", month: "short", ...(withYear ? { year: "numeric" } : {}) })
+}
+function localClock(ms) {
+  return new Date(ms).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+}
+
+// Local time, with the date written once when both ends fall on the same day — at eight captures a day
+// most windows are intra-day, and "Jul 24 → Jul 24" says nothing.
+function windowLabel(fromMs, toMs) {
+  if (!Number.isFinite(fromMs) || !Number.isFinite(toMs)) return null
+  if (localDay(fromMs) === localDay(toMs)) return `${localDay(fromMs)} ${localClock(fromMs)} → ${localClock(toMs)}`
+  return `${localDay(fromMs)} ${localClock(fromMs)} → ${localDay(toMs)} ${localClock(toMs)}`
 }
 
 function groupByTicket(items) {
@@ -56,7 +105,7 @@ function groupByTicket(items) {
 }
 
 function groupHTML(g) {
-  const done = isReviewed(g.id)
+  const done = isReviewed(g)
   const canEdit = issuesById.has(g.id)
   const open = editing.has(g.id)
   const rows = g.changes.map((c) =>
@@ -75,25 +124,72 @@ function groupHTML(g) {
     `</div>`
 }
 
+function metaText(openCount, total) {
+  const label = queue.window && windowLabel(queue.window.fromCapturedAt, queue.window.toCapturedAt)
+  const heading = label ?? (queue.window ? `${queue.window.from} → ${queue.window.to}` : "no window yet")
+  return `${heading} · ${openCount} of ${total} tickets to review`
+}
+
+function emptyHTML() {
+  if (!queue.window) {
+    return `<p class="empty">Need at least two snapshots to review. ` +
+      `Capture one now, refresh the board later, and changes will show here.</p>`
+  }
+  const undo = undoTo === null ? "" : `<button class="chip mini" id="review-undo">Undo, reopen the last window</button>`
+  return `<p class="empty">Reviewed up to ${escapeHtml(localClock(queue.window.toCapturedAt))} on ` +
+    `${escapeHtml(localDay(queue.window.toCapturedAt))}. The next capture starts a new window.</p>${undo}`
+}
+
 function render() {
+  const meta = document.getElementById("meta")
   if (!queue.items.length) {
-    pageEl.innerHTML = `<p class="empty">Nothing to review between the two most recent snapshots. ` +
-      `Capture another after some edits and changes will show here.</p>`
+    meta.textContent = queue.window ? "Caught up with every capture so far" : "Nothing to review yet"
+    pageEl.innerHTML = emptyHTML()
+    wire()
     return
   }
   const groups = groupByTicket(queue.items)
-  groups.sort((a, b) => (Number(isReviewed(a.id)) - Number(isReviewed(b.id))) || a.id.localeCompare(b.id))
-  const openCount = groups.filter((g) => !isReviewed(g.id)).length
-  document.getElementById("meta").textContent =
-    `${queue.window.from} → ${queue.window.to} · ${openCount} of ${groups.length} tickets to review`
+  groups.sort((a, b) => (Number(isReviewed(a)) - Number(isReviewed(b))) || a.id.localeCompare(b.id))
+  const openCount = groups.filter((g) => !isReviewed(g)).length
+  meta.textContent = metaText(openCount, groups.length)
   pageEl.innerHTML = groups.map(groupHTML).join("")
-  wire()
+  wire(groups)
 }
 
-function wire() {
+// The pointer is what actually closes a window, and it only moves once no ticket in the queue is still
+// open. Reloading afterwards is what proves the move stuck rather than assuming it did.
+async function advancePointer(snapshotId, previousId) {
+  const r = await fetch("/api/review/pointer", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ project: project.name, snapshotId }),
+  })
+  if (!r.ok) {
+    showError(new Error(`pointer update failed (${r.status})`), "Review")
+    return
+  }
+  undoTo = previousId
+  await load()
+}
+
+function wire(groups = []) {
+  const byId = new Map(groups.map((g) => [g.id, g]))
+  const undoBtn = document.getElementById("review-undo")
+  if (undoBtn) {
+    undoBtn.onclick = () => {
+      const target = undoTo
+      undoTo = null
+      advancePointer(target, null)
+    }
+  }
   for (const btn of pageEl.querySelectorAll("button[data-review]")) {
     btn.onclick = () => {
-      setReviewed(btn.dataset.review, !isReviewed(btn.dataset.review))
+      const group = byId.get(btn.dataset.review)
+      setReviewed(group, !isReviewed(group))
+      if (queue.window && groups.every(isReviewed)) {
+        advancePointer(queue.window.toId, queue.window.fromId)
+        return
+      }
       render()
     }
   }
@@ -110,7 +206,8 @@ function wire() {
     wireForm(form, issuesById.get(id), project.dataFile, mode, {
       onApplied: async () => {
         await refreshData()
-        setReviewed(id, true)
+        const group = byId.get(id)
+        if (group) setReviewed(group, true)
         editing.delete(id)
         render()
       },
@@ -138,6 +235,7 @@ async function load() {
   ])
   queue = await reviewRes.json()
   mode = await modeRes.json()
+  pruneWindows()
   await refreshData()
   render()
 }

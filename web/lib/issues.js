@@ -53,6 +53,9 @@ export function transformIssue(raw, milestoneKeyById) {
   return {
     id: raw.identifier,
     linearId: raw.id,
+    // Linear hides archived issues unless the query asks for them, so an archived ticket and one
+    // removed from the project look the same downstream. Ingest asks for both and flags which is which.
+    archived: Boolean(raw.archivedAt),
     title: raw.title,
     url: raw.url,
     description: raw.description ?? "",
@@ -73,11 +76,36 @@ export function transformIssue(raw, milestoneKeyById) {
   }
 }
 
+// Ingest fetches archived issues on purpose (see transformIssue), so every snapshot and data file
+// carries them. Only the diff and the review queue want them: they exist to tell an archive apart
+// from a removal. Everything that describes the plan as it stands — the board, the roadmap plane,
+// capacity, the forecast, the slop scan, the timeline, the balancer, the SVG exports — counts live
+// work only, and narrows its input through these before doing anything else.
+export function isArchivedIssue(issue) {
+  return issue?.archived === true
+}
+
+export function liveIssues(issues) {
+  return (issues ?? []).filter((i) => !isArchivedIssue(i))
+}
+
+export function liveSnapshot(snapshot) {
+  return { ...snapshot, issues: liveIssues(snapshot?.issues) }
+}
+
 // Add or update a project's entry in the projects.json manifest (keyed by slug), so the switcher can
 // discover every project that's been ingested regardless of what data file it was written to.
 export function upsertProjectManifest(manifest, entry) {
   const others = manifest.filter((p) => p.slug !== entry.slug)
   return [...others, entry].sort((a, b) => a.name.localeCompare(b.name))
+}
+
+// upsertProjectManifest keys on slug alone, so the same project ingested under two slugs (a
+// hand-written entry, then Linear's own slugId) leaves two manifest rows pointing at one data file
+// and the scheduled run tries to refresh it twice. The most recent row for a file wins.
+export function dedupeByDataFile(entries) {
+  const newestByFile = new Map(entries.map((entry) => [entry.dataFile, entry]))
+  return entries.filter((entry) => newestByFile.get(entry.dataFile) === entry)
 }
 
 // Pick a project from the manifest (see scripts/issues.ts's projects.json upsert): the requested slug

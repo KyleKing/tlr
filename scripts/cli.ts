@@ -113,8 +113,8 @@ async function run(cmd: string | undefined, f: Flags): Promise<void> {
       return out(milestoneForecast(await loadData(str(f, "project") ?? "data-sample.json"), weekly))
     }
     case "review": {
-      const { before, after, window } = await twoSnapshots(f, true)
-      const review = reviewSince(before, after)
+      const { before, after, history, window } = await twoSnapshots(f, true)
+      const review = reviewSince(before, after, history)
       if (window) {
         if (window.advance) window.store.setReviewPointer(window.toId)
         window.store.close()
@@ -157,29 +157,34 @@ async function run(cmd: string | undefined, f: Flags): Promise<void> {
 }
 
 // Resolve the before/after snapshots for diff and review, from two files (--a/--b) or from the store
-// (--from/--to, or the review pointer and latest for review).
+// (--from/--to, or the review pointer and latest for review). In review mode the window is scoped to
+// the newest capture's own project, and earlier captures of it come back as `history` so a ticket that
+// left and returned reads as a return rather than as new.
 async function twoSnapshots(
   f: Flags,
   reviewMode = false,
 ): Promise<{
   before: Snapshot
   after: Snapshot
+  history: Snapshot[]
   window?: { store: ReturnType<typeof openStore>; toId: number; advance: boolean }
 }> {
   const a = str(f, "a")
   const b = str(f, "b")
-  if (a && b) return { before: await loadData(a), after: await loadData(b) }
+  if (a && b) return { before: await loadData(a), after: await loadData(b), history: [] }
 
   const store = openStore(str(f, "db"))
   const rows = store.listSnapshots()
   if (reviewMode && !str(f, "from")) {
     if (rows.length === 0) fail("no snapshots stored. run `tlr snapshot --project <file>` first.")
     const latest = rows[0]
+    const mine = rows.filter((r) => r.projectKey === latest.projectKey)
     const pointer = store.getReviewPointer()
-    const beforeId = pointer ?? rows[rows.length - 1].id
-    const before = store.loadSnapshot(beforeId)
+    const anchor = mine.find((r) => r.id === pointer) ?? mine[mine.length - 1]
+    const before = store.loadSnapshot(anchor.id)
     const after = store.loadSnapshot(latest.id)
-    return { before, after, window: { store, toId: latest.id, advance: f["no-advance"] !== true } }
+    const history = store.loadHistoryBefore(latest.projectKey, anchor.capturedAt)
+    return { before, after, history, window: { store, toId: latest.id, advance: f["no-advance"] !== true } }
   }
   const fromId = Number(str(f, "from"))
   const toId = Number(str(f, "to"))
@@ -187,7 +192,7 @@ async function twoSnapshots(
   const before = store.loadSnapshot(fromId)
   const after = store.loadSnapshot(toId)
   store.close()
-  return { before, after }
+  return { before, after, history: [] }
 }
 
 function usage(): void {

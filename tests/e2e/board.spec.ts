@@ -258,3 +258,48 @@ test("the combined bucket filter is a searchable multi-select that narrows the b
   await expect(page.locator("#bsel-btn")).toHaveAttribute("aria-pressed", "true")
   await expect(page.locator(".rowhead.horizon")).toHaveCount(1)
 })
+
+// Ingest keeps archived tickets in the data file so the diff can tell an archive apart from a removal
+// (see web/lib/issues.js). The board is not one of the readers that wants them: an archived ticket
+// here would sit in a cycle column, add its points to a person's load, and be counted in the header.
+test("an archived ticket never reaches the board", async ({ page }) => {
+  const issue = (id: string, over: Record<string, unknown> = {}) => ({
+    id,
+    title: `Ticket ${id}`,
+    url: "https://linear.app/",
+    estimate: 3,
+    assignee: "Ada Lovelace",
+    status: "Todo",
+    statusType: "unstarted",
+    priority: "Medium",
+    priorityValue: 3,
+    labels: [],
+    parentId: null,
+    milestone: null,
+    cycle: 48,
+    description: "",
+    blocks: [],
+    blockedBy: [],
+    ...over,
+  })
+  const data = {
+    project: { name: "Archive Co", start: "2026-07-01", target: "2026-11-30", url: "https://linear.app/" },
+    cycles: [{ n: 48, start: "2026-07-20", end: "2026-07-27" }],
+    asOf: "2026-07-23",
+    currentCycle: 48,
+    milestones: [],
+    issues: [issue("LIVE-1"), issue("GONE-1", { archived: true, assignee: "Archived Owner", estimate: 40 })],
+    capacity: { config: { workdaysPerCycle: 5, oncallPenalty: 0.35 }, defaultVelocity: 20, roster: {}, people: {} },
+  }
+  await page.route("**/data/**", (route) => {
+    if (route.request().url().endsWith("projects.json")) return route.continue()
+    return route.fulfill({ json: data })
+  })
+  await page.goto("/")
+
+  await expect(page.locator("#grid tr").first()).toBeVisible()
+  await expect(page.locator("#meta")).toContainText("1 issues")
+  await expect(page.locator("#grid")).toContainText("LIVE-1")
+  await expect(page.locator("#grid")).not.toContainText("GONE-1")
+  await expect(page.locator("#grid")).not.toContainText("Archived Owner")
+})
