@@ -27,7 +27,7 @@ Linear GraphQL
    └─ change     ops -> validate against live state -> issueUpdate  (src/linear_write.ts)
       |
       ├─ cli      scan / capacity / timeline / diff / review / report / forecast / plan / snapshot / export  (read + preview only)
-      └─ web      capacity board, dependency view, weekly changes, review-and-fix, settings
+      └─ web      capacity board, dependency view, weekly changes, review-and-fix, balance, settings
 ```
 
 Writes reach Linear only from the web app, never the CLI, and there is no MCP server. See
@@ -87,7 +87,8 @@ per [adr/0005](adr/0005-capacity-realism.md).
 
 ## The web app
 
-Routed pages behind a shared nav (`web/lib/nav.js`): Board, Changes, Review, Roadmap, Settings, with a
+Routed pages behind a shared nav (`web/lib/nav.js`): Board, Changes, Review, Roadmap, Balance, and
+Settings, with a
 global project picker. `GET /api/projects/access` checks, cached and best-effort, whether the current
 Linear key can still see each locally-ingested project, and flags a stale one rather than silently
 showing old data.
@@ -104,7 +105,9 @@ at the next capture. Reviewed marks are keyed by window and change-set, so clear
 morning does not suppress a different change to it that afternoon. **Roadmap** (the page, not this
 repo's ROADMAP.md) lays tickets on a pannable, zoomable plane, x by cycle or forecast landing date, y by
 dependency wave, with lane packing so no two cards overlap, and lists the dependency chains beneath the
-filters. **Settings** holds appearance, capacity,
+filters. **Balance** turns `tlr balance`'s proposal into
+reviewable rows: each move is a checkbox over the ops the assigner already emits, so applying goes
+through `POST /api/edit` rather than a second write path. **Settings** holds appearance, capacity,
 roster, integrations, and secrets.
 
 `web/lib/errorBanner.js` catches uncaught client errors and unhandled rejections into a dismissible
@@ -183,8 +186,11 @@ shipped/moved/at-risk narrative, `src/forecast.ts` a per-milestone landing date 
 
 `src/commands/balance.ts` proposes an assignee and cycle for unscheduled open work under a per-person
 ceiling deflated for on-call and time off, keeping a dependency chain with one owner. It emits
-`set_assignee`/`set_cycle` ops, flags off-roster owners and un-estimated work, and reports per-milestone
-deadline risk. See [BALANCE-NOTES.md](BALANCE-NOTES.md).
+`set_assignee`/`set_cycle` ops, flags un-estimated work and owners whose capacity is not modelled, and
+reports per-milestone deadline risk. It spreads work across the people who already own work here rather
+than the roster, falling back to the roster only for a project where nothing is assigned yet, and its
+cycle window defaults to the cycles the project actually has. `GET /api/balance` serves the plan to the
+Balance page. See [BALANCE-NOTES.md](BALANCE-NOTES.md).
 
 ## Quality
 

@@ -1,0 +1,43 @@
+  <header class="page-head">
+    <div>
+      <h1 id="title">Balance</h1>
+      <div class="sub" id="meta">A proposed owner and cycle for every unscheduled ticket</div>
+    </div>
+    <div class="bal-actions">
+      <button class="pill" id="preview" disabled>Preview</button>
+      <button class="pill primary" id="apply" disabled>Apply</button>
+    </div>
+  </header>
+  <form class="bal-controls" id="controls">
+    <label>Cycles <input type="number" id="bal-start" min="1" step="1" placeholder="from" /></label>
+    <label>to <input type="number" id="bal-end" min="1" step="1" placeholder="to" /></label>
+    <label>Points per person <input type="number" id="bal-weekly" min="1" step="1" placeholder="auto" /></label>
+    <label>Max lead cycles <input type="number" id="bal-lead" min="0" step="1" placeholder="none" /></label>
+    <button class="pill" id="recompute" type="submit">Recompute</button>
+  </form>
+  <div id="page" class="page-body">
+    <p class="empty">Loading…</p>
+  </div>
+  <div id="out" class="bal-out" hidden></div>
+  <details class="legend">
+    <summary>How to read this proposal</summary>
+    <div class="legend-body">
+      <p>
+        Balance takes every open ticket with no cycle, orders them blockers first and then by priority,
+        milestone target, and size, and gives each one the best-fitting owner in the earliest cycle that
+        still has room. A person's room in a cycle is their own velocity, deflated for an on-call week
+        and for days out of office, minus what they are already committed to. A dependency chain stays
+        with one owner so it does not hand off mid-flight.
+      </p>
+      <p>
+        It is greedy rather than optimal, so read it as a starting point to edit rather than an answer.
+        Untick anything you disagree with before previewing. Work that does not fit inside the cycle
+        window comes back with an owner and no cycle, so the decision is kept without pretending there
+        is room for it.
+      </p>
+      <p>
+        Preview is a dry run against the same write path the editor uses: it reports what each op would
+        change without touching Linear. Nothing is written until you press Apply.
+      </p>
+    </div>
+  </details>

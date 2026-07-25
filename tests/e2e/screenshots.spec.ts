@@ -14,6 +14,7 @@ const pages: [path: string, name: string, ready: string][] = [
   [`/changes${SEED}`, "changes", ".rsec"],
   [`/review${SEED}`, "review", ".rgroup"],
   [`/roadmap${SEED}`, "roadmap", ".rm-card"],
+  [`/balance${SEED}`, "balance", ".bal-table"],
   [`/settings${SEED}`, "settings", ".cfg-nav-item"],
 ]
 

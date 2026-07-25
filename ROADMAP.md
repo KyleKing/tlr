@@ -50,28 +50,41 @@ Two things came out of it, both shipped:
 A dedicated node/edge page stays unbuilt, and the spike says it should. Revisit only if a project turns
 up whose graph is dense enough that the wave plane cannot show it.
 
-## Next — small fixes
+## Done — the small fixes
 
-Each is a known gap with the fix already identified.
+- **Retention prunes.** The LaunchAgent passes `--prune`. It was waiting on the store keying history
+  correctly, and it was not: captures taken before ingest recorded Linear's project id sat under a
+  `slug:` key while newer ones sat under `id:`, so one project ran two histories and each page saw
+  half. `mergeForkedProjectKeys` repairs that on open
+- **The Google token calls time out.** The exchange and refresh in `scripts/gcal-freebusy.ts` go
+  through `fetchWithRetry` like every other ingest call
+- **On-call covers the whole roster.** The roster was doubling as the set of people to forecast
+  against, which forced it to stay narrow, so three engineers on call were missing from it and their
+  on-call weeks deflated nothing. Ownership of live work now decides who the forecast plans for
+  (`planningPeople`), and `deno task roster` writes every active Linear member. Twenty on-call shifts
+  resolve where eight did before
 
-- **Turn on retention pruning.** `src/retention.ts` reports what it would drop and deletes only with
-  `--prune`, held back because project keys were new and a mis-keyed row would thin the wrong history.
-  Read a week of `prune: would drop N` lines in `web/data/snapshot-runs.jsonl`, confirm the keys are
-  right, then add the flag to the LaunchAgent
-- **Time out the Google token calls.** The exchange and refresh in `scripts/gcal-freebusy.ts` still use
-  a bare `fetch`, the last ingest calls with no per-attempt timeout. `src/httpRetry.ts` already has the
-  pieces
-- **Cover the whole roster for on-call.** `oncallByCycle` only tracks people already in
-  `capacity.roster`, so a teammate the board does not track is silently dropped from on-call deflation.
-  Now that the Incident.io key returns schedules, check who is missing and add them
+Velocity was measured wrong alongside them. Averaging completed points over every past cycle counted
+leave as throughput of zero, so a lead back from months away read as 1 point a cycle. A cycle now counts
+only when the person worked part of it and delivered, and a partly-out cycle scales up to a full week.
+Both chain-risk flags on the real project cleared once the numbers were right, which is worth
+remembering the next time a flag looks alarming: check the velocity behind it first.
 
-## Then — a Balance page
+## Done — the Balance page
 
-`tlr balance` already computes assignee and cycle moves for unscheduled work under a per-person ceiling.
-Route that proposal through `/api/edit` so the moves can be reviewed and applied rather than only
-printed. [BALANCE-NOTES.md](BALANCE-NOTES.md) has the seams, plus three open sub-questions: a per-person
-forecast variant, affinities in Settings rather than hardcoded, and whether to reassign already-owned
-work.
+`tlr balance`'s proposal is now reviewable at `/balance`: a row per proposed owner-and-cycle move, each
+a checkbox over the ops the assigner already emits, so applying goes through `POST /api/edit` rather
+than a second write path. Preview is a dry run.
+
+Two defaults were wrong once the roster stopped being the planning set. Balance spread work across
+roster keys, which after the roster widened to every engineer would have handed this project's tickets
+to 23 people; it now uses whoever owns work here, falling back to the roster only for a project where
+nothing is assigned yet. And its cycle window ran eight past the last cycle the project has, so every
+candidate came back unplaceable with a warning that read like "nothing fits".
+
+Still open from [BALANCE-NOTES.md](BALANCE-NOTES.md): a per-person forecast variant, affinities in
+Settings rather than hardcoded in `DEFAULT_AFFINITIES`, and whether to offer reassigning work someone
+already owns.
 
 ## Later — cross-project duplicate detection
 

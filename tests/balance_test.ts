@@ -122,10 +122,38 @@ Deno.test("cycles the team does not run are dropped and warned, nothing schedule
   assertEquals(r.warnings.some((w) => w.includes("no runnable cycles")), true)
 })
 
-Deno.test("committed work owned by an off-roster person raises a warning", () => {
+// An owner the plan does model, but who has no roster entry, gets the default ceiling rather than a
+// measured one, since velocity, on-call, and out-days all hang off the roster.
+Deno.test("an owner missing from the roster raises a warning about their capacity", () => {
   const issues = [issue({ id: "T-1", estimate: 3, statusType: "started", cycle: 50, assignee: "Stranger" })]
   const r = balance(snapshot(issues), { weeklyPerPerson: 10, start: 49, end: 52 })
   assertEquals(r.warnings.some((w) => w.includes("off-roster") && w.includes("Stranger")), true)
+})
+
+// An owner left out of `people` entirely is worse: their committed work never lands in the grid, so
+// every cycle they occupy looks emptier than it is.
+Deno.test("committed work owned by someone outside the plan raises a warning", () => {
+  const issues = [issue({ id: "T-1", estimate: 3, statusType: "started", cycle: 50, assignee: "Stranger" })]
+  const r = balance(snapshot(issues), { weeklyPerPerson: 10, start: 49, end: 52, people: ["Kyle King"] })
+  assertEquals(r.warnings.some((w) => w.includes("capacity not modeled") && w.includes("Stranger")), true)
+})
+
+// Balance exists to assign unowned work, so a project where nothing is assigned has no owners to learn
+// from. It falls back to the roster and says so rather than proposing nothing.
+Deno.test("a project with no owners yet falls back to the roster and warns", () => {
+  const r = balance(snapshot([issue({ id: "T-1", estimate: 3 })]), { weeklyPerPerson: 10, start: 49, end: 52 })
+  assertEquals(r.options.people, ["Kyle King", "Marissa TK"])
+  assertEquals(r.warnings.some((w) => w.includes("nobody owns work in this project yet")), true)
+})
+
+// Once people own work here, they are the plan, not the whole roster.
+Deno.test("balance spreads across the people who own work, not the roster", () => {
+  const issues = [
+    issue({ id: "T-1", estimate: 3, statusType: "started", cycle: 49, assignee: "Marissa TK" }),
+    issue({ id: "T-2", estimate: 3 }),
+  ]
+  const r = balance(snapshot(issues), { weeklyPerPerson: 10, start: 49, end: 52 })
+  assertEquals(r.options.people, ["Marissa TK"])
 })
 
 Deno.test("unestimated in-scope work is left unscheduled with a warning", () => {

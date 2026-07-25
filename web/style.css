@@ -2162,3 +2162,92 @@ td.past {
     margin-right: 12px;
   }
 }
+
+/* Balance page */
+.bal-actions {
+  display: flex;
+  gap: 8px;
+}
+.bal-controls {
+  display: flex;
+  gap: 12px;
+  align-items: end;
+  flex-wrap: wrap;
+  padding: 8px 0 12px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.bal-controls label {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+.bal-controls input {
+  width: 84px;
+}
+.bal-sec {
+  margin: 0 0 18px;
+}
+.bal-sec h2 {
+  font-size: 13px;
+  margin: 0 0 6px;
+  color: var(--muted);
+  font-weight: 600;
+}
+.bal-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.bal-table th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  padding: 4px 8px;
+}
+.bal-table td {
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.bal-table tr.bal-off td {
+  opacity: 0.4;
+}
+.bal-dim {
+  color: var(--muted);
+}
+.bal-warn {
+  color: var(--risk);
+}
+.bal-ok {
+  color: var(--ok, var(--muted));
+}
+.bal-over {
+  color: var(--risk);
+  font-weight: 600;
+}
+.bal-warnings {
+  border-left: 3px solid var(--risk);
+  padding: 4px 10px;
+  margin: 0 0 14px;
+  font-size: 12px;
+}
+.bal-warnings p {
+  margin: 2px 0;
+}
+.bal-out {
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+  padding-top: 10px;
+  font-size: 12px;
+}
+.bal-out h3 {
+  font-size: 12px;
+  margin: 8px 0 4px;
+  color: var(--muted);
+}
+.bal-list {
+  margin: 0;
+  padding-left: 18px;
+}

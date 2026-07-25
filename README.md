@@ -28,7 +28,7 @@ what is next, and [AGENTS.md](AGENTS.md) for where to start.
   throughput, always labeled a forecast and never a real date
 - Balance proposal, a deterministic assignee-and-cycle plan for unscheduled work under a per-person
   point ceiling (deflated for on-call and OOO), keeping a dependency chain with one owner and reporting
-  which milestones the estimates say will land late
+  which milestones the estimates say will land late. Reviewable and applicable from the Balance page
 - Weekly-update narrative (shipped, moved, at risk) generated from a plan-level diff
 - Slop scan of ticket text for AI tells (dashes, stock phrases, checklists, length), with a review
   queue for recent edits and a way to mark each one reviewed
@@ -64,6 +64,11 @@ its critical path and whether its owners can finish before the milestone it is a
 
 ![The roadmap page](docs/images/roadmap.png)
 
+Balance proposes an owner and a cycle for every unscheduled ticket, under each person's own capacity
+after on-call and time off. Untick anything you disagree with, preview it as a dry run, then apply.
+
+![The balance page](docs/images/balance.png)
+
 Writes run in one of two modes, chosen at launch. Live mode (the default) uses your real workspace key.
 Demo mode (`TLR_DEMO=1`) points every write at a free/test workspace and shows a banner, so you can try
 edits without touching real tickets. See [SETUP.md](SETUP.md) for storing each key in the keychain.
@@ -93,8 +98,9 @@ synthetic snapshots and registers a demo project, which is also what the tests u
 
 ## Usage
 
-The web app, at `localhost:8000`, has three pages behind a shared nav: Board (capacity and
-dependencies), Changes (the weekly update), and Review (recent edits).
+The web app, at `localhost:8000`, has six pages behind a shared nav: Board (capacity and
+dependencies), Changes (the weekly update), Review (recent edits), Roadmap (the dependency plane),
+Balance (proposed owners and cycles), and Settings.
 
 ```sh
 deno task dev              # serve the web app at localhost:8000

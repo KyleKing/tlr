@@ -9,7 +9,7 @@
 // it up without losing the owner decision.
 
 import { liveSnapshot } from "../../web/lib/issues.js"
-import { personCycleCapacity } from "../../web/lib/planning.js"
+import { personCycleCapacity, planningPeople } from "../../web/lib/planning.js"
 import type { Issue, Snapshot } from "@/seed.ts"
 import type { Op } from "@/ops.ts"
 
@@ -171,9 +171,22 @@ export function balance(snapshot: Snapshot, options: BalanceOptions = {}): {
   snapshot = liveSnapshot(snapshot) as Snapshot
   const weekly = options.weeklyPerPerson ?? snapshot.capacity?.defaultVelocity ?? 20
   const start = options.start ?? snapshot.currentCycle + 1
-  const end = options.end ?? start + 7
-  const people = options.people ??
-    (snapshot.capacity?.roster ? Object.keys(snapshot.capacity.roster) : [])
+  // Default the window to the cycles the project actually has. Running eight past the last real cycle
+  // put every candidate in `unscheduled` with a warning, which reads as "nothing fits" when the truth
+  // is that the window was asking about weeks the team has not planned yet.
+  // Seeded below `start` on purpose: when the project has no cycle after the current one there is
+  // genuinely nowhere to plan, and the window should collapse to `start` so the "do not exist" warning
+  // says so, rather than quietly inventing a cycle to aim at.
+  const lastCycle = snapshot.cycles.reduce((max, c) => Math.max(max, c.n), 0)
+  const end = options.end ?? Math.max(start, Math.min(start + 7, lastCycle))
+  // Who to spread work across: the people who already own live work here, matching what the forecast
+  // plans for (planning.js's planningPeople). The roster is an identity directory covering every
+  // engineer, so defaulting to it would hand this project's tickets to people who have never touched
+  // it. A project where nothing is assigned yet has no owners to learn from, and balance exists
+  // precisely to assign unowned work, so that one case falls back to the roster and says so.
+  const owners = planningPeople(snapshot)
+  const rostered = Object.keys(snapshot.capacity?.roster ?? {})
+  const people = options.people ?? (owners.length ? owners : rostered)
   const affinities = (options.affinities ?? DEFAULT_AFFINITIES).filter((a) => people.includes(a.person))
   const cycleEnd = Object.fromEntries(snapshot.cycles.map((c) => [c.n, c.end]))
   const warnings: string[] = []
@@ -187,7 +200,13 @@ export function balance(snapshot: Snapshot, options: BalanceOptions = {}): {
   if (missing.length) {
     warnings.push(`cycles ${missing.join(", ")} do not exist in the team yet; nothing scheduled there`)
   }
-  if (!people.length) warnings.push("no rostered people; nothing to assign")
+  if (!people.length) warnings.push("nobody owns work here and the roster is empty; nothing to assign")
+  if (!options.people && !owners.length && rostered.length) {
+    warnings.push(
+      `nobody owns work in this project yet, so the whole roster is in play (${rostered.length} people); ` +
+        `pass an explicit list to narrow it`,
+    )
+  }
   if (!cycles.length) warnings.push("no runnable cycles in the window; every candidate left unscheduled")
 
   // Remaining capacity grid, seeded then drained by work already committed to a cycle in the window.
@@ -203,19 +222,34 @@ export function balance(snapshot: Snapshot, options: BalanceOptions = {}): {
     }
   }
 
-  // Committed work owned by someone off the roster still consumes real capacity but is invisible to
-  // the grid, so the load math would understate it. Flag it rather than silently miscount.
-  const offRoster = new Set<string>()
+  // Two different gaps, both of which make the load math wrong, and both worth naming.
+  //
+  // Someone holding committed work who is not in `people` never appears in the capacity grid, so their
+  // load is invisible and every cycle they occupy reads as emptier than it is.
+  //
+  // Someone in `people` who is not in the roster is the opposite problem: they get a row in the grid,
+  // but with no velocity, no on-call, and no out-days recorded, their ceiling is the default rather
+  // than anything measured. `deno task roster` is the fix.
+  const uncounted = new Set<string>()
+  const unmodelled = new Set<string>()
+  const rosterSet = new Set(rostered)
   for (const i of snapshot.issues) {
-    if (
-      i.cycle && cycles.includes(i.cycle) && ALIVE(i) && i.assignee !== "Unassigned" && !people.includes(i.assignee)
-    ) {
-      offRoster.add(i.assignee)
-    }
+    if (!i.cycle || !cycles.includes(i.cycle) || !ALIVE(i) || i.assignee === "Unassigned") continue
+    if (!people.includes(i.assignee)) uncounted.add(i.assignee)
+    else if (!rosterSet.has(i.assignee)) unmodelled.add(i.assignee)
   }
-  if (offRoster.size) {
+  if (uncounted.size) {
     warnings.push(
-      `off-roster owners with committed work in the window (capacity not modeled): ${[...offRoster].sort().join(", ")}`,
+      `owners outside this plan hold committed work in the window (capacity not modeled): ${
+        [...uncounted].sort().join(", ")
+      }`,
+    )
+  }
+  if (unmodelled.size) {
+    warnings.push(
+      `off-roster owners, so their capacity is the default rather than measured (run deno task roster): ${
+        [...unmodelled].sort().join(", ")
+      }`,
     )
   }
   for (const i of snapshot.issues) {

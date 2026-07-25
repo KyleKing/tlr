@@ -134,10 +134,14 @@ const MILESTONES = [
   { key: "M4", name: "M4: Trust and safety", target: "2026-10-31", progress: 0 },
 ]
 
+// Two cycles past the current one, because a real project always has upcoming weeks planned and
+// anything that schedules forward (balance) has nowhere to put work without them.
 const CYCLES = [
   { n: 47, start: "2026-07-13", end: "2026-07-20" },
   { n: 48, start: "2026-07-20", end: "2026-07-27" },
   { n: 49, start: "2026-07-27", end: "2026-08-03" },
+  { n: 50, start: "2026-08-03", end: "2026-08-10" },
+  { n: 51, start: "2026-08-10", end: "2026-08-17" },
 ]
 
 function baseSnapshot(): Snapshot {

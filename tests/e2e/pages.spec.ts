@@ -216,7 +216,42 @@ test("roadmap shows detail on focus and keeps filters and the view in the URL", 
   await expect(page.locator(".rm-card")).toHaveCount(1)
 })
 
-test("nav moves between board, changes, review, roadmap, and settings", async ({ page }) => {
+test("balance proposes owners and cycles, and each row can be dropped before previewing", async ({ page }) => {
+  await page.goto(`/balance${SEED}`)
+
+  await expect(page.locator("h1")).toContainText("Balance")
+  const rows = page.locator(".bal-table input[type=checkbox][data-id]")
+  const count = await rows.count()
+  expect(count).toBeGreaterThan(0)
+
+  // Every row starts included, and the preview button counts the ops it would send.
+  const preview = page.locator("#preview")
+  await expect(preview).toBeEnabled()
+  const before = await preview.textContent()
+
+  // Dropping a row drops its ops, so the count falls and the row dims.
+  await rows.first().uncheck()
+  await expect(page.locator(".bal-table tr.bal-off")).toHaveCount(1)
+  await expect(preview).not.toHaveText(before!)
+
+  // Preview is a dry run against the write path, so nothing reaches Linear.
+  await preview.click()
+  await expect(page.locator("#out")).toContainText("Dry run")
+})
+
+test("balance recomputes for a different cycle window", async ({ page }) => {
+  await page.goto(`/balance${SEED}`)
+  await expect(page.locator(".bal-table").first()).toBeVisible()
+
+  // A window the team does not run has nowhere to land a cycle, which is said rather than silently
+  // producing an empty plan.
+  await page.locator("#bal-start").fill("90")
+  await page.locator("#bal-end").fill("92")
+  await page.locator("#recompute").click()
+  await expect(page.locator(".bal-warnings")).toContainText("do not exist")
+})
+
+test("nav moves between board, changes, review, roadmap, balance, and settings", async ({ page }) => {
   await page.goto("/")
   // Nav links carry the current ?project= forward (see resolveProjectSlug/syncNavLinks), so they're no
   // longer bare paths — match by prefix and allow a trailing query string.
@@ -226,6 +261,8 @@ test("nav moves between board, changes, review, roadmap, and settings", async ({
   await expect(page).toHaveURL(/\/review(\?.*)?$/)
   await page.click(".topnav a[href^='/roadmap']")
   await expect(page).toHaveURL(/\/roadmap(\?.*)?$/)
+  await page.click(".topnav a[href^='/balance']")
+  await expect(page).toHaveURL(/\/balance(\?.*)?$/)
   await page.click(".topnav a[href^='/settings']")
   await expect(page).toHaveURL(/\/settings(\?.*)?$/)
 })

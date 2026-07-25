@@ -22,6 +22,7 @@ import { diffSnapshots } from "@/diff.ts"
 import { weeklyReport } from "@/report.ts"
 import { reviewSince } from "@/review.ts"
 import { applyOps, type Op } from "@/ops.ts"
+import { balance } from "@/commands/balance.ts"
 import { applyIssueEdits, isWritableOp } from "@/linear_write.ts"
 import { checkProjectsAccess, slugIdFromUrl } from "@/linearAccess.ts"
 import { deleteSecret, describeSecret, isSecretName, type SecretName, setSecret } from "@/secrets.ts"
@@ -305,6 +306,35 @@ app.post("/api/edit", async (c) => {
 })
 
 // Stored snapshots for a project, newest first.
+// A balance proposal for a project: who should own each unscheduled ticket and in which cycle, under a
+// per-person ceiling deflated for on-call and time off. Read-only. The ops it returns are the same
+// shape POST /api/edit takes, so the page previews and applies them through the one write path rather
+// than a second one. Every knob is optional and falls back to balance()'s own defaults.
+app.get("/api/balance", async (c) => {
+  const dataFile = safeDataFile(c.req.query("dataFile"))
+  if (!dataFile) return c.json({ error: "expected ?dataFile=<file>" }, 400)
+  const num = (name: string) => {
+    const raw = c.req.query(name)
+    if (raw == null || raw === "") return undefined
+    const n = Number(raw)
+    return Number.isFinite(n) ? n : undefined
+  }
+  try {
+    const snapshot = await Deno.readTextFile(new URL(dataFile, DATA_ROOT)).then(JSON.parse) as Snapshot
+    if (!snapshot?.project?.name || !Array.isArray(snapshot.issues)) {
+      return c.json({ error: "data file is not a snapshot" }, 400)
+    }
+    return c.json(balance(snapshot, {
+      weeklyPerPerson: num("weekly"),
+      start: num("start"),
+      end: num("end"),
+      maxLeadCycles: num("lead"),
+    }))
+  } catch (err) {
+    return c.json({ error: err instanceof Error ? err.message : String(err) }, 500)
+  }
+})
+
 app.get("/api/snapshots", (c) => {
   const project = c.req.query("project")
   if (!project) return c.json({ error: "expected ?project=<name>" }, 400)
@@ -461,6 +491,15 @@ app.get(
     renderPage("pages/roadmap.vto", {}, "tlr — roadmap", c, {
       active: "roadmap",
       script: "/roadmap.js",
+      demo: DEMO,
+    }),
+)
+app.get(
+  "/balance",
+  (c) =>
+    renderPage("pages/balance.vto", {}, "tlr — balance", c, {
+      active: "balance",
+      script: "/balance.js",
       demo: DEMO,
     }),
 )
