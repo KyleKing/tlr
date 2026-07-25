@@ -16,7 +16,7 @@ import { liveSnapshot } from "./lib/issues.js"
 import { applyTheme, loadTheme } from "./lib/appearance.js"
 import { resolveProjectSlug, wireProjectPicker } from "./lib/nav.js"
 import { showError } from "./lib/errorBanner.js"
-import { editFormHTML, wireForm } from "./lib/editForm.js"
+import { openEditModal } from "./lib/editForm.js"
 import { setPersonCycle } from "./lib/config.js"
 import { whatIfPlan } from "./lib/whatif.js"
 
@@ -435,9 +435,10 @@ document.getElementById("status-none").onclick = () => bulk(() => (state.statuse
 const tip = document.getElementById("tip")
 let hoverIssue = null
 let hideTimer = null
-// While an edit form is open in the tip, it stops auto-hiding on mouseleave/blur (typing/selecting
-// naturally moves focus off the ticket and the mouse off the tip's original bounds) and hovering a
-// different ticket is ignored instead of clobbering the open form.
+// A what-if move form lives inside the tip, so while one is open the tip stops auto-hiding on
+// mouseleave/blur (selecting naturally moves focus off the ticket and the mouse off the tip's original
+// bounds) and hovering a different ticket is ignored instead of clobbering the open form. A real edit
+// needs none of this: it opens the modal and the tip goes away.
 let tipPinned = false
 let mode = { demo: false, workspace: "live" }
 fetch("/api/mode", { cache: "no-store" }).then((r) => r.ok && r.json()).then((m) => m && (mode = m))
@@ -494,24 +495,20 @@ function clampTip() {
   tip.style.top = `${Math.max(8, Math.min(top, innerHeight - tip.offsetHeight - 8))}px`
 }
 
+// The hover card only launches the editor; the modal owns the edit from there, so the card can hide
+// the moment it opens. Focus goes back to the ticket in the grid rather than to the card's own button,
+// which is gone by then and gone again after an apply re-renders.
 function openTipEdit(i) {
   if (whatIf.on) throw new Error("what-if mode never opens the real edit form")
-  tipPinned = true
-  tip.classList.add("tip-editing")
-  tip.innerHTML = `<div class="tip-h"><b>${i.id}</b></div>` +
-    editFormHTML(i, { milestones: data.milestones, cycles: data.cycles, capacity: data.capacity }, mode)
-  clampTip()
-  const form = tip.querySelector("form.editf")
-  wireForm(form, i, currentDataFile, mode, {
-    onApplied: async () => {
-      tipPinned = false
-      hideTip()
-      await reloadFromFile()
-    },
-    onCancel: () => {
-      tipPinned = false
-      hideTip()
-    },
+  hideTip()
+  openEditModal({
+    dataFile: currentDataFile,
+    issue: i,
+    mode,
+    onApplied: async () => await reloadFromFile(),
+    returnFocus: () => nodeById.get(i.id),
+    snapshot: data,
+    source: "board",
   })
 }
 

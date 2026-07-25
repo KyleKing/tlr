@@ -5,9 +5,10 @@
 // Two kinds of writable op. "Simple" ops (title, description, estimate, priority) map straight onto the
 // issueUpdate input. "Resolved" ops (milestone, status, cycle, assignee) carry a name/key/number that
 // must become a Linear UUID first, so those issues fetch their team/project context and resolve against
-// it. Status resolves by workflow-state type and picks the first state of that type, which is
-// unambiguous on teams with one state per category. `fetchImpl` is injectable so both the mapping and
-// the resolution are unit-testable without a network.
+// it. Status resolves by the state's own name on the issue's team, which is the only way to reach one
+// of two states in the same category ("In Progress" and "In Review" are both `started`); an op with no
+// name, or a name the team does not have, falls back to the first state of the op's category.
+// `fetchImpl` is injectable so both the mapping and the resolution are unit-testable without a network.
 
 import type { Op } from "@/ops.ts"
 import type { Issue } from "@/seed.ts"
@@ -89,7 +90,8 @@ export function buildInput(ops: Op[], ctx: IssueContext): { input: IssueUpdateIn
         break
       }
       case "set_status": {
-        const state = ctx.states.find((s) => s.type === op.status)
+        const byName = op.statusName ? ctx.states.find((s) => s.name === op.statusName) : undefined
+        const state = byName ?? ctx.states.find((s) => s.type === op.status)
         if (state) input.stateId = state.id
         else errors.push(`no workflow state of type ${op.status} on the team`)
         break

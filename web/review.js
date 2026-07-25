@@ -2,8 +2,8 @@
 // that changed between the last reviewed capture and the newest one) grouped by ticket, so every change
 // to one issue reads as a unit. A change-set can be marked reviewed; reviewed groups dim and sink to the
 // bottom, and clearing the last open one advances the server-side review pointer, which is what closes
-// the window. Each ticket can also be fixed in place: edit its title, description, estimate, or
-// priority, preview the change (a dry run, nothing leaves the process), then apply it to the current
+// the window. Each ticket can also be fixed: its Edit button opens the shared editor modal
+// (web/lib/editForm.js), where a change is previewed as a dry run and then applied to the current
 // workspace. That write is the one path tlr has to Linear, and it only runs from here. Actor
 // attribution (AI vs. me) is out of scope: a snapshot-diff cannot tell them apart.
 //
@@ -13,7 +13,7 @@
 
 import { escapeHtml, resolveProject } from "./lib/page.js"
 import { applyTheme, loadTheme } from "./lib/appearance.js"
-import { editFormHTML, wireForm } from "./lib/editForm.js"
+import { openEditModal } from "./lib/editForm.js"
 import { showError } from "./lib/errorBanner.js"
 
 applyTheme(loadTheme())
@@ -26,9 +26,8 @@ const captureBtn = document.getElementById("capture")
 let queue = { window: null, items: [] }
 let mode = { demo: false, workspace: "live" }
 let issuesById = new Map()
-let boardData = { milestones: [], cycles: [], capacity: {} }
+let snapshot = { milestones: [], cycles: [], capacity: {}, issues: [] }
 let undoTo = null
-const editing = new Set()
 const reviewed = JSON.parse(localStorage.getItem(REVIEWED_KEY) || "{}")
 
 function fingerprint(changes) {
@@ -107,20 +106,16 @@ function groupByTicket(items) {
 function groupHTML(g) {
   const done = isReviewed(g)
   const canEdit = issuesById.has(g.id)
-  const open = editing.has(g.id)
   const rows = g.changes.map((c) =>
     `<li><span class="kind k-${c.kind}">${KIND_LABEL[c.kind] ?? c.kind}</span> ${escapeHtml(c.summary)}</li>`
   ).join("")
-  const editBtn = canEdit
-    ? `<button class="chip mini" data-edit="${escapeHtml(g.id)}">${open ? "Close" : "Edit"}</button>`
-    : ""
+  const editBtn = canEdit ? `<button class="chip mini" data-edit="${escapeHtml(g.id)}">Edit</button>` : ""
   return `<div class="rgroup${done ? " reviewed" : ""}">` +
     `<div class="rgroup-h"><span class="rid">${escapeHtml(g.id)}</span>` +
     `<span class="rgroup-btns">${editBtn}` +
     `<button class="chip mini" data-review="${escapeHtml(g.id)}">${done ? "Reviewed ✓" : "Mark reviewed"}</button>` +
     `</span></div>` +
     `<ul class="rchanges">${rows}</ul>` +
-    (open ? editFormHTML(issuesById.get(g.id), boardData, mode) : "") +
     `</div>`
 }
 
@@ -196,26 +191,21 @@ function wire(groups = []) {
   for (const btn of pageEl.querySelectorAll("button[data-edit]")) {
     btn.onclick = () => {
       const id = btn.dataset.edit
-      if (editing.has(id)) editing.delete(id)
-      else editing.add(id)
-      render()
+      openEditModal({
+        dataFile: project.dataFile,
+        issue: issuesById.get(id),
+        mode,
+        onApplied: async () => {
+          await refreshData()
+          const group = byId.get(id)
+          if (group) setReviewed(group, true)
+          render()
+        },
+        returnFocus: () => pageEl.querySelector(`button[data-edit="${CSS.escape(id)}"]`),
+        snapshot,
+        source: "review",
+      })
     }
-  }
-  for (const form of pageEl.querySelectorAll("form.editf")) {
-    const id = form.dataset.id
-    wireForm(form, issuesById.get(id), project.dataFile, mode, {
-      onApplied: async () => {
-        await refreshData()
-        const group = byId.get(id)
-        if (group) setReviewed(group, true)
-        editing.delete(id)
-        render()
-      },
-      onCancel: () => {
-        editing.delete(id)
-        render()
-      },
-    })
   }
 }
 
@@ -223,8 +213,8 @@ function wire(groups = []) {
 async function refreshData() {
   const r = await fetch(`/data/${project.dataFile}`, { cache: "no-store" })
   const data = r.ok ? await r.json() : { issues: [] }
-  boardData = { milestones: data.milestones ?? [], cycles: data.cycles ?? [], capacity: data.capacity ?? {} }
-  issuesById = new Map((data.issues ?? []).map((i) => [i.id, i]))
+  snapshot = { ...data, milestones: data.milestones ?? [], cycles: data.cycles ?? [], issues: data.issues ?? [] }
+  issuesById = new Map(snapshot.issues.map((i) => [i.id, i]))
 }
 
 async function load() {

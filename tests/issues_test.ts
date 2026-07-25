@@ -2,15 +2,23 @@ import { assertEquals } from "jsr:@std/assert@1"
 import {
   buildCycles,
   buildMilestones,
+  buildTeams,
   currentCycleNumber,
   dedupeByDataFile,
+  DEFAULT_STATUS_OPTIONS,
+  estimateOptions,
+  identifierTeamKey,
   isArchivedIssue,
+  issueFieldOptions,
   liveIssues,
   liveSnapshot,
   mergeIngest,
   milestoneKey,
   pickProject,
   priorityLabel,
+  projectEstimateScale,
+  statusOptions,
+  teamForIssue,
   transformIssue,
   upsertProjectManifest,
 } from "../web/lib/issues.js"
@@ -90,6 +98,7 @@ Deno.test("transformIssue maps fields and splits relations into blocks/blockedBy
     estimate: 3,
     priority: 2,
     state: { name: "In Progress", type: "started" },
+    team: { key: "ENG" },
     assignee: { name: "Ada Lovelace" },
     cycle: { number: 48 },
     labels: { nodes: [{ name: "bug" }] },
@@ -113,6 +122,7 @@ Deno.test("transformIssue maps fields and splits relations into blocks/blockedBy
     assignee: "Ada Lovelace",
     status: "In Progress",
     statusType: "started",
+    teamKey: "ENG",
     priority: "High",
     priorityValue: 2,
     labels: ["bug"],
@@ -152,6 +162,7 @@ Deno.test("transformIssue defaults missing optionals to null/empty, and a missin
     assignee: "Unassigned",
     status: null,
     statusType: null,
+    teamKey: "ENG",
     priority: null,
     priorityValue: null,
     labels: [],
@@ -230,6 +241,161 @@ Deno.test("pickProject falls back to the first entry when the slug is missing or
 
 Deno.test("pickProject returns null for an empty manifest", () => {
   assertEquals(pickProject([], null), null)
+})
+
+const RAW_TEAMS = [
+  {
+    id: "t-dev",
+    key: "DEV",
+    name: "Product Development",
+    issueEstimationType: "fibonacci",
+    issueEstimationAllowZero: true,
+    issueEstimationExtended: false,
+    states: {
+      nodes: [
+        { id: "s-review", name: "In Review", type: "started", position: 2980.82 },
+        { id: "s-todo", name: "Todo", type: "unstarted", position: 1 },
+        { id: "s-prog", name: "In Progress", type: "started", position: 2 },
+        { id: "s-dupe", name: "Duplicate", type: "duplicate", position: 5282.08 },
+      ],
+    },
+  },
+  {
+    id: "t-cus",
+    key: "CUS",
+    name: "Customer Ops",
+    issueEstimationType: "notUsed",
+    issueEstimationAllowZero: false,
+    issueEstimationExtended: false,
+    states: { nodes: [{ id: "s-open", name: "Open", type: "unstarted", position: 1 }] },
+  },
+]
+
+Deno.test("buildTeams sorts teams by key and each team's states by Linear's own position", () => {
+  const teams = buildTeams(RAW_TEAMS)
+  assertEquals(teams.map((t: { key: string }) => t.key), ["CUS", "DEV"])
+  const dev = teams.find((t: { key: string }) => t.key === "DEV")!
+  assertEquals(dev.states.map((s: { name: string }) => s.name), ["Todo", "In Progress", "In Review", "Duplicate"])
+  assertEquals(dev.estimation, { type: "fibonacci", allowZero: true, extended: false })
+})
+
+Deno.test("buildTeams tolerates a missing team list and missing state nodes", () => {
+  assertEquals(buildTeams(undefined), [])
+  assertEquals(buildTeams([{ id: "t", key: "T", name: "T" }])[0].states, [])
+})
+
+Deno.test("estimateOptions returns each Linear scale's published values", () => {
+  const values = (type: string, extended = false) =>
+    estimateOptions({ type, allowZero: false, extended }).map((o: { value: number }) => o.value)
+  assertEquals(values("exponential"), [1, 2, 4, 8, 16])
+  assertEquals(values("exponential", true), [1, 2, 4, 8, 16, 32, 64])
+  assertEquals(values("fibonacci"), [1, 2, 3, 5, 8])
+  assertEquals(values("fibonacci", true), [1, 2, 3, 5, 8, 13, 21])
+  assertEquals(values("linear"), [1, 2, 3, 4, 5])
+  assertEquals(values("linear", true), [1, 2, 3, 4, 5, 6, 7])
+  assertEquals(values("tShirt"), [1, 2, 3, 5, 8])
+})
+
+Deno.test("estimateOptions labels t-shirt sizes and keeps the fibonacci numbers behind them", () => {
+  assertEquals(estimateOptions({ type: "tShirt", allowZero: false, extended: true }), [
+    { value: 1, label: "XS" },
+    { value: 2, label: "S" },
+    { value: 3, label: "M" },
+    { value: 5, label: "L" },
+    { value: 8, label: "XL" },
+    { value: 13, label: "XXL" },
+    { value: 21, label: "XXXL" },
+  ])
+})
+
+Deno.test("estimateOptions puts zero first only when the team allows it", () => {
+  assertEquals(estimateOptions({ type: "fibonacci", allowZero: true, extended: false })[0], { value: 0, label: "0" })
+  assertEquals(estimateOptions({ type: "fibonacci", allowZero: false, extended: false })[0], { value: 1, label: "1" })
+})
+
+Deno.test("estimateOptions is empty for an unused or unrecognized scale, so the caller keeps free text", () => {
+  assertEquals(estimateOptions({ type: "notUsed", allowZero: true, extended: false }), [])
+  assertEquals(estimateOptions({ type: "somethingNew", allowZero: false, extended: false }), [])
+  assertEquals(estimateOptions(undefined), [])
+})
+
+Deno.test("projectEstimateScale unions every team's values and is null when nobody estimates", () => {
+  assertEquals(projectEstimateScale(buildTeams(RAW_TEAMS)), [0, 1, 2, 3, 5, 8])
+  assertEquals(projectEstimateScale(buildTeams([RAW_TEAMS[1]])), null)
+  assertEquals(projectEstimateScale(undefined), null)
+})
+
+Deno.test("identifierTeamKey reads the team prefix off a Linear identifier", () => {
+  assertEquals(identifierTeamKey("DEV-123"), "DEV")
+  assertEquals(identifierTeamKey("SEED-101"), "SEED")
+  assertEquals(identifierTeamKey("nodash"), null)
+  assertEquals(identifierTeamKey(undefined), null)
+})
+
+Deno.test("teamForIssue matches on teamKey, falls back to the identifier, then to a lone team", () => {
+  const teams = buildTeams(RAW_TEAMS)
+  assertEquals(teamForIssue(teams, { id: "CUS-1", teamKey: "DEV" })!.key, "DEV")
+  assertEquals(teamForIssue(teams, { id: "CUS-1" })!.key, "CUS")
+  assertEquals(teamForIssue(teams, { id: "XYZ-1" }), null)
+  assertEquals(teamForIssue(buildTeams([RAW_TEAMS[0]]), { id: "XYZ-1" })!.key, "DEV")
+  assertEquals(teamForIssue([], { id: "DEV-1" }), null)
+})
+
+// The point of ingesting states by name: a team with two "started" states can now be sent to the
+// specific one, which resolving by category alone could never do.
+Deno.test("statusOptions offers a team's own states in its order and drops types the app cannot store", () => {
+  const teams = buildTeams(RAW_TEAMS)
+  assertEquals(statusOptions(teams, { id: "DEV-1", teamKey: "DEV" }), [
+    { name: "Todo", type: "unstarted" },
+    { name: "In Progress", type: "started" },
+    { name: "In Review", type: "started" },
+  ])
+})
+
+Deno.test("statusOptions falls back to one state per category when the snapshot has no team data", () => {
+  assertEquals(statusOptions(undefined, { id: "DEV-1" }), DEFAULT_STATUS_OPTIONS)
+  assertEquals(statusOptions([], { id: "DEV-1" }), DEFAULT_STATUS_OPTIONS)
+})
+
+const BOARD = {
+  teams: buildTeams(RAW_TEAMS),
+  cycles: [{ n: 48, start: "2026-07-20", end: "2026-07-27" }],
+  milestones: [{ key: "M1", name: "M1: Foundations", target: "2026-07-31", progress: 10 }],
+  capacity: { roster: { "Ada Lovelace": { email: "ada@example.com" } } },
+}
+
+Deno.test("issueFieldOptions derives every editable field from the board data the page already has", () => {
+  const options = issueFieldOptions(BOARD, { id: "DEV-1", teamKey: "DEV", assignee: "Grace Hopper" })
+  assertEquals(options.teamKey, "DEV")
+  assertEquals(options.statuses.map((s: { name: string }) => s.name), ["Todo", "In Progress", "In Review"])
+  assertEquals(options.estimates.map((e: { value: number }) => e.value), [0, 1, 2, 3, 5, 8])
+  assertEquals(options.estimatesFree, false)
+  assertEquals(options.milestones, [{ key: "M1", name: "M1: Foundations" }])
+  assertEquals(options.cycles, [{ n: 48, label: "Cycle 48" }])
+  assertEquals(options.assignees, ["Unassigned", "Ada Lovelace", "Grace Hopper"])
+  assertEquals(options.priorities, [
+    { value: 0, label: "No priority" },
+    { value: 1, label: "Urgent" },
+    { value: 2, label: "High" },
+    { value: 3, label: "Medium" },
+    { value: 4, label: "Low" },
+  ])
+})
+
+Deno.test("issueFieldOptions asks for free-text estimates on a team that does not use them", () => {
+  const options = issueFieldOptions(BOARD, { id: "CUS-1", teamKey: "CUS" })
+  assertEquals(options.estimates, [])
+  assertEquals(options.estimatesFree, true)
+})
+
+Deno.test("issueFieldOptions degrades to defaults on an empty board and a missing issue", () => {
+  const options = issueFieldOptions({}, undefined)
+  assertEquals(options.statuses, DEFAULT_STATUS_OPTIONS)
+  assertEquals(options.estimatesFree, true)
+  assertEquals(options.milestones, [])
+  assertEquals(options.cycles, [])
+  assertEquals(options.assignees, ["Unassigned"])
+  assertEquals(options.teamKey, null)
 })
 
 Deno.test("mergeIngest replaces the Linear-sourced blocks and keeps everything else", () => {

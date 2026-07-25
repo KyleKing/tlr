@@ -101,7 +101,8 @@ test("review page edits a ticket: form pre-fills, previews a dry run, and guards
   await page.goto(`/review${SEED}`)
 
   await page.locator("button[data-edit]").first().click()
-  const form = page.locator("form.editf").first()
+  const modal = page.locator("#edit-modal")
+  const form = modal.locator("form.editf")
   await expect(form).toBeVisible()
 
   // The form starts from the ticket's current values, and offers every writable field.
@@ -113,12 +114,13 @@ test("review page edits a ticket: form pre-fills, previews a dry run, and guards
   await title.fill("A clearer title")
 
   // Preview is a dry run: it reports the change without writing.
-  await form.locator('[data-act="preview"]').click()
-  await expect(form.locator(".editf-out")).toContainText("title →")
+  await modal.locator('[data-act="preview"]').click()
+  await expect(modal.locator(".emodal-out")).toContainText("nothing has been written")
+  await expect(modal.locator(".echanges li")).toContainText("Title")
 
   // Seed data carries no Linear UUID, so a write is refused and apply stays disabled.
-  await expect(form.locator(".editf-warn")).toBeVisible()
-  await expect(form.locator('[data-act="apply"]')).toBeDisabled()
+  await expect(modal.locator(".editf-warn")).toBeVisible()
+  await expect(modal.locator('[data-act="apply"]')).toBeDisabled()
 })
 
 test("settings page switches panes and saves the capacity block", async ({ page }) => {

@@ -9,7 +9,11 @@ const ISSUES = [
 ]
 
 const CTX: IssueContext = {
-  states: [{ id: "st-todo", name: "Todo", type: "unstarted" }, { id: "st-prog", name: "In Progress", type: "started" }],
+  states: [
+    { id: "st-todo", name: "Todo", type: "unstarted" },
+    { id: "st-prog", name: "In Progress", type: "started" },
+    { id: "st-review", name: "In Review", type: "started" },
+  ],
   cycles: [{ id: "cy-48", number: 48 }],
   members: [{ id: "u-ada", name: "Ada Lovelace", displayName: "ada" }],
   milestones: [{ id: "pm-1", name: "M1: Foundations" }, { id: "pm-2", name: "M2: Beta" }],
@@ -80,6 +84,26 @@ Deno.test("buildInput clears milestone/cycle on null and assignee on Unassigned"
   ]
   const { input } = buildInput(ops, CTX)
   assertEquals(input, { projectMilestoneId: null, cycleId: null, assigneeId: null })
+})
+
+Deno.test("buildInput sends the named state, so the second state of a category is reachable", () => {
+  const { input, errors } = buildInput(
+    [{ kind: "set_status", id: "E-1", status: "started", statusName: "In Review" }],
+    CTX,
+  )
+  assertEquals(errors, [])
+  assertEquals(input, { stateId: "st-review" })
+})
+
+// A name the team no longer has must still move the ticket by category rather than failing the edit,
+// which is what a snapshot taken before a state was renamed produces.
+Deno.test("buildInput falls back to the first state of the category when the name is unknown", () => {
+  const { input, errors } = buildInput(
+    [{ kind: "set_status", id: "E-1", status: "started", statusName: "Shipping" }],
+    CTX,
+  )
+  assertEquals(errors, [])
+  assertEquals(input, { stateId: "st-prog" })
 })
 
 Deno.test("buildInput reports an unknown milestone or assignee instead of guessing", () => {

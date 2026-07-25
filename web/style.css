@@ -340,12 +340,15 @@ a {
   color: var(--blue);
 }
 .editf {
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px dashed var(--surface0);
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+/* The what-if move form is the one edit form still drawn inline, under the hover card's header. */
+.editf.whatif-move {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--surface0);
 }
 .editf label {
   display: flex;
@@ -406,6 +409,287 @@ a {
   font: 12px var(--mono);
   white-space: pre-wrap;
   color: var(--subtext0);
+}
+
+/* The ticket editor modal (web/lib/editForm.js). A native <dialog>, so the backdrop, the top layer,
+   and focus containment come from the platform; only the split layout is ours. */
+.emodal {
+  width: min(1100px, 94vw);
+  max-width: none;
+  height: min(780px, 92vh);
+  max-height: none;
+  padding: 0;
+  border: 1px solid var(--surface1);
+  border-radius: 12px;
+  background: var(--base);
+  color: var(--text);
+  font: 14px/1.5 var(--font);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .28);
+}
+.emodal::backdrop {
+  background: color-mix(in srgb, var(--crust) 80%, transparent);
+}
+.emodal-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.emodal-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--surface0);
+}
+.emodal-head h2 {
+  margin: 0;
+  font: 600 15px var(--font);
+}
+.emodal-x {
+  margin-left: auto;
+  border: 0;
+  background: none;
+  color: var(--subtext0);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: var(--radius);
+}
+.emodal-x:hover {
+  color: var(--text);
+  background: var(--surface0);
+}
+.emodal-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 16px;
+  padding: 14px 16px;
+  overflow: auto;
+}
+.emodal-form {
+  min-height: 0;
+  gap: 12px;
+}
+.emodal-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px 14px;
+}
+.efield {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.efield[data-field="title"] {
+  grid-column: 1 / -1;
+}
+.efield > label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--subtext0);
+}
+.efield.invalid input,
+.efield.invalid select {
+  border-color: var(--red);
+}
+.efield-hint {
+  margin: 0;
+  font-size: 11px;
+  color: var(--subtext0);
+}
+.efield-err {
+  margin: 0;
+  font-size: 11px;
+  color: var(--red);
+}
+.emodal-desc {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-height: 220px;
+}
+.emodal-desc-h {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.emodal-desc-h label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--subtext0);
+}
+.emodal-desc-tabs {
+  margin-left: auto;
+  display: flex;
+  gap: 6px;
+}
+/* .chip.mini's own --subtext0 is declared after .chip[aria-pressed="true"] and at the same
+   specificity, so a pressed mini chip would keep dim text on the accent fill. */
+.emodal-desc-tabs .chip[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--accent-fg);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+.emodal-ta {
+  flex: 1;
+  min-height: 220px;
+  max-height: 44vh;
+  overflow: auto;
+  line-height: 1.55;
+}
+.emodal-md {
+  flex: 1;
+  min-height: 220px;
+  max-height: 44vh;
+  overflow: auto;
+  padding: 8px 12px;
+  background: var(--mantle);
+  border: 1px solid var(--surface0);
+  border-radius: var(--radius);
+}
+.emodal-impact {
+  border-left: 1px solid var(--surface0);
+  padding-left: 14px;
+  overflow: auto;
+}
+.eimpact-h {
+  margin: 0 0 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--subtext0);
+}
+.eimpact-line {
+  margin: 0 0 6px;
+  font-size: 12.5px;
+}
+.eimpact-note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--subtext0);
+}
+.emodal-foot {
+  border-top: 1px solid var(--surface0);
+  padding: 10px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.emodal-guard {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--peach);
+}
+.emodal-out {
+  background: var(--mantle);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+  max-height: 150px;
+  overflow: auto;
+}
+.emodal-out-h {
+  margin: 0 0 6px;
+  font-size: 12px;
+  color: var(--subtext0);
+}
+.echanges {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12.5px;
+}
+.echanges li {
+  margin: 2px 0;
+}
+.echanges .efrom {
+  color: var(--subtext0);
+  text-decoration: line-through;
+}
+.echanges .eto {
+  font-weight: 600;
+}
+.echanges .ereason,
+.echanges li.dropped {
+  color: var(--peach);
+}
+.echanges li.ok {
+  color: var(--green);
+}
+
+/* Rendered markdown (web/lib/markdown.js) in the description preview. */
+.md h3,
+.md h4,
+.md h5,
+.md h6 {
+  margin: 10px 0 4px;
+  font-size: 13px;
+}
+.md p {
+  margin: 0 0 8px;
+}
+.md ul,
+.md ol {
+  margin: 0 0 8px;
+  padding-left: 20px;
+}
+.md li {
+  margin: 2px 0;
+}
+.md li.md-task {
+  list-style: none;
+  margin-left: -18px;
+}
+.md code {
+  font: 12px var(--mono);
+  background: var(--surface0);
+  padding: 1px 4px;
+  border-radius: 4px;
+}
+.md pre {
+  margin: 0 0 8px;
+  padding: 8px 10px;
+  background: var(--surface0);
+  border-radius: var(--radius);
+  overflow-x: auto;
+}
+.md pre code {
+  background: none;
+  padding: 0;
+}
+.md blockquote {
+  margin: 0 0 8px;
+  padding-left: 10px;
+  border-left: 3px solid var(--surface1);
+  color: var(--subtext0);
+}
+.md hr {
+  border: 0;
+  border-top: 1px solid var(--surface1);
+}
+.md a {
+  color: var(--blue);
+}
+@media (max-width: 900px) {
+  .emodal-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .emodal-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .emodal-impact {
+    border-left: 0;
+    border-top: 1px solid var(--surface0);
+    padding: 12px 0 0;
+  }
 }
 
 header {

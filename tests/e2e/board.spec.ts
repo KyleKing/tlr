@@ -94,7 +94,7 @@ test("Refresh re-ingests from Linear first, and a failure there shows up instead
   await expect(page.locator("#refresh")).toHaveText("Refresh")
 })
 
-test("a ticket can be edited in place from the board's hover card", async ({ page }) => {
+test("the hover card's Edit button hands the ticket to the modal and gets out of the way", async ({ page }) => {
   await page.goto("/?project=seeded-reliability")
   const ticket = page.locator("#grid [data-id]").first()
   await expect(ticket).toBeVisible()
@@ -103,7 +103,9 @@ test("a ticket can be edited in place from the board's hover card", async ({ pag
   await ticket.hover()
   await page.click('#tip [data-act="edit"]')
 
-  const form = page.locator("#tip form.editf")
+  // The card no longer has to pin itself around an open form: the modal owns the edit, so it hides.
+  await expect(page.locator("#tip")).toBeHidden()
+  const form = page.locator("#edit-modal form.editf")
   await expect(form).toBeVisible()
   await expect(form).toHaveAttribute("data-id", id ?? "")
   await expect(form.locator('input[name="title"]')).not.toHaveValue("")
@@ -111,22 +113,10 @@ test("a ticket can be edited in place from the board's hover card", async ({ pag
     await expect(form.locator(`select[name="${name}"]`)).toBeVisible()
   }
 
-  // Preview is a dry run: it reports the change without writing.
-  await form.locator('input[name="title"]').fill("An edited title")
-  await form.locator('[data-act="preview"]').click()
-  await expect(form.locator(".editf-out")).toContainText("title →")
-
-  // Hovering a different ticket while editing doesn't clobber the open form (the tip is pinned) — fired
-  // directly rather than a real pointer hover, since the tip (now form-sized) may cover other tickets.
-  await page.locator("#grid [data-id]").nth(1).dispatchEvent("mouseenter")
-  await expect(page.locator("#tip form.editf")).toBeVisible()
-
-  // Cancel un-pins the tip: it hides, and a fresh hover works normally again.
-  await form.locator('[data-act="cancel"]').click()
-  await expect(page.locator("#tip")).toBeHidden()
-  await ticket.hover()
-  await expect(page.locator("#tip")).toBeVisible()
-  await expect(page.locator("#tip form.editf")).toHaveCount(0)
+  // Closing an untouched editor asks nothing and puts focus back on the ticket in the grid.
+  await page.locator('#edit-modal [data-act="cancel"]').click()
+  await expect(page.locator("#edit-modal")).toBeHidden()
+  await expect(ticket).toBeFocused()
 })
 
 test("on-call/out-days overrides are edited on the board, not in Settings", async ({ page }) => {

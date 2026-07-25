@@ -3,11 +3,16 @@
 // `applyOps` returns a new snapshot with the valid ops applied and the rest recorded as skipped.
 
 import type { Issue, Snapshot } from "@/seed.ts"
+import { teamForIssue } from "../web/lib/issues.js"
 
 export type RelationKind = "blocks" | "blockedBy" | "related"
 
 export type Op =
-  | { kind: "set_status"; id: string; status: Issue["statusType"] }
+  // `status` is the workflow-state category and always carries the change; `statusName` names the
+  // specific state on the issue's own team, which is the only way to reach one of two states in the
+  // same category. A snapshot with no team data, or a name that team does not have, falls back to the
+  // category alone.
+  | { kind: "set_status"; id: string; status: Issue["statusType"]; statusName?: string }
   | { kind: "set_priority"; id: string; priority: number }
   | { kind: "set_estimate"; id: string; estimate: number }
   | { kind: "set_assignee"; id: string; assignee: string }
@@ -56,6 +61,25 @@ function findIssue(snapshot: Snapshot, id: string): Issue | undefined {
   return snapshot.issues.find((i) => i.id === id)
 }
 
+/**
+ * The workflow state on the issue's own team matching `name`, or null when the snapshot carries no
+ * team data or the team has no such state. Callers treat null as "resolve by category instead", which
+ * is what every snapshot taken before ingest captured team states needs.
+ */
+export function resolveStateByName(
+  snapshot: Snapshot,
+  issue: Issue,
+  name: string | undefined,
+): { id: string; name: string; type: string } | null {
+  if (!name) return null
+  const team = teamForIssue(snapshot.teams, issue)
+  return team?.states.find((s: { name: string }) => s.name === name) ?? null
+}
+
+function hasTeamStates(snapshot: Snapshot, issue: Issue): boolean {
+  return (teamForIssue(snapshot.teams, issue)?.states.length ?? 0) > 0
+}
+
 /** Check an op against live snapshot state. Returns a reason string when the op cannot apply. */
 export function validateOp(op: Op, snapshot: Snapshot): ValidationResult {
   const issue = findIssue(snapshot, op.id)
@@ -65,6 +89,11 @@ export function validateOp(op: Op, snapshot: Snapshot): ValidationResult {
     case "set_status": {
       if (!STATUS_TYPES.includes(op.status)) {
         return { ok: false, reason: `unknown status type ${op.status}` }
+      }
+      // A named state is only checked against a team whose states were captured. Rejecting a name a
+      // pre-team-states snapshot cannot confirm would refuse a status change the type alone handles.
+      if (op.statusName && hasTeamStates(snapshot, issue) && !resolveStateByName(snapshot, issue, op.statusName)) {
+        return { ok: false, reason: `no workflow state named ${op.statusName} on ${issue.id}'s team` }
       }
       return { ok: true }
     }
@@ -143,10 +172,12 @@ function applyRelation(a: Issue, b: Issue, relation: RelationKind, add: boolean)
 function mutate(op: Op, snapshot: Snapshot) {
   const issue = findIssue(snapshot, op.id)!
   switch (op.kind) {
-    case "set_status":
+    case "set_status": {
+      const state = resolveStateByName(snapshot, issue, op.statusName)
       issue.statusType = op.status
-      issue.status = STATUS_LABELS[op.status]
+      issue.status = state?.name ?? op.statusName ?? STATUS_LABELS[op.status]
       return
+    }
     case "set_priority":
       issue.priorityValue = op.priority
       issue.priority = PRIORITY_LABELS[op.priority]

@@ -20,10 +20,12 @@
 import {
   buildCycles,
   buildMilestones,
+  buildTeams,
   currentCycleNumber,
   dedupeByDataFile,
   mergeIngest,
   milestoneKey,
+  projectEstimateScale,
   transformIssue,
   upsertProjectManifest,
 } from "../web/lib/issues.js"
@@ -31,15 +33,18 @@ import { resolveRoster } from "./roster.ts"
 import { writeJsonAtomic } from "@/capture.ts"
 import { fetchWithRetry } from "@/httpRetry.ts"
 import { getSecret } from "@/secrets.ts"
+import { workspaceKeyFromUrl } from "@/workspace.ts"
 
 const LINEAR_API_URL = "https://api.linear.app/graphql"
 const DEFAULT_DATA = new URL("../web/data/cpu.json", import.meta.url).pathname
 const MANIFEST_URL = new URL("../web/data/projects.json", import.meta.url)
 const MANIFEST_PATH = MANIFEST_URL.pathname
 
-// first: 10 (not 50) on the outer projects connection — fetching every team's cycles for each
-// candidate makes this query's complexity scale with outer * teams * cycles, and Linear rejects
-// anything over its complexity budget ("Query too complex") once teams(first: 10) is nested in.
+// first: 10 (not 50) on the outer projects connection — fetching every team's cycles and states for
+// each candidate makes this query's complexity scale with outer * teams * (cycles + states), and
+// Linear rejects anything over its complexity budget ("Query too complex"). Measured against the real
+// workspace at 10 matched projects with both nested connections and it is accepted; widening any of
+// the three limits is what to reconsider first if it ever is not.
 const PROJECT_QUERY = `
   query Projects($filter: ProjectFilter) {
     projects(filter: $filter, first: 10) {
@@ -51,7 +56,18 @@ const PROJECT_QUERY = `
         startDate
         targetDate
         projectMilestones(first: 50) { nodes { id name targetDate progress } }
-        teams(first: 10) { nodes { cycles(last: 12) { nodes { number startsAt endsAt } } } }
+        teams(first: 10) {
+          nodes {
+            id
+            key
+            name
+            issueEstimationType
+            issueEstimationAllowZero
+            issueEstimationExtended
+            cycles(last: 12) { nodes { number startsAt endsAt } }
+            states(first: 50) { nodes { id name type position } }
+          }
+        }
       }
     }
   }
@@ -74,6 +90,7 @@ const ISSUES_QUERY = `
         estimate
         priority
         state { name type }
+        team { key }
         assignee { name }
         cycle { number }
         labels(first: 20) { nodes { name } }
@@ -87,6 +104,17 @@ const ISSUES_QUERY = `
 
 type ProjectMilestoneNode = { id: string; name: string; targetDate: string; progress: number | null }
 type CycleNode = { number: number; startsAt: string; endsAt: string }
+type StateNode = { id: string; name: string; type: string; position: number }
+type TeamNode = {
+  id: string
+  key: string
+  name: string
+  issueEstimationType: string
+  issueEstimationAllowZero: boolean
+  issueEstimationExtended: boolean
+  cycles: { nodes: CycleNode[] }
+  states: { nodes: StateNode[] }
+}
 type ProjectNode = {
   id: string
   name: string
@@ -95,7 +123,7 @@ type ProjectNode = {
   startDate: string
   targetDate: string
   projectMilestones: { nodes: ProjectMilestoneNode[] }
-  teams: { nodes: { cycles: { nodes: CycleNode[] } }[] }
+  teams: { nodes: TeamNode[] }
 }
 type ProjectsResponse = { projects: { nodes: ProjectNode[] } }
 
@@ -109,6 +137,7 @@ type IssueNode = {
   estimate: number | null
   priority: number | null
   state: { name: string; type: string } | null
+  team: { key: string } | null
   assignee: { name: string } | null
   cycle: { number: number } | null
   labels: { nodes: { name: string }[] }
@@ -213,7 +242,10 @@ export async function ingestProject(key: string, projectQuery: string, existingD
 
   // id and slugId ride along so src/projectIdentity.ts keys the snapshot history off Linear's own
   // identifiers instead of parsing a slugId back out of the URL or falling through to the display
-  // name, which forks the history the moment someone renames the project.
+  // name, which forks the history the moment someone renames the project. workspaceKey records which
+  // Linear workspace answered, so a run holding the other key can skip the project instead of
+  // reporting it missing (src/workspace.ts).
+  const teams = buildTeams(project.teams.nodes)
   const fresh = {
     project: {
       id: project.id,
@@ -222,7 +254,12 @@ export async function ingestProject(key: string, projectQuery: string, existingD
       start: project.startDate,
       target: project.targetDate,
       url: project.url,
+      workspaceKey: workspaceKeyFromUrl(project.url),
     },
+    teams,
+    // The project-wide estimate scale, for a caller that wants one list and does not care which team a
+    // ticket sits on. teams[].estimation is the exact source; this is the flattened convenience view.
+    estimateScale: projectEstimateScale(teams),
     cycles,
     currentCycle: currentCycleNumber(cycles, asOf),
     milestones,
@@ -230,7 +267,10 @@ export async function ingestProject(key: string, projectQuery: string, existingD
     asOf,
   }
 
-  const log = [`issues: ${project.name} — ${fresh.issues.length} issues, ${milestones.length} milestones`]
+  const log = [
+    `issues: ${project.name} — ${fresh.issues.length} issues, ${milestones.length} milestones, ` +
+    `${fresh.teams.length} teams`,
+  ]
   const merged = mergeIngest(existingData ?? {}, fresh)
 
   const roster = await resolveRoster(key, merged)
@@ -258,7 +298,14 @@ async function main() {
     const project = await findProject(key, args.project)
     const rawIssues = await fetchAllIssues(key, project.id)
     const milestones = buildMilestones(project.projectMilestones.nodes)
+    const teams = buildTeams(project.teams.nodes)
     console.log(`issues: ${project.name} — ${rawIssues.length} issues, ${milestones.length} milestones`)
+    for (const team of teams) {
+      console.log(
+        `  team ${team.key}: ${team.states.length} states, estimates ${team.estimation.type}` +
+          `${team.estimation.allowZero ? " +zero" : ""}${team.estimation.extended ? " +extended" : ""}`,
+      )
+    }
     console.log("--dry-run: not writing")
     return
   }

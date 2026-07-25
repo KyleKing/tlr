@@ -24,9 +24,14 @@ and `deno task seed:linear` seeds the same story into a throwaway free workspace
 
 ### Ingest and storage
 
-`scripts/issues.ts` fetches a project's issues, milestones, and cycles from Linear. Cycles are pooled
-from every team the project touches, deduped by number, and narrowed to the numbers the project's own
-issues reference, because a project can span teams and two teams can number the same week differently.
+`scripts/issues.ts` fetches a project's issues, milestones, cycles, and teams from Linear. Cycles are
+pooled from every team the project touches, deduped by number, and narrowed to the numbers the project's
+own issues reference, because a project can span teams and two teams can number the same week
+differently. Each team also carries its own workflow states (id, name, type, and Linear's `position`)
+and its issue-estimation settings (scale, whether zero is allowed, whether the extended scale is on),
+and every issue records the team it sits on, so the editor can offer that team's real states and real
+estimate values instead of one hardcoded list. Both nested connections ride inside the existing
+project query, which stays under Linear's complexity budget at ten matched projects.
 Capacity comes from Incident.io on-call and Google Calendar free/busy (`deno task capacity`). Every
 writer of a project data file goes through `writeJsonAtomic` (temp file, then rename), since
 `/api/config`, `/api/refresh`, and `/api/edit` all write the same file and a reader could otherwise
@@ -79,7 +84,10 @@ banner, since a client-side failure has nothing to log server-side.
 turns a validated op into a Linear `issueUpdate`. `POST /api/edit` is dry-run by default and writes on
 confirm. `web/lib/editForm.js` is the shared form (title, description, estimate, priority, milestone,
 status, cycle, assignee → preview → apply), reached from both the Review page and the Board's hover card.
-This is the only write path, and only from the UI. `TLR_DEMO=1` points writes at the free/test workspace
+Status resolves by the state's own name on the issue's team, so a team with two "started" states can be
+sent to the specific one; an op with no name, or a name that team no longer has, still moves the ticket
+by workflow-state category, which is what every snapshot captured before team states were ingested
+needs. This is the only write path, and only from the UI. `TLR_DEMO=1` points writes at the free/test workspace
 (keychain account `demo-key`) behind a visible banner; live mode uses `api-key`. `GET /api/mode` reports
 which.
 
@@ -96,7 +104,11 @@ the task to run.
 `deno task snapshot` refreshes every project in the manifest and captures, run every three hours by a
 launchd LaunchAgent (`scripts/schedule.sh install`). launchd fires a missed run on wake, so a sleeping
 laptop still gets its capture; a lock file and a 2-hour minimum interval (`src/runLock.ts`) keep a catch-up run
-from colliding with or duplicating one that already landed. Every run appends to a capped run log
+from colliding with or duplicating one that already landed. Ingest records which Linear workspace a
+project came from, and a run skips a project belonging to another workspace as not-applicable rather
+than asking a key that cannot see it and reporting the project missing — the demo-workspace project is
+invisible to the live key by design. A project the active key should see and Linear cannot find is a
+rename or a revoked grant, and still fails the run. Every run appends to a capped run log
 (`src/runLog.ts`), `GET /api/schedule/health` reads it back, and `web/lib/scheduleBanner.js` banners a
 failed or overdue run. No schedule installed means no banner. The hosted equivalent is a systemd timer,
 recorded in ADR 0008 rather than shipped as an untested unit file.
@@ -126,8 +138,9 @@ on every page. The Playwright suite seeds data against an isolated store with no
 
 ### Known limits
 
-- Status resolves by workflow-state type and picks the first state of that type, so a team with two
-  states in one category (two "started" states) needs the specific state chosen by name
+- A team may define a workflow state outside the six categories the op model stores (Linear's
+  "duplicate"); the editor leaves those out of its choices rather than write a status the board has no
+  rank, colour, or label for
 - The LaunchAgent's wake-up catch-up rests on `man launchd.plist`, not on an observed overnight sleep
 - Retention reports what it would drop but never deletes until `--prune` is passed by hand, because
   project keys were only just introduced and a mis-keyed row would be thinned against the wrong history

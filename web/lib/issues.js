@@ -41,6 +41,126 @@ export function currentCycleNumber(cycles, nowISO) {
   return started.length ? started[started.length - 1].n : null
 }
 
+// Linear team nodes → the board's team rows. Each carries the team's own workflow states in the
+// team's display order (Linear's `position`) and its issue-estimation settings, so the editor can
+// offer the states and estimate values that team actually uses instead of one hardcoded list.
+export function buildTeams(rawTeams) {
+  return (rawTeams ?? [])
+    .map((t) => ({
+      id: t.id,
+      key: t.key,
+      name: t.name,
+      estimation: {
+        type: t.issueEstimationType ?? "notUsed",
+        allowZero: Boolean(t.issueEstimationAllowZero),
+        extended: Boolean(t.issueEstimationExtended),
+      },
+      states: (t.states?.nodes ?? [])
+        .map((s) => ({ id: s.id, name: s.name, type: s.type, position: s.position ?? 0 }))
+        .sort((a, b) => a.position - b.position),
+    }))
+    .sort((a, b) => a.key.localeCompare(b.key))
+}
+
+// Linear's four estimate scales, as published in its estimates documentation. `extended` adds two
+// more steps to each; t-shirt sizes are stored as the fibonacci numbers and only labelled differently.
+const ESTIMATE_SCALES = {
+  exponential: { values: [1, 2, 4, 8, 16], extra: [32, 64] },
+  fibonacci: { values: [1, 2, 3, 5, 8], extra: [13, 21] },
+  linear: { values: [1, 2, 3, 4, 5], extra: [6, 7] },
+  tShirt: { values: [1, 2, 3, 5, 8], extra: [13, 21], labels: ["XS", "S", "M", "L", "XL", "XXL", "XXXL"] },
+}
+
+// The estimate values a team allows, as { value, label } pairs. Empty when the team does not use
+// estimates ("notUsed") or reports a scale this does not know, which is the caller's signal to keep a
+// free-text number field rather than offer a closed list it cannot vouch for.
+export function estimateOptions(estimation) {
+  const scale = ESTIMATE_SCALES[estimation?.type]
+  if (!scale) return []
+  const values = estimation.extended ? [...scale.values, ...scale.extra] : scale.values
+  const options = values.map((value, index) => ({ value, label: scale.labels?.[index] ?? String(value) }))
+  return estimation.allowZero ? [{ value: 0, label: "0" }, ...options] : options
+}
+
+// Every estimate value any of the project's teams allows, sorted and deduped. A project-wide list is
+// only exactly right when the project sits on one team or its teams share a scale; per-team precision
+// comes from issueFieldOptions below. Null when no team uses estimates, so a caller can tell "this
+// project does not estimate" from "this project estimates in 1, 2, 3, 5, 8".
+export function projectEstimateScale(teams) {
+  const values = new Set()
+  for (const team of teams ?? []) {
+    for (const option of estimateOptions(team.estimation)) values.add(option.value)
+  }
+  return values.size ? [...values].sort((a, b) => a - b) : null
+}
+
+// A Linear identifier is "<TEAM>-<number>", so a snapshot captured before ingest recorded teamKey can
+// still name its team.
+export function identifierTeamKey(id) {
+  const dash = typeof id === "string" ? id.lastIndexOf("-") : -1
+  return dash > 0 ? id.slice(0, dash) : null
+}
+
+// The team an issue belongs to, or null when the snapshot carries no team data. A project on one team
+// resolves to that team even if the issue predates teamKey.
+export function teamForIssue(teams, issue) {
+  const list = teams ?? []
+  if (!list.length) return null
+  const key = issue?.teamKey ?? identifierTeamKey(issue?.id)
+  return list.find((t) => t.key === key) ?? (list.length === 1 ? list[0] : null)
+}
+
+// The status types the op model and every board view understand. A team may define a state outside
+// them (Linear's "duplicate" category); offering it would write a statusType the rest of the app has
+// no rank, colour, or label for, so it is left out of the editor's choices.
+const KNOWN_STATUS_TYPES = ["backlog", "canceled", "completed", "started", "triage", "unstarted"]
+
+// The fallback status list for a snapshot ingested before team states were captured: one state per
+// category, in workflow order, matching the labels src/ops.ts writes.
+export const DEFAULT_STATUS_OPTIONS = [
+  { name: "Backlog", type: "backlog" },
+  { name: "Todo", type: "unstarted" },
+  { name: "Triage", type: "triage" },
+  { name: "In Progress", type: "started" },
+  { name: "Done", type: "completed" },
+  { name: "Canceled", type: "canceled" },
+]
+
+export const PRIORITY_OPTIONS = PRIORITY_LABELS.map((label, value) => ({ value, label }))
+
+// The statuses an issue may be moved to: its own team's workflow states in the team's order, else the
+// generic one-per-category list when the snapshot has no team data yet.
+export function statusOptions(teams, issue) {
+  const team = teamForIssue(teams, issue)
+  const states = (team?.states ?? []).filter((s) => KNOWN_STATUS_TYPES.includes(s.type))
+  if (!states.length) return DEFAULT_STATUS_OPTIONS.map((s) => ({ ...s }))
+  return states.map((s) => ({ name: s.name, type: s.type }))
+}
+
+/**
+ * Every field choice the in-flow editor needs for one issue, derived from the board data the page
+ * already loads. Pure: no fetch, so it works the same offline, under the e2e harness, and in what-if
+ * mode. `estimatesFree` is true when the team's scale is unknown or unused and the caller should keep
+ * a free-text number input instead of a select.
+ */
+export function issueFieldOptions(boardData, issue) {
+  const data = boardData ?? {}
+  const team = teamForIssue(data.teams, issue)
+  const estimates = estimateOptions(team?.estimation)
+  const names = new Set(Object.keys(data.capacity?.roster ?? {}))
+  if (issue?.assignee && issue.assignee !== "Unassigned") names.add(issue.assignee)
+  return {
+    assignees: ["Unassigned", ...[...names].sort()],
+    cycles: (data.cycles ?? []).map((c) => ({ n: c.n, label: `Cycle ${c.n}` })),
+    estimates,
+    estimatesFree: estimates.length === 0,
+    milestones: (data.milestones ?? []).map((m) => ({ key: m.key, name: m.name })),
+    priorities: PRIORITY_OPTIONS.map((p) => ({ ...p })),
+    statuses: statusOptions(data.teams, issue),
+    teamKey: team?.key ?? null,
+  }
+}
+
 // Raw Linear issue (see scripts/issues.ts's GraphQL query) → the board's issue shape.
 export function transformIssue(raw, milestoneKeyById) {
   const blocks = []
@@ -65,6 +185,9 @@ export function transformIssue(raw, milestoneKeyById) {
     assignee: raw.assignee?.name ?? "Unassigned",
     status: raw.state?.name ?? null,
     statusType: raw.state?.type ?? null,
+    // Which team's workflow states and estimate scale apply to this ticket. A project can span teams,
+    // and the two need not share either.
+    teamKey: raw.team?.key ?? identifierTeamKey(raw.identifier),
     priority: priorityLabel(raw.priority),
     priorityValue: raw.priority ?? null,
     labels: (raw.labels?.nodes ?? []).map((l) => l.name),

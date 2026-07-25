@@ -21,6 +21,9 @@ export type Issue = {
   statusType: "started" | "unstarted" | "triage" | "backlog" | "completed" | "canceled"
   priority: string | null
   priorityValue: number | null
+  // The Linear team key ("DEV") whose workflow states and estimate scale govern this issue. Absent in
+  // offline seed data and in captures taken before ingest recorded it.
+  teamKey?: string | null
   labels: string[]
   parentId: string | null
   milestone: string | null
@@ -31,10 +34,38 @@ export type Issue = {
   related: string[]
 }
 
+export type WorkflowStateOption = { id: string; name: string; type: string; position: number }
+
+export type TeamEstimation = { type: string; allowZero: boolean; extended: boolean }
+
+// One Linear team the project touches, with the workflow states and estimate scale that team uses.
+// Ingest captures these so the editor can offer a team's real states by name rather than one state
+// per category, and its real estimate values rather than a free-text number.
+export type ProjectTeam = {
+  id: string
+  key: string
+  name: string
+  estimation: TeamEstimation
+  states: WorkflowStateOption[]
+}
+
 export type Snapshot = {
   // id and slugId come from a real Linear ingest (scripts/issues.ts) and key the snapshot history in
-  // src/projectIdentity.ts. Offline seed data has neither.
-  project: { id?: string; name: string; slugId?: string; start: string; target: string; url: string }
+  // src/projectIdentity.ts. Offline seed data has neither. workspaceKey is the Linear workspace the
+  // project lives in, so a scheduled run under one key can tell a project it cannot see from one that
+  // was renamed or revoked (src/workspace.ts).
+  project: {
+    id?: string
+    name: string
+    slugId?: string
+    start: string
+    target: string
+    url: string
+    workspaceKey?: string | null
+  }
+  teams?: ProjectTeam[]
+  // Every estimate value any of the project's teams allows. Null when no team estimates.
+  estimateScale?: number[] | null
   cycles: { n: number; start: string; end: string }[]
   asOf: string
   currentCycle: number

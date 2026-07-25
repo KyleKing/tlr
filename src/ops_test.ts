@@ -1,5 +1,5 @@
 import { assert, assertEquals } from "@std/assert"
-import { generateSnapshots } from "@/seed.ts"
+import { generateSnapshots, type ProjectTeam, type Snapshot } from "@/seed.ts"
 import { applyOps, type Op, validateOp } from "@/ops.ts"
 
 Deno.test("validateOp rejects a move to a nonexistent milestone", () => {
@@ -76,4 +76,47 @@ Deno.test("applyOps sets status type and display label together", () => {
   const issue = after.issues.find((i) => i.id === "SEED-111")!
   assertEquals(issue.statusType, "started")
   assertEquals(issue.status, "In Progress")
+})
+
+// A team with two "started" states: the op has to be able to name which one, or the second is
+// unreachable and the ticket lands in whichever Linear returns first.
+const TEAM_WITH_TWO_STARTED: ProjectTeam = {
+  id: "t-seed",
+  key: "SEED",
+  name: "Seed",
+  estimation: { type: "fibonacci", allowZero: true, extended: false },
+  states: [
+    { id: "s-todo", name: "Todo", type: "unstarted", position: 1 },
+    { id: "s-prog", name: "In Progress", type: "started", position: 2 },
+    { id: "s-review", name: "In Review", type: "started", position: 3 },
+  ],
+}
+
+function withTeams(): Snapshot {
+  const { a } = generateSnapshots()
+  return { ...a, teams: [TEAM_WITH_TWO_STARTED] }
+}
+
+Deno.test("applyOps writes the named state, not the first of its category", () => {
+  const { after } = applyOps(withTeams(), [
+    { kind: "set_status", id: "SEED-111", status: "started", statusName: "In Review" },
+  ])
+  const issue = after.issues.find((i) => i.id === "SEED-111")!
+  assertEquals(issue.statusType, "started")
+  assertEquals(issue.status, "In Review")
+})
+
+Deno.test("validateOp rejects a state name the issue's own team does not have", () => {
+  const snapshot = withTeams()
+  const op: Op = { kind: "set_status", id: "SEED-111", status: "started", statusName: "Shipping" }
+  assertEquals(validateOp(op, snapshot).ok, false)
+})
+
+// Every snapshot captured before ingest fetched team states has no states to check a name against.
+// Refusing those would break status edits on all of them, so the type alone still carries the change.
+Deno.test("validateOp accepts a named state on a snapshot with no team data and keeps the label", () => {
+  const { a } = generateSnapshots()
+  const op: Op = { kind: "set_status", id: "SEED-111", status: "started", statusName: "In Review" }
+  assertEquals(validateOp(op, a).ok, true)
+  assertEquals(applyOps(a, [op]).after.issues.find((i) => i.id === "SEED-111")!.status, "In Review")
 })

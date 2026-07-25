@@ -98,6 +98,28 @@ test("roadmap passes automated color-contrast checks", async ({ page }) => {
   expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([])
 })
 
+// The editor modal draws a dimmed backdrop, a field grid, a rendered description, the impact column,
+// and the inline reason on a field that fails validation — none of which exist until it is open, and
+// the invalid state is exactly where a red-on-tinted-background regression would land.
+test("the open ticket editor passes automated color-contrast checks", async ({ page }) => {
+  await page.goto("/review?project=seeded-reliability")
+  await page.locator("button[data-edit]").first().click()
+  await expect(page.locator("#edit-modal form.editf")).toBeVisible()
+
+  await page.locator("#ef-estimate").fill("4")
+  await expect(page.locator('.efield[data-field="estimate"] .efield-err')).toBeVisible()
+  await page.locator("#ef-description").fill("## Heading\n\n- a **bold** item\n- a `code` item\n\n> quoted")
+  await page.locator('#edit-modal [data-desc="preview"]').click()
+  await expect(page.locator("#edit-modal .emodal-md h4")).toBeVisible()
+
+  const results = await new AxeBuilder({ page })
+    .withTags(["wcag2aa"])
+    .options({ runOnly: { type: "rule", values: ["color-contrast"] } })
+    .analyze()
+
+  expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([])
+})
+
 test("review and changes pages pass automated color-contrast checks", async ({ page }) => {
   for (const path of ["/review", "/changes", "/roadmap", "/settings"]) {
     await page.goto(path)

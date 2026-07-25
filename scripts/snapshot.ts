@@ -47,12 +47,13 @@ import { openStore } from "@/snapshot.ts"
 import { type CapacityData, refreshCapacity } from "./capacity.ts"
 import { ingestProject, linearKey } from "./issues.ts"
 import { slugIdFromUrl } from "@/linearAccess.ts"
+import { fetchWorkspaceKey, workspaceSkipReason } from "@/workspace.ts"
 import type { Snapshot } from "@/seed.ts"
 
 const UNATTENDED_CAPACITY_SOURCES = ["history", "incident"] as const
 
 type Args = { allowCollapse: boolean; data?: string; dryRun: boolean; force: boolean; prune: boolean }
-type BoardData = CapacityData & { project?: { name?: string; url?: string } }
+type BoardData = CapacityData & { project?: { name?: string; url?: string; workspaceKey?: string | null } }
 type Result = { detail: string; outcome: RunOutcome }
 type FileResult = { detail: string; outcome: ProjectOutcome }
 
@@ -99,15 +100,40 @@ function hasLinearCounterpart(data: BoardData): boolean {
   return Boolean(data.project?.name) && slugIdFromUrl(data.project?.url) !== null
 }
 
-// A dry run stops before the first fetch. Going further would not be dry: ingestProject rewrites the
-// projects.json manifest as part of its normal work, so "fetch everything but skip the last write" is
-// not a state this can report from without changing the tree.
-async function refreshOne(dataFile: string, args: Args): Promise<FileResult> {
+// The workspace the run's own key belongs to, resolved once and shared by every project. Best-effort:
+// a key that cannot be read or a Linear that will not answer yields null, and a null active workspace
+// disables the skip below rather than skipping everything. The alternative fails a whole run over a
+// check that only exists to make one project quieter.
+function activeWorkspaceOnce(): () => Promise<string | null> {
+  let pending: Promise<string | null> | null = null
+  return () => {
+    pending ??= linearKey().then((key) => fetchWorkspaceKey(key)).catch(() => null)
+    return pending
+  }
+}
+
+// A dry run stops before the first project fetch. Going further would not be dry: ingestProject
+// rewrites the projects.json manifest as part of its normal work, so "fetch everything but skip the
+// last write" is not a state this can report from without changing the tree. The workspace lookup is
+// the one call it does make, because it reads the key's own organization and writes nothing, and
+// without it a dry run could not report the skip it is being asked about.
+async function refreshOne(
+  dataFile: string,
+  args: Args,
+  activeWorkspace: () => Promise<string | null>,
+): Promise<FileResult> {
   const path = new URL(dataFile, DATA_ROOT)
   const data: BoardData = await Deno.readTextFile(path).then(JSON.parse)
   if (!hasLinearCounterpart(data)) {
     return { detail: "local only, no Linear project to fetch", outcome: "not-applicable" }
   }
+
+  // Not a failure and not something a retry fixes: the demo-workspace project is invisible to the live
+  // key by design. A project in the active workspace that Linear cannot find is a rename or a revoked
+  // grant, and still fails below.
+  const skip = workspaceSkipReason(data.project, await activeWorkspace())
+  if (skip) return { detail: skip, outcome: "not-applicable" }
+
   if (args.dryRun) return { detail: "would refresh and capture", outcome: "unchanged" }
 
   const key = await linearKey()
@@ -125,9 +151,13 @@ async function refreshOne(dataFile: string, args: Args): Promise<FileResult> {
 
 // One project's failure is its own. The loop has to reach every other project in the manifest, and the
 // run log has to name what broke, or a seed file at the front of the list hides a real project behind it.
-async function refreshSafely(dataFile: string, args: Args): Promise<ProjectResult> {
+async function refreshSafely(
+  dataFile: string,
+  args: Args,
+  activeWorkspace: () => Promise<string | null>,
+): Promise<ProjectResult> {
   try {
-    return { ...(await refreshOne(dataFile, args)), project: dataFile }
+    return { ...(await refreshOne(dataFile, args, activeWorkspace)), project: dataFile }
   } catch (err) {
     return { detail: err instanceof Error ? err.message : String(err), outcome: "failed", project: dataFile }
   }
@@ -175,8 +205,9 @@ function pruneQuietly(args: Args): string {
 async function captureAll(args: Args): Promise<Result> {
   const files = await dataFiles(args)
   if (!files.length) return { detail: "no projects configured", outcome: "failed" }
+  const activeWorkspace = activeWorkspaceOnce()
   const results: ProjectResult[] = []
-  for (const file of files) results.push(await refreshSafely(file, args))
+  for (const file of files) results.push(await refreshSafely(file, args, activeWorkspace))
   const summary = summarizeResults(results)
   // A dry run opens nothing: openStore would create and migrate a store that is not there yet, which
   // is a write, and this run promised not to make any.
