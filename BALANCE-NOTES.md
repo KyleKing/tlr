@@ -92,9 +92,10 @@ before/after heat and the proposed ops, then hands them to `/api/edit`, is the s
 
 ## Adjacent backlog items this connects to
 
-- **What-if planning** (ROADMAP backlog): toggle a person's PTO or move scope and watch the forecast
-  shift. Balance is the solver; what-if is the interactive exploration around it. They share the capacity
-  and forecast inputs, so build them to reuse the same recompute path.
+- **What-if planning** (shipped, `web/lib/whatif.js`): toggling a person's PTO or moving scope already
+  recomputes the forecast in memory. Balance is the solver and what-if is the interactive exploration
+  around it, so a Balance page should route its proposal through the same overlay path rather than a
+  second recompute.
 - **Per-person forecast**: today `milestoneForecast` uses team-aggregate throughput. Balance produces a
   per-person allocation, which makes a per-person landing-date forecast possible and more honest.
 

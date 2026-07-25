@@ -11,8 +11,8 @@ changes and sloppy text do not reach a wider audience unchecked.
 
 One Deno/TypeScript core owns every read, the snapshot store, and the change model. A vanilla web app
 and a CLI sit on top, so neither talks to Linear on its own terms. See
-[ARCHITECTURE.md](ARCHITECTURE.md) for the shape, [ROADMAP.md](ROADMAP.md) for what is built and what
-is next, and [AGENTS.md](AGENTS.md) for where to start.
+[ARCHITECTURE.md](ARCHITECTURE.md) for the shape and how each part works, [ROADMAP.md](ROADMAP.md) for
+what is next, and [AGENTS.md](AGENTS.md) for where to start.
 
 ## What it does beyond Linear
 
