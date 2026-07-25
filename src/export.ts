@@ -3,10 +3,17 @@
 // the same bytes out, so a re-export diffs cleanly and a test can assert on it.
 
 import { liveIssues } from "../web/lib/issues.js"
-import { bucketOf, buildBuckets, dependencyWaves, personCycleCapacity, weeksBetween } from "../web/lib/planning.js"
+import {
+  bucketOf,
+  buildBuckets,
+  cycleLengthMs,
+  cyclesBetween,
+  dependencyWaves,
+  personCycleCapacity,
+} from "../web/lib/planning.js"
 import type { Issue, Snapshot } from "@/seed.ts"
 
-type Bucket = { key: string; label: string; kind: string }
+type Bucket = { key: string; label: string; kind: string; sub?: string }
 
 const FONT = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
 
@@ -40,7 +47,7 @@ function cellCapacity(
   snapshot: Snapshot,
   bucketWeeks: Record<string, number>,
 ): number | null {
-  if (person === "Unassigned" || b.key === "C47" || b.kind === "backlog") return null
+  if (person === "Unassigned" || b.sub === "past" || b.kind === "backlog") return null
   if (b.kind === "cycle") {
     return personCycleCapacity(person, parseInt(b.key.slice(1), 10), snapshot.capacity).points
   }
@@ -49,11 +56,12 @@ function cellCapacity(
 }
 
 function milestoneWeeks(snapshot: Snapshot): Record<string, number> {
+  const cycleMs = cycleLengthMs(snapshot)
   const weeks: Record<string, number> = {}
   snapshot.milestones.forEach((m, idx) => {
     const prior = idx === 0 ? snapshot.asOf : snapshot.milestones[idx - 1].target
     const start = new Date(snapshot.asOf) > new Date(prior) ? snapshot.asOf : prior
-    weeks[m.key] = Math.max(0.5, weeksBetween(start, m.target))
+    weeks[m.key] = Math.max(0.5, cyclesBetween(start, m.target, cycleMs))
   })
   return weeks
 }

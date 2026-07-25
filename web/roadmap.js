@@ -72,7 +72,7 @@ function enrich() {
     i._bucketEnd = (buckets.find((b) => b.key === i._bucket) ?? { end: "9999-12-31" }).end
     i._slop = slopScan(i.description)
     i._slopHash = slopHash(i.description)
-    i._miss = missingData(i)
+    i._miss = missingData(i, data)
   }
   chains = chainRisks(data)
   const chainByIssue = new Map()

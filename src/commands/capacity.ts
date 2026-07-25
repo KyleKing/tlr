@@ -1,5 +1,5 @@
 import { liveIssues } from "../../web/lib/issues.js"
-import { ACTIVE_CYCLES, personCycleCapacity } from "../../web/lib/planning.js"
+import { activeCycles, personCycleCapacity } from "../../web/lib/planning.js"
 import type { Issue, Snapshot } from "@/seed.ts"
 
 export function projectCapacity(snapshot: Snapshot) {
@@ -9,7 +9,7 @@ export function projectCapacity(snapshot: Snapshot) {
     .sort()
   const rows = []
   for (const person of people) {
-    for (const cycle of ACTIVE_CYCLES) {
+    for (const cycle of activeCycles(snapshot)) {
       const { points, factors } = personCycleCapacity(person, cycle, snapshot.capacity)
       const load = issues
         .filter((i) => i.assignee === person && i.cycle === cycle)

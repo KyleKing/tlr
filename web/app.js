@@ -2,6 +2,8 @@ import {
   bucketOf,
   buildBuckets,
   chainRisks,
+  cycleLengthMs,
+  cyclesBetween,
   milestoneDisplayName,
   milestoneForecast,
   missingData,
@@ -10,7 +12,6 @@ import {
   slopScan,
   statusRank,
   teamWeeklyThroughput,
-  weeksBetween,
 } from "./lib/planning.js"
 import { liveSnapshot } from "./lib/issues.js"
 import { applyTheme, loadTheme } from "./lib/appearance.js"
@@ -45,11 +46,12 @@ function deriveBuckets() {
     milestoneForecast(view, teamWeeklyThroughput(view)).milestones.map((m) => [m.key, m]),
   )
   bucketWeeks = {}
+  const cycleMs = cycleLengthMs(view)
   view.milestones.forEach((m, idx) => {
     const start = idx === 0
       ? view.asOf
       : (new Date(view.asOf) > new Date(view.milestones[idx - 1].target) ? view.asOf : view.milestones[idx - 1].target)
-    bucketWeeks[m.key] = Math.max(0.5, weeksBetween(start, m.target))
+    bucketWeeks[m.key] = Math.max(0.5, cyclesBetween(start, m.target, cycleMs))
   })
   for (const b of buckets) if (b.kind === "cycle") bucketWeeks[b.key] = 1
   bucketWeeks.BACKLOG = Infinity
@@ -67,7 +69,7 @@ function enrich() {
     i._bucketEnd = (bucketByKey[i._bucket] || { end: "9999-12-31" }).end
     i._slop = slopScan(i.description)
     i._slopHash = slopHash(i.description)
-    i._miss = missingData(i)
+    i._miss = missingData(i, view)
   }
   // A ticket carries the chain it sits in, so the hover card can say why the flag is up without
   // recomputing. `_risk` is the flag: the chain cannot finish before the milestone it is aimed at.
@@ -841,7 +843,7 @@ function warnClass(i) {
 // Effective capacity for a person in a bucket. Cycles carry on-call and time-off deflation;
 // milestones size off base velocity across their weeks (no near-term calendar events applied).
 function cellCapacity(person, b) {
-  if (person === "Unassigned" || b.key === "C47" || b.kind === "backlog") return { points: null, factors: [] }
+  if (person === "Unassigned" || b.sub === "past" || b.kind === "backlog") return { points: null, factors: [] }
   if (b.kind === "cycle") return personCycleCapacity(person, parseInt(b.key.slice(1), 10), view.capacity)
   const base = personCycleCapacity(person, null, view.capacity).base
   return { points: Math.round(base * bucketWeeks[b.key]), factors: [] }
@@ -862,7 +864,7 @@ function cellHTML(person, b) {
   const items = view.issues.filter((i) => passesShown.has(i) && i.assignee === person && i._bucket === b.key)
     .sort((a, x) => statusRank(a.statusType) - statusRank(x.statusType) || x.estimate - a.estimate)
   const load = items.reduce((s, i) => s + i.estimate, 0)
-  const cls = b.key === "C47" ? "past" : (b.kind === "cycle" ? "now" : "")
+  const cls = b.sub === "past" ? "past" : (b.kind === "cycle" ? "now" : "")
   const { points: capacity, factors } = cellCapacity(person, b)
   let heat = ""
   if (capacity && load > 0) {
@@ -876,7 +878,7 @@ function cellHTML(person, b) {
   // Only a real (non-Unassigned) person's active-cycle cell has an on-call/out-days override to edit —
   // matches cellCapacity's own eligibility so a data-name/data-cycle attribute never points at a cell
   // that can't actually carry one.
-  const editable = person !== "Unassigned" && b.kind === "cycle" && b.key !== "C47"
+  const editable = person !== "Unassigned" && b.kind === "cycle" && b.sub !== "past"
   const ovAttrs = editable ? ` data-name="${escapeHtml(person)}" data-cycle="${b.key.slice(1)}"` : ""
   return `<td class="${cls}" data-load="${load}" data-cap="${
     capacity ?? ""

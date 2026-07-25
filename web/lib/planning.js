@@ -1,7 +1,5 @@
 // Pure planning logic shared by the browser app and Deno tests. No DOM here.
 
-export const ACTIVE_CYCLES = [48, 49]
-
 export function bucketOf(issue) {
   if (issue.cycle != null) return `C${issue.cycle}`
   if (issue.milestone) return issue.milestone
@@ -20,8 +18,8 @@ export function milestoneDisplayName(name, fallback) {
 // is optional; when given, a cycle column is dropped if no issue actually falls into it (milestone and
 // backlog columns always show, since those are meaningful even with zero issues today). Shows every
 // cycle the project has scheduled work in, in cycle-number order — including a gap between two cycles
-// the team didn't run back to back — rather than a fixed window around ACTIVE_CYCLES, which named two
-// specific cycle numbers that only ever matched the demo data.
+// the team didn't run back to back — rather than a fixed window, since a project's active cycles are
+// derived from its own data (see activeCycles) instead of named up front.
 export function buildBuckets(data, issues) {
   const hasIssue = (key) => !Array.isArray(issues) || issues.some((i) => bucketOf(i) === key)
   const cols = []
@@ -50,14 +48,40 @@ export function weeksBetween(fromISO, toISO) {
   return Math.max(0, ms / (7 * 24 * 3600 * 1000))
 }
 
-// Milestone capacity = weeks in its window * team capacity/cycle. Window starts at asOf (or prior
+// A project's actual cycle length, derived from its own cycles rather than assumed. Falls back to one
+// week only when the snapshot carries no cycles at all, so nothing here divides by zero.
+export function cycleLengthMs(data) {
+  const cycles = data?.cycles
+  if (!cycles?.length) return _WEEK_MS
+  const [first] = [...cycles].sort((a, b) => a.n - b.n)
+  const ms = new Date(first.end) - new Date(first.start)
+  return ms > 0 ? ms : _WEEK_MS
+}
+
+// The cycle-denominated analog of weeksBetween: how many of this project's own cycles fit between two
+// dates, for comparing against per-cycle rates instead of per-week ones.
+export function cyclesBetween(fromISO, toISO, cycleMs) {
+  const ms = new Date(toISO) - new Date(fromISO)
+  return Math.max(0, ms / cycleMs)
+}
+
+// The current cycle and the one after it, derived from the snapshot's own cycle list instead of a
+// fixed pair of cycle numbers. Empty when currentCycle isn't found among the snapshot's cycles.
+export function activeCycles(data) {
+  const cycles = [...(data?.cycles ?? [])].sort((a, b) => a.n - b.n)
+  const idx = cycles.findIndex((c) => c.n === data?.currentCycle)
+  if (idx < 0) return []
+  return cycles.slice(idx, idx + 2).map((c) => c.n)
+}
+
+// Milestone capacity = cycles in its window * team capacity/cycle. Window starts at asOf (or prior
 // milestone end) and ends at the target. A forecast assumption, not real staffing.
 export function milestoneCapacity(milestoneKey, data, teamPerCycle) {
   const idx = data.milestones.findIndex((m) => m.key === milestoneKey)
   if (idx < 0) return 0
   const target = data.milestones[idx].target
   const start = idx === 0 ? data.asOf : maxDate(data.asOf, data.milestones[idx - 1].target)
-  return Math.round(weeksBetween(start, target) * teamPerCycle)
+  return Math.round(cyclesBetween(start, target, cycleLengthMs(data)) * teamPerCycle)
 }
 
 function maxDate(a, b) {
@@ -66,9 +90,9 @@ function maxDate(a, b) {
 
 // Milestone slip forecast: a realistic landing date per milestone, always a forecast, never a real
 // date. Milestones deliver in target-date order, each starting when the one before finishes (or asOf,
-// whichever is later). Weeks of work = a milestone's remaining (open) points over team weekly
-// throughput, where throughput sums the base velocity of everyone owning work here, per one-week
-// cycle. See planningPeople for why that is not the roster.
+// whichever is later). Cycles of work = a milestone's remaining (open) points over team per-cycle
+// throughput, where throughput sums the base velocity of everyone owning work here, per cycle. See
+// planningPeople for why that is not the roster.
 const _DAY_MS = 24 * 3600 * 1000
 const _WEEK_MS = 7 * _DAY_MS
 
@@ -107,6 +131,7 @@ export function milestoneForecast(snapshot, weeklyPoints) {
   // A non-positive override is meaningless (it would land everything at asOf or before), so fall back
   // to the owner sum rather than emit a nonsense date.
   const weekly = weeklyPoints != null && weeklyPoints > 0 ? weeklyPoints : teamWeeklyPoints(snapshot)
+  const cycleMs = cycleLengthMs(snapshot)
   const ordered = [...snapshot.milestones].sort((a, b) => a.target.localeCompare(b.target))
   let cursor = snapshot.asOf
   const milestones = ordered.map((m) => {
@@ -118,7 +143,7 @@ export function milestoneForecast(snapshot, weeklyPoints) {
     const completedPoints = done.reduce((s, i) => s + (i.estimate || 0), 0)
     const weeksNeeded = weekly > 0 ? remainingPoints / weekly : 0
     const start = new Date(cursor) > new Date(snapshot.asOf) ? cursor : snapshot.asOf
-    const landing = new Date(new Date(start).getTime() + weeksNeeded * _WEEK_MS).toISOString().slice(0, 10)
+    const landing = new Date(new Date(start).getTime() + weeksNeeded * cycleMs).toISOString().slice(0, 10)
     cursor = landing
     const slipDays = Math.round((new Date(landing) - new Date(m.target)) / _DAY_MS)
     return {
@@ -144,12 +169,13 @@ export function milestoneForecast(snapshot, weeklyPoints) {
 // milestoneForecast reads as "no throughput" and leaves landings at asOf.
 export function teamWeeklyThroughput(snapshot) {
   const people = planningPeople(snapshot)
-  if (!people.length || !ACTIVE_CYCLES.length) return 0
+  const cycles = activeCycles(snapshot)
+  if (!people.length || !cycles.length) return 0
   let sum = 0
-  for (const c of ACTIVE_CYCLES) {
+  for (const c of cycles) {
     for (const p of people) sum += personCycleCapacity(p, c, snapshot.capacity).points
   }
-  return Math.round(sum / ACTIVE_CYCLES.length)
+  return Math.round(sum / cycles.length)
 }
 
 const TELLS = [
@@ -232,12 +258,12 @@ export function personCycleCapacity(person, cycleN, capacity, baseOverride) {
 
 // Missing-data flags. `blocking` is true only when the issue sits in an active cycle,
 // where missing fields actually block execution.
-export function missingData(issue) {
+export function missingData(issue, data) {
   const flags = []
   if (!issue.estimate) flags.push("no estimate")
   if (issue.assignee === "Unassigned") flags.push("unassigned")
   if (!issue.milestone) flags.push("no milestone")
-  const inCycle = ACTIVE_CYCLES.includes(issue.cycle)
+  const inCycle = activeCycles(data).includes(issue.cycle)
   return { flags, blocking: inCycle && flags.length > 0 }
 }
 
@@ -379,7 +405,7 @@ function chainRate(person, snapshot) {
 // person needs however idle the rest of the team is. For each group of blocking edges, charge the
 // heaviest path's points to their owners, size each owner's segment against that person's own measured
 // velocity, and compare the sequential total against the time left before the target of the latest
-// milestone the chain touches. Cycles are one week long here, which is what weeksBetween returns.
+// milestone the chain touches, in units of this project's own cycle length (see cyclesBetween).
 //
 // `shortfall` is null when the chain touches no milestone with a target, since there is nothing to be
 // late for, and when the chain is `stalled`. `unestimated` counts path tickets carrying no estimate,
@@ -410,7 +436,7 @@ export function chainRisks(snapshot, issues = snapshot.issues) {
     const cyclesNeeded = stalled ? null : _round1(owners.reduce((s, o) => s + (o.cycles ?? 0), 0))
     const targets = path.map((id) => targetOf.get(byId.get(id).milestone)).filter(Boolean).sort()
     const target = targets.at(-1) ?? null
-    const cyclesAvailable = target ? _round1(weeksBetween(snapshot.asOf, target)) : null
+    const cyclesAvailable = target ? _round1(cyclesBetween(snapshot.asOf, target, cycleLengthMs(snapshot))) : null
     const shortfall = cyclesAvailable == null || cyclesNeeded == null ? null : _round1(cyclesNeeded - cyclesAvailable)
     return {
       ids,

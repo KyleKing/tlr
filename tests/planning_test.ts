@@ -138,9 +138,12 @@ Deno.test("slopScan catches dashes, semicolons, phrases, checklists, length", ()
 })
 
 Deno.test("missingData only blocks when the issue is in an active cycle", () => {
-  assertEquals(missingData({ cycle: 48, estimate: 0, assignee: "Unassigned", milestone: null }).blocking, true)
-  assertEquals(missingData({ cycle: null, estimate: 0, assignee: "Unassigned", milestone: null }).blocking, false)
-  assertEquals(missingData({ cycle: 48, estimate: 3, assignee: "Ada", milestone: "M1" }).flags.length, 0)
+  assertEquals(missingData({ cycle: 48, estimate: 0, assignee: "Unassigned", milestone: null }, DATA).blocking, true)
+  assertEquals(
+    missingData({ cycle: null, estimate: 0, assignee: "Unassigned", milestone: null }, DATA).blocking,
+    false,
+  )
+  assertEquals(missingData({ cycle: 48, estimate: 3, assignee: "Ada", milestone: "M1" }, DATA).flags.length, 0)
 })
 
 Deno.test("slopHash is stable across whitespace reflow and changes with content", () => {

@@ -65,6 +65,15 @@ override (`LINEAR_API_KEY` / `LINEAR_DEMO_API_KEY`) for CI, where a keychain is 
 ticket, first refresh issues from that workspace so each carries its Linear id; the edit form refuses to
 write a ticket it has no id for.
 
+Before seeding, `deno task configure:linear` sets the TLR team's cycle/estimation/triage settings
+(2-week cycles, Fibonacci estimation with zero allowed, Triage enabled) to match what `src/seed.ts`'s
+offline fixture already models, so the demo workspace and local tests describe the same world. Same
+guard and dry-run/`--write` pattern as below, and idempotent: it diffs the team's current settings
+against the desired ones and only writes what actually differs, so a second run is a no-op. Its exact
+`teamUpdate` field names haven't been exercised against the real API from this repo before, so confirm
+them with a GraphQL introspection query before the first real `--write` (see the script's header
+comment).
+
 To fill an empty demo workspace with sample data, `deno task seed:linear` creates a throwaway "Horse
 Tinder" project (milestones, issues, a couple with deliberate slop, a few relations). It is guarded to
 the `tlr-demo-workspace` org and dry-runs by default; pass `--write` to apply, and re-running archives

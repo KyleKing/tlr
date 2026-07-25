@@ -123,7 +123,8 @@ test("on-call/out-days overrides are edited on the board, not in Settings", asyn
   await page.goto("/?project=seeded-reliability")
   await expect(page.locator("#grid tr").first()).toBeVisible()
 
-  // Grace Hopper is on-call in Cycle 48 in the seed data (see src/seed.ts) — click that badge to edit.
+  // Grace Hopper is on-call in the current cycle in the seed data (see src/seed.ts) — click that badge
+  // to edit.
   const badge = page.locator(".cf.oncall").first()
   await expect(badge).toBeVisible()
   await badge.click()

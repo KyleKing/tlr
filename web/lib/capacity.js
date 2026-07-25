@@ -96,7 +96,7 @@ export function oncallByCycle(entries, cycles, roster) {
 // Calendar out-of-office / busy blocks → { displayName: { cycleN: { outDays, reason } } }. Per cycle,
 // out-days sum across a person's events and cap at workdaysPerCycle; the first event's title is the
 // reason. Events keyed by email or by display name both resolve through the roster.
-export function outDaysByCycle(events, cycles, roster, workdaysPerCycle = 5) {
+export function outDaysByCycle(events, cycles, roster, workdaysPerCycle = 10) {
   const resolve = _resolver(roster)
   const out = {}
   for (const ev of events) {
@@ -131,7 +131,7 @@ function _splitByDay(startISO, endISO) {
 // cycle. Free/busy carries no event type, so a day counts as reduced-capacity once its total busy
 // time reaches thresholdHours — an all-day block clears this on its own, and several meetings can add
 // up to the same signal. Weekend busy time is ignored since it never eats into workdays.
-export function outDaysFromFreeBusy(calendars, cycles, roster, workdaysPerCycle = 5, thresholdHours = 5) {
+export function outDaysFromFreeBusy(calendars, cycles, roster, workdaysPerCycle = 10, thresholdHours = 5) {
   const resolve = _resolver(roster)
   const out = {}
   for (const [email, cal] of Object.entries(calendars || {})) {
@@ -178,7 +178,7 @@ export function outDaysFromFreeBusy(calendars, cycles, roster, workdaysPerCycle 
 // Archived tickets count here, unlike everywhere else that reads the issue list. This measures work
 // already delivered, and a team that tidies its board by archiving finished tickets would otherwise
 // watch its own recorded throughput fall as a result.
-export function velocityByPerson(issues, cycles, currentCycle, capacity, workdaysPerCycle = 5) {
+export function velocityByPerson(issues, cycles, currentCycle, capacity, workdaysPerCycle = 10) {
   const past = cycles.filter((c) => c.n < currentCycle)
   if (!past.length) return {}
   const delivered = {}

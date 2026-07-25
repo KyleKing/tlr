@@ -135,13 +135,14 @@ const MILESTONES = [
 ]
 
 // Two cycles past the current one, because a real project always has upcoming weeks planned and
-// anything that schedules forward (balance) has nowhere to put work without them.
+// anything that schedules forward (balance) has nowhere to put work without them. Two-week spans,
+// matching the real TLR team's configured cycle length (see scripts/configure-linear-team.ts).
 const CYCLES = [
-  { n: 47, start: "2026-07-13", end: "2026-07-20" },
-  { n: 48, start: "2026-07-20", end: "2026-07-27" },
-  { n: 49, start: "2026-07-27", end: "2026-08-03" },
-  { n: 50, start: "2026-08-03", end: "2026-08-10" },
-  { n: 51, start: "2026-08-10", end: "2026-08-17" },
+  { n: 47, start: "2026-06-29", end: "2026-07-13" },
+  { n: 48, start: "2026-07-13", end: "2026-07-27" },
+  { n: 49, start: "2026-07-27", end: "2026-08-10" },
+  { n: 50, start: "2026-08-10", end: "2026-08-24" },
+  { n: 51, start: "2026-08-24", end: "2026-09-07" },
 ]
 
 function baseSnapshot(): Snapshot {
@@ -200,6 +201,13 @@ function baseSnapshot(): Snapshot {
   link(issues, "SEED-127", "SEED-126")
   issues.find((i) => i.id === "SEED-101")!.related.push("SEED-105")
 
+  // One issue forced into triage (rather than widening the random STATUSES pool, which would reshuffle
+  // every later RNG draw and perturb every other issue's fixture values) so the triage status type,
+  // otherwise only ever asserted in the abstract via STATUS_RANK, has one real instance to exercise.
+  const triageIssue = issues.find((i) => i.id === "SEED-110")!
+  triageIssue.statusType = "triage"
+  triageIssue.status = STATUS_LABEL.triage
+
   return {
     project: {
       name: "Horse Tinder (seed)",
@@ -207,6 +215,24 @@ function baseSnapshot(): Snapshot {
       target: "2026-11-30",
       url: "https://linear.app/seed",
     },
+    teams: [{
+      id: "team-tlr",
+      key: "TLR",
+      name: "Horse Tinder",
+      estimation: { type: "fibonacci", allowZero: true, extended: false },
+      states: [
+        { id: "st-backlog", name: "Backlog", type: "backlog", position: 0 },
+        { id: "st-triage", name: "Triage", type: "triage", position: 1 },
+        { id: "st-todo", name: "Todo", type: "unstarted", position: 2 },
+        { id: "st-progress", name: "In Progress", type: "started", position: 3 },
+        { id: "st-done", name: "Done", type: "completed", position: 4 },
+        { id: "st-canceled", name: "Canceled", type: "canceled", position: 5 },
+      ],
+    }],
+    // The project-wide/ingest-time fallback scale (see projectEstimateScale in web/lib/issues.js),
+    // deliberately wider than the TLR team's own live fibonacci scale so stale/extended-value code
+    // paths in web/lib/fieldOptions.js have real values above 8 to resolve against.
+    estimateScale: [0, 1, 2, 3, 5, 8, 13, 21],
     cycles: CYCLES,
     asOf: "2026-07-23",
     currentCycle: 48,
@@ -215,7 +241,7 @@ function baseSnapshot(): Snapshot {
     milestones: MILESTONES.map((m) => ({ ...m })),
     issues,
     capacity: {
-      config: { workdaysPerCycle: 5, oncallPenalty: 0.45 },
+      config: { workdaysPerCycle: 10, oncallPenalty: 0.45 },
       defaultVelocity: 20,
       roster: {
         "Ada Lovelace": { email: "ada@example.com" },
@@ -247,7 +273,13 @@ function link(issues: Issue[], fromId: string, toId: string) {
 function drift(a: Snapshot): Snapshot {
   const b: Snapshot = structuredClone(a)
   b.asOf = "2026-07-30"
-  b.currentCycle = 49
+  b.currentCycle = 49 // On-call rotates forward with the cycle, so the now-current cycle (49) still has a live rotation to
+   // show and edit, the same way `a`'s cycle 48 does. Cycle 48's own entry is left untouched: it is now
+  // history, not a live rotation.
+  ;(b.capacity.people["Grace Hopper"] ??= {}).cycles = {
+    ...b.capacity.people["Grace Hopper"].cycles,
+    "49": { oncall: true, oncallSrc: "seed" },
+  }
 
   const byId = Object.fromEntries(b.issues.map((i) => [i.id, i]))
   const advance = (id: string) => {

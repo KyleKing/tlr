@@ -132,7 +132,7 @@ export async function refreshCapacity(data: CapacityData, opts: RefreshCapacityO
   const source = opts.source ?? "all"
   const cycles = data.cycles
   const roster = data.capacity?.roster ?? {}
-  const workdays = data.capacity?.config?.workdaysPerCycle ?? 5
+  const workdays = data.capacity?.config?.workdaysPerCycle ?? 10
   const { winStart, winEnd } = windowFor(cycles)
   let capacity = data.capacity ?? { defaultVelocity: 20, people: {} }
   const wantIncident = source === "all" || source === "incident"

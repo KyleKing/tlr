@@ -116,7 +116,8 @@ Deno.test("validateOp rejects a state name the issue's own team does not have", 
 // Refusing those would break status edits on all of them, so the type alone still carries the change.
 Deno.test("validateOp accepts a named state on a snapshot with no team data and keeps the label", () => {
   const { a } = generateSnapshots()
+  const noTeams = { ...a, teams: undefined }
   const op: Op = { kind: "set_status", id: "SEED-111", status: "started", statusName: "In Review" }
-  assertEquals(validateOp(op, a).ok, true)
-  assertEquals(applyOps(a, [op]).after.issues.find((i) => i.id === "SEED-111")!.status, "In Review")
+  assertEquals(validateOp(op, noTeams).ok, true)
+  assertEquals(applyOps(noTeams, [op]).after.issues.find((i) => i.id === "SEED-111")!.status, "In Review")
 })

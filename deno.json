@@ -10,6 +10,7 @@
     "capacity": "deno run --allow-read --allow-write --allow-env --allow-net=api.incident.io,accounts.google.com,oauth2.googleapis.com,www.googleapis.com,127.0.0.1 --allow-run=security,open ./scripts/capacity.ts",
     "check": "deno check .",
     "cli": "deno run --allow-read --allow-write --allow-env --allow-ffi ./scripts/cli.ts",
+    "configure:linear": "deno run --allow-read --allow-env --allow-net=api.linear.app --allow-run=security ./scripts/configure-linear-team.ts",
     "compile": "deno compile --allow-net --allow-read --allow-write=./web/data --allow-env --allow-run=security,open --output ./dist/tlr ./scripts/serve.ts",
     "dev": "deno run --allow-net --allow-read --allow-write=./web/data --allow-env --allow-run=security,open ./scripts/serve.ts",
     "fmt": "deno fmt",

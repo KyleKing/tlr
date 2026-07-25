@@ -182,9 +182,10 @@ Deno.test("velocityByPerson ignores a cycle the person was out for entirely", ()
 Deno.test("velocityByPerson scales a partly-out cycle up to a full week", () => {
   const cycles = [{ n: 47, start: "2026-07-13", end: "2026-07-20" }, ...CYCLES]
   const issues = [{ assignee: "Kyle King", cycle: 47, statusType: "completed", estimate: 6 }]
-  // Three of five workdays worked, so 6 points reads as a 10-point full week.
+  // Three of five workdays worked, so 6 points reads as a 10-point full week. Pinned to a 5-workday
+  // cycle explicitly, since this test is about the partial-week scaling math, not the caller's default.
   const capacity = { people: { "Kyle King": { cycles: { "47": { outDays: 2 } } } } }
-  assertEquals(velocityByPerson(issues, cycles, 48, capacity), { "Kyle King": { velocity: 10, cycles: 1 } })
+  assertEquals(velocityByPerson(issues, cycles, 48, capacity, 5), { "Kyle King": { velocity: 10, cycles: 1 } })
 })
 
 // On-call is a planning assumption, not a measurement. Inverting it would turn a productive on-call
@@ -198,9 +199,10 @@ Deno.test("velocityByPerson leaves an on-call cycle at its measured rate", () =>
 
 Deno.test("velocityByPerson omits a person with no cycle worth measuring", () => {
   const cycles = [{ n: 47, start: "2026-07-13", end: "2026-07-20" }, ...CYCLES]
+  // Pinned to a 5-workday cycle: outDays:5 is meant to read as "out the whole cycle".
   const capacity = { people: { Ghost: { cycles: { "47": { outDays: 5 } } } } }
   const issues = [{ assignee: "Ghost", cycle: 47, statusType: "completed", estimate: 4 }]
-  assertEquals(velocityByPerson(issues, cycles, 48, capacity), {})
+  assertEquals(velocityByPerson(issues, cycles, 48, capacity, 5), {})
 })
 
 Deno.test("mergeVelocity keeps a hand-typed velocity but refreshes its own prior write", () => {
