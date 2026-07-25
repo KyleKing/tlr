@@ -2,3 +2,27 @@
 deno = "latest"
 dprint = "latest"
 hk = "latest"
+
+[tasks.build]
+description = 'Build generated code'
+depends = ['build-css', 'build-shared', 'download-assets']
+
+[tasks.build-css]
+description = "Build CSS from styles directory. Optionally compress with `--minify`"
+run = "deno run --allow-read --allow-write ./scripts/build-css.ts"
+sources = ["styles/**/*.css"]
+
+[tasks.build-shared]
+description = "Transpile shared server code to JS for client"
+run = "deno run --allow-read --allow-write --allow-env --allow-net ./scripts/build-shared.ts"
+sources = ["shared/*.ts"]
+
+[tasks.download-assets]
+description = "Download production assets"
+run = "./scripts/download-assets.sh"
+
+[tasks.dev]
+description = "Watch for changes and refresh the local server"
+# depends = ['build'] # PLANNED: Support `[dev] {..}` with tail-jsonl
+run = "deno task dev"
+sources = ["src/templates/**/*.vto"]
