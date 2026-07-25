@@ -127,15 +127,26 @@ Deno.test("the blockers and the work waiting on the ticket are listed with their
   const { dependencies } = scopeImpact(ctxFor())
   assertEquals(dependencies.blockedBy, [])
   assertEquals(dependencies.blocks.map((r: { id: string; lands: string }) => [r.id, r.lands]), [["FC-2", "2026-08-03"]])
-  assertEquals(dependencies.risks, [])
 })
 
-// FC-2 waits on FC-1. Taking FC-1 out of its cycle and into the later milestone lands it after the
-// work that depends on it.
-Deno.test("a move that lands the ticket after the work waiting on it is an ordering risk", () => {
-  const { dependencies } = scopeImpact(ctxFor({ cycle: null, milestone: "M2" }))
-  assertEquals(dependencies.risks, [{ issue: "FC-2", blocker: "FC-1" }])
+// FC-1 (20pt, Ada) blocks FC-2 (20pt, Bob), both aimed at M1. Run one at a time at 20 points a cycle
+// each, that is two cycles of work against the week and a bit left before the target.
+Deno.test("a chain its owners cannot finish before the target is flagged", () => {
+  const { dependencies } = scopeImpact(ctxFor())
+  assertEquals(dependencies.chain!.cyclesNeeded, 2)
+  assertEquals(dependencies.chain!.cyclesAvailable, 1.1)
+  assertEquals(dependencies.chain!.atRisk, true)
   assert(dependencies.blocks[0].risk)
+})
+
+// Moving FC-1 to M2 pushes the chain's deadline out to the later milestone, so the same two cycles of
+// sequential work now fit. The pane reads chainWas to say the edit is what fixed it.
+Deno.test("a move that buys the chain more runway clears the flag", () => {
+  const { dependencies } = scopeImpact(ctxFor({ cycle: null, milestone: "M2" }))
+  assertEquals(dependencies.chainWas!.atRisk, true)
+  assertEquals(dependencies.chain!.atRisk, false)
+  assertEquals(dependencies.chain!.target, "2026-08-31")
+  assert(!dependencies.blocks[0].risk)
 })
 
 Deno.test("the slop scan is silent until the description is rewritten", () => {

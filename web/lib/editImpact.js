@@ -106,18 +106,44 @@ function depRow(row, verb) {
     `<span class="eimpact-dim">${escapeHtml(status)}, lands ${escapeHtml(row.lands)}</span></li>`
 }
 
+// The chain line. A chain runs one ticket at a time, so it is sized against the people on it: whether
+// the sequential work fits before the milestone target is the question, not whether the team is busy.
+function chainHTML({ chain, chainWas }) {
+  if (!chain) return ""
+  const who = chain.owners
+    .map((o) => `${escapeHtml(o.person)} ${o.points}pt at ${o.perCycle}/cycle`)
+    .join(", ")
+  const spans = []
+  if (chain.spans.milestones > 1) spans.push(`${chain.spans.milestones} milestones`)
+  if (chain.spans.cycles > 1) spans.push(`${chain.spans.cycles} cycles`)
+  const span = spans.length ? ` spanning ${spans.join(" and ")}` : ""
+  const head = `<p class="eimpact-note">In a ${chain.size}-ticket chain${span}, ` +
+    `${chain.points} points on the critical path: ${who}.</p>`
+
+  if (chain.stalled) {
+    return head + `<p class="eimpact-warn">An owner on this chain has no capacity, so it never finishes.</p>`
+  }
+  if (chain.cyclesAvailable == null) {
+    return head +
+      `<p class="eimpact-note">Needs ${chain.cyclesNeeded} cycles. No milestone target to measure against.</p>`
+  }
+  const verdict = chain.atRisk
+    ? `<p class="eimpact-warn">Needs ${chain.cyclesNeeded} cycles with ${chain.cyclesAvailable} left before ` +
+      `${escapeHtml(chain.target)}: ${chain.shortfall} short.${
+        chainWas && !chainWas.atRisk ? " This edit is what pushed it over." : ""
+      }</p>`
+    : `<p class="eimpact-good">Needs ${chain.cyclesNeeded} cycles with ${chain.cyclesAvailable} left before ` +
+      `${escapeHtml(chain.target)}.${chainWas?.atRisk ? " This edit brought it back inside." : ""}</p>`
+  return head + verdict
+}
+
 function dependenciesHTML(deps) {
   const rows = [
     ...deps.blockedBy.map((r) => depRow(r, "waits on")),
     ...deps.blocks.map((r) => depRow(r, "blocks")),
   ]
   if (!rows.length) return ""
-  const risk = deps.risks.length
-    ? `<p class="eimpact-warn">${deps.risks.length} ordering risk${
-      deps.risks.length === 1 ? "" : "s"
-    }: a blocker finishes after the work waiting on it.</p>`
-    : ""
-  return section("Dependencies", `<ul class="eimpact-list">${rows.join("")}</ul>${risk}`)
+  return section("Dependencies", `<ul class="eimpact-list">${rows.join("")}</ul>${chainHTML(deps)}`)
 }
 
 function slopHTML(text) {

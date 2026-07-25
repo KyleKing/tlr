@@ -176,6 +176,34 @@ export function transformIssue(raw, milestoneKeyById) {
   }
 }
 
+// Make blocking edges symmetric across a fetched set. Linear reports a relation once, on the issue
+// that owns it: A blocking B gives A `{type: "blocks", relatedIssue: B}` and gives B nothing, because
+// the reverse lives in `inverseRelations`, which the project query does not ask for. Without this pass
+// `blockedBy` is empty on every real ingest, so anything reading blockers (dependency waves, chain
+// risk, the ordering check in the impact pane) sees a graph with no depth.
+//
+// This only pairs up edges where both endpoints are in the set, so a blocker in another project stays
+// invisible. Fetching `inverseRelations` would catch those, at the cost of another nested connection
+// in a query already sized against Linear's complexity budget.
+export function linkRelations(issues) {
+  const byId = new Map(issues.map((i) => [i.id, i]))
+  for (const i of issues) {
+    for (const target of i.blocks ?? []) {
+      const other = byId.get(target)
+      if (other && !(other.blockedBy ??= []).includes(i.id)) other.blockedBy.push(i.id)
+    }
+    for (const source of i.blockedBy ?? []) {
+      const other = byId.get(source)
+      if (other && !(other.blocks ??= []).includes(i.id)) other.blocks.push(i.id)
+    }
+  }
+  for (const i of issues) {
+    i.blocks = [...new Set(i.blocks ?? [])].sort()
+    i.blockedBy = [...new Set(i.blockedBy ?? [])].sort()
+  }
+  return issues
+}
+
 // Ingest fetches archived issues on purpose (see transformIssue), so every snapshot and data file
 // carries them. Only the diff and the review queue want them: they exist to tell an archive apart
 // from a removal. Everything that describes the plan as it stands — the board, the roadmap plane,

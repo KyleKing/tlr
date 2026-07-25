@@ -1727,6 +1727,40 @@ td.past {
   left: 0;
   transform-origin: 0 0;
 }
+.rm-chains-box {
+  margin: 0 0 8px;
+  font-size: 12px;
+}
+.rm-chains-box > summary {
+  cursor: pointer;
+  color: var(--muted);
+}
+.rm-chain {
+  padding: 5px 8px;
+  margin-top: 4px;
+  border-left: 3px solid var(--border);
+  background: var(--panel);
+  border-radius: 0 5px 5px 0;
+}
+.rm-chain.at-risk {
+  border-left-color: var(--risk);
+}
+.rm-chain-path {
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  margin-top: 2px;
+}
+.rm-chain-dim,
+.rm-chain-empty {
+  color: var(--muted);
+}
+.rm-chain-warn {
+  color: var(--risk);
+}
+.rm-chain-ok {
+  color: var(--ok, var(--muted));
+}
 .rm-empty {
   position: absolute;
   top: 40px;

@@ -12,10 +12,22 @@ Deno.test("projectTimeline orders the seeded blocking chain into waves", () => {
   assert(waveOf("SEED-103") < waveOf("SEED-104"))
 })
 
-Deno.test("projectTimeline surfaces the seeded ordering risk SEED-102/SEED-120", () => {
+Deno.test("projectTimeline flags the seeded chain that one owner cannot finish before M1", () => {
   const { a } = generateSnapshots()
-  const { risks } = projectTimeline(a)
-  const risk = risks.find((r) => r.issue === "SEED-102" && r.blocker === "SEED-120")
-  assert(risk)
-  assertEquals(risk!.detail, "SEED-102 is blocked by SEED-120, which finishes later")
+  const { chains } = projectTimeline(a)
+  const risky = chains.filter((c) => c.atRisk)
+  assertEquals(risky.length, 1)
+  assertEquals(risky[0].path, ["SEED-125", "SEED-126", "SEED-127"])
+  assertEquals(risky[0].owners.map((o) => o.person), ["Ada Lovelace"])
+  assert(risky[0].shortfall! > 0)
+  assert(risky[0].detail.includes("cycles short"))
+})
+
+Deno.test("projectTimeline leaves a chain with room to spare unflagged", () => {
+  const { a } = generateSnapshots()
+  const { chains } = projectTimeline(a)
+  const roomy = chains.find((c) => c.path.includes("SEED-101"))
+  assert(roomy)
+  assertEquals(roomy!.atRisk, false)
+  assert(roomy!.detail.includes("slack"))
 })

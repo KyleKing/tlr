@@ -45,9 +45,10 @@ project's "pure logic in `web/lib/*.js`, no I/O" rule.
   assignee name, cycle number, and milestone key to Linear ids at write time. This is the crucial reuse:
   balance's output is already `Op[]`, so it plugs straight into the existing preview-then-apply path (see
   next section).
-- **Dependency order**. `web/lib/planning.js` `dependencyWaves` and `orderingRisks` order the blocking
+- **Dependency order**. `web/lib/planning.js` `dependencyWaves` and `chainRisks` order the blocking
   graph and flag a blocker scheduled after its dependent. Balance must not schedule a blocked issue into
-  a cycle earlier than its blocker; `orderingRisks` is the check to run on a proposed plan.
+  a cycle earlier than its blocker. `chainRisks` is the check to run on a proposed plan: it asks whether
+  the sequential work on a chain fits before the milestone it is aimed at, charged to the people who own it.
 - **The board's capacity heat**. The board already renders per-person-per-cycle load with an "over" badge
   when committed points exceed capacity. A before/after balance view can reuse that rendering rather than
   inventing a new one.

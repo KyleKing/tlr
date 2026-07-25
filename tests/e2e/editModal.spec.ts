@@ -186,5 +186,5 @@ test("the ticket's blockers show in the pane with the date they land", async ({ 
   await page.locator("#ef-cycle").selectOption("")
   await page.locator("#ef-milestone").selectOption("M2")
   await expect(pane).toContainText("blocks FC-2")
-  await expect(pane).toContainText("ordering risk")
+  await expect(pane).toContainText("critical path")
 })

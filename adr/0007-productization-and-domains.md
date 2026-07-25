@@ -28,7 +28,7 @@ Four domains over a shared kernel, with every outside dependency reached through
 | -------- | ---------------------------------------------------------------- | -------------------- |
 | Ingest   | tracker adapters, fetch, normalize to the ADR 0006 model         | no (I/O at the edge) |
 | Snapshot | persist state, `diff` between captures, `review` since last look | no (storage)         |
-| Planning | buckets, capacity, ordering risk, slop scan                      | yes                  |
+| Planning | buckets, capacity, chain risk, slop scan                         | yes                  |
 | Delivery | CLI and web, rendering, interaction                              | no (presentation)    |
 
 The kernel holds the normalized types, config, and the port interfaces. Domains depend inward on the

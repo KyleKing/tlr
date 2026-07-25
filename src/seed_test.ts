@@ -30,13 +30,20 @@ Deno.test("the b snapshot carries a week of drift over a", () => {
   assert(find(b, "SEED-134"))
 })
 
-Deno.test("blocks and blockedBy stay symmetric and seed an ordering risk", () => {
+Deno.test("blocks and blockedBy stay symmetric, and one seeded chain misses its milestone", () => {
   const { a } = generateSnapshots()
   const byId = Object.fromEntries(a.issues.map((i) => [i.id, i]))
   for (const i of a.issues) {
     for (const b of i.blockedBy) assert(byId[b].blocks.includes(i.id))
     for (const b of i.blocks) assert(byId[b].blockedBy.includes(i.id))
   }
-  // SEED-102 is blocked by SEED-120, which sits in a later milestone
   assert(byId["SEED-102"].blockedBy.includes("SEED-120"))
+  // The deliberate chain risk: three 13-point tickets on one owner, aimed at M1.
+  assert(byId["SEED-126"].blockedBy.includes("SEED-125"))
+  assert(byId["SEED-127"].blockedBy.includes("SEED-126"))
+  for (const id of ["SEED-125", "SEED-126", "SEED-127"]) {
+    assertEquals(byId[id].milestone, "M1")
+    assertEquals(byId[id].estimate, 13)
+    assertEquals(byId[id].assignee, byId["SEED-125"].assignee)
+  }
 })

@@ -33,6 +33,12 @@ for (const [path, name, ready] of pages) {
       await page.locator("button[data-edit]").first().click()
       await page.locator("#edit-modal form.editf").waitFor({ state: "visible" })
     }
+    // Open the chain list, which carries the roadmap's finding: the plane shows the edges, the list
+    // says which chain cannot land in time.
+    if (name === "roadmap") {
+      await page.locator(".rm-chains-box > summary").click()
+      await page.locator(".rm-chain").first().waitFor({ state: "visible" })
+    }
     await page.screenshot({ path: `${OUT}/${name}.png` })
   })
 }

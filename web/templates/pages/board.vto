@@ -72,7 +72,7 @@
         <li><b>⚠ slop</b> scans the description for AI tells: dashes, semicolons, checklists, length, and
           stock phrases. A false positive can be marked "not slop" from the hover card; it stays cleared
           until the ticket text changes.</li>
-        <li><b>⛔ ordering risk</b> means a blocker finishes after the issue it blocks.</li>
+        <li><b>⛔ chain risk</b> means the ticket sits in a dependency chain its owners cannot finish before the milestone it is aimed at. A chain runs one ticket at a time, so it is measured against the people on it rather than the whole team.</li>
         <li><b>◑ missing</b> marks an absent estimate, assignee, or milestone, but only for issues already
           committed to a cycle.</li>
       </ul>

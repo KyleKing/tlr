@@ -23,6 +23,7 @@ import {
   buildTeams,
   currentCycleNumber,
   dedupeByDataFile,
+  linkRelations,
   mergeIngest,
   milestoneKey,
   projectEstimateScale,
@@ -227,7 +228,9 @@ export async function ingestProject(key: string, projectQuery: string, existingD
 
   const milestones = buildMilestones(project.projectMilestones.nodes)
   const milestoneKeyById = new Map(project.projectMilestones.nodes.map((m) => [m.id, milestoneKey(m.name)]))
-  const issues = rawIssues.map((i) => transformIssue(i, milestoneKeyById))
+  const issues: ReturnType<typeof transformIssue>[] = linkRelations(
+    rawIssues.map((i) => transformIssue(i, milestoneKeyById)),
+  )
   const asOf = new Date().toISOString().slice(0, 10)
 
   // Cycle numbers are only unique per team, so pooling cycles across a multi-team project can produce

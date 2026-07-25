@@ -118,7 +118,7 @@ Deno.test("roadmapLayout draws an edge per blocking relation and marks the ones 
     ],
   })
 
-  // The blocker sitting in a later cycle than what it blocks is the ordering risk worth seeing.
+  // A blocker sitting in a later cycle than what it blocks draws backward on the time axis.
   assertEquals(layout.edges.length, 1)
   assertEquals(layout.edges[0].from, "A")
   assertEquals(layout.edges[0].to, "B")

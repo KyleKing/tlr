@@ -229,19 +229,35 @@ export function missingData(issue) {
   return { flags, blocking: inCycle && flags.length > 0 }
 }
 
+// Blocker ids per issue, within the given set and in both directions. Linear reports a relation once,
+// on the issue that owns it, so a data file or snapshot captured before ingest started pairing them up
+// carries `blocks` with an empty `blockedBy`. Reading one direction only made every issue look
+// unblocked. See linkRelations in web/lib/issues.js.
+export function blockerMap(issues) {
+  const present = new Set(issues.map((i) => i.id))
+  const blockers = new Map(issues.map((i) => [i.id, new Set()]))
+  for (const i of issues) {
+    for (const b of i.blockedBy || []) if (present.has(b) && b !== i.id) blockers.get(i.id).add(b)
+    for (const t of i.blocks || []) if (present.has(t) && t !== i.id) blockers.get(t).add(i.id)
+  }
+  return new Map([...blockers].map(([id, set]) => [id, [...set].sort()]))
+}
+
 // Order issues into dependency waves: wave 0 has no blockers among the connected set, wave n depends
 // only on earlier waves. Only issues touching a blocks/blockedBy edge are included. A dependency cycle
 // is broken by dropping its remaining nodes into a final wave, so the function always terminates.
 export function dependencyWaves(issues) {
-  const byId = Object.fromEntries(issues.map((i) => [i.id, i]))
+  const allBlockers = blockerMap(issues)
   const connected = new Set()
   for (const i of issues) {
-    if ((i.blockedBy || []).length || (i.blocks || []).length) connected.add(i.id)
+    if (allBlockers.get(i.id).length || (i.blocks || []).some((t) => allBlockers.has(t))) {
+      connected.add(i.id)
+    }
   }
   const blockers = {} // id -> its blockers within the connected set
   const indeg = {}
   for (const id of connected) {
-    blockers[id] = (byId[id].blockedBy || []).filter((b) => connected.has(b))
+    blockers[id] = allBlockers.get(id).filter((b) => connected.has(b))
     indeg[id] = blockers[id].length
   }
   const waves = []
@@ -263,21 +279,154 @@ export function dependencyWaves(issues) {
   return waves
 }
 
-// A blocking edge is an ordering risk when the blocker finishes after the issue it blocks.
-export function orderingRisks(issues) {
-  const byId = Object.fromEntries(issues.map((i) => [i.id, i]))
-  const bucketEnd = {}
-  const risks = []
-  for (const i of issues) bucketEnd[i.id] = i._bucketEnd
-  for (const i of issues) {
-    for (const blockerId of i.blockedBy || []) {
-      const blocker = byId[blockerId]
-      if (!blocker) continue
-      if (blocker.statusType === "completed" || blocker.statusType === "canceled") continue
-      if (new Date(bucketEnd[blockerId]) > new Date(bucketEnd[i.id])) {
-        risks.push({ issue: i.id, blocker: blockerId })
-      }
+const _isOpen = (i) => i.statusType !== "completed" && i.statusType !== "canceled"
+
+// Connected groups of open issues joined by blocking edges, largest first. Only groups of two or more,
+// since a lone ticket is not a chain.
+function blockingGroups(open) {
+  const adj = new Map(open.map((i) => [i.id, new Set()]))
+  for (const [id, bs] of blockerMap(open)) {
+    for (const b of bs) {
+      adj.get(id).add(b)
+      adj.get(b).add(id)
     }
   }
-  return risks
+  const seen = new Set()
+  const groups = []
+  for (const i of open) {
+    if (seen.has(i.id)) continue
+    const stack = [i.id], ids = []
+    seen.add(i.id)
+    while (stack.length) {
+      const id = stack.pop()
+      ids.push(id)
+      for (const n of adj.get(id)) {
+        if (seen.has(n)) continue
+        seen.add(n)
+        stack.push(n)
+      }
+    }
+    if (ids.length > 1) groups.push(ids.sort())
+  }
+  return groups.sort((a, b) => b.length - a.length)
+}
+
+// Heaviest path through one group by remaining points, which is the part of the chain that cannot be
+// worked in parallel. Relaxing edges once per node settles a DAG; a dependency cycle stops improving
+// and keeps whatever it reached, so this always terminates.
+function heaviestPath(ids, byId) {
+  const set = new Set(ids)
+  const all = blockerMap(ids.map((id) => byId.get(id)))
+  const preds = new Map(ids.map((id) => [id, all.get(id).filter((b) => set.has(b))]))
+  const best = new Map(ids.map((id) => [id, byId.get(id).estimate || 0]))
+  const from = new Map()
+  for (let pass = 0; pass < ids.length; pass++) {
+    let moved = false
+    for (const id of ids) {
+      for (const p of preds.get(id)) {
+        const via = best.get(p) + (byId.get(id).estimate || 0)
+        if (via <= best.get(id)) continue
+        best.set(id, via)
+        from.set(id, p)
+        moved = true
+      }
+    }
+    if (!moved) break
+  }
+  let tail = ids[0]
+  for (const id of ids) if (best.get(id) > best.get(tail)) tail = id
+  const path = []
+  const guard = new Set()
+  for (let id = tail; id != null && !guard.has(id); id = from.get(id)) {
+    guard.add(id)
+    path.unshift(id)
+  }
+  return path
+}
+
+// The rate to charge chain work at: a person's own measured velocity, not a specific cycle's deflated
+// capacity. A chain running months out should not inherit whichever on-call week happens to land in
+// the active cycles, and on a small roster every active cycle can hold one.
+//
+// Unassigned work is charged at the roster's median rate. Leaving it on the default velocity made
+// unowned chains the fastest work in the plan, which is backwards: nobody is working them at all.
+function chainRate(person, snapshot) {
+  if (person !== "Unassigned") return personCycleCapacity(person, null, snapshot.capacity).base
+  const rates = rosterOrAssignees(snapshot)
+    .filter((p) => p !== "Unassigned")
+    .map((p) => personCycleCapacity(p, null, snapshot.capacity).base)
+    .sort((a, b) => a - b)
+  if (!rates.length) return personCycleCapacity("Unassigned", null, snapshot.capacity).base
+  const mid = Math.floor(rates.length / 2)
+  return rates.length % 2 ? rates[mid] : (rates[mid - 1] + rates[mid]) / 2
+}
+
+// A dependency chain runs one ticket at a time, so its duration is bounded by the people on it rather
+// than by team throughput: a chain where one person owns most of the points takes as long as that
+// person needs however idle the rest of the team is. For each group of blocking edges, charge the
+// heaviest path's points to their owners, size each owner's segment against that person's own measured
+// velocity, and compare the sequential total against the time left before the target of the latest
+// milestone the chain touches. Cycles are one week long here, which is what weeksBetween returns.
+//
+// `shortfall` is null when the chain touches no milestone with a target, since there is nothing to be
+// late for, and when the chain is `stalled`. `unestimated` counts path tickets carrying no estimate,
+// which make `cyclesNeeded` a floor rather than an estimate.
+export function chainRisks(snapshot, issues = snapshot.issues) {
+  const open = issues.filter(_isOpen)
+  const byId = new Map(open.map((i) => [i.id, i]))
+  const targetOf = new Map((snapshot.milestones ?? []).map((m) => [m.key, m.target]))
+  const chains = blockingGroups(open).map((ids) => {
+    const path = heaviestPath(ids, byId)
+    const load = new Map()
+    for (const id of path) {
+      const i = byId.get(id)
+      const who = i.assignee && i.assignee !== "Unassigned" ? i.assignee : "Unassigned"
+      load.set(who, (load.get(who) ?? 0) + (i.estimate || 0))
+    }
+    const owners = [...load.entries()]
+      .map(([person, points]) => {
+        const perCycle = chainRate(person, snapshot)
+        // A rate of zero means the person delivers nothing, so the segment never finishes. Reporting
+        // it as null keeps that out of the arithmetic instead of summing as zero cycles, which would
+        // read as free work.
+        const cycles = perCycle > 0 ? _round1(points / perCycle) : null
+        return { person, points, perCycle, cycles }
+      })
+      .sort((a, b) => (b.cycles ?? Infinity) - (a.cycles ?? Infinity) || a.person.localeCompare(b.person))
+    const stalled = owners.some((o) => o.cycles == null && o.points > 0)
+    const cyclesNeeded = stalled ? null : _round1(owners.reduce((s, o) => s + (o.cycles ?? 0), 0))
+    const targets = path.map((id) => targetOf.get(byId.get(id).milestone)).filter(Boolean).sort()
+    const target = targets.at(-1) ?? null
+    const cyclesAvailable = target ? _round1(weeksBetween(snapshot.asOf, target)) : null
+    const shortfall = cyclesAvailable == null || cyclesNeeded == null ? null : _round1(cyclesNeeded - cyclesAvailable)
+    return {
+      ids,
+      path,
+      points: path.reduce((s, id) => s + (byId.get(id).estimate || 0), 0),
+      unestimated: path.filter((id) => !byId.get(id).estimate).length,
+      owners,
+      cyclesNeeded,
+      stalled,
+      target,
+      cyclesAvailable,
+      shortfall,
+      // A stalled chain has an owner delivering nothing, so it misses any target it has.
+      atRisk: stalled ? target != null : shortfall > 0,
+      spans: {
+        milestones: new Set(ids.map((id) => byId.get(id).milestone).filter(Boolean)).size,
+        cycles: new Set(ids.map((id) => byId.get(id).cycle).filter((c) => c != null)).size,
+        assignees: new Set(ids.map((id) => byId.get(id).assignee)).size,
+      },
+    }
+  })
+  return chains.sort((a, b) =>
+    Number(b.stalled) - Number(a.stalled) || (b.shortfall ?? -Infinity) - (a.shortfall ?? -Infinity)
+  )
+}
+
+const _round1 = (n) => Math.round(n * 10) / 10
+
+// Ids of every ticket sitting in a chain that cannot finish before its milestone target.
+export function chainRiskIds(snapshot, issues = snapshot.issues) {
+  return new Set(chainRisks(snapshot, issues).filter((c) => c.atRisk).flatMap((c) => c.ids))
 }

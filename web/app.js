@@ -1,10 +1,10 @@
 import {
   bucketOf,
   buildBuckets,
+  chainRisks,
   milestoneDisplayName,
   milestoneForecast,
   missingData,
-  orderingRisks,
   personCycleCapacity,
   slopHash,
   slopScan,
@@ -28,12 +28,12 @@ const STATUS = {
   completed: { label: "Done", color: "var(--st-completed)", fg: "var(--st-completed-fg)" },
   canceled: { label: "Canceled", color: "var(--st-canceled)", fg: "var(--st-canceled-fg)" },
 }
-const FLAGS = { slop: "⚠ slop", risk: "⛔ ordering risk", miss: "◑ missing (in cycle)" }
+const FLAGS = { slop: "⚠ slop", risk: "⛔ chain risk", miss: "◑ missing (in cycle)" }
 const DEFAULT_STATUSES = ["started", "unstarted", "triage", "backlog"]
 const REVIEW_KEY = "tlr.notslop"
 
 // mutable module data, replaced on refresh
-let buckets, bucketByKey, bucketWeeks, byId, riskIds, forecastByKey
+let buckets, bucketByKey, bucketWeeks, byId, chainByIssue, forecastByKey
 // What the board draws: the stored snapshot (`data`) normally, its what-if simulation while that mode
 // is on. Everything that renders reads `view`; only the real write paths read `data`.
 let view, plan
@@ -69,8 +69,16 @@ function enrich() {
     i._slopHash = slopHash(i.description)
     i._miss = missingData(i)
   }
-  riskIds = new Set(orderingRisks(view.issues).flatMap((r) => [r.issue, r.blocker]))
-  for (const i of view.issues) i._risk = riskIds.has(i.id) && (i.blockedBy.length > 0)
+  // A ticket carries the chain it sits in, so the hover card can say why the flag is up without
+  // recomputing. `_risk` is the flag: the chain cannot finish before the milestone it is aimed at.
+  chainByIssue = new Map()
+  for (const chain of chainRisks(view, view.issues)) {
+    for (const id of chain.ids) chainByIssue.set(id, chain)
+  }
+  for (const i of view.issues) {
+    i._chain = chainByIssue.get(i.id) ?? null
+    i._risk = Boolean(i._chain?.atRisk)
+  }
   byId = Object.fromEntries(view.issues.map((i) => [i.id, i]))
 }
 
@@ -466,7 +474,11 @@ function showTip(e, i) {
     (i.priority != null ? `<div><dt>Priority</dt><dd>${i.priority}</dd></div>` : "") +
     `</dl>` +
     (rel ? `<div class="tip-rel">${rel}</div>` : "") +
-    (i._risk ? `<div class="tip-f risk">⛔ ordering risk: blocker finishes later</div>` : "") +
+    (i._risk
+      ? `<div class="tip-f risk">⛔ chain risk: ${i._chain.size} tickets need ${
+        i._chain.cyclesNeeded ?? "?"
+      } cycles, ${i._chain.cyclesAvailable} left before ${i._chain.target}</div>`
+      : "") +
     (i._miss.blocking ? `<div class="tip-f miss">◑ in cycle, missing: ${i._miss.flags.join(", ")}</div>` : "") +
     (isSlop(i) || isDismissed(i)
       ? `<div class="tip-f slop">⚠ ${i._slop.flags.join(", ")}</div>` +
@@ -894,7 +906,7 @@ function render() {
       shown.filter((i) => i.assignee === "Unassigned").reduce((s, i) => s + i.estimate, 0)
     }</b> pts unassigned</span>`,
     `<span style="color:var(--slop)"><b>${shown.filter(isSlop).length}</b> slop</span>`,
-    `<span style="color:var(--risk)"><b>${shown.filter((i) => i._risk).length}</b> ordering risk</span>`,
+    `<span style="color:var(--risk)"><b>${shown.filter((i) => i._risk).length}</b> chain risk</span>`,
     `<span style="color:var(--miss)"><b>${shown.filter((i) => i._miss.blocking).length}</b> missing-in-cycle</span>`,
   ].join("")
 
@@ -944,7 +956,7 @@ function buildTransposed(people, visible) {
 
 function nodeLabel(i) {
   const st = STATUS[i.statusType]?.label ?? i.statusType
-  const flags = [i._risk && "ordering risk", isSlop(i) && "slop", i._miss.blocking && "missing data"].filter(Boolean)
+  const flags = [i._risk && "chain risk", isSlop(i) && "slop", i._miss.blocking && "missing data"].filter(Boolean)
   return `${i.id}: ${i.title}. ${st}, ${i.assignee}, ${i.estimate || "no"} points` +
     (flags.length ? `. Flags: ${flags.join(", ")}` : "")
 }

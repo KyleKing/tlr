@@ -9,7 +9,7 @@
 // costs one regex sweep.
 
 import { liveSnapshot } from "./issues.js"
-import { bucketOf, buildBuckets, orderingRisks, personCycleCapacity, slopScan } from "./planning.js"
+import { bucketOf, buildBuckets, chainRisks, personCycleCapacity, slopScan } from "./planning.js"
 import { whatIfPlan } from "./whatif.js"
 
 const FAR_FUTURE = "9999-12-31"
@@ -87,28 +87,46 @@ function bucketEndLookup(snapshot) {
   return (issue) => ends[bucketOf(issue)] ?? FAR_FUTURE
 }
 
+// The chain this ticket sits in, or null when it has no blocking edges. Only the fields the pane draws.
+function chainFor(snapshot, id) {
+  const chain = chainRisks(snapshot).find((c) => c.ids.includes(id))
+  if (!chain) return null
+  return {
+    size: chain.ids.length,
+    points: chain.points,
+    cyclesNeeded: chain.cyclesNeeded,
+    cyclesAvailable: chain.cyclesAvailable,
+    shortfall: chain.shortfall,
+    stalled: chain.stalled,
+    atRisk: chain.atRisk,
+    target: chain.target,
+    owners: chain.owners,
+    spans: chain.spans,
+  }
+}
+
 // The ticket's blockers and what it blocks, each with the date its bucket ends under the pending plan,
-// plus the ordering risks that touch this ticket (a blocker that finishes after the work waiting on it).
-function dependenciesOf(snapshot, id) {
+// plus the chain it belongs to. `chainWas` is the same chain before the edit, so the pane can say
+// whether this move stretched the chain past its milestone or pulled it back inside.
+function dependenciesOf(snapshot, baseline, id) {
   const byId = new Map(snapshot.issues.map((i) => [i.id, i]))
   const issue = byId.get(id)
-  if (!issue) return { blockedBy: [], blocks: [], risks: [] }
+  if (!issue) return { blockedBy: [], blocks: [], chain: null, chainWas: null }
   const endOf = bucketEndLookup(snapshot)
-  const neighbours = [...(issue.blockedBy ?? []), ...(issue.blocks ?? [])].map((n) => byId.get(n)).filter(Boolean)
-  const stamped = [issue, ...neighbours].map((i) => ({ ...i, _bucketEnd: endOf(i) }))
-  const risks = orderingRisks(stamped).filter((r) => r.issue === id || r.blocker === id)
-  const risky = new Set(risks.flatMap((r) => [r.issue, r.blocker]))
+  const chain = chainFor(snapshot, id)
+  const onRiskyChain = Boolean(chain?.atRisk)
   const row = (other) => ({
     id: other.id,
     title: other.title ?? other.id,
     statusType: other.statusType ?? null,
     lands: endOf(other),
-    risk: risky.has(other.id),
+    risk: onRiskyChain,
   })
   return {
     blockedBy: (issue.blockedBy ?? []).map((n) => byId.get(n)).filter(Boolean).map(row),
     blocks: (issue.blocks ?? []).map((n) => byId.get(n)).filter(Boolean).map(row),
-    risks,
+    chain,
+    chainWas: chainFor(baseline, id),
   }
 }
 
@@ -132,7 +150,7 @@ export function scopeImpact(ctx) {
         landing: m.landing,
         shiftDays: m.shiftDays,
       })),
-    dependencies: dependenciesOf(plan.snapshot, issue.id),
+    dependencies: dependenciesOf(plan.snapshot, baseline, issue.id),
   }
 }
 
@@ -158,6 +176,24 @@ export function reviewImpact(ctx) {
   }))
 }
 
+// What the edit did to the chain. A chain already late before the edit is worth saying once; one this
+// edit pushed past its target, or pulled back inside it, is the thing the pane exists to catch.
+function chainWarnings({ chain, chainWas }) {
+  if (!chain) return []
+  if (chain.stalled) return [`This ticket sits in a ${chain.size}-ticket chain with an owner who has no capacity`]
+  if (chain.atRisk) {
+    const became = chainWas && !chainWas.atRisk ? "This edit pushes" : "This ticket sits in"
+    return [
+      `${became} a ${chain.size}-ticket chain needing ${chain.cyclesNeeded} cycles with ` +
+      `${chain.cyclesAvailable} left before ${chain.target}`,
+    ]
+  }
+  if (chainWas?.atRisk) {
+    return [`This edit brings its ${chain.size}-ticket chain back inside ${chain.target}`]
+  }
+  return []
+}
+
 function warningsFor(scope, text) {
   const warnings = []
   for (const cell of scope.cells) {
@@ -168,9 +204,7 @@ function warningsFor(scope, text) {
   for (const m of scope.forecast) {
     if (m.shiftDays > 0) warnings.push(`${m.name} lands ${m.shiftDays} day${m.shiftDays === 1 ? "" : "s"} later`)
   }
-  for (const risk of scope.dependencies.risks) {
-    warnings.push(`${risk.blocker} blocks ${risk.issue} but finishes after it`)
-  }
+  warnings.push(...chainWarnings(scope.dependencies))
   if (text?.verdict === "worse") warnings.push("The rewritten description scores worse on the slop scan")
   return warnings
 }

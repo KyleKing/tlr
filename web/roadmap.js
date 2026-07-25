@@ -7,7 +7,7 @@
 // flag glyph; status, assignee, milestone, relations, and the reason for a flag live in the hover card
 // (also shown on focus), the same trade the Board already makes.
 
-import { bucketOf, buildBuckets, missingData, orderingRisks, slopHash, slopScan } from "./lib/planning.js"
+import { bucketOf, buildBuckets, chainRisks, missingData, slopHash, slopScan } from "./lib/planning.js"
 import { liveSnapshot } from "./lib/issues.js"
 import { roadmapLayout } from "./lib/roadmap.js"
 import { applyTheme, loadTheme } from "./lib/appearance.js"
@@ -22,7 +22,7 @@ const STATUS = {
   completed: { label: "Done", color: "var(--st-completed)" },
   canceled: { label: "Canceled", color: "var(--st-canceled)" },
 }
-const FLAGS = { slop: "⚠ slop", risk: "⛔ ordering risk", miss: "◑ missing (in cycle)" }
+const FLAGS = { slop: "⚠ slop", risk: "⛔ chain risk", miss: "◑ missing (in cycle)" }
 const DEFAULT_STATUSES = ["started", "unstarted", "triage", "backlog"]
 const REVIEW_KEY = "tlr.notslop"
 const STORE_KEY = "tlr.roadmap"
@@ -48,6 +48,7 @@ const state = {
 }
 
 let buckets = []
+let chains = []
 let data = null
 let layout = null
 let hoverIssue = null
@@ -73,8 +74,13 @@ function enrich() {
     i._slopHash = slopHash(i.description)
     i._miss = missingData(i)
   }
-  const riskIds = new Set(orderingRisks(data.issues).flatMap((r) => [r.issue, r.blocker]))
-  for (const i of data.issues) i._risk = riskIds.has(i.id) && i.blockedBy.length > 0
+  chains = chainRisks(data)
+  const chainByIssue = new Map()
+  for (const chain of chains) for (const id of chain.ids) chainByIssue.set(id, chain)
+  for (const i of data.issues) {
+    i._chain = chainByIssue.get(i.id) ?? null
+    i._risk = Boolean(i._chain?.atRisk)
+  }
 }
 
 const isDismissed = (i) => reviewed[i.id] === i._slopHash
@@ -293,7 +299,7 @@ function warnClass(i) {
 
 function cardLabel(i) {
   const st = STATUS[i.statusType]?.label ?? i.statusType
-  const flags = [i._risk && "ordering risk", isSlop(i) && "slop", i._miss.blocking && "missing data"].filter(Boolean)
+  const flags = [i._risk && "chain risk", isSlop(i) && "slop", i._miss.blocking && "missing data"].filter(Boolean)
   const wave = layout.cards.find((c) => c.id === i.id)?.wave ?? 0
   const suffix = flags.length ? `. Flags: ${flags.join(", ")}` : ""
   return `${i.id}: ${i.title}. ${st}, ${i.assignee}, ${i.estimate || "no"} points, wave ${wave}${suffix}`
@@ -362,13 +368,46 @@ function render() {
 
 function renderSummary(shown) {
   const active = shown.filter((i) => i.statusType !== "completed" && i.statusType !== "canceled")
+  const parked = active.filter((i) => !i._chain).length
   summaryEl.innerHTML = [
     `<span><b>${shown.length}</b> shown</span>`,
     `<span><b>${active.reduce((s, i) => s + (i.estimate || 0), 0)}</b> pts active</span>`,
     `<span><b>${layout.rows.length}</b> dependency waves</span>`,
-    `<span><b>${layout.edges.length}</b> blocking edges</span>`,
-    `<span style="color:var(--risk)"><b>${layout.edges.filter((e) => e.backward).length}</b> run backward</span>`,
+    `<span><b>${chains.length}</b> chains</span>`,
+    // Most tickets in a real project depend on nothing. Saying how many keeps the wave axis honest:
+    // a shallow plane means little was linked, not that the work is unblocked.
+    `<span><b>${parked}</b> with no dependency</span>`,
+    `<span style="color:var(--risk)"><b>${chains.filter((c) => c.atRisk).length}</b> chain risk</span>`,
   ].join("")
+  renderChainList()
+}
+
+// The chain list, which is what the spike showed carried more than the drawing: how far each chain
+// stretches, and which one cannot land in time. Sorted worst first by chainRisks.
+function renderChainList() {
+  const box = document.getElementById("rm-chains")
+  if (!box) return
+  if (!chains.length) {
+    box.innerHTML = `<p class="rm-chain-empty">No blocking edges in this project.</p>`
+    return
+  }
+  box.innerHTML = chains.map((c) => {
+    const spans = []
+    if (c.spans.milestones > 1) spans.push(`${c.spans.milestones} milestones`)
+    if (c.spans.cycles > 1) spans.push(`${c.spans.cycles} cycles`)
+    if (c.spans.assignees > 1) spans.push(`${c.spans.assignees} people`)
+    const verdict = c.stalled
+      ? `<span class="rm-chain-warn">an owner has no capacity</span>`
+      : c.cyclesAvailable == null
+      ? `<span class="rm-chain-dim">no target</span>`
+      : c.atRisk
+      ? `<span class="rm-chain-warn">${c.shortfall} cycles short of ${escapeHtml(c.target)}</span>`
+      : `<span class="rm-chain-ok">${-c.shortfall} cycles of slack</span>`
+    return `<div class="rm-chain${c.atRisk ? " at-risk" : ""}">` +
+      `<b>${c.ids.length} tickets</b> <span class="rm-chain-dim">${c.points}pt on the critical path` +
+      `${spans.length ? `, spanning ${spans.join(", ")}` : ""}</span> · ${verdict}` +
+      `<div class="rm-chain-path">${c.path.map((id) => escapeHtml(id)).join(" → ")}</div></div>`
+  }).join("")
 }
 
 function relText(i) {
@@ -394,7 +433,11 @@ function showTip(clientX, clientY, i) {
     `<div><dt>Wave</dt><dd>${card?.wave ?? 0}</dd></div>` +
     `</dl>` +
     (rel ? `<div class="tip-rel">${escapeHtml(rel)}</div>` : "") +
-    (i._risk ? `<div class="tip-f risk">⛔ ordering risk: blocker finishes later</div>` : "") +
+    (i._risk
+      ? `<div class="tip-f risk">⛔ chain risk: ${i._chain.size ?? i._chain.ids.length} tickets need ${
+        i._chain.cyclesNeeded ?? "?"
+      } cycles, ${i._chain.cyclesAvailable} left before ${i._chain.target}</div>`
+      : "") +
     (i._miss.blocking
       ? `<div class="tip-f miss">◑ in cycle, missing: ${escapeHtml(i._miss.flags.join(", "))}</div>`
       : "") +

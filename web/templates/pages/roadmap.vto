@@ -37,6 +37,10 @@
     <span class="fhint">tip: drag to pan, scroll to zoom, or Tab in and use the arrow keys</span>
   </div>
   <div class="summary" id="summary"></div>
+  <details class="rm-chains-box">
+    <summary>Dependency chains</summary>
+    <div id="rm-chains"></div>
+  </details>
   <div class="rm-viewport" id="rm-viewport" tabindex="0" role="region" aria-label="Roadmap plane: arrow keys pan, plus and minus zoom, 0 resets the view, Tab reaches the ticket cards">
     <div class="rm-plane" id="rm-plane"></div>
   </div>
@@ -56,6 +60,14 @@
         risk color runs backward, meaning the blocker sits at or after the ticket it blocks on the time
         axis. Hover or focus a card for its status, assignee, milestone, wave, relations, and the reason
         for any flag; the card itself only carries the ticket number, a flag glyph, and the estimate.
+      </p>
+      <p>
+        Dependency chains lists each connected group of blocking edges, worst first. A chain runs one
+        ticket at a time, so its length is measured against the people who own it rather than the whole
+        team: the points on its critical path are charged to each owner at that person's own velocity,
+        and the sequential total is compared with the time left before the target of the latest
+        milestone the chain reaches. A chain that cannot fit flags every ticket in it with chain risk.
+        Most tickets in a real project depend on nothing at all, which is why the summary counts them.
       </p>
       <p>
         Filters match the board: search, status chips, a Buckets panel, and a Flags panel. Filters and

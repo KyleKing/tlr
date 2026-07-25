@@ -20,3 +20,6 @@ coverage/
 web/data/
 *.tlr.sqlite
 *.tlr.sqlite-*
+
+# Throwaway spikes (never committed; delete or promote when the question is answered)
+/spike/

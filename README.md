@@ -21,8 +21,9 @@ what is next, and [AGENTS.md](AGENTS.md) for where to start.
   captures
 - Capacity forecast per person per cycle, deflated for on-call weeks (Incident.io) and days out of
   office (Google Calendar), with per-person velocity from past-cycle throughput
-- Dependency waves and ordering risk from the blocking graph, so a blocker scheduled after the issue
-  it blocks stands out
+- Dependency waves and chain risk from the blocking graph: a chain runs one ticket at a time, so its
+  points are charged to the people who own it and compared against the time left before the milestone
+  it is aimed at
 - Milestone slip forecast, a realistic landing date against the target from remaining scope and team
   throughput, always labeled a forecast and never a real date
 - Balance proposal, a deterministic assignee-and-cycle plan for unscheduled work under a per-person
@@ -39,7 +40,7 @@ what is next, and [AGENTS.md](AGENTS.md) for where to start.
 
 ## The board
 
-Capacity heat per person against cycles and milestones, with slop, ordering-risk, and missing-data
+Capacity heat per person against cycles and milestones, with slop, chain-risk, and missing-data
 flags. Milestone headers carry a slip marker and move the detail to the hover.
 
 ![The planning board](docs/images/board.png)
@@ -52,13 +53,14 @@ Review runs from your last review to the newest capture, groups every change to 
 and lets you mark it reviewed. Editing a ticket opens a modal (title, description, estimate, priority,
 milestone, status, cycle, assignee) whose right column shows what the edit costs: the owner's load in
 the target cycle before and after, any milestone whose forecast landing moves, blockers and blocked
-work, and a slop scan of the rewritten description. Preview is a dry run, so nothing reaches Linear
+work with the chain they sit in, and a slop scan of the rewritten description. Preview is a dry run, so nothing reaches Linear
 until you confirm.
 
 ![The review page](docs/images/review.png)
 
 Roadmap puts every ticket on one pannable plane: time across, dependency depth down, with edges between
-blockers and a warning where one runs backward.
+blockers. Below the filters, Dependency chains lists each connected group worst first, with the points on
+its critical path and whether its owners can finish before the milestone it is aimed at.
 
 ![The roadmap page](docs/images/roadmap.png)
 
@@ -113,7 +115,7 @@ cleanly.
 deno task cli scan     --project seed-b.json          # slop score per issue, or --text "<t>"
 deno task cli capacity --project seed-b.json          # load vs capacity per person per cycle
 deno task cli balance  --project seed-b.json --weekly 14 --start 49 --end 54 --lead 8  # propose assignee+cycle, with milestone deadline risk
-deno task cli timeline --project seed-b.json          # dependency waves and ordering risks
+deno task cli timeline --project seed-b.json          # dependency waves and chain risks
 deno task cli diff     --a seed-a.json --b seed-b.json # plan-level change between two snapshots
 deno task cli report   --a seed-a.json --b seed-b.json # weekly-update narrative from a diff
 deno task cli forecast --project seed-b.json [--weekly 25]  # realistic landing date per milestone (--weekly overrides throughput)

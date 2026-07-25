@@ -6,7 +6,7 @@
 // runs and safe to assert on in tests.
 //
 // Shape matches web/data-sample.json (the board and web/lib/planning.js read it directly), plus the
-// blocks/blockedBy/related edges the timeline and ordering-risk checks need.
+// blocks/blockedBy/related edges the timeline and chain-risk checks need.
 
 export type Issue = {
   id: string
@@ -176,11 +176,24 @@ function baseSnapshot(): Snapshot {
       related: [],
     })
   }
-  // A small blocking chain with one deliberate ordering risk: a blocker in a later milestone than
-  // the issue it blocks, so orderingRisks() has something to flag.
+  // A small blocking chain, plus a second one deliberately built to miss its milestone so chainRisks()
+  // has something to flag: three tickets on one owner, 39 points of sequential work against M1's target
+  // a week and a bit out. One person cannot deliver that however free the rest of the team is, which is
+  // the whole point of measuring a chain against its owners rather than team throughput.
   link(issues, "SEED-103", "SEED-101")
   link(issues, "SEED-104", "SEED-103")
-  link(issues, "SEED-102", "SEED-120") // 120 sits in a later milestone -> ordering risk
+  link(issues, "SEED-102", "SEED-120")
+  for (const id of ["SEED-125", "SEED-126", "SEED-127"]) {
+    const i = issues.find((x) => x.id === id)!
+    i.assignee = PEOPLE[0]
+    i.milestone = "M1"
+    i.title = `M1 work item ${id.slice(5)}`
+    i.estimate = 13
+    i.status = STATUS_LABEL.unstarted
+    i.statusType = "unstarted"
+  }
+  link(issues, "SEED-126", "SEED-125")
+  link(issues, "SEED-127", "SEED-126")
   issues.find((i) => i.id === "SEED-101")!.related.push("SEED-105")
 
   return {

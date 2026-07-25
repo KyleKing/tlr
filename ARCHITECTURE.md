@@ -9,7 +9,7 @@ review queue for recent edits, and a reviewed, deterministic way to make batch c
 Two jobs that share one engine:
 
 1. Report backward. Summarize what changed in a project over a window (the original weekly-update use)
-2. Plan forward. Show load per person per cycle and milestone, surface ordering risk from the
+2. Plan forward. Show load per person per cycle and milestone, surface chain risk from the
    blocking graph, and catch low-quality ticket text before it ships
 
 ## Shape
@@ -23,7 +23,7 @@ Linear GraphQL
    core (Deno/TS)
    ├─ fetch      read issues, milestones, cycles, relations
    ├─ snapshot   persist state locally (SQLite) for diff + review
-   ├─ analyze    bucketing, capacity, slop scan, ordering risk  (web/lib/planning.js)
+   ├─ analyze    bucketing, capacity, slop scan, chain risk     (web/lib/planning.js)
    └─ change     ops -> validate against live state -> issueUpdate  (src/linear_write.ts)
       |
       ├─ cli      scan / capacity / timeline / diff / review / report / forecast / plan / snapshot / export  (read + preview only)
@@ -59,6 +59,13 @@ settings (scale, whether zero is allowed, whether the extended scale is on), and
 its team, so the editor offers that team's real states and real estimate values instead of one
 hardcoded list. Both nested connections ride inside the existing project query, which stays under
 Linear's complexity budget at ten matched projects.
+
+Linear reports a blocking relation once, on the issue that owns it: A blocking B gives A a `blocks`
+edge and gives B nothing, because the reverse lives in `inverseRelations`, which the project query does
+not ask for. `linkRelations` pairs them up after transform so `blockedBy` is populated, and the readers
+(`blockerMap` in `web/lib/planning.js`) derive blockers from both directions anyway, so a snapshot
+captured before that pass still reads with depth. A blocker in another project stays invisible either
+way.
 
 Every writer of a project data file goes through `writeJsonAtomic` (temp file, then rename), since
 `/api/config`, `/api/refresh`, and `/api/edit` all write the same file and a reader could otherwise
@@ -96,11 +103,31 @@ project's review pointer to the newest capture, so unreviewed changes accumulate
 at the next capture. Reviewed marks are keyed by window and change-set, so clearing a ticket in the
 morning does not suppress a different change to it that afternoon. **Roadmap** (the page, not this
 repo's ROADMAP.md) lays tickets on a pannable, zoomable plane, x by cycle or forecast landing date, y by
-dependency wave, with lane packing so no two cards overlap. **Settings** holds appearance, capacity,
+dependency wave, with lane packing so no two cards overlap, and lists the dependency chains beneath the
+filters. **Settings** holds appearance, capacity,
 roster, integrations, and secrets.
 
 `web/lib/errorBanner.js` catches uncaught client errors and unhandled rejections into a dismissible
 banner, since a client-side failure has nothing to log server-side.
+
+## Chain risk
+
+`chainRisks` in `web/lib/planning.js` is the dependency check the Board, the Roadmap page, the editor's
+impact pane, and `tlr timeline` all read. It groups open issues by blocking edges, takes the heaviest
+path through each group by remaining points, charges each owner's segment against that person's own
+measured velocity, and compares the sequential total against the time left before the target of the
+latest milestone the chain reaches. A chain that cannot fit flags every ticket in it.
+
+Two decisions behind it. A chain runs one ticket at a time, so team throughput is the wrong denominator:
+a chain where one person owns most of the points takes as long as that person needs however idle
+everyone else is. And the rate is a person's measured velocity rather than a specific cycle's deflated
+capacity, because a chain running months out should not inherit whichever on-call week happens to fall
+in the active cycles. Unassigned work is charged at the roster's median, since the default velocity made
+unowned chains read as the fastest work in the plan.
+
+This replaced an ordering-risk check (a blocker finishing after the work it blocks). Across the real
+project's 25 blocking edges that check fired zero times, because nobody schedules a blocker after its
+dependent. The chain length against the remaining time is the risk that is actually there.
 
 ## The write path
 

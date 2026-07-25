@@ -6,7 +6,7 @@
 //   scan   --text "<t>" | --file <path> | --project <file>   slop score for text, or every issue
 //   capacity --project <file>                                 per-person load vs capacity per cycle
 //   balance  --project <file> [--weekly n] [--start c] [--end c] [--weeks n]  propose assignee+cycle
-//   timeline --project <file>                                 dependency waves and ordering risks
+//   timeline --project <file>                                 dependency waves and chain risks
 //   diff   --a <file> --b <file> | --from <id> --to <id>      plan-level change between two snapshots
 //   report --a <file> --b <file> | --from <id> --to <id>      weekly-update narrative from a diff
 //   forecast --project <file>                                 realistic landing date per milestone

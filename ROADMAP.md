@@ -27,32 +27,28 @@ How it works is in [ARCHITECTURE.md](ARCHITECTURE.md), including the accepted tr
 limits. What tlr deliberately will not do is in [adr/0009](adr/0009-scope-boundaries.md). Everything
 below is unbuilt.
 
-## Now — the relationship view
+## Done — the relationship view
 
-The Roadmap page already places tickets by time and dependency wave. Whether a dedicated node/edge view
-adds anything is an open question, so it starts as a throwaway spike rather than a feature.
+Answered by a throwaway spike against the real project, then deleted. Recording the outcome here so the
+idea does not come back unexamined.
 
-The real project sets the terms. Of 77 open issues, 27 blocking edges connect 31 of them into seven
-clusters (13, 4, 4, 3, 3, 2, 2), with a maximum degree of 6. The other 46 have no dependency at all.
-Any layout that treats this as one big graph draws mostly empty space.
+The spike drew clusters and a focus view over `pr2026.json`. Of 77 open issues, only 31 sit in a
+blocking chain at all, and six of the seven clusters are pairs or triples that no layout improves. The
+drawing added nothing over the Roadmap page's existing wave plane. What did carry information was the
+text beside each cluster: how far it stretches, and whether it can land in time.
 
-The spike, in one uncommitted route reading the real project file:
+Two things came out of it, both shipped:
 
-- Clusters as the frame. Each connected component gets its own tidy sub-graph, with unconnected tickets
-  in a compact parked strip rather than scattered as loose dots
-- Click through to a focus view. One ticket plus its neighbourhood, expanding a hop at a time, for
-  reading a chain rather than surveying the plan
-- Blocking edges solid, everything else dashed, so the one relationship that carries ordering risk stays
-  visually dominant
-- Milestone as co-location. A shared milestone places cards in the same region instead of drawing an
-  edge between them, since 7 milestones over 77 tickets would otherwise bury the 27 real edges
-- Toggles for what else is drawn: parent/sub-issue, shared cycle, shared assignee. Labels stay out,
-  because at 2.5 per issue they are too dense to mean much
-- No tests, no nav entry, no screenshots. We look at it against real data, decide, then either promote
-  the winner properly or delete the route
+- The graph was flat on real data. Linear reports a blocking relation once, on the issue that owns it,
+  so every real ingest had an empty `blockedBy` and `dependencyWaves` collapsed to a single wave. The
+  seed fixture hid it because seed relations are symmetric. Fixed in ingest and in the readers
+- Ordering risk was the wrong measure. It fired zero times across 25 real edges, because nobody
+  schedules a blocker after its dependent. `chainRisks` replaced it: a chain runs one ticket at a time,
+  so its points are charged to the people who own it and compared against the time left before its
+  milestone. See [ARCHITECTURE.md](ARCHITECTURE.md) for the model
 
-The outcome is a decision, not a page: promote it, fold the good parts back into the Roadmap page's
-existing wave layout, or drop the idea and record why.
+A dedicated node/edge page stays unbuilt, and the spike says it should. Revisit only if a project turns
+up whose graph is dense enough that the wave plane cannot show it.
 
 ## Next — small fixes
 

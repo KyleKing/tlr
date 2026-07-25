@@ -2,12 +2,12 @@ import { assertEquals } from "jsr:@std/assert@1"
 import {
   bucketOf,
   buildBuckets,
+  chainRisks,
   dependencyWaves,
   milestoneCapacity,
   milestoneDisplayName,
   milestoneForecast,
   missingData,
-  orderingRisks,
   personCycleCapacity,
   slopHash,
   slopScan,
@@ -184,18 +184,110 @@ Deno.test("dependencyWaves breaks a cycle into a final wave instead of hanging",
   assertEquals(waves[0].sort(), ["X", "Y"])
 })
 
-Deno.test("orderingRisks flags a blocker that finishes after its dependent", () => {
-  const issues = [
-    { id: "A", blockedBy: ["B"], statusType: "unstarted", _bucketEnd: "2026-07-31" },
-    { id: "B", blockedBy: [], statusType: "unstarted", _bucketEnd: "2026-08-31" },
-  ]
-  assertEquals(orderingRisks(issues), [{ issue: "A", blocker: "B" }])
+// One-week cycles, so "cycles available" is weeks between asOf and the milestone target.
+type Capacity = { roster?: Record<string, unknown>; people: Record<string, { velocity: number }> }
+type ChainIssue = ReturnType<typeof chained>
+
+function chainSnapshot(issues: ChainIssue[], capacity: Capacity | null = null) {
+  return {
+    asOf: "2026-07-23",
+    milestones: [{ key: "M1", target: "2026-08-06" }],
+    capacity: capacity ?? {
+      roster: { Ada: {}, Bo: {} },
+      people: { Ada: { velocity: 10 }, Bo: { velocity: 5 } },
+    },
+    issues,
+  }
+}
+
+const chained = (id: string, estimate: number, assignee: string, blocks: string[]) => ({
+  id,
+  estimate,
+  assignee,
+  blocks,
+  blockedBy: [] as string[],
+  statusType: "unstarted",
+  milestone: "M1" as string | null,
+  cycle: null as number | null,
 })
 
-Deno.test("orderingRisks ignores completed blockers", () => {
-  const issues = [
-    { id: "A", blockedBy: ["B"], statusType: "unstarted", _bucketEnd: "2026-07-31" },
-    { id: "B", blockedBy: [], statusType: "completed", _bucketEnd: "2026-08-31" },
-  ]
-  assertEquals(orderingRisks(issues), [])
+Deno.test("chainRisks charges the heaviest path to its owners, one segment at a time", () => {
+  const snap = chainSnapshot([
+    chained("A", 10, "Ada", ["B"]),
+    chained("B", 10, "Bo", []),
+  ])
+  const [chain] = chainRisks(snap)
+  assertEquals(chain.path, ["A", "B"])
+  assertEquals(chain.points, 20)
+  // Ada needs 1 cycle for her 10 points, Bo needs 2 for his: sequential, so 3 rather than 20/15.
+  assertEquals(chain.owners.map((o) => [o.person, o.cycles]), [["Bo", 2], ["Ada", 1]])
+  assertEquals(chain.cyclesNeeded, 3)
+  assertEquals(chain.cyclesAvailable, 2)
+  assertEquals(chain.shortfall, 1)
+  assertEquals(chain.atRisk, true)
+})
+
+Deno.test("chainRisks only counts the heaviest path, not work that runs beside it", () => {
+  const snap = chainSnapshot([
+    chained("A", 10, "Ada", ["B", "C"]),
+    chained("B", 10, "Ada", []),
+    chained("C", 1, "Ada", []),
+  ])
+  const [chain] = chainRisks(snap)
+  assertEquals(chain.ids, ["A", "B", "C"])
+  assertEquals(chain.path, ["A", "B"])
+  assertEquals(chain.points, 20)
+})
+
+Deno.test("chainRisks reads a blocks edge with no matching blockedBy, which is what a real ingest holds", () => {
+  const snap = chainSnapshot([
+    chained("A", 10, "Ada", ["B"]),
+    chained("B", 10, "Ada", []),
+  ])
+  const [chain] = chainRisks(snap)
+  assertEquals(chain.path, ["A", "B"])
+})
+
+Deno.test("chainRisks leaves completed work out of the chain", () => {
+  const done = { ...chained("A", 30, "Bo", ["B"]), statusType: "completed" }
+  const [chain] = chainRisks(chainSnapshot([done, chained("B", 5, "Ada", [])]))
+  assertEquals(chain, undefined)
+})
+
+Deno.test("chainRisks charges unassigned work at the roster median, not the default velocity", () => {
+  const snap = chainSnapshot([
+    chained("A", 15, "Unassigned", ["B"]),
+    chained("B", 0, "Ada", []),
+  ])
+  const [chain] = chainRisks(snap)
+  assertEquals(chain.owners.find((o) => o.person === "Unassigned")!.perCycle, 7.5)
+})
+
+Deno.test("chainRisks calls a chain stalled when an owner delivers nothing", () => {
+  const snap = chainSnapshot([
+    chained("A", 8, "Ada", ["B"]),
+    chained("B", 8, "Idle", []),
+  ], { people: { Ada: { velocity: 10 }, Idle: { velocity: 0 } } })
+  const [chain] = chainRisks(snap)
+  assertEquals(chain.stalled, true)
+  assertEquals(chain.cyclesNeeded, null)
+  assertEquals(chain.shortfall, null)
+  assertEquals(chain.atRisk, true)
+})
+
+Deno.test("chainRisks reports no shortfall when the chain touches no milestone target", () => {
+  const loose = (id: string, blocks: string[]) => ({ ...chained(id, 10, "Ada", blocks), milestone: null })
+  const [chain] = chainRisks(chainSnapshot([loose("A", ["B"]), loose("B", [])]))
+  assertEquals(chain.cyclesAvailable, null)
+  assertEquals(chain.shortfall, null)
+  assertEquals(chain.atRisk, false)
+})
+
+Deno.test("chainRisks counts what the chain spans, which is the part worth a badge", () => {
+  const snap = chainSnapshot([
+    { ...chained("A", 5, "Ada", ["B"]), milestone: "M1", cycle: 48 },
+    { ...chained("B", 5, "Bo", []), milestone: "M2", cycle: 50 },
+  ])
+  const [chain] = chainRisks(snap)
+  assertEquals(chain.spans, { milestones: 2, cycles: 2, assignees: 2 })
 })
