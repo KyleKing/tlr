@@ -174,9 +174,14 @@ export async function refreshCapacity(data: CapacityData, opts: RefreshCapacityO
   }
 
   if (wantHistory) {
-    const velocity = velocityByPerson(data.issues ?? [], cycles, data.currentCycle ?? null)
+    // Runs after the on-call and out-day merges on purpose: measuring a full-week rate needs to know
+    // which workdays the person was actually there for.
+    const velocity = velocityByPerson(data.issues ?? [], cycles, data.currentCycle ?? null, capacity, workdays)
     capacity = mergeVelocity(capacity, velocity)
-    log.push(`history: past-cycle throughput → velocity for ${Object.keys(velocity).join(", ") || "nobody"}`)
+    const measured = Object.entries(velocity as Record<string, { velocity: number; cycles: number }>)
+      .map(([name, v]) => `${name} ${v.velocity}/cycle from ${v.cycles} cycle${v.cycles === 1 ? "" : "s"}`)
+      .join(", ")
+    log.push(`history: past-cycle throughput → ${measured || "nobody measurable"}`)
   }
 
   data.capacity = capacity

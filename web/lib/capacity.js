@@ -136,26 +136,57 @@ export function outDaysFromFreeBusy(calendars, cycles, roster, workdaysPerCycle 
   return out
 }
 
-// Completed issues in past cycles → { displayName: avgPointsPerCycle }, rounded. Only cycles strictly
-// before currentCycle count as history; a person with no completed points in that window is omitted
-// so the caller's default velocity applies instead of a false zero.
+// Completed issues in past cycles → { displayName: { velocity, cycles } }, a full-week rate and the
+// number of cycles it rests on. Only cycles strictly before currentCycle count as history, and a
+// person with no measurable cycle is omitted so the caller's default velocity applies instead of a
+// false zero.
+//
+// A cycle counts only when the person worked it and delivered something. Two exclusions: a cycle they
+// were out for every workday, and a cycle they completed nothing in. Averaging over every past cycle
+// instead read leave as throughput of zero, so someone back from months away measured near-nothing and
+// dragged every forecast and chain estimate they touched down with them.
+//
+// A partly-out cycle scales back up to a full week: 3 points delivered across 3 of 5 workdays reads as
+// 5. `velocity` is the undeflated base that personCycleCapacity deflates again per cycle, so measuring
+// it has to undo the same deflation. On-call is deliberately not inverted. The 45% penalty is a
+// planning assumption rather than an observation, and dividing real throughput by it turns a
+// productive on-call week into a clear-week rate nobody has ever hit.
+//
+// Skipping zero-delivery cycles biases the number up for anyone who moves in and out of the project.
+// That is the intended reading: a zero cycle almost always means the person was working elsewhere,
+// not that they worked here and shipped nothing. `cycles` is returned so a caller can say how thin the
+// sample is, because a velocity drawn from one cycle deserves less trust than one drawn from eight.
 //
 // Archived tickets count here, unlike everywhere else that reads the issue list. This measures work
 // already delivered, and a team that tidies its board by archiving finished tickets would otherwise
 // watch its own recorded throughput fall as a result.
-export function velocityByPerson(issues, cycles, currentCycle) {
+export function velocityByPerson(issues, cycles, currentCycle, capacity, workdaysPerCycle = 5) {
   const past = cycles.filter((c) => c.n < currentCycle)
   if (!past.length) return {}
-  const totals = {}
+  const delivered = {}
   for (const i of issues) {
     if (i.statusType !== "completed") continue
     if (!i.assignee || i.assignee === "Unassigned") continue
     if (!past.some((c) => c.n === i.cycle)) continue
-    totals[i.assignee] = (totals[i.assignee] || 0) + (i.estimate || 0)
+    const byCycle = (delivered[i.assignee] ||= {})
+    byCycle[i.cycle] = (byCycle[i.cycle] || 0) + (i.estimate || 0)
   }
   const out = {}
-  for (const [name, total] of Object.entries(totals)) {
-    if (total > 0) out[name] = Math.round(total / past.length)
+  for (const [name, byCycle] of Object.entries(delivered)) {
+    const rates = []
+    for (const c of past) {
+      const points = byCycle[c.n] || 0
+      if (points <= 0) continue
+      const outDays = capacity?.people?.[name]?.cycles?.[String(c.n)]?.outDays || 0
+      const worked = Math.max(0, workdaysPerCycle - outDays) / workdaysPerCycle
+      if (worked <= 0) continue
+      rates.push(points / worked)
+    }
+    if (!rates.length) continue
+    out[name] = {
+      velocity: Math.round(rates.reduce((sum, r) => sum + r, 0) / rates.length),
+      cycles: rates.length,
+    }
   }
   return out
 }
@@ -175,6 +206,7 @@ export function mergeVelocity(capacity, velocityByName) {
     if (person.velocitySrc === "history" && velocityByName[name] == null) {
       delete person.velocity
       delete person.velocitySrc
+      delete person.velocityCycles
     }
   }
 
@@ -182,8 +214,10 @@ export function mergeVelocity(capacity, velocityByName) {
     const person = (cap.people[name] ||= { cycles: {} })
     if (person.locked) continue
     if (person.velocity != null && person.velocitySrc !== "history") continue // hand-typed, protected by default
-    person.velocity = v
+    person.velocity = v.velocity
     person.velocitySrc = "history"
+    // How many cycles the figure averages, so a one-cycle reading is visibly thin rather than silent.
+    person.velocityCycles = v.cycles
   }
 
   for (const [name, person] of Object.entries(cap.people)) {

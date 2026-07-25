@@ -78,17 +78,17 @@ test("Refresh re-ingests from Linear first, and a failure there shows up instead
   await page.goto("/")
   await expect(page.locator("#grid tr").first()).toBeVisible()
 
-  let refreshCalled = false
-  await page.route("**/api/refresh", (route) => {
-    refreshCalled = true
-    return route.fulfill({
+  await page.route("**/api/refresh", (route) =>
+    route.fulfill({
       status: 500,
       json: { ok: false, log: ["issues: no Linear key configured"], error: "getSecret: no value for linear" },
-    })
-  })
+    }))
 
+  // Wait on the request rather than a flag the handler sets: the click returns before the fetch goes
+  // out, so reading a boolean straight after it fails whenever the machine is a little slow.
+  const refresh = page.waitForRequest("**/api/refresh")
   await page.click("#refresh")
-  expect(refreshCalled).toBe(true)
+  await refresh
   await expect(page.locator(".js-error-entry")).toContainText("getSecret: no value for linear")
   // the button resets instead of staying stuck on "Refreshing…"
   await expect(page.locator("#refresh")).toHaveText("Refresh")

@@ -152,7 +152,7 @@ Deno.test("outDaysFromFreeBusy ignores weekend busy time and caps at the workday
   assertEquals(outDaysFromFreeBusy(calendars, CYCLES, ROSTER), {})
 })
 
-Deno.test("velocityByPerson averages completed points across past cycles", () => {
+Deno.test("velocityByPerson averages completed points across the cycles a person worked", () => {
   const cycles = [{ n: 47, start: "2026-07-13", end: "2026-07-20" }, ...CYCLES]
   const issues = [
     { assignee: "Kyle King", cycle: 47, statusType: "completed", estimate: 8 },
@@ -161,17 +161,58 @@ Deno.test("velocityByPerson averages completed points across past cycles", () =>
     { assignee: "Marissa TK", cycle: 47, statusType: "started", estimate: 13 }, // not completed
     { assignee: "Unassigned", cycle: 47, statusType: "completed", estimate: 3 },
   ]
-  assertEquals(velocityByPerson(issues, cycles, 48), { "Kyle King": 13 })
+  assertEquals(velocityByPerson(issues, cycles, 48), { "Kyle King": { velocity: 13, cycles: 1 } })
+})
+
+// The regression this exists for: a lead back from months away delivered in one cycle and was out for
+// the whole of the other. Averaging over both read as 5 a cycle, and every chain estimate and forecast
+// they touched inherited it.
+Deno.test("velocityByPerson ignores a cycle the person was out for entirely", () => {
+  const cycles = [
+    { n: 46, start: "2026-07-06", end: "2026-07-13" },
+    { n: 47, start: "2026-07-13", end: "2026-07-20" },
+    ...CYCLES,
+  ]
+  const issues = [{ assignee: "Kyle King", cycle: 46, statusType: "completed", estimate: 10 }]
+  const capacity = { people: { "Kyle King": { cycles: { "47": { outDays: 5, reason: "leave" } } } } }
+  assertEquals(velocityByPerson(issues, cycles, 48, capacity), { "Kyle King": { velocity: 10, cycles: 1 } })
+})
+
+Deno.test("velocityByPerson scales a partly-out cycle up to a full week", () => {
+  const cycles = [{ n: 47, start: "2026-07-13", end: "2026-07-20" }, ...CYCLES]
+  const issues = [{ assignee: "Kyle King", cycle: 47, statusType: "completed", estimate: 6 }]
+  // Three of five workdays worked, so 6 points reads as a 10-point full week.
+  const capacity = { people: { "Kyle King": { cycles: { "47": { outDays: 2 } } } } }
+  assertEquals(velocityByPerson(issues, cycles, 48, capacity), { "Kyle King": { velocity: 10, cycles: 1 } })
+})
+
+// On-call is a planning assumption, not a measurement. Inverting it would turn a productive on-call
+// week into a clear-week rate nobody has hit.
+Deno.test("velocityByPerson leaves an on-call cycle at its measured rate", () => {
+  const cycles = [{ n: 47, start: "2026-07-13", end: "2026-07-20" }, ...CYCLES]
+  const issues = [{ assignee: "Marissa TK", cycle: 47, statusType: "completed", estimate: 20 }]
+  const capacity = { people: { "Marissa TK": { cycles: { "47": { oncall: true } } } } }
+  assertEquals(velocityByPerson(issues, cycles, 48, capacity), { "Marissa TK": { velocity: 20, cycles: 1 } })
+})
+
+Deno.test("velocityByPerson omits a person with no cycle worth measuring", () => {
+  const cycles = [{ n: 47, start: "2026-07-13", end: "2026-07-20" }, ...CYCLES]
+  const capacity = { people: { Ghost: { cycles: { "47": { outDays: 5 } } } } }
+  const issues = [{ assignee: "Ghost", cycle: 47, statusType: "completed", estimate: 4 }]
+  assertEquals(velocityByPerson(issues, cycles, 48, capacity), {})
 })
 
 Deno.test("mergeVelocity keeps a hand-typed velocity but refreshes its own prior write", () => {
-  const withHand = mergeVelocity({ people: { "Marissa TK": { cycles: {}, velocity: 25 } } }, { "Marissa TK": 10 })
+  const hand = { people: { "Marissa TK": { cycles: {}, velocity: 25 } } }
+  const withHand = mergeVelocity(hand, { "Marissa TK": { velocity: 10, cycles: 2 } })
   assertEquals(withHand.people["Marissa TK"].velocity, 25) // hand-typed, no velocitySrc → protected by default
-  const first = mergeVelocity({ people: {} }, { "Kyle King": 13 })
+  const first = mergeVelocity({ people: {} }, { "Kyle King": { velocity: 13, cycles: 3 } })
   assertEquals(first.people["Kyle King"].velocity, 13)
   assertEquals(first.people["Kyle King"].velocitySrc, "history")
-  const second = mergeVelocity(first, { "Kyle King": 18 })
+  assertEquals(first.people["Kyle King"].velocityCycles, 3)
+  const second = mergeVelocity(first, { "Kyle King": { velocity: 18, cycles: 4 } })
   assertEquals(second.people["Kyle King"].velocity, 18)
+  assertEquals(second.people["Kyle King"].velocityCycles, 4)
   // No longer reported → the value this source wrote is cleared, not left stale.
   const third = mergeVelocity(second, {})
   assertEquals(third.people["Kyle King"], undefined)
@@ -179,7 +220,7 @@ Deno.test("mergeVelocity keeps a hand-typed velocity but refreshes its own prior
 
 Deno.test("mergeVelocity's locked flag blocks history from refreshing its own prior write", () => {
   const base = { people: { "Kyle King": { cycles: {}, velocity: 13, velocitySrc: "history", locked: true } } }
-  const merged = mergeVelocity(base, { "Kyle King": 18 })
+  const merged = mergeVelocity(base, { "Kyle King": { velocity: 18, cycles: 2 } })
   assertEquals(merged.people["Kyle King"].velocity, 13)
   // Reporting nothing at all must not clear a locked person's velocity either.
   const cleared = mergeVelocity(merged, {})

@@ -91,5 +91,5 @@ Deno.test("velocityByPerson still counts completed work that has since been arch
     { assignee: "Ada", cycle: 47, estimate: 8, statusType: "completed" },
     { archived: true, assignee: "Ada", cycle: 47, estimate: 5, statusType: "completed" },
   ]
-  assertEquals(velocityByPerson(issues, cycles, 48), { Ada: 13 })
+  assertEquals(velocityByPerson(issues, cycles, 48), { Ada: { velocity: 13, cycles: 1 } })
 })
