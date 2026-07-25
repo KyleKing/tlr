@@ -207,7 +207,6 @@ export function openEditModal(
   const noUuid = !issue.linearId
 
   let previewed = false
-  let applied = false
   let dirty = false
   let phase = "open"
   let willApplyCount = 0
@@ -247,10 +246,10 @@ export function openEditModal(
     const { ok, errors } = validateEdit(values, options)
     const changed = changedFields(issue, values, options)
     const ops = opsForChanges(issue.id, changed)
-    dirty = changed.length > 0 && !applied
+    dirty = changed.length > 0
     showErrors(errors)
-    previewBtn.disabled = applied || !ok || changed.length === 0
-    applyBtn.disabled = applied || noUuid || !previewed || !ok || changed.length === 0 || willApplyCount === 0
+    previewBtn.disabled = !ok || changed.length === 0
+    applyBtn.disabled = noUuid || !previewed || !ok || changed.length === 0 || willApplyCount === 0
     drawImpact({
       changed,
       dataFile,
@@ -296,17 +295,20 @@ export function openEditModal(
     guardEl.querySelector('[data-act="keep"]').focus()
   }
 
-  form.addEventListener("input", () => {
+  function reopenEditing() {
     previewed = false
     outEl.hidden = true
-    phase = applied ? "applied" : "editing"
+    phase = "editing"
+    applyBtn.textContent = mode?.demo ? "Apply to demo workspace" : "Apply to live workspace"
+  }
+
+  form.addEventListener("input", () => {
+    reopenEditing()
     autogrow(textarea)
     sync(true)
   })
   form.addEventListener("change", () => {
-    previewed = false
-    outEl.hidden = true
-    phase = applied ? "applied" : "editing"
+    reopenEditing()
     sync()
   })
   form.addEventListener("submit", (e) => e.preventDefault())
@@ -353,7 +355,11 @@ export function openEditModal(
       const allOk = (res.results ?? []).length > 0 && res.results.every((r) => r.ok)
       applyBtn.textContent = allOk ? "Applied" : "Apply failed"
       if (!allOk) return
-      applied = true
+      // The applied values are the ticket's state now, so a further edit is measured against them and
+      // can be previewed and applied again. Latching on `applied` would leave the fields editable with
+      // no way to send them.
+      Object.assign(issue, readValues())
+      previewed = false
       dirty = false
       phase = "applied"
       cancelBtn.textContent = "Close"

@@ -44,21 +44,29 @@ flags. Milestone headers carry a slip marker and move the detail to the hover.
 
 ![The planning board](docs/images/board.png)
 
-Changes reads the two most recent snapshots and writes the weekly update.
+Changes steps through snapshot history by capture or by day and writes the weekly update.
 
 ![The changes page](docs/images/changes.png)
 
-Review groups every change to a ticket into one unit, lets you mark it reviewed, and edits the ticket in
-place (title, description, estimate, priority, milestone, status, cycle, assignee) with a preview before
-it writes to Linear.
+Review runs from your last review to the newest capture, groups every change to a ticket into one unit,
+and lets you mark it reviewed. Editing a ticket opens a modal (title, description, estimate, priority,
+milestone, status, cycle, assignee) whose right column shows what the edit costs: the owner's load in
+the target cycle before and after, any milestone whose forecast landing moves, blockers and blocked
+work, and a slop scan of the rewritten description. Preview is a dry run, so nothing reaches Linear
+until you confirm.
 
 ![The review page](docs/images/review.png)
+
+Roadmap puts every ticket on one pannable plane: time across, dependency depth down, with edges between
+blockers and a warning where one runs backward.
+
+![The roadmap page](docs/images/roadmap.png)
 
 Writes run in one of two modes, chosen at launch. Live mode (the default) uses your real workspace key.
 Demo mode (`TLR_DEMO=1`) points every write at a free/test workspace and shows a banner, so you can try
 edits without touching real tickets. See [SETUP.md](SETUP.md) for storing each key in the keychain.
 
-Settings holds appearance, capacity, roster, calendar overrides, and integrations on its own page.
+Settings holds appearance, capacity, roster, integrations, and credentials on its own page.
 
 ![The settings page](docs/images/settings.png)
 

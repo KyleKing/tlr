@@ -97,9 +97,12 @@ async function fetchOncallEntries(token: string, winStart: string, winEnd: strin
   return entries
 }
 
+// A project with no cycles has no window to ask about. Returning nulls keeps the callers from
+// interpolating "undefined" into a query string, which Incident.io answers with a 422.
 function windowFor(cycles: { start: string; end: string }[]) {
-  const starts = cycles.map((c) => c.start).sort()
-  const ends = cycles.map((c) => c.end).sort()
+  const starts = cycles.map((c) => c.start).filter(Boolean).sort()
+  const ends = cycles.map((c) => c.end).filter(Boolean).sort()
+  if (!starts.length || !ends.length) return { winStart: null, winEnd: null }
   return { winStart: starts[0], winEnd: ends[ends.length - 1] }
 }
 
@@ -136,7 +139,8 @@ export async function refreshCapacity(data: CapacityData, opts: RefreshCapacityO
   const wantHistory = source === "all" || source === "history"
   const log: string[] = []
 
-  if (wantIncident) {
+  if (wantIncident && !winStart) log.push("incident.io: no cycles to bound the on-call window; skipping")
+  if (wantIncident && winStart && winEnd) {
     const token = await incidentToken()
     const entries = await fetchOncallEntries(token, winStart, winEnd)
     const oncall = oncallByCycle(entries, cycles, roster)
@@ -156,6 +160,8 @@ export async function refreshCapacity(data: CapacityData, opts: RefreshCapacityO
       const emails = [...new Set(rosterEntries.map((p) => p.email).filter(Boolean))] as string[]
       if (!emails.length) {
         log.push("gcal: no roster emails to query; skipping out-of-office refresh")
+      } else if (!winStart || !winEnd) {
+        log.push("gcal: no cycles to bound the free/busy window; skipping")
       } else {
         const client = await loadClient(CLIENT_PATH)
         const token = await tokenFor(client, opts.reauth)

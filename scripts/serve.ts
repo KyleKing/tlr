@@ -223,7 +223,12 @@ app.post("/api/refresh", async (c) => {
       log.push("issues: no project name to refresh — pass { project } or set data.project.name first")
     }
 
-    log.push(...(await refreshCapacity(data)))
+    // Capacity is best-effort, the same as the scheduled run treats it. An Incident.io or Calendar
+    // outage must not discard a Linear ingest that already succeeded.
+    await refreshCapacity(data).then(
+      (lines) => log.push(...lines),
+      (err) => log.push(`capacity: ${err instanceof Error ? err.message : String(err)}`),
+    )
 
     await writeJsonAtomic(path, data)
 

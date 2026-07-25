@@ -177,10 +177,12 @@ function syncUrl() {
 
 // header + controls
 document.getElementById("title").textContent = data.project.name
+// A project with neither a start nor a target date drops the range rather than printing "null → null".
 function renderMeta() {
-  document.getElementById("meta").innerHTML =
-    `${data.issues.length} issues · ${data.project.start} → ${data.project.target} · ` +
-    `<a href="${data.project.url}" target="_blank">Linear ↗</a>`
+  const { start, target, url } = data.project
+  const range = start || target ? `${start ?? "—"} → ${target ?? "—"} · ` : ""
+  document.getElementById("meta").innerHTML = `${data.issues.length} issues · ${range}` +
+    `<a href="${url}" target="_blank">Linear ↗</a>`
 }
 renderMeta()
 

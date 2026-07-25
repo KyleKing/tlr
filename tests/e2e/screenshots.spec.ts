@@ -13,6 +13,7 @@ const pages: [path: string, name: string, ready: string][] = [
   [`/${SEED}`, "board", "#grid tr"],
   [`/changes${SEED}`, "changes", ".rsec"],
   [`/review${SEED}`, "review", ".rgroup"],
+  [`/roadmap${SEED}`, "roadmap", ".rm-card"],
   [`/settings${SEED}`, "settings", ".cfg-nav-item"],
 ]
 
