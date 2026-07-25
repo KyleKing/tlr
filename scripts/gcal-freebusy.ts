@@ -100,7 +100,9 @@ export async function consent(client: Client): Promise<string> {
   ac.abort()
   await server.finished
 
-  const res = await fetch(TOKEN_URI, {
+  // The last ingest call on a bare fetch used to be this one, so a hung Google endpoint stalled the
+  // refresh with nothing to time it out.
+  const res = await fetchWithRetry(TOKEN_URI, {
     method: "POST",
     headers: { "content-type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
@@ -122,7 +124,7 @@ export async function consent(client: Client): Promise<string> {
 }
 
 export async function accessToken(client: Client, refresh: string): Promise<string> {
-  const res = await fetch(TOKEN_URI, {
+  const res = await fetchWithRetry(TOKEN_URI, {
     method: "POST",
     headers: { "content-type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({

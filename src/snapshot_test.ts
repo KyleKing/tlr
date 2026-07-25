@@ -220,3 +220,51 @@ Deno.test("loadHistoryBefore reads only older captures, newest first, up to the 
     assertEquals(store.loadHistoryBefore(key, 3_000, 1).length, 1)
   })
 })
+
+// A history forked across two keys for one project: captures keyed by the URL's slugId before ingest
+// recorded Linear's project id, then a second run keyed by the id. Opening the store repairs it, so
+// the Changes and Review pages stop seeing only half the history.
+Deno.test("opening a store merges a project history forked between a slug key and an id key", () => {
+  const { a, b } = generateSnapshots()
+  const path = Deno.makeTempFileSync({ suffix: ".tlr.sqlite" })
+  const legacy = renamed(a, "Platform", SLUG_URL)
+  const modern = {
+    ...renamed(b, "Platform", SLUG_URL),
+    project: { ...b.project, name: "Platform", url: SLUG_URL, id: "uuid-1", slugId: "c0ffee001122" },
+  }
+
+  const first = openStore(path)
+  const older = first.saveSnapshot(legacy, 1_000)
+  first.setReviewPointer(older.id, "slug:c0ffee001122")
+  const newer = first.saveSnapshot(modern, 2_000)
+  assertEquals(first.listSnapshots().map((r) => r.projectKey), ["id:uuid-1", "slug:c0ffee001122"])
+  first.close()
+
+  const reopened = openStore(path)
+  try {
+    assertEquals(reopened.listSnapshots().map((r) => r.projectKey), ["id:uuid-1", "id:uuid-1"])
+    // The pointer follows its history rather than being stranded on the retired key.
+    assertEquals(reopened.getReviewPointer("id:uuid-1"), older.id)
+    assertEquals(reopened.getReviewPointer("slug:c0ffee001122"), null)
+    assertEquals(newer.id > older.id, true)
+  } finally {
+    reopened.close()
+    for (const suffix of ["", "-wal", "-shm"]) {
+      try {
+        Deno.removeSync(`${path}${suffix}`)
+      } catch {
+        // the wal and shm siblings only exist while the connection is open
+      }
+    }
+  }
+})
+
+// Two genuinely different projects that happen to share a display name must not be merged, and a slug
+// with nothing linking it to an id keeps its own history.
+Deno.test("opening a store leaves an unlinked slug history alone", () => {
+  withStore((store) => {
+    const { a } = generateSnapshots()
+    store.saveSnapshot(renamed(a, "Platform", SLUG_URL), 1_000)
+    assertEquals(store.listSnapshots().map((r) => r.projectKey), ["slug:c0ffee001122"])
+  })
+})

@@ -27,6 +27,7 @@ import {
   oncallByCycle,
   outDaysByCycle,
   outDaysFromFreeBusy,
+  unrosteredOncall,
   velocityByPerson,
 } from "../web/lib/capacity.js"
 import { CLIENT_PATH, fetchFreeBusy, loadClient, tokenFor } from "./gcal-freebusy.ts"
@@ -146,6 +147,10 @@ export async function refreshCapacity(data: CapacityData, opts: RefreshCapacityO
     const oncall = oncallByCycle(entries, cycles, roster)
     capacity = mergeCapacity(capacity, oncall, "incident.io")
     log.push(`incident.io: ${entries.length} shifts → on-call for ${Object.keys(oncall).join(", ") || "nobody"}`)
+    const missing = unrosteredOncall(entries, cycles, roster)
+    if (missing.length) {
+      log.push(`incident.io: on call but not on the roster, so not deflated: ${missing.join(", ")}`)
+    }
   }
 
   if (wantGcal) {

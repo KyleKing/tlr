@@ -121,7 +121,7 @@ function chainHTML({ chain, chainWas }) {
     `${chain.points} points on the critical path: ${who}.</p>`
 
   if (chain.stalled) {
-    return head + `<p class="eimpact-warn">An owner on this chain has no capacity, so it never finishes.</p>`
+    return `${head}<p class="eimpact-warn">An owner on this chain has no capacity, so it never finishes.</p>`
   }
   if (chain.cyclesAvailable == null) {
     return head +

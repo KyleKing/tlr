@@ -15,7 +15,13 @@
 // project in Linear does not fork the history. See src/projectIdentity.ts.
 
 import { DatabaseSync } from "node:sqlite"
-import { isStableProjectKey, projectKey, type ProjectKeyRow, resolveProjectKeys } from "@/projectIdentity.ts"
+import {
+  isStableProjectKey,
+  projectKey,
+  type ProjectKeyRow,
+  resolveProjectKeys,
+  slugToIdKeys,
+} from "@/projectIdentity.ts"
 import type { Snapshot } from "@/seed.ts"
 
 export const DEFAULT_DB_PATH = "./tlr.sqlite"
@@ -106,21 +112,19 @@ function migrate(db: DatabaseSync): void {
   }
   db.exec("CREATE INDEX IF NOT EXISTS snapshots_project_key ON snapshots (project_key, captured_at DESC)")
   backfillProjectKeys(db)
+  mergeForkedProjectKeys(db)
 }
 
-// One-time repair of rows captured before project_key existed. Reads only the project block out of
-// each row's JSON, never the issues, so an unpruned store does not pay for the whole history here.
-function backfillProjectKeys(db: DatabaseSync): void {
-  const pending = db.prepare(`
-    SELECT id, captured_at, project_name,
-           json_extract(json, '$.project.url') AS url,
-           json_extract(json, '$.project.id') AS project_id,
-           json_extract(json, '$.project.slugId') AS slug_id
-      FROM snapshots WHERE project_key IS NULL
-  `).all() as Row[]
-  if (!pending.length) return
+const PROJECT_BLOCK_SQL = `
+  SELECT id, captured_at, project_name,
+         json_extract(json, '$.project.url') AS url,
+         json_extract(json, '$.project.id') AS project_id,
+         json_extract(json, '$.project.slugId') AS slug_id
+    FROM snapshots
+`
 
-  const rows: ProjectKeyRow[] = pending.map((r) => ({
+function projectKeyRows(db: DatabaseSync, where: string): ProjectKeyRow[] {
+  return (db.prepare(`${PROJECT_BLOCK_SQL} ${where}`).all() as Row[]).map((r) => ({
     id: Number(r.id),
     capturedAt: Number(r.captured_at),
     project: {
@@ -130,6 +134,66 @@ function backfillProjectKeys(db: DatabaseSync): void {
       slugId: (r.slug_id as string | null) ?? null,
     },
   }))
+}
+
+// Repair a history forked across two keys for one project. Captures taken before ingest recorded
+// Linear's project id were keyed by the slugId in the URL, and once the id arrived the same project
+// started a second history under `id:`. Both keys are stable, so the original backfill left them
+// apart, and the Changes and Review pages saw only whichever half the current key pointed at.
+//
+// Only rows carrying both an id and a slug can prove the link, so a store with no such row is left
+// alone. The scan is skipped entirely unless both kinds of key are present.
+function mergeForkedProjectKeys(db: DatabaseSync): void {
+  const counts = db.prepare(`
+    SELECT SUM(project_key LIKE 'slug:%') AS slugs, SUM(project_key LIKE 'id:%') AS ids FROM snapshots
+  `).get() as { slugs: number | null; ids: number | null }
+  if (!counts?.slugs || !counts?.ids) return
+
+  const rows = projectKeyRows(db, "")
+  const links = slugToIdKeys(rows)
+  if (!links.size) return
+
+  const setKey = db.prepare("UPDATE snapshots SET project_key = ? WHERE project_key = ?")
+  // A pointer follows its history. Keeping the newer of the two means a merge never rewinds the review
+  // queue over changes already cleared.
+  const pointers = db.prepare("SELECT key, value FROM meta WHERE key LIKE ?").all(
+    `${REVIEW_POINTER_KEY}:%`,
+  ) as { key: string; value: string }[]
+  const setPointer = db.prepare("INSERT INTO meta (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = ?")
+  const dropPointer = db.prepare("DELETE FROM meta WHERE key = ?")
+  const dropIdentity = db.prepare("DELETE FROM project_identity WHERE project_key = ?")
+  const setIdentity = db.prepare(
+    "INSERT INTO project_identity (project_name, project_key) VALUES (?, ?) ON CONFLICT(project_name) DO UPDATE SET project_key = ?",
+  )
+  const nameOf = new Map(rows.map((r) => [r.project.id ? `id:${r.project.id}` : "", r.project.name]))
+
+  db.exec("BEGIN IMMEDIATE")
+  try {
+    for (const [from, to] of links) {
+      setKey.run(to, from)
+      const oldPointer = pointers.find((p) => p.key === `${REVIEW_POINTER_KEY}:${from}`)
+      if (oldPointer) {
+        const current = pointers.find((p) => p.key === `${REVIEW_POINTER_KEY}:${to}`)
+        const winner = current && Number(current.value) > Number(oldPointer.value) ? current.value : oldPointer.value
+        setPointer.run(`${REVIEW_POINTER_KEY}:${to}`, winner, winner)
+        dropPointer.run(oldPointer.key)
+      }
+      dropIdentity.run(from)
+      const name = nameOf.get(to)
+      if (name) setIdentity.run(name, to, to)
+    }
+    db.exec("COMMIT")
+  } catch (err) {
+    db.exec("ROLLBACK")
+    throw err
+  }
+}
+
+// One-time repair of rows captured before project_key existed. Reads only the project block out of
+// each row's JSON, never the issues, so an unpruned store does not pay for the whole history here.
+function backfillProjectKeys(db: DatabaseSync): void {
+  const rows = projectKeyRows(db, "WHERE project_key IS NULL")
+  if (!rows.length) return
   const namesById = new Map(rows.map((r) => [r.id, r.project.name]))
 
   const setKey = db.prepare("UPDATE snapshots SET project_key = ? WHERE id = ?")

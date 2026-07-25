@@ -39,10 +39,25 @@ export type ProjectKeyRow = { id: number; capturedAt: number; project: ProjectRe
 
 export type ProjectKeyAssignment = { id: number; projectKey: string }
 
-// Decide the key for each row, folding rows that only yield a name key into the stable key of the
-// newest row sharing that name. Two rows with different stable keys stay apart even when the display
-// name matches, because that is two projects, not one renamed project.
+// Linear's project id and the slugId in its URL name the same project, so captures taken before ingest
+// recorded the id belong to the same history. A row carrying both is the evidence that links them.
+// Without such a row the two keys stay apart, because a slug on its own cannot be resolved to an id.
+export function slugToIdKeys(rows: ProjectKeyRow[]): Map<string, string> {
+  const links = new Map<string, string>()
+  for (const row of rows) {
+    const slug = (row.project.slugId ?? slugIdFromUrl(row.project.url))?.toLowerCase()
+    if (row.project.id && slug) links.set(`slug:${slug}`, `id:${row.project.id}`)
+  }
+  return links
+}
+
+// Decide the key for each row. Rows that only yield a name key fold into the stable key of the newest
+// row sharing that name, and a slug key folds into the id key of the same project where some row
+// proves they are the same. Two rows with unrelated stable keys stay apart even when the display name
+// matches, because that is two projects rather than one renamed project.
 export function resolveProjectKeys(rows: ProjectKeyRow[]): ProjectKeyAssignment[] {
+  const links = slugToIdKeys(rows)
+  const settle = (key: string) => links.get(key) ?? key
   const canonical = new Map<string, string>()
   const newest = new Map<string, number>()
   for (const row of rows) {
@@ -51,11 +66,11 @@ export function resolveProjectKeys(rows: ProjectKeyRow[]): ProjectKeyAssignment[
     const name = normalizeProjectName(row.project.name)
     if ((newest.get(name) ?? -Infinity) >= row.capturedAt) continue
     newest.set(name, row.capturedAt)
-    canonical.set(name, key)
+    canonical.set(name, settle(key))
   }
   return rows.map((row) => {
     const key = projectKey(row.project)
-    if (isStableProjectKey(key)) return { id: row.id, projectKey: key }
+    if (isStableProjectKey(key)) return { id: row.id, projectKey: settle(key) }
     return { id: row.id, projectKey: canonical.get(normalizeProjectName(row.project.name)) ?? key }
   })
 }

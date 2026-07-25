@@ -6,6 +6,7 @@ import {
   oncallByCycle,
   outDaysByCycle,
   outDaysFromFreeBusy,
+  unrosteredOncall,
   velocityByPerson,
   workdaysInWindow,
 } from "../web/lib/capacity.js"
@@ -225,4 +226,25 @@ Deno.test("mergeVelocity's locked flag blocks history from refreshing its own pr
   // Reporting nothing at all must not clear a locked person's velocity either.
   const cleared = mergeVelocity(merged, {})
   assertEquals(cleared.people["Kyle King"].velocity, 13)
+})
+
+// A person on call but not on the roster is dropped from the deflation, so the board plans as though
+// they were free. The refresh names them rather than leaving the gap silent.
+Deno.test("unrosteredOncall names people on call that the roster does not track", () => {
+  const cycles = [{ n: 48, start: "2026-07-20", end: "2026-07-27" }]
+  const entries = [
+    { email: "kyle@x.test", name: "Kyle King", startDate: "2026-07-21", endDate: "2026-07-23" },
+    { email: "david@x.test", name: "David", startDate: "2026-07-22", endDate: "2026-07-24" },
+  ]
+  const roster = { "Kyle King": { email: "kyle@x.test" } }
+  assertEquals(unrosteredOncall(entries, cycles, roster), ["David"])
+  assertEquals(Object.keys(oncallByCycle(entries, cycles, roster)), ["Kyle King"])
+})
+
+Deno.test("unrosteredOncall ignores a shift that misses every cycle, and an empty roster", () => {
+  const cycles = [{ n: 48, start: "2026-07-20", end: "2026-07-27" }]
+  const away = [{ email: "d@x.test", name: "David", startDate: "2026-01-01", endDate: "2026-01-02" }]
+  assertEquals(unrosteredOncall(away, cycles, { "Kyle King": {} }), [])
+  // With no roster at all, oncallByCycle keeps everyone, so nobody is being dropped.
+  assertEquals(unrosteredOncall(away, cycles, {}), [])
 })

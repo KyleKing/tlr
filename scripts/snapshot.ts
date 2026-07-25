@@ -17,12 +17,15 @@
 // minimum interval in src/runLock.ts. Every run, including a refusal, appends one line to the run log
 // that the board reads back through /api/schedule/health.
 //
-// Retention reports on every run and deletes on none of them unless --prune is passed, and the
-// installed LaunchAgent does not pass it. A capture is ~175 KB and this runs eight times a day, so an
-// unpruned store grows about half a gigabyte per project per year — real, but slow enough that reading
-// a few days of "would drop N" lines in the run log costs about 10 MB and buys confidence that the
-// plan groups history the way the store actually keys it. Turn it on by hand once those lines look
-// right (`deno task snapshot --prune --force`), or add the flag to the plist.
+// Retention deletes on a scheduled run, because the LaunchAgent passes --prune. A capture is ~175 KB
+// and this runs eight times a day, so an unpruned store grows about half a gigabyte per project per
+// year. The policy keeps everything for 14 days, one a day to a year, and one a week beyond, so the
+// captures a diff or a review window actually reaches are never the ones thinned.
+//
+// The flag was held back until the store keyed history correctly, since thinning a forked history
+// would have thinned each half against the wrong plan. src/snapshot.ts's mergeForkedProjectKeys
+// repairs that on open, and src/retention.ts groups strictly by project_key. Drop --prune from the
+// plist to go back to reporting.
 //
 // Out-of-office is deliberately left out of the capacity refresh: Google Calendar's OAuth handoff can
 // shell out to `open` for consent, which a scheduled run has no way to complete and this task has no

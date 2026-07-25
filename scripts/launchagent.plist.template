@@ -9,6 +9,7 @@
     <string>__DENO__</string>
     <string>task</string>
     <string>snapshot</string>
+    <string>--prune</string>
   </array>
   <key>WorkingDirectory</key>
   <string>__REPO__</string>

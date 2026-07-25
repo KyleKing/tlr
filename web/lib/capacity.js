@@ -57,8 +57,26 @@ function _resolver(roster) {
   }
 }
 
+// Who Incident.io reports on call in these cycles that the roster does not track. oncallByCycle drops
+// them, and a dropped person's on-call week never deflates their capacity, so the board quietly plans
+// as though they were free. Reporting the names turns that into a one-line fix (add them under
+// Settings → Roster) instead of a number nobody can explain.
+export function unrosteredOncall(entries, cycles, roster) {
+  const known = new Set(Object.keys(roster || {}))
+  if (!known.size) return []
+  const resolve = _resolver(roster)
+  const missing = new Set()
+  for (const e of entries) {
+    if (!cycles.some((c) => _overlapsDays(e.startDate, e.endDate, c.start, c.end))) continue
+    const name = resolve(e.email, e.name)
+    if (!name || !known.has(name)) missing.add(name || e.email || "unknown")
+  }
+  return [...missing].sort()
+}
+
 // Incident.io final schedule entries → { displayName: { cycleN: true } }. An entry marks on-call for
-// any cycle whose window it touches. Entries for people outside the roster are dropped.
+// any cycle whose window it touches. Entries for people outside the roster are dropped; call
+// unrosteredOncall to find out who.
 export function oncallByCycle(entries, cycles, roster) {
   const resolve = _resolver(roster)
   const known = new Set(Object.keys(roster || {}))
