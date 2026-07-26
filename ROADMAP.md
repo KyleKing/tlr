@@ -98,6 +98,26 @@ that volume. Tabled as an idea, not a scoped feature.
 The UI would show two or more tickets together and resolve to merge or mark-duplicate-and-close, so it
 shares little with the single-ticket editor.
 
+## Known issues
+
+Small and self-contained. None of them break a user-facing path today.
+
+- **`--muted` is never defined.** `web/style.css` reads `var(--muted)` in ten places, but no flavor in
+  `web/lib/theme.js` supplies it and it is not in `SEMANTIC`, so the declaration is invalid and those
+  elements fall back to the inherited `--text`. They pass the contrast scan by accident. Defining it
+  would repaint `rm-chain-dim`, `bal-dim`, and the rest, some on pages `a11y.spec.ts` scans, so pair the
+  fix with a run of that suite
+- **`web/style.css` fails `deno fmt`.** Roughly forty declarations write a bare-decimal `.04em` or `.28`
+  where the formatter wants a leading zero. It is the one file the check reports and predates the
+  formatter landing. A single `deno fmt web/style.css` clears it, at the cost of touching many lines
+- **The project-picker test does not switch projects.** `pages.spec.ts` asserts the picker renders with
+  both stubbed entries, but nothing exercises the `onchange` navigation its name promises. Switching
+  reloads onto the second project's data file, so covering it means confirming the review page still
+  renders from `seed-a.json` without tripping the zero-console-errors fixture
+- **`copier update` re-seeds four files.** `_skip_if_exists` only skips a file that is already there, so
+  every update recreates `src/routes.ts` and `src/templates/`, which this repo deleted on purpose
+  (templates live in `web/`). Delete them again after each update, or fix it template-side
+
 ## Blocked
 
 These wait on you or an external resource, not on more code.
