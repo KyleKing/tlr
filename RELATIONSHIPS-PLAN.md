@@ -354,6 +354,38 @@ blocks a first ship.
 - The 3px status and identity borders are 1px, after measuring that a wash cannot clear AA under
   small muted text on this palette
 
+## TODO: rework how one ticket points at its neighbours
+
+The current treatment does not work, for two separate reasons, and the replacement is undecided.
+
+It is unclear. Hovering or selecting a ticket lights its neighbours and dims everything else, but
+nothing says what the relationship is. A lit card might be a blocker, a blocked dependent, a curated
+`related` link, or a similarity neighbour, and they are drawn identically. The reader is told that
+something connects without being told what.
+
+It is unreachable. At 30 tickets the lit cards are all on screen. At 180 they are not: the neighbours
+of a ticket in one cluster are frequently outside the viewport, or far enough away at a readable zoom
+that finding them means panning blind and losing the ticket you started from. The emphasis says
+"these matter" and then gives you no way to get to them, which is worse than saying nothing.
+
+Candidates, none chosen:
+
+- Dashed leader lines from the selected card to each neighbour, so there is something to follow with
+  the eye or the cursor. Cheap, but it reintroduces exactly the overlapping-line problem this redesign
+  removed, and the lines would be longest in the case that needs them most
+- An off-screen indicator: a marker pinned to the viewport edge in the direction of each off-screen
+  neighbour, with the count. Borrowed from map interfaces, and it degrades well at density
+- Make the neighbours in the detail card clickable, so the list is the navigation. Each entry pans and
+  centres its ticket. This is the cheapest to build and the only candidate that also solves the
+  unclear half, because the list can label each relationship
+- A keyboard jump, cycling focus through the current ticket's neighbours in order, which fits the
+  keyboard-first requirement and needs no drawing at all
+- Distinguish the kinds visually before doing anything else, since some of the confusion may simply be
+  that four different relationships share one highlight
+
+Whatever wins should decide the kinds question first. Making an ambiguous signal easier to follow
+just spreads the ambiguity further.
+
 ## Open decisions
 
 - Whether the 300ms mode transition is acceptable, given that the stylesheet has no motion at all today
