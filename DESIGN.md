@@ -298,9 +298,30 @@ Warnings do not use elevation at all. A ticket at risk gets a 2px ring drawn wit
 2px`, and a field error gets a 1px inset ring, because a ring reads at a distance across a dense grid
 where an underline or a tint does not.
 
-This is a description of what is implemented, not a settled doctrine. Whether flatness is a rule and
-whether motion should ever be introduced are both open; the stylesheet today has no `transition`, no
-`@keyframes`, and no `prefers-reduced-motion` block, so every state change is instant.
+Flatness is the rule. Motion is now part of the system, on two timings and one curve.
+
+### Motion
+
+- **`--dur-state`** (120ms): a control answering a pointer or a key. Border colour only, on chips,
+  pills, and cards. Fast enough to read as response rather than as animation
+- **`--dur-move`** (300ms): something changing where it is on the page, which needs long enough to
+  follow with your eye. Re-layout between relationship modes is the case this exists for
+- **`--ease`** (`cubic-bezier(0.4, 0, 0.2, 1)`): the only curve
+
+`@media (prefers-reduced-motion: reduce)` sets both durations to `0ms` at the token, so honouring the
+preference is automatic and no component has to remember it.
+
+### Named Rules
+
+**The Motion Follows Meaning Rule.** Animate only a property whose change carries information: a
+state that answered you, or a position that moved. Never animate to decorate, never animate on load,
+and never animate something the reader did not cause.
+
+**The Never Animate Contrast Rule.** Never transition `color` or `background-color` on an element
+carrying text. Latte is tuned to clear 4.5:1 by a hair, so interpolating between two passing colours
+spends the whole margin and renders failing text for the length of the transition. Border, outline,
+and shadow are the animatable channels, because none of them owes a contrast ratio. The axe spec
+catches this: it sampled a chip mid-transition at 4.42:1.
 
 ### Shadow Vocabulary
 
@@ -416,3 +437,5 @@ confirm is a distinct action, because this is the only path in the product that 
   plus a 1px border is how depth is expressed everywhere else
 - **Don't** render a forecast as if it were a fact. Modeled landing dates, deflated capacity, and
   chain risk are labeled as estimates in the copy, not just in the color
+- **Don't** transition `color` or `background-color` on an element carrying text. Animate border,
+  outline, or shadow instead

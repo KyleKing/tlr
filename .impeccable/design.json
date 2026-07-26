@@ -8,103 +8,188 @@
         "role": "neutral",
         "displayName": "Base",
         "canonical": "#1e1e2e",
-        "tonalRamp": ["#1e1e2e", "#24273a", "#303446", "#eff1f5"]
+        "tonalRamp": [
+          "#1e1e2e",
+          "#24273a",
+          "#303446",
+          "#eff1f5"
+        ]
       },
       "mantle": {
         "role": "neutral",
         "displayName": "Mantle",
         "canonical": "#181825",
-        "tonalRamp": ["#181825", "#1e2030", "#292c3c", "#e6e9ef"]
+        "tonalRamp": [
+          "#181825",
+          "#1e2030",
+          "#292c3c",
+          "#e6e9ef"
+        ]
       },
       "crust": {
         "role": "neutral",
         "displayName": "Crust",
         "canonical": "#11111b",
-        "tonalRamp": ["#11111b", "#181926", "#232634", "#dce0e8"]
+        "tonalRamp": [
+          "#11111b",
+          "#181926",
+          "#232634",
+          "#dce0e8"
+        ]
       },
       "text": {
         "role": "neutral",
         "displayName": "Text",
         "canonical": "#cdd6f4",
-        "tonalRamp": ["#4c4f69", "#c6d0f5", "#cad3f5", "#cdd6f4"]
+        "tonalRamp": [
+          "#4c4f69",
+          "#c6d0f5",
+          "#cad3f5",
+          "#cdd6f4"
+        ]
       },
       "subtext0": {
         "role": "neutral",
         "displayName": "Subtext",
         "canonical": "#a6adc8",
-        "tonalRamp": ["#65687a", "#a5adcb", "#a5adce", "#a6adc8"]
+        "tonalRamp": [
+          "#65687a",
+          "#a5adcb",
+          "#a5adce",
+          "#a6adc8"
+        ]
       },
       "surface0": {
         "role": "neutral",
         "displayName": "Surface Rule",
         "canonical": "#313244",
-        "tonalRamp": ["#313244", "#363a4f", "#414559", "#ccd0da"]
+        "tonalRamp": [
+          "#313244",
+          "#363a4f",
+          "#414559",
+          "#ccd0da"
+        ]
       },
       "surface1": {
         "role": "neutral",
         "displayName": "Surface Border",
         "canonical": "#45475a",
-        "tonalRamp": ["#45475a", "#494d64", "#51576d", "#bcc0cc"]
+        "tonalRamp": [
+          "#45475a",
+          "#494d64",
+          "#51576d",
+          "#bcc0cc"
+        ]
       },
       "mauve": {
         "role": "primary",
         "displayName": "Mauve",
         "canonical": "#cba6f7",
-        "tonalRamp": ["#8035e0", "#c6a0f6", "#ca9ee6", "#cba6f7"]
+        "tonalRamp": [
+          "#8035e0",
+          "#c6a0f6",
+          "#ca9ee6",
+          "#cba6f7"
+        ]
       },
       "blue": {
         "role": "secondary",
         "displayName": "Blue",
         "canonical": "#89b4fa",
-        "tonalRamp": ["#1b5de1", "#8aadf4", "#8caaee", "#89b4fa"]
+        "tonalRamp": [
+          "#1b5de1",
+          "#8aadf4",
+          "#8caaee",
+          "#89b4fa"
+        ]
       },
       "green": {
         "role": "secondary",
         "displayName": "Green",
         "canonical": "#a6e3a1",
-        "tonalRamp": ["#2f761f", "#a6d189", "#a6da95", "#a6e3a1"]
+        "tonalRamp": [
+          "#2f761f",
+          "#a6d189",
+          "#a6da95",
+          "#a6e3a1"
+        ]
       },
       "peach": {
         "role": "secondary",
         "displayName": "Peach",
         "canonical": "#fab387",
-        "tonalRamp": ["#b14607", "#ef9f76", "#f5a97f", "#fab387"]
+        "tonalRamp": [
+          "#b14607",
+          "#ef9f76",
+          "#f5a97f",
+          "#fab387"
+        ]
       },
       "pink": {
         "role": "secondary",
         "displayName": "Pink",
         "canonical": "#f5c2e7",
-        "tonalRamp": ["#984c83", "#f4b8e4", "#f5bde6", "#f5c2e7"]
+        "tonalRamp": [
+          "#984c83",
+          "#f4b8e4",
+          "#f5bde6",
+          "#f5c2e7"
+        ]
       },
       "teal": {
         "role": "secondary",
         "displayName": "Teal",
         "canonical": "#94e2d5",
-        "tonalRamp": ["#179299", "#81c8be", "#8bd5ca", "#94e2d5"]
+        "tonalRamp": [
+          "#179299",
+          "#81c8be",
+          "#8bd5ca",
+          "#94e2d5"
+        ]
       },
       "lavender": {
         "role": "secondary",
         "displayName": "Lavender",
         "canonical": "#b4befe",
-        "tonalRamp": ["#7287fd", "#babbf1", "#b7bdf8", "#b4befe"]
+        "tonalRamp": [
+          "#7287fd",
+          "#babbf1",
+          "#b7bdf8",
+          "#b4befe"
+        ]
       },
       "yellow": {
         "role": "secondary",
         "displayName": "Yellow",
         "canonical": "#f9e2af",
-        "tonalRamp": ["#905c12", "#e5c890", "#eed49f", "#f9e2af"]
+        "tonalRamp": [
+          "#905c12",
+          "#e5c890",
+          "#eed49f",
+          "#f9e2af"
+        ]
       },
       "red": {
         "role": "secondary",
         "displayName": "Red",
         "canonical": "#f38ba8",
-        "tonalRamp": ["#cd0e37", "#e78284", "#ed8796", "#f38ba8"]
+        "tonalRamp": [
+          "#cd0e37",
+          "#e78284",
+          "#ed8796",
+          "#f38ba8"
+        ]
       },
       "sky": {
         "role": "tertiary",
         "displayName": "Sky",
         "canonical": "#89dceb",
-        "tonalRamp": ["#04a5e5", "#99d1db", "#91d7e3", "#89dceb"]
+        "tonalRamp": [
+          "#04a5e5",
+          "#99d1db",
+          "#91d7e3",
+          "#89dceb"
+        ]
       }
     },
     "typographyMeta": {
@@ -116,8 +201,14 @@
         "displayName": "Title",
         "purpose": "Table headers, section headers, and the names that label a board axis."
       },
-      "body": { "displayName": "Body", "purpose": "Table cells and prose." },
-      "label": { "displayName": "Label", "purpose": "Chips, popover buttons, and most controls." },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Table cells and prose."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Chips, popover buttons, and most controls."
+      },
       "micro": {
         "displayName": "Micro",
         "purpose": "Badges, mini chips, and the secondary line under a card. The 10px floor."
@@ -126,7 +217,10 @@
         "displayName": "Numeric",
         "purpose": "Anything a reader compares down a column: points, estimates, day counts, capacity totals."
       },
-      "brand": { "displayName": "Brand", "purpose": "The tlr wordmark in the nav, and nowhere else." }
+      "brand": {
+        "displayName": "Brand",
+        "purpose": "The tlr wordmark in the nav, and nowhere else."
+      }
     },
     "shadows": [
       {
@@ -165,12 +259,31 @@
         "purpose": "The selected flavor or accent swatch in Settings."
       }
     ],
-    "motion": [],
+    "motion": [
+      {
+        "name": "dur-state",
+        "value": "120ms",
+        "purpose": "A control answering a pointer or a key. Border colour only, on chips, pills, and cards; never color or background-color on an element carrying text."
+      },
+      {
+        "name": "dur-move",
+        "value": "300ms",
+        "purpose": "Something changing where it is on the page. Re-layout between relationship modes is the case this exists for."
+      },
+      {
+        "name": "ease",
+        "value": "cubic-bezier(0.4, 0, 0.2, 1)",
+        "purpose": "The only curve in the system."
+      }
+    ],
     "breakpoints": [
-      { "name": "compact", "value": "900px" }
+      {
+        "name": "compact",
+        "value": "900px"
+      }
     ],
     "notes": {
-      "motion": "The stylesheet has no transition, no @keyframes, and no prefers-reduced-motion block. Every state change is instant. Recorded as observed, not as doctrine; whether motion should ever be introduced is open.",
+      "motion": "Two durations and one curve, declared as tokens in :root. A prefers-reduced-motion block sets both durations to 0ms at the token, so honouring the preference is automatic and no component has to remember it. Animate only a property whose change carries information: a state that answered you, or a position that moved.",
       "flavors": "Four user-selectable flavors (latte, frappe, macchiato, mocha) and eight accents (mauve, blue, green, peach, pink, teal, lavender, yellow), applied as CSS custom properties on documentElement by web/lib/appearance.js. Frontmatter values are the mocha flavor with the mauve accent. Latte is deliberately darkened from stock Catppuccin so small text clears WCAG AA against the background it actually renders on.",
       "tonalRamps": "Four steps rather than eight, because the project's real tonal scale is its four flavors. Ordered dark to light."
     }
@@ -281,6 +394,16 @@
         "name": "The Whole-State Rule",
         "body": "A page shows the entire project by default and filters down. It never paginates, because the question the tool exists to answer (\"what is wrong\") cannot be asked one page at a time.",
         "section": "layout"
+      },
+      {
+        "name": "The Motion Follows Meaning Rule",
+        "body": "Animate only a property whose change carries information: a state that answered you, or a position that moved. Never animate to decorate, never animate on load, and never animate something the reader did not cause.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Never Animate Contrast Rule",
+        "body": "Never transition color or background-color on an element carrying text. Latte is tuned to clear 4.5:1 by a hair, so interpolating between two passing colours spends the whole margin and renders failing text for the length of the transition. Border, outline, and shadow are the animatable channels, because none of them owes a contrast ratio.",
+        "section": "elevation"
       }
     ],
     "dos": [
@@ -297,7 +420,8 @@
       "Don't introduce a max-width reading container on the board or roadmap. The artifact wants the whole viewport",
       "Don't paginate a project view. Filter it",
       "Don't add a shadow to a surface that does not actually float above the page; tonal layering plus a 1px border is how depth is expressed everywhere else",
-      "Don't render a forecast as if it were a fact. Modeled landing dates, deflated capacity, and chain risk are labeled as estimates in the copy, not just in the color"
+      "Don't render a forecast as if it were a fact. Modeled landing dates, deflated capacity, and chain risk are labeled as estimates in the copy, not just in the color",
+      "Don't transition color or background-color on an element carrying text; animate border, outline, or shadow instead"
     ]
   }
 }

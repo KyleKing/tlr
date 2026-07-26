@@ -143,5 +143,5 @@ flavor and accent pair.
 Keyboard navigation is first-class, not a fallback. This is a dense operator tool used in short
 sessions, so every action should be reachable without the mouse. The mechanism is undecided: a
 command palette and vim-style bindings are both on the table. Today the app has aria states on
-toggles, popovers, and banners, but no focus-visible styling, no skip link, and no
-`prefers-reduced-motion` handling.
+toggles, popovers, and banners, and motion durations collapse to zero under
+`prefers-reduced-motion`. There is still no skip link.

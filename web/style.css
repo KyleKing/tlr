@@ -21,6 +21,17 @@
   --pink: #ea76cb;
   --lavender: #7287fd;
   --accent: var(--mauve);
+  /* Motion. --dur-state is for a control answering a pointer or a key; --dur-move is for something
+     changing where it is on the page, which needs long enough to follow with your eye. */
+  --dur-state: 120ms;
+  --dur-move: 300ms;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-state: 0ms;
+    --dur-move: 0ms;
+  }
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -969,6 +980,7 @@ h1 {
   font: 12px var(--font);
   cursor: pointer;
   user-select: none;
+  transition: border-color var(--dur-state) var(--ease);
 }
 .chip:disabled {
   cursor: default;
@@ -1130,6 +1142,7 @@ h1 {
   padding: 5px 11px;
   font: 13.5px var(--font);
   cursor: pointer;
+  transition: border-color var(--dur-state) var(--ease);
 }
 .pill[aria-pressed="true"] {
   background: var(--accent);
@@ -1372,6 +1385,7 @@ td.past {
   border-radius: var(--radius);
   padding: 4px 7px;
   cursor: pointer;
+  transition: border-color var(--dur-state) var(--ease);
 }
 .card:hover {
   border-color: var(--accent);
