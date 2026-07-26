@@ -20,5 +20,6 @@ when built, lives on the machine (gitignored, or outside the working tree).
 
 - Anyone cloning the repo sees the synthetic sample, not real tickets
 - Screenshots shared outside need a judgment call, since they show real titles
-- The snapshot store is single-user and local, which suits a personal tool and sidesteps hosting a
-  database
+- The snapshot store is per-user and local. Each lead runs their own copy against their own projects,
+  which sidesteps hosting a database. Sharing captures between people, or a hosted store, is deferred
+  to the `SnapshotStore` port in [0007](0007-productization-and-domains.md)

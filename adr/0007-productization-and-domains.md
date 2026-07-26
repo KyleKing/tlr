@@ -11,6 +11,11 @@ arrive through the Google Calendar MCP inside a Claude session, and secrets sit 
 Every shortcut was the right call for proving the slice. None of them survives a second user on a shared
 runner.
 
+The second user is real, not hypothetical. tlr is for the tech leads and engineering managers on this
+company's Linear workspace, each running their own projects, and it may open to Linear-using leads
+outside the company later. So "one operator on one machine" is a property of today's deployment, never
+an assumption the code is allowed to bake in.
+
 The risk now is that the spikes calcify as one-offs, with the MCP handoff and the keychain reads wired
 straight into callers. Then productionizing means rewriting the callers instead of swapping a back end.
 This ADR sets the shape the spikes migrate into so that a shortcut is always replaceable in one place,
