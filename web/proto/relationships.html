@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>tlr — relationships prototype</title>
+  <link rel="stylesheet" href="/style.css" />
+  <link rel="stylesheet" href="/proto/proto.css" />
+</head>
+<body class="design-a">
+  <div class="pr-head">
+    <h1>Relationships</h1>
+    <span class="pr-sub" id="count"></span>
+  </div>
+
+  <div class="pr-bar">
+    <span class="pr-group">
+      <span class="pr-legend">Direction</span>
+      <button class="chip" data-set="design:a" aria-pressed="true">A · Atlas</button>
+      <button class="chip" data-set="design:b" aria-pressed="false">B · Focus</button>
+      <button class="chip" data-set="design:c" aria-pressed="false">C · Strata</button>
+    </span>
+
+    <span class="pr-group">
+      <span class="pr-legend">Relationship</span>
+      <button class="chip" data-set="mode:similarity" aria-pressed="true">Similarity</button>
+      <button class="chip" data-set="mode:sequence" aria-pressed="false">Sequence</button>
+      <button class="chip" data-set="mode:grouping" aria-pressed="false">Grouping</button>
+      <select id="groupBy" class="chip" aria-label="Group by">
+        <option value="milestone">milestone</option>
+        <option value="cycle">cycle</option>
+        <option value="assignee">assignee</option>
+        <option value="label">label</option>
+        <option value="parent">parent</option>
+      </select>
+    </span>
+
+    <span class="pr-group">
+      <span class="pr-legend">Detail</span>
+      <button class="chip label-toggle" id="lodToggle" aria-pressed="false">Detail: auto</button>
+      <button class="chip mini" id="lodStep">Step</button>
+      <span class="pr-sub" id="lod">Detail</span>
+      <button class="chip mini" id="reset">Reset view</button>
+    </span>
+
+    <span class="pr-note">click a card to focus its neighbourhood · scroll to zoom · drag to pan</span>
+  </div>
+
+  <div class="pr-viewport" id="viewport" tabindex="0">
+    <div class="pr-plane" id="plane">
+      <svg class="pr-edges" id="edges" aria-hidden="true"></svg>
+    </div>
+  </div>
+
+  <div class="pr-tip" id="tip" hidden></div>
+
+  <script type="module" src="/proto/relationships.js"></script>
+</body>
+</html>

@@ -1,0 +1,243 @@
+/* Prototype-only styling. Tokens come from web/style.css; nothing here is meant to ship as-is. */
+
+.pr-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 16px 0;
+}
+.pr-head h1 {
+  font: 650 18px/1.5 var(--font);
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+.pr-sub {
+  color: var(--subtext0);
+  font-size: 12.5px;
+}
+
+.pr-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--surface0);
+}
+.pr-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.pr-group > .pr-legend {
+  color: var(--subtext0);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.pr-note {
+  margin-left: auto;
+  color: var(--subtext0);
+  font-size: 11.5px;
+  font-style: italic;
+}
+
+.pr-viewport {
+  position: relative;
+  height: calc(100vh - 132px);
+  overflow: hidden;
+  background: var(--base);
+  border-bottom: 1px solid var(--surface0);
+  cursor: grab;
+}
+.pr-viewport:active {
+  cursor: grabbing;
+}
+.pr-viewport:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.pr-plane {
+  position: absolute;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+.pr-edges {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+.pr-edge {
+  fill: none;
+  stroke: var(--surface1);
+  stroke-width: 1.2;
+}
+.pr-edge.lit {
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+.pr-edge.sim {
+  stroke: var(--slop);
+  stroke-dasharray: 3 3;
+}
+
+/* cards */
+.pr-card {
+  position: absolute;
+  background: var(--mantle);
+  border: 1px solid var(--surface1);
+  border-left: 3px solid var(--tile, var(--st-unstarted));
+  border-radius: var(--radius);
+  padding: 3px 7px;
+  overflow: hidden;
+  cursor: pointer;
+  color: var(--text);
+  box-sizing: border-box;
+}
+.pr-card:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+  z-index: 5;
+}
+.pr-card .pr-id {
+  font: 700 11px var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+.pr-card .pr-pts {
+  float: right;
+  color: var(--subtext0);
+  font: 600 11px var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+.pr-card .pr-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 11.5px;
+  line-height: 1.3;
+  margin-top: 1px;
+}
+.pr-card .pr-meta {
+  color: var(--subtext0);
+  font-size: 10.5px;
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* At tile level the box carries status as fill, so a zoomed-out plane is still a real reading
+   rather than a field of blank rectangles. */
+.pr-card.lod0 {
+  padding: 0;
+  background: color-mix(in srgb, var(--tile, var(--st-unstarted)) 26%, var(--mantle));
+  border-left-width: 1px;
+}
+.pr-card.lod0 .pr-id,
+.pr-card.lod0 .pr-title,
+.pr-card.lod0 .pr-meta,
+.pr-card.lod0 .pr-pts,
+.pr-card.lod1 .pr-title,
+.pr-card.lod1 .pr-meta {
+  display: none;
+}
+.pr-card.dim {
+  opacity: 0.26;
+}
+.pr-card.lit {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent);
+  z-index: 4;
+}
+.pr-card.sel {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent);
+  z-index: 6;
+}
+
+/* groups */
+.pr-region {
+  position: absolute;
+  border: 1px solid var(--surface0);
+  border-radius: var(--radius);
+  box-sizing: border-box;
+}
+.pr-region-label {
+  position: absolute;
+  font: 650 12px var(--font);
+  color: var(--subtext0);
+  white-space: nowrap;
+}
+.pr-band-rule {
+  position: absolute;
+  border-top: 1px solid var(--surface0);
+}
+.pr-axis-label {
+  position: absolute;
+  font: 650 10.5px var(--font);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--subtext0);
+  white-space: nowrap;
+}
+
+/* design B: no containers, group carried by a tint field */
+.design-b .pr-region {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--surface0) 34%, transparent);
+}
+.design-b .pr-card {
+  background: var(--base);
+}
+
+/* design C: bands */
+.design-c .pr-region {
+  border: none;
+  border-top: 1px solid var(--surface0);
+  border-radius: 0;
+}
+
+.pr-tip {
+  position: fixed;
+  z-index: 40;
+  max-width: 320px;
+  background: var(--mantle);
+  border: 1px solid var(--surface1);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+  padding: 8px 10px;
+  font-size: 12px;
+  pointer-events: none;
+}
+.pr-tip h3 {
+  font: 650 12.5px var(--font);
+  margin: 0 0 3px;
+}
+.pr-tip dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1px 8px;
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: var(--subtext0);
+}
+.pr-tip dt {
+  font-weight: 600;
+}
+.pr-tip dd {
+  margin: 0;
+  color: var(--text);
+}
+
+.pr-moving .pr-card {
+  transition: left 320ms cubic-bezier(0.4, 0, 0.2, 1), top 320ms cubic-bezier(0.4, 0, 0.2, 1),
+    width 320ms cubic-bezier(0.4, 0, 0.2, 1), height 320ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .pr-moving .pr-card {
+    transition: none;
+  }
+}
