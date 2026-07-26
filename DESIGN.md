@@ -78,6 +78,7 @@ rounded:
   sm: "4px"
   md: "6px"
   lg: "10px"
+  xl: "12px"
   pill: "999px"
   circle: "50%"
 spacing:
@@ -340,8 +341,12 @@ panels. Two exceptions carry meaning. Anything countable and atomic (a tick, a b
 capsule, so a scannable count reads as a unit rather than a box. Avatars are circles.
 
 Borders are always 1px and always `--surface1`, except for the 3px accent left border that marks a
-card as a ticket and the 3px status left border that marks a roadmap card's state. Corners are never
-square and never more than 10px, so the whole surface reads as one family at a glance.
+card as a ticket and the 3px status left border that marks a roadmap card's state.
+
+The one exception to the 6px default is the edit modal at 12px, and the size is the reason: it is the
+largest surface in the product and the only true overlay, so the same radius that reads as a soft
+corner on a 168px card reads as almost square across 1100px. Radius scales with the surface rather
+than being uniform, and 12px is the top of the scale.
 
 ## Components
 
