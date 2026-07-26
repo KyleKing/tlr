@@ -165,10 +165,21 @@ test("settings secrets pane reports credential state without ever showing a valu
 })
 
 test("the global project picker in the nav switches projects and preserves the current page", async ({ page }) => {
+  // The picker hides itself below two projects, and a fresh seed registers exactly one, so the
+  // manifest is stubbed rather than read off disk. Both entries point at files global.setup wrote,
+  // so switching to either loads real data. Everything else still comes from the seeded store.
+  await page.route("**/data/projects.json", (route) =>
+    route.fulfill({
+      json: [
+        { slug: "seeded-reliability", name: "Horse Tinder (seed)", dataFile: "seed-b.json" },
+        { slug: "seeded-earlier", name: "Horse Tinder (earlier)", dataFile: "seed-a.json" },
+      ],
+    }))
   await page.goto(`/review${SEED}`)
 
   const picker = page.locator("#global-project-picker")
   await expect(picker).toBeVisible()
+  await expect(picker.locator("option")).toHaveCount(2)
   await expect(picker).toHaveValue("seeded-reliability")
 
   // /api/projects/access is skipped under the e2e harness (no live Linear connection), so the
