@@ -1763,7 +1763,7 @@ td.past {
 }
 .rm-chain-path {
   color: var(--muted);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: var(--mono);
   font-size: 11px;
   margin-top: 2px;
 }
