@@ -1,0 +1,6 @@
+{
+  "files": ["web/templates/layouts/base.vto"],
+  "insertBefore": "</body>",
+  "commentSyntax": "html",
+  "cspChecked": true
+}
