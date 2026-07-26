@@ -40,6 +40,7 @@
     "zod": "npm:zod@^4.1.11"
   },
   "fmt": {
+    "exclude": [".copier-answers.yml"],
     "indentWidth": 2,
     "lineWidth": 120,
     "proseWrap": "preserve",

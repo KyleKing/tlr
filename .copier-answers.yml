@@ -1,0 +1,14 @@
+# Changes here will be overwritten by Copier
+_commit: b2f5c61
+_src_path: gh:kyleking/app-template
+author_email: dev.act.kyle@gmail.com
+author_name: Kyle King
+author_username: kyleking
+copyright_date: '2026'
+development_branch: main
+project_description: Linear roadmap planning, capacity forecasting, and change review
+    for a local-first team board
+project_name: tlr
+repository_namespace: kyleking
+repository_provider: https://github.com
+repository_url: https://github.com/kyleking/tlr
