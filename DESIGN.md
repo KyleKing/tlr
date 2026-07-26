@@ -183,7 +183,7 @@ saturated pixel always means something.
 
 - **Mauve** (`#cba6f7` mocha, `#8035e0` latte): the interactive accent. Selected chips and pills take
   it as a fill, focus rings take it as a 2-3px outline, active nav links take it as an underline, and
-  every card carries it as a 3px left border. It is the only color the user can change, across eight
+  every card carries it as a 1px left border. It is the only color the user can change, across eight
   hues (mauve, blue, green, peach, pink, teal, lavender, yellow). Latte's mauve is darkened from
   stock `#8839ef` so bold nav text clears 4.5:1 on `--mantle`
 
@@ -224,6 +224,14 @@ it.
 computed `-fg` (`--accent-fg`, `--risk-fg`, and so on), never `--text` or `--base`. The accents span
 dark mauve to pastel yellow across four flavors, and a fixed pairing goes unreadable on half of them.
 `contrastFg()` picks the better of `#111111` and `#f5f5f5` by measured ratio.
+
+**The No Tint Under Small Text Rule.** Never tint a surface that carries small muted text. `--subtext0`
+was darkened to clear 4.5:1 against `--base` and `--mantle` and against nothing else, so the palette
+has no headroom left: a 10% status wash behind an 11px `--subtext0` label measures 4.32:1, and a 14%
+accent wash measures 3.71:1. Tint is available on surfaces with no small text (the `.heat` capacity
+wash, a card drawn at tile size), and everywhere else the hue goes on a 1px border, which owes no
+contrast ratio at all. This was measured, not predicted: replacing the card borders with washes broke
+five axe scenarios at once.
 
 **The Check-It-Where-It-Renders Rule.** A new color is checked against the background it will
 actually sit on, in every flavor and accent pair, before it ships. `tests/theme_test.ts` sweeps the
@@ -340,8 +348,9 @@ One radius does nearly everything: `--radius`, 6px, on chips, pills, cards, inpu
 panels. Two exceptions carry meaning. Anything countable and atomic (a tick, a badge) is a 999px
 capsule, so a scannable count reads as a unit rather than a box. Avatars are circles.
 
-Borders are always 1px and always `--surface1`, except for the 3px accent left border that marks a
-card as a ticket and the 3px status left border that marks a roadmap card's state.
+Borders are always 1px. `--surface1` is the default, and one edge changes colour to carry meaning:
+the left border is accent on a ticket card and the status hue on a roadmap card. Width never changes,
+only colour, so the silhouette stays uniform and the hue does the talking.
 
 The one exception to the 6px default is the edit modal at 12px, and the size is the reason: it is the
 largest surface in the product and the only true overlay, so the same radius that reads as a soft
@@ -379,7 +388,7 @@ solid accent outline at 2px offset and lifts the z-index so the ring is not clip
 
 ### Cards
 
-Ticket cards on `--mantle`, 6px radius, 4px/7px padding, with a 3px accent left border that makes a
+Ticket cards on `--mantle`, 6px radius, 4px/7px padding, with a 1px accent left border that makes a
 card identifiable as a ticket in peripheral vision. Inside: a 700-weight 11px mono id, a right-aligned
 point count in `--subtext0`, and a title clamped to two lines at 1.35 line-height. Hover shifts the
 border to the accent; the same warning rings apply.

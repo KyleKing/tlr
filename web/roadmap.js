@@ -310,7 +310,7 @@ function cardHTML(card) {
   const glyph = flagGlyph(i)
   return `<div class="rm-card ${warnClass(i)}" data-id="${escapeHtml(i.id)}" ` +
     `style="left:${card.x}px;top:${card.y}px;width:${card.width}px;height:${card.height}px;` +
-    `border-left-color:${STATUS[i.statusType]?.color ?? "var(--surface1)"}">` +
+    `--tile:${STATUS[i.statusType]?.color ?? "var(--surface1)"}">` +
     `<span class="rm-card-top">` +
     `<span class="rm-id">${escapeHtml(i.id)}</span>` +
     (glyph ? `<span class="rm-flag">${glyph}</span>` : "") +

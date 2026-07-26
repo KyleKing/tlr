@@ -317,9 +317,9 @@
       "name": "Ticket Card",
       "kind": "card",
       "refersTo": "card",
-      "description": "A ticket in a list. The 3px accent left border makes it identifiable in peripheral vision.",
+      "description": "A ticket in a list. A 1px accent left border makes it identifiable in peripheral vision without tinting the surface its text sits on.",
       "html": "<div class=\"ds-card\"><div class=\"ds-card-top\"><span class=\"ds-card-id\">SEED-125</span><span class=\"ds-card-pts\">13</span></div><div class=\"ds-card-t\">Rework the matchmaking scoring pass</div><div class=\"ds-card-badges\"><span class=\"ds-badge ds-badge-risk\">risk</span></div></div>",
-      "css": ".ds-card { background: var(--mantle, #181825); border: 1px solid var(--surface1, #45475a); border-left: 3px solid var(--accent, #cba6f7); border-radius: var(--radius, 6px); padding: 4px 7px; cursor: pointer; color: var(--text, #cdd6f4); font: 12px -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; max-width: 240px; } .ds-card:hover { border-color: var(--accent, #cba6f7); } .ds-card:focus-visible { outline: 3px solid var(--accent, #cba6f7); outline-offset: 2px; } .ds-card-top { display: flex; gap: 6px; align-items: center; } .ds-card-id { font: 700 11px ui-monospace, 'SF Mono', Menlo, Consolas, monospace; } .ds-card-pts { margin-left: auto; color: var(--subtext0, #a6adc8); font-variant-numeric: tabular-nums; } .ds-card-t { margin-top: 2px; line-height: 1.35; } .ds-card-badges { display: flex; gap: 4px; margin-top: 3px; }"
+      "css": ".ds-card { background: var(--mantle, #181825); border: 1px solid var(--surface1, #45475a); border-left: 1px solid var(--accent, #cba6f7); border-radius: var(--radius, 6px); padding: 4px 7px; cursor: pointer; color: var(--text, #cdd6f4); font: 12px -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; max-width: 240px; } .ds-card:hover { border-color: var(--accent, #cba6f7); } .ds-card:focus-visible { outline: 3px solid var(--accent, #cba6f7); outline-offset: 2px; } .ds-card-top { display: flex; gap: 6px; align-items: center; } .ds-card-id { font: 700 11px ui-monospace, 'SF Mono', Menlo, Consolas, monospace; } .ds-card-pts { margin-left: auto; color: var(--subtext0, #a6adc8); font-variant-numeric: tabular-nums; } .ds-card-t { margin-top: 2px; line-height: 1.35; } .ds-card-badges { display: flex; gap: 4px; margin-top: 3px; }"
     },
     {
       "name": "Status Badge",
@@ -404,6 +404,11 @@
         "name": "The Never Animate Contrast Rule",
         "body": "Never transition color or background-color on an element carrying text. Latte is tuned to clear 4.5:1 by a hair, so interpolating between two passing colours spends the whole margin and renders failing text for the length of the transition. Border, outline, and shadow are the animatable channels, because none of them owes a contrast ratio.",
         "section": "elevation"
+      },
+      {
+        "name": "The No Tint Under Small Text Rule",
+        "body": "Never tint a surface that carries small muted text. --subtext0 was darkened to clear 4.5:1 against --base and --mantle and against nothing else, so the palette has no headroom left: a 10% status wash behind an 11px --subtext0 label measures 4.32:1, and a 14% accent wash measures 3.71:1. Tint is available on surfaces with no small text (the .heat capacity wash, a card drawn at tile size); everywhere else the hue goes on a 1px border, which owes no contrast ratio.",
+        "section": "colors"
       }
     ],
     "dos": [
@@ -421,7 +426,8 @@
       "Don't paginate a project view. Filter it",
       "Don't add a shadow to a surface that does not actually float above the page; tonal layering plus a 1px border is how depth is expressed everywhere else",
       "Don't render a forecast as if it were a fact. Modeled landing dates, deflated capacity, and chain risk are labeled as estimates in the copy, not just in the color",
-      "Don't transition color or background-color on an element carrying text; animate border, outline, or shadow instead"
+      "Don't transition color or background-color on an element carrying text; animate border, outline, or shadow instead",
+      "Don't tint a surface that carries small muted text; put the hue on a 1px border instead"
     ]
   }
 }
