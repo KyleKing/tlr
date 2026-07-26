@@ -293,6 +293,65 @@ Measured while building:
 - 180 DOM cards with 387 live SVG edges pans and zooms without a dropped frame, which supports the
   no-canvas call above
 
+## Gaps before v1
+
+This is not shippable yet. What exists is the pure layout and scoring in `web/lib` with unit tests,
+and a prototype at `web/proto/relationships.html` running on synthetic data. There is no
+`/relationships` route, and `/roadmap` is still the live page. The gaps below are ordered by what
+blocks a first ship.
+
+### Blocking
+
+- **No page.** No route in `scripts/serve.ts`, no `.vto` template, no nav entry. Everything lives
+  under `web/proto/`
+- **No real data.** The prototype calls `buildProject()` for 180 synthetic tickets. It has never run
+  against a real snapshot, so the similarity scoring is unvalidated on real ticket text, which reads
+  very differently from generated text
+- **No filters.** The current roadmap has search, six status chips, a bucket checklist, and a flag
+  checklist. All of it is parity work, and filtering has to re-run layout for Sequence (waves change
+  when the visible set changes) but must not move the Similarity map, which is computed per snapshot
+- **No keyboard model.** Cards carry `tabIndex = -1` and only the first is reachable. The roadmap's
+  roving tabindex, arrow-key nearest-neighbour movement, Enter to open Linear, and Escape to dismiss
+  are all missing. `PRODUCT.md` records keyboard navigation as first-class, so this is a blocker
+  rather than a polish item
+- **Click does the wrong thing.** It selects. The roadmap opens the ticket in Linear, which is the
+  behaviour people will expect. Selection needs a different affordance
+- **No persistence.** Mode, group-by, zoom, pan, and selection are lost on reload. The roadmap
+  persists its equivalents to both the URL and `localStorage`
+
+### Parity that would be missed
+
+- **The chain list.** `ROADMAP.md` records that the deleted graph spike found the text beside each
+  cluster was the part carrying information, and the roadmap's `<details>` chain list is that text.
+  Retiring `/roadmap` without carrying it across loses the most load-bearing thing on the page
+- **Flag badges.** Slop, chain risk, and missing-data flags are not drawn on the new cards
+- **Empty and error states.** No empty plane, no message when a project has no relationships at all
+
+### Correctness and quality
+
+- **Card tint is unvalidated for contrast.** The status wash replaces the 3px border, so text now sits
+  on `color-mix(var(--tile) 10%, var(--mantle))` rather than on flat `--mantle`. That has not been run
+  through `tests/theme_test.ts` or axe across all four flavors and eight accents
+- **No axe coverage.** `tests/e2e/a11y.spec.ts` scans `/roadmap`; the new page needs its own scenarios,
+  including a selected card and each mode
+- **No e2e coverage at all**, and three existing specs assert `/roadmap` internals (`dependency waves`
+  in `#summary`, `.rm-row-label` count, no two cards sharing an offset)
+- **Similarity is recomputed in the browser on every load.** At 180 tickets the matrix, geodesic pass,
+  and majorization run on the main thread. Fine at this size, but it belongs at refresh time in the
+  snapshot, which is also what makes it available to the CLI
+- **`related` is still discarded** in `transformIssue`, so the hand-curated relationship channel stays
+  empty on real ingests
+- **Reduced motion is only asserted by construction.** The tokens collapse to `0ms`, but nothing tests
+  it
+- **Performance is unmeasured on real data.** 180 synthetic cards pan smoothly; 200 real ones with
+  filters and flags have not been tried
+
+### Known deferred
+
+- `--muted` is referenced in ten places in `style.css` and defined by no theme, so those elements
+  inherit `--text` and pass contrast by accident. Any repaint has to fix it rather than inherit it
+- A 12px radius at `style.css:436` is outside the DESIGN.md rounded scale
+
 ## Open decisions
 
 - Whether the 300ms mode transition is acceptable, given that the stylesheet has no motion at all today

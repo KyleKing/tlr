@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="/style.css" />
   <link rel="stylesheet" href="/proto/proto.css" />
 </head>
-<body class="design-a">
+<body>
   <div class="pr-head">
     <h1>Relationships</h1>
     <span class="pr-sub" id="count"></span>
@@ -15,17 +15,10 @@
 
   <div class="pr-bar">
     <span class="pr-group">
-      <span class="pr-legend">Direction</span>
-      <button class="chip" data-set="design:a" aria-pressed="true">A · Atlas</button>
-      <button class="chip" data-set="design:b" aria-pressed="false">B · Focus</button>
-      <button class="chip" data-set="design:c" aria-pressed="false">C · Strata</button>
-    </span>
-
-    <span class="pr-group">
       <span class="pr-legend">Relationship</span>
-      <button class="chip" data-set="mode:similarity" aria-pressed="true">Similarity</button>
-      <button class="chip" data-set="mode:sequence" aria-pressed="false">Sequence</button>
-      <button class="chip" data-set="mode:grouping" aria-pressed="false">Grouping</button>
+      <button class="chip" data-mode="similarity" aria-pressed="true">Similarity</button>
+      <button class="chip" data-mode="sequence" aria-pressed="false">Sequence</button>
+      <button class="chip" data-mode="grouping" aria-pressed="false">Grouping</button>
       <select id="groupBy" class="chip" aria-label="Group by">
         <option value="milestone">milestone</option>
         <option value="cycle">cycle</option>
@@ -37,8 +30,7 @@
 
     <span class="pr-group">
       <span class="pr-legend">Detail</span>
-      <button class="chip label-toggle" id="lodToggle" aria-pressed="false">Detail: auto</button>
-      <button class="chip mini" id="lodStep">Step</button>
+      <button class="chip label-toggle" id="lodStep" aria-pressed="false">Detail: auto</button>
       <span class="pr-sub" id="lod">Detail</span>
       <button class="chip mini" id="reset">Reset view</button>
     </span>
