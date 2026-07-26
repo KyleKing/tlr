@@ -339,18 +339,20 @@ blocks a first ship.
 - **Similarity is recomputed in the browser on every load.** At 180 tickets the matrix, geodesic pass,
   and majorization run on the main thread. Fine at this size, but it belongs at refresh time in the
   snapshot, which is also what makes it available to the CLI
-- **`related` is still discarded** in `transformIssue`, so the hand-curated relationship channel stays
-  empty on real ingests
 - **Reduced motion is only asserted by construction.** The tokens collapse to `0ms`, but nothing tests
   it
 - **Performance is unmeasured on real data.** 180 synthetic cards pan smoothly; 200 real ones with
   filters and flags have not been tried
 
-### Known deferred
+### Fixed since this was written
 
-- `--muted` is referenced in ten places in `style.css` and defined by no theme, so those elements
-  inherit `--text` and pass contrast by accident. Any repaint has to fix it rather than inherit it
-- A 12px radius at `style.css:436` is outside the DESIGN.md rounded scale
+- `related` is captured in `transformIssue` and mirrored in `linkRelations`, so the hand-curated
+  channel now survives a real ingest
+- `--muted`, `--border`, and `--ok` were referenced in fifteen places and defined by no theme. They
+  now resolve to `--subtext0`, `--surface0`, and `--st-completed`
+- The 12px modal radius is recorded in the DESIGN.md scale as `xl`, with the reason
+- The 3px status and identity borders are 1px, after measuring that a wash cannot clear AA under
+  small muted text on this palette
 
 ## Open decisions
 
