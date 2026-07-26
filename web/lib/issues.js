@@ -142,10 +142,12 @@ export function workflowStates(teams, issue) {
 export function transformIssue(raw, milestoneKeyById) {
   const blocks = []
   const blockedBy = []
+  const related = []
   for (const rel of raw.relations?.nodes ?? []) {
     const identifier = rel.relatedIssue.identifier
     if (rel.type === "blocks") blocks.push(identifier)
     else if (rel.type === "blocked") blockedBy.push(identifier)
+    else if (rel.type === "related") related.push(identifier)
   }
   return {
     id: raw.identifier,
@@ -173,6 +175,9 @@ export function transformIssue(raw, milestoneKeyById) {
     cycle: raw.cycle?.number ?? null,
     blocks,
     blockedBy,
+    // Linear's own "related" link: hand-curated, and the only relationship channel a person sets
+    // deliberately rather than as a side effect of sequencing work.
+    related,
   }
 }
 
@@ -196,10 +201,16 @@ export function linkRelations(issues) {
       const other = byId.get(source)
       if (other && !(other.blocks ??= []).includes(i.id)) other.blocks.push(i.id)
     }
+    // "related" is undirected, but Linear still reports it once, on the issue that owns it.
+    for (const target of i.related ?? []) {
+      const other = byId.get(target)
+      if (other && !(other.related ??= []).includes(i.id)) other.related.push(i.id)
+    }
   }
   for (const i of issues) {
     i.blocks = [...new Set(i.blocks ?? [])].sort()
     i.blockedBy = [...new Set(i.blockedBy ?? [])].sort()
+    i.related = [...new Set(i.related ?? [])].sort()
   }
   return issues
 }

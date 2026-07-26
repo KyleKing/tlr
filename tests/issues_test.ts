@@ -9,6 +9,7 @@ import {
   estimateOptions,
   identifierTeamKey,
   isArchivedIssue,
+  linkRelations,
   liveIssues,
   liveSnapshot,
   mergeIngest,
@@ -107,6 +108,7 @@ Deno.test("transformIssue maps fields and splits relations into blocks/blockedBy
       nodes: [
         { type: "blocks", relatedIssue: { identifier: "ENG-2" } },
         { type: "blocked", relatedIssue: { identifier: "ENG-3" } },
+        { type: "related", relatedIssue: { identifier: "ENG-4" } },
       ],
     },
   }
@@ -130,6 +132,7 @@ Deno.test("transformIssue maps fields and splits relations into blocks/blockedBy
     cycle: 48,
     blocks: ["ENG-2"],
     blockedBy: ["ENG-3"],
+    related: ["ENG-4"],
   })
 })
 
@@ -170,6 +173,7 @@ Deno.test("transformIssue defaults missing optionals to null/empty, and a missin
     cycle: null,
     blocks: [],
     blockedBy: [],
+    related: [],
   })
 })
 
@@ -381,4 +385,29 @@ Deno.test("mergeIngest replaces the Linear-sourced blocks and keeps everything e
     issues: [],
     asOf: "2026-07-23",
   })
+})
+
+Deno.test("linkRelations mirrors every channel so an edge reads the same from both ends", () => {
+  // deno-lint-ignore no-explicit-any
+  const issues: any[] = [
+    { id: "ENG-1", blocks: ["ENG-2"], blockedBy: [], related: ["ENG-3"] },
+    { id: "ENG-2", blocks: [], blockedBy: [], related: [] },
+    { id: "ENG-3", blocks: [], blockedBy: [], related: [] },
+  ]
+  linkRelations(issues)
+  assertEquals(issues[1].blockedBy, ["ENG-1"], "the blocked end learns its blocker")
+  assertEquals(issues[2].related, ["ENG-1"], "related is undirected, so both ends carry it")
+  assertEquals(issues[0].related, ["ENG-3"])
+})
+
+Deno.test("linkRelations ignores an endpoint outside the fetched set and dedupes what is left", () => {
+  // deno-lint-ignore no-explicit-any
+  const issues: any[] = [
+    { id: "ENG-1", blocks: ["ENG-2", "ENG-2", "OTHER-9"], blockedBy: [], related: ["OTHER-9"] },
+    { id: "ENG-2", blocks: [], blockedBy: ["ENG-1"], related: [] },
+  ]
+  linkRelations(issues)
+  assertEquals(issues[0].blocks, ["ENG-2", "OTHER-9"], "a cross-project id survives but pairs with nothing")
+  assertEquals(issues[1].blockedBy, ["ENG-1"])
+  assertEquals(issues[1].related, [])
 })
