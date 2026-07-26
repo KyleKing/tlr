@@ -82,7 +82,9 @@ function section(title, body) {
 function renderReport(report, windowText) {
   const shipped = report.shipped.length
     ? `<ul>${
-      report.shipped.map((s) => `<li>${escapeHtml(s.id)} <span class="dim">(${escapeHtml(s.milestone)})</span></li>`)
+      report.shipped.map((s) =>
+        `<li>${escapeHtml(s.id)} <span class="rsec-dim">(${escapeHtml(s.milestone)})</span></li>`
+      )
         .join("")
     }</ul>`
     : `<p class="empty">Nothing marked complete this window.</p>`

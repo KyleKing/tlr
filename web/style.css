@@ -275,7 +275,9 @@ a {
 .rsec li.risk {
   color: var(--red);
 }
-.rsec .dim {
+/* Named apart from the `.dim` opacity utility on purpose: stacking that opacity on muted text drops
+   it to ~1.4:1 against --base, well under WCAG AA. --subtext0 alone clears 4.5:1 in every flavor. */
+.rsec-dim {
   color: var(--subtext0);
 }
 .scope {
