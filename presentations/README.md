@@ -35,7 +35,13 @@ Written after delivering the first deck. Following it is faster than rediscoveri
 5. Spend violet at most once per slide
 6. Screenshot the whole deck once, fix in one batch, confirm once, then stop
 7. Check `c` (high contrast) actually reads before walking into an unfamiliar room
-8. Re-measure any token pair whose background changed, with `deno task test` covering `presentations/contrast_test.ts`
+8. Re-measure any token pair whose background changed
+
+That last one is automated. `tests/contrast_test.ts` fails the build when any text or stroke role in
+`styles/tokens.css` drops below its threshold in either palette, and `deno task contrast` prints the
+whole table with the margin on each pair. Both read the token sheet directly, so a colour cannot be
+changed without being measured. The pairs and their thresholds live in `src/contrast.ts`; a new
+colour earns its place there by measurement.
 
 ## Footguns
 
