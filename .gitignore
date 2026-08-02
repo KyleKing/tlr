@@ -23,3 +23,6 @@ web/data/
 
 # Throwaway spikes (never committed; delete or promote when the question is answered)
 /spike/
+
+# Decks (public repo — a talk usually carries real figures; the theme and template are tracked)
+/presentations/decks/
