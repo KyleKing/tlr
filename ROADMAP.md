@@ -102,6 +102,14 @@ hint bar, and no command palette. Existing keys (`s` on the board, the roadmap's
 fit already and are undiscoverable. It also puts the scheduled-run log behind a toggle, so a partial
 capture is readable without going to the file.
 
+## Open question — work streams
+
+[adr/0012](adr/0012-work-streams.md) is a placeholder, not a plan. Grouping work by stream is how the
+author orients when many similar changes are in flight, and no grouping tlr has (milestone, cycle,
+project, chain, assignee) expresses it. The concept has to work in tlr, in `yak-shears`, and in what
+goes to leadership, so the first thing to settle is where a stream is defined. Nothing gets built
+against it until that is answered.
+
 ## Later — cross-project duplicate detection
 
 Flag likely duplicates within or across projects, with a yes/no/correct-the-AI review queue and a golden
