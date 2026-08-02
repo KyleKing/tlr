@@ -67,3 +67,12 @@ block set to Free/transparent is invisible to free/busy regardless of duration â
 over a hand-typed note would be a regression, not an improvement, for exactly the cases free/busy can't
 see. `locked: true` on a person or a cycle entry is the escape hatch for the opposite case: freezing a
 value a source previously wrote, once it's been hand-confirmed and should stop drifting on refresh.
+
+## Open â€” a third deflation input
+
+On-call and out-days both ask whether a person is available. Neither asks whether the work is waiting
+on them. Points on a ticket parked in review are charged to its owner, who cannot move it, so their
+load reads high and their room for new work reads low.
+[0010](0010-work-states-and-the-shelf.md) argues for handling handoff as a third factor here, sourced
+from Linear and merged under the same provenance rules. Which Linear signal marks handoff is still
+open and needs a look at the real project.

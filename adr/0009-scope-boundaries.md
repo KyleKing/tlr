@@ -41,6 +41,11 @@ second tracker lands.
 No GitHub adapter or any third tracker, no cross-project load view, and no stale-issue detection.
 Linear's own views cover all three, and tlr exists for what Linear structurally cannot show.
 
+This also settles a "what could I pick up" view and reading review handoff from `gh search prs`, both
+weighed in [0010](0010-work-states-and-the-shelf.md). The first is the cross-project load view under
+another name. The second is a GitHub adapter, and it would need an identity map and an issue-to-PR
+link that nothing maintains.
+
 ### No front-end framework, no vendored assets
 
 The web app is vanilla ES modules with no build step, so pure logic in `web/lib/*.js` runs unchanged in

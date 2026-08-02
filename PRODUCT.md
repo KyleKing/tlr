@@ -141,7 +141,9 @@ than once. Any new color must be checked against the background it actually rend
 flavor and accent pair.
 
 Keyboard navigation is first-class, not a fallback. This is a dense operator tool used in short
-sessions, so every action should be reachable without the mouse. The mechanism is undecided: a
-command palette and vim-style bindings are both on the table. Today the app has aria states on
+sessions, so every action should be reachable without the mouse. The mechanism is settled in
+[adr/0011](adr/0011-keyboard-surface.md): bindings scoped to the focused region, single-letter verbs
+on the focused row, and a hint bar that lists them, rather than a command palette. Most of it is
+unbuilt. Today the app has aria states on
 toggles, popovers, and banners, and motion durations collapse to zero under
 `prefers-reduced-motion`. There is still no skip link.

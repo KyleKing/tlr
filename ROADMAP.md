@@ -86,6 +86,22 @@ Still open from [BALANCE-NOTES.md](BALANCE-NOTES.md): a per-person forecast vari
 Settings rather than hardcoded in `DEFAULT_AFFINITIES`, and whether to offer reassigning work someone
 already owns.
 
+## Later — the shelf, and the keyboard surface
+
+Two decisions taken from an older sketch of the author's (`shoal/dev_boards`) and recorded before
+either is built.
+
+[adr/0010](adr/0010-work-states-and-the-shelf.md) adds handoff as a third capacity deflation
+alongside on-call and out-days: a ticket waiting on a reviewer is not waiting on its owner, so
+charging its points to them overstates their load and inflates chain risk. Which Linear signal marks
+handoff needs a look at the real project, since seed data has no handoff behavior.
+
+[adr/0011](adr/0011-keyboard-surface.md) settles how bindings work, which PRODUCT.md had left open:
+scoped to the focused region, single-letter verbs on the focused row, every binding rendered in a
+hint bar, and no command palette. Existing keys (`s` on the board, the roadmap's pan and zoom) mostly
+fit already and are undiscoverable. It also puts the scheduled-run log behind a toggle, so a partial
+capture is readable without going to the file.
+
 ## Later — cross-project duplicate detection
 
 Flag likely duplicates within or across projects, with a yes/no/correct-the-AI review queue and a golden
