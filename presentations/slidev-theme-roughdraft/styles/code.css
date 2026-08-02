@@ -1,0 +1,72 @@
+/*
+ * Code reads as a printed excerpt set into the canvas rather than an editor window:
+ * a sunk panel, no chrome, and Recursive held at MONO 1 with a trace of CASL so it
+ * sits beside the handwriting without pretending to be it.
+ */
+.slidev-layout .slidev-code-wrapper,
+.slidev-layout pre.slidev-code {
+  max-width: var(--rd-measure);
+}
+
+.slidev-layout pre.slidev-code,
+.slidev-layout pre {
+  margin: var(--rd-step-3) 0;
+  padding: var(--rd-step-3) var(--rd-step-4);
+  border-radius: 10px;
+  background: var(--rd-canvas-sunk) !important;
+  font-family: var(--rd-font-mono);
+  font-size: var(--rd-fs-code);
+  font-variation-settings: 'MONO' 1, 'CASL' 0.32;
+  line-height: 1.62;
+  overflow-x: auto;
+}
+
+.slidev-layout :not(pre) > code {
+  padding: 0.1em 0.34em;
+  border-radius: 5px;
+  background: var(--rd-canvas-sunk);
+  font-family: var(--rd-font-mono);
+  font-size: 0.92em;
+  font-variation-settings: 'MONO' 1, 'CASL' 0.32;
+  color: var(--rd-ink);
+}
+
+/* Highlight bands have to span the whole panel, so the lines are inline-blocks
+   stretched to the code element's width rather than shrink-wrapped to their text. */
+.slidev-layout .shiki code {
+  display: block;
+  min-width: 100%;
+}
+
+.slidev-layout .shiki .line {
+  display: inline-block;
+  min-width: 100%;
+}
+
+/* Focus is carried by the ink differential below, not by this band: focused lines stay
+   at full ink while the rest drop to grey, which survives a cast screen where any tint
+   light enough to keep code legible would not. The band only locates the group. */
+.slidev-layout .shiki .highlighted,
+.slidev-layout .shiki .honored,
+.slidev-layout .shiki .slidev-code-honored {
+  margin: 0 calc(var(--rd-step-4) * -1);
+  padding: 0 var(--rd-step-4);
+  background: var(--rd-code-focus);
+}
+
+/* Dimmed-but-legible. Dimming by colour rather than opacity keeps unfocused code
+   above 4.5:1, where opacity 0.55 dropped it to 3.69:1 and comments near 2:1. */
+.slidev-layout .shiki .dimmed,
+.slidev-layout .shiki .dishonored,
+.slidev-layout .shiki .slidev-code-dishonored,
+.slidev-layout .shiki .dimmed span,
+.slidev-layout .shiki .dishonored span,
+.slidev-layout .shiki .slidev-code-dishonored span {
+  color: var(--rd-code-dim) !important;
+  opacity: 1;
+}
+
+.slidev-layout .slidev-code-line-numbers,
+.slidev-layout .line-numbers {
+  color: var(--rd-ink-3);
+}

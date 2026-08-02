@@ -1,0 +1,222 @@
+html,
+body,
+#app {
+  background: var(--rd-canvas);
+}
+
+.slidev-layout {
+  --slidev-code-font-family: var(--rd-font-mono);
+  padding: var(--rd-pad-y) var(--rd-pad-x);
+  font-family: var(--rd-font-sans);
+  font-size: var(--rd-fs-body);
+  line-height: 1.5;
+  color: var(--rd-ink);
+  background: var(--rd-canvas);
+  -webkit-font-smoothing: antialiased;
+}
+
+.slidev-layout h1,
+.slidev-layout h2,
+.slidev-layout h3,
+.slidev-layout h4 {
+  font-family: var(--rd-font-sans);
+  color: var(--rd-ink);
+  letter-spacing: -0.021em;
+  text-wrap: balance;
+}
+
+.slidev-layout h1 {
+  margin: 0 0 var(--rd-step-3);
+  font-size: var(--rd-fs-h1);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.028em;
+}
+
+.slidev-layout h2 {
+  margin: var(--rd-step-5) 0 var(--rd-step-2);
+  font-size: var(--rd-fs-h2);
+  font-weight: 700;
+  line-height: 1.16;
+}
+
+/* h3 is the label voice: the thing someone would have written beside a box on a
+   board. It takes the hand face so it never competes with h1 and h2 for weight. */
+.slidev-layout h3 {
+  margin: var(--rd-step-4) 0 var(--rd-step-1);
+  font-family: var(--rd-font-hand);
+  font-size: var(--rd-fs-h3);
+  font-weight: 700;
+  line-height: 1.24;
+  letter-spacing: 0;
+}
+
+.slidev-layout h4 {
+  margin: var(--rd-step-3) 0 var(--rd-step-1);
+  font-family: var(--rd-font-hand);
+  font-size: var(--rd-fs-note);
+  font-weight: 700;
+  color: var(--rd-ink-2);
+}
+
+.slidev-layout > :first-child {
+  margin-top: 0;
+}
+
+.slidev-layout p,
+.slidev-layout ul,
+.slidev-layout ol {
+  max-width: var(--rd-measure);
+  margin: 0 0 var(--rd-step-2);
+  text-wrap: pretty;
+}
+
+.slidev-layout ul,
+.slidev-layout ol {
+  padding-left: 1.45em;
+  list-style: none;
+}
+
+.slidev-layout li {
+  position: relative;
+  margin-bottom: var(--rd-step-2);
+}
+
+.slidev-layout li:last-child {
+  margin-bottom: 0;
+}
+
+.slidev-layout ul > li::before {
+  position: absolute;
+  left: -1.3em;
+  top: 0.02em;
+  font-family: var(--rd-font-hand);
+  font-weight: 700;
+  color: var(--rd-ink-3);
+  content: '–';
+}
+
+.slidev-layout ol {
+  counter-reset: rd-count;
+}
+
+.slidev-layout ol > li {
+  counter-increment: rd-count;
+}
+
+.slidev-layout ol > li::before {
+  position: absolute;
+  left: -1.4em;
+  font-family: var(--rd-font-hand);
+  font-weight: 700;
+  color: var(--rd-ink-3);
+  content: counter(rd-count) '.';
+}
+
+.slidev-layout li > ul,
+.slidev-layout li > ol {
+  margin-top: var(--rd-step-1);
+  margin-bottom: 0;
+}
+
+/* A sentence after a list is a conclusion, not a fourth bullet. */
+.slidev-layout ul + p,
+.slidev-layout ol + p {
+  margin-top: var(--rd-step-4);
+}
+
+.slidev-layout strong {
+  font-weight: 800;
+}
+
+/* Emphasis stays in the reading face at full ink. Switching typeface mid-sentence
+   breaks the line and lightens exactly the words the author wanted heard. */
+.slidev-layout em {
+  font-style: normal;
+  font-weight: 600;
+  color: var(--rd-ink);
+}
+
+.slidev-layout a {
+  color: var(--rd-pen-blue-ink);
+  text-decoration-color: var(--rd-pen-quiet);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.slidev-layout a:hover {
+  text-decoration-color: currentcolor;
+}
+
+.slidev-layout blockquote {
+  max-width: var(--rd-measure);
+  margin: var(--rd-step-3) 0;
+  padding: 0;
+  border: none;
+  font-family: var(--rd-font-hand);
+  font-size: var(--rd-fs-lead);
+  font-weight: 500;
+  line-height: 1.42;
+  color: var(--rd-ink);
+}
+
+.slidev-layout blockquote p {
+  max-width: none;
+}
+
+.slidev-layout blockquote footer,
+.slidev-layout blockquote cite {
+  display: block;
+  margin-top: var(--rd-step-2);
+  font-family: var(--rd-font-sans);
+  font-size: var(--rd-fs-meta);
+  font-style: normal;
+  color: var(--rd-ink-2);
+}
+
+.slidev-layout table {
+  max-width: 100%;
+  border-collapse: collapse;
+  font-size: calc(var(--rd-fs-body) * 0.92);
+}
+
+.slidev-layout th,
+.slidev-layout td {
+  padding: var(--rd-step-1) var(--rd-step-3) var(--rd-step-1) 0;
+  text-align: left;
+  vertical-align: baseline;
+  border-bottom: 1px solid var(--rd-pen-quiet);
+}
+
+.slidev-layout th {
+  font-family: var(--rd-font-hand);
+  font-weight: 700;
+  color: var(--rd-ink-2);
+}
+
+.slidev-layout img,
+.slidev-layout video {
+  max-width: 100%;
+  border-radius: 10px;
+}
+
+/* Reveal steps start visible-but-quiet so a projector never shows an empty slide. */
+.slidev-vclick-target {
+  transition: opacity 260ms cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+
+.slidev-vclick-hidden {
+  opacity: 0.16;
+}
+
+.slidev-layout :focus-visible {
+  outline: 2px solid var(--rd-pen-violet);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slidev-vclick-target {
+    transition: none;
+  }
+}

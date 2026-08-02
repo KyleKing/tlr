@@ -1,0 +1,114 @@
+:root {
+  --rd-font-sans: 'Atkinson Hyperlegible Next Variable', ui-sans-serif, system-ui, sans-serif;
+  --rd-font-hand: 'Shantell Sans Variable', 'Atkinson Hyperlegible Next Variable', cursive;
+  --rd-font-mono: 'Recursive Variable', ui-monospace, monospace;
+
+  --rd-canvas: #f7f9fa;
+  --rd-canvas-sunk: #ececf4;
+  --rd-canvas-raised: #ffffff;
+
+  /*
+   * Two darks, not one. Outlines take the soft grey-violet a hand-drawn shape
+   * reads best in; text takes the navy, because a stroke that is dark enough to
+   * anchor a diagram is not dark enough to carry a headline across a room.
+   */
+  --rd-ink: #030064;
+  --rd-ink-2: #46464f;
+  --rd-ink-3: #7c7c8a;
+
+  --rd-pen-ink: #46464f;
+  --rd-pen-quiet: #8e8e96;
+  --rd-pen-blue: #1971c2;
+  --rd-pen-red: #e03131;
+  --rd-pen-violet: #6965db;
+
+  --rd-pen-ink-ink: #030064;
+  --rd-pen-quiet-ink: #6f6f7d;
+  --rd-pen-blue-ink: #14588f;
+  --rd-pen-red-ink: #b32424;
+  --rd-pen-violet-ink: #4f4bb8;
+
+  /*
+   * Washes are the reference's own fills. They are fill-only by construction:
+   * every one sits under 2:1 on the canvas, so nothing may render a stroke or
+   * text in a wash. --rd-wash-quiet is the faint dashed-connector grey.
+   */
+  --rd-wash-ink: #ececf4;
+  --rd-wash-quiet: #c5c5d0;
+  --rd-wash-blue: #99d5ff;
+  --rd-wash-red: #ff9494;
+  --rd-wash-violet: #d8d6f5;
+
+  --rd-code-focus: #dae3ec;
+  --rd-code-dim: #626a72;
+
+  --rd-stroke-scale: 1;
+
+  --rd-fs-display: 78px;
+  --rd-fs-h1: 50px;
+  --rd-fs-h2: 33px;
+  --rd-fs-h3: 25px;
+  --rd-fs-lead: 26px;
+  --rd-fs-body: 21px;
+  --rd-fs-note: 19px;
+  --rd-fs-meta: 15px;
+  --rd-fs-code: 17px;
+
+  --rd-measure: 65ch;
+  --rd-pad-x: 60px;
+  --rd-pad-y: 46px;
+
+  --rd-step-1: 6px;
+  --rd-step-2: 12px;
+  --rd-step-3: 20px;
+  --rd-step-4: 32px;
+  --rd-step-5: 52px;
+}
+
+/*
+ * High-contrast delivery mode, toggled with `c` during a talk. Meant for a washed-out
+ * TV or a bright room: pure black on pure white, heavier strokes, one step larger body
+ * copy, and pen colours pushed to their text-safe variants everywhere.
+ */
+:root.rd-hc {
+  --rd-canvas: #ffffff;
+  --rd-canvas-sunk: #eaeaf2;
+  --rd-canvas-raised: #ffffff;
+
+  --rd-ink: #000033;
+  --rd-ink-2: #2c2c38;
+  --rd-ink-3: #4f4f59;
+
+  --rd-pen-ink: #2c2c38;
+  --rd-pen-quiet: #4f4f59;
+  --rd-pen-blue: #0f4b7d;
+  --rd-pen-red: #9c1c1c;
+  --rd-pen-violet: #3b3690;
+
+  --rd-pen-ink-ink: #000033;
+  --rd-pen-quiet-ink: #4f4f59;
+  --rd-pen-blue-ink: #0f4b7d;
+  --rd-pen-red-ink: #9c1c1c;
+  --rd-pen-violet-ink: #3b3690;
+
+  /* Washes lighten here: in a washed-out room a mid fill swallows the stroke on top of it. */
+  --rd-wash-ink: #f0f0f6;
+  --rd-wash-quiet: #e2e2e8;
+  --rd-wash-blue: #d8ecff;
+  --rd-wash-red: #ffdcdc;
+  --rd-wash-violet: #e8e6f8;
+
+  --rd-code-focus: #d3dae1;
+  --rd-code-dim: #4a5158;
+
+  --rd-stroke-scale: 1.4;
+
+  /* Every step moves together: bumping body alone compresses the label-to-body
+     gap to 2px in the one mode that needs hierarchy most. */
+  --rd-fs-h3: 27px;
+  --rd-fs-lead: 28px;
+  --rd-fs-body: 23px;
+  --rd-fs-note: 21px;
+  --rd-fs-meta: 17px;
+  --rd-fs-code: 18px;
+}

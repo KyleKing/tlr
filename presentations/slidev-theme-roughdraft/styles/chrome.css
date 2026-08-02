@@ -1,0 +1,47 @@
+:root {
+  --slidev-theme-primary: #1971c2;
+}
+
+/* Letterbox around the slide: a shade darker than the canvas so the slide edge
+   stays findable when the deck is cast to a screen wider than 16/9. */
+#page-root,
+.slidev-page,
+body {
+  background: #dfe4e8;
+}
+
+:root.rd-hc #page-root,
+:root.rd-hc .slidev-page,
+:root.rd-hc body {
+  background: #b9c0c6;
+}
+
+#slide-container,
+.slidev-slide-container {
+  box-shadow: 0 2px 18px rgb(25 28 32 / 8%), 0 12px 44px rgb(25 28 32 / 6%);
+}
+
+.slidev-nav-controls,
+.slidev-icon-btn {
+  color: var(--rd-ink-2);
+}
+
+.slidev-progress-bar,
+.slidev-nav-bar {
+  --slidev-theme-primary: var(--rd-pen-blue);
+}
+
+/* Presenter-view notes inherit the deck's reading face; the default is a size
+   that is hard to scan while talking. */
+.slidev-note {
+  font-family: var(--rd-font-sans);
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--rd-ink);
+}
+
+.slidev-note em {
+  font-family: var(--rd-font-hand);
+  font-style: normal;
+  color: var(--rd-ink-2);
+}

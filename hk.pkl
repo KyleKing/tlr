@@ -4,8 +4,11 @@ hooks {
     ["pre-commit"] {
         fix = true
         steps {
+            // `presentations/` is npm/Vite territory: browser globals, npm bare specifiers,
+            // and its own node_modules. Deno's linter and type checker cannot resolve it.
             ["biome"] {
                 glob = List("*.ts", "*.js")
+                exclude = "presentations/**"
                 check = "deno task biome check {{files}}"
                 fix = "deno task biome check --write {{files}}"
             }
@@ -20,11 +23,13 @@ hooks {
             }
             ["fmt"] {
                 glob = List("*.ts", "*.js")
+                exclude = "presentations/**"
                 check = "deno task fmt --check {{files}}"
                 fix = "deno task fmt {{files}}"
             }
             ["lint"] {
                 glob = List("*.ts", "*.js")
+                exclude = "presentations/**"
                 check = "deno task lint {{files}}"
             }
             ["test"] {
