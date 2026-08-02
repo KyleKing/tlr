@@ -164,5 +164,6 @@ web/              the app: app.js (board), changes.js, review.js, style.css
 web/lib/          pure logic (planning.js, capacity.js), imported by both the browser and Deno tests
 web/templates/    Vento page and layout templates rendered by the server
 tests/            Deno unit tests plus tests/e2e Playwright smoke tests
+presentations/    the Slidev theme and deck template for internal decision talks
 adr/              decisions and why
 ```
