@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" width="480" height="300" role="img" aria-label="Placeholder chart">
+  <rect width="480" height="300" fill="#f7f9fa" />
+  <g stroke="#ececf4" stroke-width="1">
+    <path d="M56 195 L448 195" />
+    <path d="M56 138 L448 138" />
+    <path d="M56 81 L448 81" />
+  </g>
+  <path d="M56 24 L56 252 L448 252" fill="none" stroke="#c5c5d0" stroke-width="1.5" />
+  <path d="M60 208 L125 186 L190 196 L255 142 L320 150 L385 96 L444 74" fill="none" stroke="#1971c2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M60 231 L125 226 L190 233 L255 218 L320 224 L385 210 L444 205" fill="none" stroke="#e03131" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+  <text x="56" y="280" font-family="ui-monospace, monospace" font-size="14" fill="#46464f">Placeholder. Replace with a real figure.</text>
+</svg>
