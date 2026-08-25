@@ -50,12 +50,24 @@ adapter: Pylon filters a requester by contact id rather than by email (so `Conte
 dropped unless it is a uuid), and its issue search allows 20 requests a minute, which is what the cache
 keeps a batch run under.
 
+Slack followed, and cost one adapter file plus one line in `src/contextRegistry.ts`, which is what the
+port was built first to buy. Its search behaves differently enough from Pylon's to be worth writing
+down: `after:`/`before:` exclude the day they name, a range that excludes everything is ignored rather
+than obeyed (the search answers as if no dates were given), several `in:` terms are OR, the identifier
+search is fuzzy so a match only counts as linked once the text is confirmed to contain the identifier,
+and Linear's own bot posts carry no `text` at all. The wider net refuses to run on a date range alone,
+because that is every message in the workspace for a fortnight.
+
+`deno task cli context --project <file>` answers a whole list in one run, taking each issue's window
+from its own `createdAt` (now recorded by ingest) and holding each source to its published call budget
+through `paced`. The window snaps to its UTC day, so issues filed the same day share one lookup and the
+cache serves the rest. A capture taken before ingest recorded `createdAt` gives every issue the same
+window, which is a re-ingest away from being right.
+
 What is left:
 
-1. **Second and third adapters** (Slack, GitHub PRs), same shape as Pylon, in whatever order the next
-   real use case wants them. Each is a new adapter file plus a line in `src/contextRegistry.ts`, no
-   change to the port, the cache, or the CLI command — that is the point of having built the port first.
-   Spike each source's shape via its MCP connector inside a session per
+1. **A third adapter** (GitHub PRs), same shape as Pylon and Slack, when a real use case wants it.
+   Spike its shape via the MCP connector inside a session per
    [ADR 0007](adr/0007-productization-and-domains.md), then productionize behind the port with a direct
    REST/GraphQL call and a secret from `src/secrets.ts`; never commit a real credential or a real
    ticket's content (ADR 0003).

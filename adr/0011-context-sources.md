@@ -1,6 +1,6 @@
 # 0011 — Context sources: a read-only enrichment layer
 
-- Status: proposed
+- Status: accepted
 - Date: 2026-08-24
 
 ## Context
@@ -30,6 +30,7 @@ trackers specifically, not read-only enrichment.
 ```ts
 interface ContextSource {
   readonly name: string // "pylon", "slack", "github-prs", ... — never hardcoded elsewhere
+  readonly rateLimitPerMinute?: number // the source's own published budget, enforced by `paced`
   search(query: ContextQuery): Promise<ContextItem[]>
 }
 

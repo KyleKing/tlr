@@ -6,10 +6,11 @@
 
 import type { ContextSource } from "@/contextSource.ts"
 import { pylonFromEnv } from "@/contextPylon.ts"
+import { slackFromEnv } from "@/contextSlack.ts"
 
 type Factory = () => Promise<ContextSource | null>
 
-const ADAPTERS: Record<string, Factory> = { pylon: pylonFromEnv }
+const ADAPTERS: Record<string, Factory> = { pylon: pylonFromEnv, slack: slackFromEnv }
 
 export function adapterNames(): string[] {
   return Object.keys(ADAPTERS).sort()

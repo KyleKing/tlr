@@ -11,7 +11,7 @@
 // store refuses it instead. `describeSecret` reports presence and provenance without the value, so a
 // UI can render state it must never be allowed to read back.
 
-export type SecretName = "incidentio" | "linear" | "linear-demo" | "pylon"
+export type SecretName = "incidentio" | "linear" | "linear-demo" | "pylon" | "slack"
 
 export type SecretSource = "env" | "keychain" | "unset"
 
@@ -40,6 +40,7 @@ const SECRETS: Record<SecretName, SecretSpec> = {
     label: "Linear demo key",
   },
   "pylon": { env: "PYLON_API_TOKEN", service: "tlr-pylon", account: "api-token", label: "Pylon token" },
+  "slack": { env: "SLACK_USER_TOKEN", service: "tlr-slack", account: "user-token", label: "Slack user token" },
 }
 
 async function fromKeychain(service: string, account: string): Promise<string | null> {

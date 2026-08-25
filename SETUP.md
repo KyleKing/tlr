@@ -17,6 +17,7 @@ with per-user namespaced secrets ([Long-term](#long-term-a-hosted-runner)), so t
 | Incident.io     | API key (read schedules)        | keychain `tlr-incidentio` or `op read` | `deno task capacity --source incident` |
 | Google Calendar | OAuth client JSON (Desktop app) | `web/data/gcal-client.json`            | `deno task gcal:freebusy`              |
 | Pylon           | API token (read issues)         | keychain `tlr-pylon` or `op read`      | `deno task cli context`                |
+| Slack           | user token, `search:read`       | keychain `tlr-slack` or `op read`      | `deno task cli context`                |
 
 ## Storing a secret
 
@@ -128,6 +129,26 @@ Which custom field records the tracker identifier is a workspace's own choice. t
 lists what a workspace has.
 
 Verify: `deno task cli context --issue <identifier>`.
+
+## Slack
+
+The same [context source](adr/0011-context-sources.md) port, over messages. Search needs a **user**
+token (`xoxp-`), not a bot token: `search.messages` refuses a bot token outright.
+
+1. [Slack → Your apps](https://api.slack.com/apps): create an app in the workspace, add the
+   `search:read` **user** token scope under OAuth & Permissions, install it, and copy the User OAuth
+   Token
+2. Store it: `security add-generic-password -s tlr-slack -a user-token -w` (env var `SLACK_USER_TOKEN`)
+
+`TLR_SLACK_CHANNELS` optionally scopes every search to a comma-separated channel list
+(`eng,product-triage`); several channels are OR, so the list widens rather than narrows. Search is
+limited to 20 requests a minute.
+
+The wider net asks for search text or a reporter before it runs, because a date range on its own is
+every message in the workspace for a fortnight. A reporter has to be a Slack user id (`U…`), which is
+the same trap Pylon's requester filter sets: an email is dropped rather than resolved.
+
+Verify: `deno task cli context --issue <identifier> --sources slack`.
 
 ## Google Calendar
 
