@@ -74,6 +74,11 @@ end a run, and a capture whose issue count collapses is refused rather than stor
 An ambiguous project-name match, a page reporting more results with no cursor, and a hung connection
 all raise rather than quietly produce a short issue list.
 
+`--team <KEY>` ingests a whole team instead: every issue on it, including work that sits on no project
+at all, into its own data file keyed on the team id (`team:<id>` in `src/projectIdentity.ts`). Linear has
+no team-wide milestone, so the milestone block is empty and each issue instead carries the project it
+sits on, which is what lets `standup` roll a team snapshot up by project rather than by milestone.
+
 `src/snapshot.ts` persists project state to SQLite on demand, keyed by a stable project key so a rename
 in Linear does not fork the history. `src/diff.ts` rolls a pair of snapshots up to the milestone level,
 matching on `linearId` so a ticket moved between teams reads as a rename rather than a delete plus an

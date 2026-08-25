@@ -111,6 +111,7 @@ Balance (proposed owners and cycles), and Settings.
 deno task dev              # serve the web app at localhost:8000
 deno task seed             # write synthetic snapshots + a demo project into web/data (no Linear key)
 deno task issues "Name"    # refresh project / cycles / milestones / issues from Linear
+deno task issues --team DEV # every issue on a team, including work on no project, into team-dev.json
 deno task capacity         # refresh on-call / out-days / velocity into web/data/cpu.json
 deno task roster           # resolve assignee names to emails from Linear
 deno task gcal:freebusy    # spike: read teammates' free/busy from Google Calendar

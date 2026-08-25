@@ -2,7 +2,7 @@
 //
 //   deno task issues "Project name"                      # write web/data/cpu.json
 //   deno task issues "Project name" --data web/data/other.json --dry-run
-//   deno task issues --team DEV --data web/data/dev-team.json     # every issue on a team, no project
+//   deno task issues --team DEV                          # every issue on a team, into web/data/team-dev.json
 //
 // Fetches the project (and its team's cycles and its milestones) by name or slug, then every issue
 // on the project, and replaces the project/cycles/currentCycle/milestones/issues blocks in the data
@@ -188,7 +188,7 @@ type IssuesResponse = {
 type GqlResponse<T> = { errors?: { message: string }[]; data: T }
 
 function parseArgs(argv: string[]) {
-  const args: Record<string, string | boolean> = { data: DEFAULT_DATA }
+  const args: Record<string, string | boolean> = {}
   const positional: string[] = []
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i]
@@ -196,7 +196,14 @@ function parseArgs(argv: string[]) {
     else if (a.startsWith("--")) args[a.slice(2)] = argv[++i]
     else positional.push(a)
   }
-  return { ...(args as { data: string; dryRun?: boolean; team?: string }), project: positional[0] }
+  const parsed = args as { data?: string; dryRun?: boolean; team?: string }
+  return { ...parsed, data: parsed.data ?? defaultDataPath(parsed.team), project: positional[0] }
+}
+
+// A team ingest writes its own file. Sharing the project default would overwrite a project's data with
+// a team-wide snapshot the first time someone runs `--team` without `--data`.
+export function defaultDataPath(team: string | undefined): string {
+  return team ? new URL(`../web/data/team-${team.toLowerCase()}.json`, import.meta.url).pathname : DEFAULT_DATA
 }
 
 // account "api-key" is the real workspace; "demo-key" is the free/test workspace used in demo mode.

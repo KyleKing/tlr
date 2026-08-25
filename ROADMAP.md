@@ -24,20 +24,8 @@ credentials, and `deno task seed:linear` seeds the same story into a throwaway f
 testing.
 
 How it works is in [ARCHITECTURE.md](ARCHITECTURE.md), including the accepted trade-offs under Known
-limits. What tlr deliberately will not do is in [adr/0009](adr/0009-scope-boundaries.md). Everything
-below is unbuilt.
-
-## Next — team-wide capture
-
-`standup` answers for one project because the snapshot store is keyed per project
-([adr/0006](adr/0006-normalized-tracker-schema.md)), and a standup covers a team. Every project-level
-number it reports is right, but the roll-up groups by milestone rather than by project, and work with
-no project at all cannot appear because a project-scoped ingest never sees it. On the real workspace
-that gap is large: unfiled tickets were 29% of a recent cycle's open scope.
-
-Ingest would need a team mode (`issues --team DEV`) writing one data file per team, with the manifest
-and `projectIdentity` keying off the team, after which `standup` groups by project with no other
-change. Cycle-hop history needs nothing new, because it already comes from each issue's own history.
+limits. What tlr deliberately will not do is in [adr/0009](adr/0009-scope-boundaries.md). Each section
+below says whether it is built.
 
 ## Next — context sources
 
@@ -77,6 +65,22 @@ What is left:
    follow-up session is tempted to add a `--policy triage` flag or similar, that is the signal this
    boundary is being crossed; keep tlr answering "what do you know," and leave "what should I do about
    it" to the caller.
+
+## Done — team-wide capture
+
+`standup` answered for one project because the snapshot store is keyed per project
+([adr/0006](adr/0006-normalized-tracker-schema.md)), so the roll-up grouped by milestone and work on no
+project at all could not appear: unfiled tickets were 29% of a recent cycle's open scope on the real
+workspace.
+
+`deno task issues --team DEV` now ingests every issue on a team into its own data file, keyed
+`team:<id>`, and `standup` groups a team snapshot by project with an explicit bucket for work on none.
+Cycle-hop history needed nothing new, as expected, because it comes from each issue's own history. The
+scheduled run refreshes a team file the same way it refreshes a project one.
+
+Two things a follow-up should know. Linear has no team-wide milestone, so a team snapshot's milestone
+block is empty and every milestone-shaped view stays project-only. And the estimate scale and workflow
+states come from the one team, where a project ingest pools them across every team it touches.
 
 ## Done — the relationship view
 

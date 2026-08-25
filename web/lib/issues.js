@@ -190,7 +190,7 @@ export function transformIssue(raw, milestoneKeyById) {
     // and the two need not share either.
     teamKey: raw.team?.key ?? identifierTeamKey(raw.identifier),
     // Only meaningful on a team-wide ingest, where a single snapshot spans many projects and none at
-    // all; a project-scoped ingest doesn't request this field, so it is always null there.
+    // all. A project-scoped snapshot answers the same question with snapshot.project.name.
     project: raw.project?.name ?? null,
     priority: priorityLabel(raw.priority),
     priorityValue: raw.priority ?? null,

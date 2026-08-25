@@ -49,7 +49,7 @@ import { acquireLock, minRunIntervalFor, shouldSkipRun, staleLockFor } from "@/r
 import { openStore } from "@/snapshot.ts"
 import { DEFAULT_CADENCE_HOURS, installedCadenceHours } from "@/schedule.ts"
 import { type CapacityData, refreshCapacity } from "./capacity.ts"
-import { ingestProject, linearKey } from "./issues.ts"
+import { ingestProject, ingestTeam, linearKey } from "./issues.ts"
 import { slugIdFromUrl } from "@/linearAccess.ts"
 import { fetchWorkspaceKey, workspaceSkipReason } from "@/workspace.ts"
 import type { Snapshot } from "@/seed.ts"
@@ -57,7 +57,9 @@ import type { Snapshot } from "@/seed.ts"
 const UNATTENDED_CAPACITY_SOURCES = ["history", "incident"] as const
 
 type Args = { allowCollapse: boolean; data?: string; dryRun: boolean; force: boolean; prune: boolean }
-type BoardData = CapacityData & { project?: { name?: string; url?: string; workspaceKey?: string | null } }
+type BoardData = CapacityData & {
+  project?: { name?: string; url?: string; workspaceKey?: string | null; teamId?: string | null }
+}
 type Result = { detail: string; outcome: RunOutcome }
 type FileResult = { detail: string; outcome: ProjectOutcome }
 
@@ -101,6 +103,7 @@ async function refreshCapacityQuietly(data: BoardData): Promise<string[]> {
 // slugId; a file without one has no counterpart, which is a reason to leave it alone rather than a
 // failure to report.
 function hasLinearCounterpart(data: BoardData): boolean {
+  if (data.project?.teamId) return true
   return Boolean(data.project?.name) && slugIdFromUrl(data.project?.url) !== null
 }
 
@@ -141,7 +144,10 @@ async function refreshOne(
   if (args.dryRun) return { detail: "would refresh and capture", outcome: "unchanged" }
 
   const key = await linearKey()
-  const ingested = await ingestProject(key, data.project!.name!, data, dataFile)
+  // A team-wide file records the team key as its name, so the refresh follows the same path ingest did.
+  const ingested = data.project?.teamId
+    ? await ingestTeam(key, data.project.name!, data, dataFile)
+    : await ingestProject(key, data.project!.name!, data, dataFile)
   const merged = ingested.data as BoardData
   const notes = await refreshCapacityQuietly(merged)
   const suffix = notes.length ? ` [${notes.join("; ")}]` : ""
