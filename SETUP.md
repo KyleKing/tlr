@@ -31,12 +31,17 @@ Read it back with the same `-s`/`-a` and `-w` to confirm. Delete and re-add to r
 
 ### From 1Password
 
-If a secret already lives in 1Password, skip the keychain and pass it inline. The scripts read the env
-vars `LINEAR_API_KEY` and `INCIDENT_IO_TOKEN` as well as the keychain:
+If a secret already lives in 1Password, skip the keychain and pass it inline. Every secret reads its
+env var first and the keychain second, so `INCIDENT_IO_TOKEN`, `LINEAR_API_KEY`, `LINEAR_DEMO_API_KEY`,
+and `PYLON_API_TOKEN` all work this way:
 
 ```sh
 LINEAR_API_KEY=$(op read "op://<vault>/<item>/<field>") deno task roster --dry-run --force
+PYLON_API_TOKEN=$(op read "op://Private/Pylon API Token/password") deno task cli context --issue DEV-1234
 ```
+
+An env var wins over the keychain on read, which is why the Settings page refuses to edit a secret while
+one is set.
 
 ## Linear
 

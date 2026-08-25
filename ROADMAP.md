@@ -41,8 +41,10 @@ no credential on this machine instead of passing its silence off as an empty ans
 
 Pylon went first because its linked signal is the clearest: a custom field holds the bare tracker
 identifier, so the linked lookup is one `equals` filter rather than a text search. The request shapes
-came from a session spike against the live API and the tests replay a redacted recording, but no run
-has gone through a real token yet. [SETUP.md](SETUP.md#pylon) has the two steps to mint one, and
+came from a session spike against the live API, the tests replay a redacted recording, and both tiers
+have since run against a real token: the linked lookup returned the support ticket recorded against a
+live Linear identifier, and the wider net returned tickets in the window.
+[SETUP.md](SETUP.md#pylon) has the two steps to mint a token, and
 `deno task cli context --issue <identifier>` is the check. Two things to know before writing a second
 adapter: Pylon filters a requester by contact id rather than by email (so `ContextQuery.actor` is
 dropped unless it is a uuid), and its issue search allows 20 requests a minute, which is what the cache
