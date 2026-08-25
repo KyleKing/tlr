@@ -80,4 +80,9 @@ Deno.test("a rejected token surfaces as an error rather than an empty answer", a
 
 Deno.test("textFromHtml keeps line structure and unescapes entities", () => {
   assertEquals(textFromHtml("<p>one</p><p>two &amp; three</p>"), "one\ntwo & three")
+  assertEquals(textFromHtml("<p>said &#34;go&#34; &rarr; &#x2192; &hellip;</p>"), 'said "go" \u2192 \u2192 \u2026')
+  assertEquals(
+    textFromHtml("<p>&amp;lt; stays escaped, &unknown; stays put</p>"),
+    "&lt; stays escaped, &unknown; stays put",
+  )
 })

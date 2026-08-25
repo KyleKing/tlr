@@ -93,16 +93,45 @@ function toItem(issue: PylonIssue, matchKind: ContextItem["matchKind"]): Context
   }
 }
 
+const NAMED_ENTITIES: Record<string, string> = {
+  amp: "&",
+  apos: "'",
+  gt: ">",
+  hellip: "\u2026",
+  larr: "\u2190",
+  ldquo: "\u201c",
+  lsquo: "\u2018",
+  lt: "<",
+  mdash: "\u2014",
+  nbsp: " ",
+  ndash: "\u2013",
+  quot: '"',
+  rarr: "\u2192",
+  rdquo: "\u201d",
+  rsquo: "\u2019",
+}
+
+// One pass over named and numeric references together, so an escaped entity (`&amp;lt;`) decodes once
+// rather than twice. An unrecognized reference is left as written.
+function decodeEntities(text: string): string {
+  return text.replace(/&(#\d+|#[xX][0-9a-fA-F]+|[a-zA-Z]+);/g, (whole, body: string) => {
+    if (!body.startsWith("#")) return NAMED_ENTITIES[body.toLowerCase()] ?? whole
+    const code = body[1] === "x" || body[1] === "X" ? parseInt(body.slice(2), 16) : Number(body.slice(1))
+    if (!Number.isInteger(code) || code < 1 || code > 0x10ffff) return whole
+    try {
+      return String.fromCodePoint(code)
+    } catch {
+      return whole
+    }
+  })
+}
+
 export function textFromHtml(html: string): string {
-  return html
-    .replace(/<br\s*\/?>|<\/p>|<\/div>|<\/li>/gi, "\n")
-    .replace(/<[^>]+>/g, "")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
+  return decodeEntities(
+    html
+      .replace(/<br\s*\/?>|<\/p>|<\/div>|<\/li>/gi, "\n")
+      .replace(/<[^>]+>/g, ""),
+  )
     .replace(/[ \t]+\n/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim()
