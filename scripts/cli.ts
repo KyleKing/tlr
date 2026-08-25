@@ -5,6 +5,7 @@
 // Commands:
 //   scan   --text "<t>" | --file <path> | --project <file>   slop score for text, or every issue
 //   context --issue DEV-1234 [--created <iso>] [--days n]   what external systems know about an issue
+//   context --project <file> [--issues a,b] [--days n]       the same lookup over many issues at once
 //   capacity --project <file>                                 per-person load vs capacity per cycle
 //   standup  --project <file> [--cycle n] [--out a,b]         weekly roll-up: closed, carry-in, hops, next-cycle fit
 //   balance  --project <file> [--weekly n] [--start c] [--end c] [--weeks n]  propose assignee+cycle
@@ -21,7 +22,7 @@
 // A --project/--a/--b value with no slash is looked up under web/data; otherwise it is a path.
 
 import { scanIssues, scanText } from "@/commands/scan.ts"
-import { issueContext } from "@/commands/context.ts"
+import { issueContext, issueContextBatch } from "@/commands/context.ts"
 import { projectCapacity } from "@/commands/capacity.ts"
 import { balance } from "@/commands/balance.ts"
 import { projectTimeline } from "@/commands/timeline.ts"
@@ -63,6 +64,18 @@ function parseFlags(args: string[]): Flags {
 function resolveDataPath(nameOrPath: string): URL {
   if (nameOrPath.includes("/")) return new URL(nameOrPath, `file://${Deno.cwd()}/`)
   return new URL(nameOrPath, DATA_ROOT)
+}
+
+// Which issues a batch answers is the caller's choice, so this only resolves what it was handed: the
+// snapshot supplies each identifier's own createdAt, and an issue whose capture predates that field
+// falls back to --created, then to now. A snapshot taken before ingest recorded createdAt gives every
+// issue the same window, which is a re-ingest away from being right.
+async function batchIssues(file: string | undefined, named: string[] | undefined, fallback: string | undefined) {
+  const filed = new Map<string, string | null | undefined>()
+  if (file) { for (const i of (await loadData(file)).issues) filed.set(i.id, i.createdAt) }
+  const ids = named ?? [...filed.keys()]
+  if (!ids.length) fail("context found no issues to look up")
+  return ids.map((issue) => ({ issue, createdAt: filed.get(issue) ?? fallback }))
 }
 
 async function loadData(nameOrPath: string): Promise<Snapshot> {
@@ -169,7 +182,9 @@ async function run(cmd: string | undefined, f: Flags): Promise<void> {
       return out(svg)
     }
     case "context": {
-      const issue = str(f, "issue") ?? fail("context needs --issue <identifier>")
+      const batchFile = str(f, "project")
+      const named = str(f, "issues")?.split(",").map((n) => n.trim()).filter(Boolean)
+      const issue = batchFile || named ? undefined : str(f, "issue") ?? fail("context needs --issue <identifier>")
       const names = str(f, "sources")
       const { sources, unconfigured } = await configuredSources(
         names ? names.split(",").map((n) => n.trim()).filter(Boolean) : undefined,
@@ -179,21 +194,25 @@ async function run(cmd: string | undefined, f: Flags): Promise<void> {
       const num = (k: string) => (str(f, k) !== undefined ? Number(str(f, k)) : undefined)
       const cachePath = str(f, "cache")
       const cache = openCache(f["no-cache"] === true ? null : cachePath)
+      const shared = {
+        tracker: str(f, "tracker"),
+        days: num("days"),
+        actor: str(f, "actor"),
+        text: str(f, "text"),
+        limit: num("limit"),
+      }
       try {
-        const result = await issueContext(
-          {
-            issue,
-            tracker: str(f, "tracker"),
-            createdAt: str(f, "created"),
-            days: num("days"),
-            actor: str(f, "actor"),
-            text: str(f, "text"),
-            limit: num("limit"),
-          },
+        if (issue !== undefined) {
+          const result = await issueContext({ ...shared, issue, createdAt: str(f, "created") }, sources, cache)
+          return out({ ...result, unconfigured })
+        }
+        const batch = await issueContextBatch(
+          await batchIssues(batchFile, named, str(f, "created")),
+          shared,
           sources,
           cache,
         )
-        return out({ ...result, unconfigured })
+        return out({ ...batch, unconfigured })
       } finally {
         cache.close()
       }

@@ -87,3 +87,37 @@ Deno.test("context widens to the window when nothing is linked, linked ordering 
     assertEquals(result.window.start, "2026-07-30T00:00:00.000Z")
   })
 })
+
+Deno.test("context over a snapshot answers every issue and centres each window on its own createdAt", async () => {
+  await withFixture(async (fixture) => {
+    const snapshot = await Deno.makeTempFile({ suffix: ".json" })
+    await Deno.writeTextFile(
+      snapshot,
+      JSON.stringify({
+        issues: [
+          { id: "DEV-1", createdAt: "2026-08-02T09:41:00Z" },
+          { id: "DEV-404", createdAt: "2026-08-02T23:59:00Z" },
+        ],
+      }),
+    )
+    try {
+      const result = JSON.parse(
+        await cli(["context", "--project", snapshot, "--days", "3", "--fixture", fixture, "--no-cache"]),
+      )
+      assertEquals(result.requested, 2)
+      assertEquals(result.withLinked, 1)
+      assertEquals(result.results.map((r: { issue: string; linked: number }) => [r.issue, r.linked]), [
+        ["DEV-1", 1],
+        ["DEV-404", 0],
+      ])
+      // Both issues were filed the same day, so both ask the same wider question and share one lookup.
+      assertEquals(
+        result.results.map((r: { window: { start: string } }) => r.window.start),
+        ["2026-07-30T00:00:00.000Z", "2026-07-30T00:00:00.000Z"],
+      )
+      assertEquals(result.errors, [])
+    } finally {
+      await Deno.remove(snapshot)
+    }
+  })
+})

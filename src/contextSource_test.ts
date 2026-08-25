@@ -1,6 +1,6 @@
 import { assert, assertEquals } from "@std/assert"
 import { openCache } from "@/cache.ts"
-import { type ContextSource, fixtureSource, gatherContext } from "@/contextSource.ts"
+import { type ContextSource, fixtureSource, gatherContext, paced } from "@/contextSource.ts"
 
 const RECORDS = [
   {
@@ -107,4 +107,31 @@ Deno.test("one failing source does not sink the rest", async () => {
   assertEquals(errors.length, 1)
   assertEquals(errors[0].source, "broken")
   assert(errors[0].message.includes("429"))
+})
+
+Deno.test("paced holds a source to its per-minute budget and lets the window slide", async () => {
+  const slept: number[] = []
+  let clock = 0
+  const calls: number[] = []
+  const raw: ContextSource = {
+    name: "slow",
+    search: () => {
+      calls.push(clock)
+      return Promise.resolve([])
+    },
+  }
+  const source = paced(raw, 2, {
+    now: () => clock,
+    sleep: (ms) => {
+      slept.push(ms)
+      clock += ms
+      return Promise.resolve()
+    },
+  })
+
+  await Promise.all([1, 2, 3, 4].map((n) => source.search({ text: `q${n}` })))
+
+  assertEquals(calls, [0, 0, 60_000, 60_000])
+  assertEquals(slept, [60_000])
+  assertEquals(source.rateLimitPerMinute, 2)
 })

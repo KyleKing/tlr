@@ -4,9 +4,12 @@
 // The two-tier query is here rather than in an adapter: ask each source for its own recorded link,
 // and only widen to a time window when none reports one. What to do with the answer (whether an
 // unlinked issue needs more information, which label to apply) belongs to the caller, not to tlr.
+//
+// `issueContextBatch` runs the same lookup over many issues. It selects nothing and decides nothing:
+// the caller hands it the identifiers it wants answered, in the order it wants them answered.
 
 import type { Cache } from "@/cache.ts"
-import { type ContextItem, type ContextSource, gatherContext } from "@/contextSource.ts"
+import { type ContextItem, type ContextSource, gatherContext, paced } from "@/contextSource.ts"
 
 export const DEFAULT_WINDOW_DAYS = 7
 
@@ -31,11 +34,16 @@ export type ContextResult = {
   errors: { source: string; message: string }[]
 }
 
+const DAY_MS = 24 * 60 * 60 * 1000
+
+// The anchor snaps down to its UTC day, so two issues filed hours apart ask the same question and the
+// second is served from the cache. A window measured in days has no use for the finer precision.
 export function windowAround(anchor: string, days: number): { start: string; end: string } {
   const at = new Date(anchor).getTime()
   if (Number.isNaN(at)) throw new Error(`not a date: ${anchor}`)
-  const span = days * 24 * 60 * 60 * 1000
-  return { start: new Date(at - span).toISOString(), end: new Date(at + span).toISOString() }
+  const day = Math.floor(at / DAY_MS) * DAY_MS
+  const span = days * DAY_MS
+  return { start: new Date(day - span).toISOString(), end: new Date(day + span).toISOString() }
 }
 
 export async function issueContext(
@@ -58,5 +66,40 @@ export async function issueContext(
     candidates: items.filter((i) => i.matchKind === "candidate").length,
     items,
     errors,
+  }
+}
+
+export type BatchIssue = { issue: string; createdAt?: string | null }
+
+export type BatchResult = {
+  requested: number
+  withLinked: number
+  results: ContextResult[]
+  errors: { source: string; message: string }[]
+}
+
+/**
+ * The single-issue lookup run over a list, in order, sharing one cache. Each source is held to its own
+ * published call budget, so a run over a whole cycle paces itself instead of earning a 429.
+ */
+export async function issueContextBatch(
+  issues: BatchIssue[],
+  input: Omit<ContextInput, "issue" | "createdAt">,
+  sources: ContextSource[],
+  cache?: Cache,
+): Promise<BatchResult> {
+  const limited = sources.map((s) => (s.rateLimitPerMinute ? paced(s, s.rateLimitPerMinute) : s))
+  const results: ContextResult[] = []
+  const errors = new Map<string, { source: string; message: string }>()
+  for (const { issue, createdAt } of issues) {
+    const result = await issueContext({ ...input, issue, createdAt: createdAt ?? undefined }, limited, cache)
+    results.push(result)
+    for (const err of result.errors) errors.set(`${err.source}\u0000${err.message}`, err)
+  }
+  return {
+    requested: issues.length,
+    withLinked: results.filter((r) => r.linked > 0).length,
+    results,
+    errors: [...errors.values()],
   }
 }

@@ -20,6 +20,7 @@ export const PYLON_API_URL = "https://api.usepylon.com"
 export const PYLON_LINK_FIELD_ENV = "TLR_PYLON_LINK_FIELD"
 export const DEFAULT_LINK_FIELD = "linear_ticket"
 const DEFAULT_LIMIT = 25
+export const PYLON_SEARCH_PER_MINUTE = 20
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -47,6 +48,7 @@ export function pylonSource(options: PylonOptions): ContextSource {
   const apiUrl = options.apiUrl ?? PYLON_API_URL
   return {
     name: "pylon",
+    rateLimitPerMinute: PYLON_SEARCH_PER_MINUTE,
     async search(query) {
       const filter = query.linkedId
         ? { field: linkField, operator: "equals", value: query.linkedId.id }

@@ -32,7 +32,40 @@ export type ContextItem = {
 
 export interface ContextSource {
   readonly name: string
+  /** The source's own published call budget, when it publishes one. `paced` enforces it. */
+  readonly rateLimitPerMinute?: number
   search(query: ContextQuery): Promise<ContextItem[]>
+}
+
+export type Clock = { now: () => number; sleep: (ms: number) => Promise<void> }
+
+const REAL_CLOCK: Clock = { now: () => Date.now(), sleep: (ms) => new Promise((r) => setTimeout(r, ms)) }
+
+/**
+ * Wrap a source so it makes at most `perMinute` calls in any rolling minute, queueing callers rather
+ * than rejecting them. Wrap the raw source and put `cached` outside it, so a cache hit costs no quota.
+ */
+export function paced(source: ContextSource, perMinute: number, clock: Clock = REAL_CLOCK): ContextSource {
+  if (perMinute <= 0) return source
+  const recent: number[] = []
+  let gate: Promise<unknown> = Promise.resolve()
+  const admit = async () => {
+    for (;;) {
+      const at = clock.now()
+      while (recent.length && recent[0] <= at - 60_000) recent.shift()
+      if (recent.length < perMinute) return void recent.push(at)
+      await clock.sleep(recent[0] + 60_000 - at)
+    }
+  }
+  return {
+    name: source.name,
+    rateLimitPerMinute: perMinute,
+    search(query) {
+      const turn = gate.then(admit)
+      gate = turn.catch(() => {})
+      return turn.then(() => source.search(query))
+    },
+  }
 }
 
 /**
@@ -42,6 +75,7 @@ export interface ContextSource {
 export function cached(source: ContextSource, cache: Cache, ttlMs = DEFAULT_TTL_MS): ContextSource {
   return {
     name: source.name,
+    rateLimitPerMinute: source.rateLimitPerMinute,
     async search(query) {
       const hit = cache.get<ContextItem[]>(source.name, query, ttlMs)
       if (hit) return hit
