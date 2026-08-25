@@ -1,5 +1,5 @@
 import { assertEquals } from "@std/assert"
-import { buildTeamSnapshot, defaultDataPath } from "./issues.ts"
+import { buildTeamSnapshot, defaultDataPath, teamIssueFilter } from "./issues.ts"
 
 const TEAM = {
   id: "team-uuid-dev",
@@ -62,4 +62,9 @@ Deno.test("buildTeamSnapshot carries each issue's own project, including one wit
 Deno.test("a team ingest defaults to its own data file rather than a project's", () => {
   assertEquals(defaultDataPath("DEV").endsWith("/web/data/team-dev.json"), true)
   assertEquals(defaultDataPath(undefined).endsWith("/web/data/cpu.json"), true)
+})
+
+Deno.test("a team ingest filters issues by team key, because filtering by team id returns other teams", () => {
+  // deno-lint-ignore no-explicit-any
+  assertEquals(teamIssueFilter(TEAM as any), { team: { key: { eq: "DEV" } } })
 })

@@ -252,6 +252,13 @@ async function findTeam(key: string, teamKey: string): Promise<TeamNode> {
   return nodes[0]
 }
 
+// Filter a team's issues by key, never by id: Linear's `team: { id: { eq } }` also returns issues from
+// other teams (a DEV-id filter answered with 1305 CUS and DES tickets), which lands foreign issues in a
+// team snapshot and inflates every count read off it. The key filter returns that team's issues alone.
+export function teamIssueFilter(team: TeamNode): Record<string, unknown> {
+  return { team: { key: { eq: team.key } } }
+}
+
 async function fetchAllIssues(key: string, filter: Record<string, unknown>): Promise<IssueNode[]> {
   const issues: IssueNode[] = []
   let after: string | null = null
@@ -358,7 +365,7 @@ export function buildTeamSnapshot(team: TeamNode, rawIssues: IssueNode[]) {
 // of ingestProject, above.
 export async function ingestTeam(key: string, teamQuery: string, existingData: unknown, dataFile: string) {
   const team = await findTeam(key, teamQuery)
-  const rawIssues = await fetchAllIssues(key, { team: { id: { eq: team.id } } })
+  const rawIssues = await fetchAllIssues(key, teamIssueFilter(team))
   const fresh = buildTeamSnapshot(team, rawIssues)
 
   const log = [`issues --team: ${team.name} (${team.key}) — ${fresh.issues.length} issues`]
@@ -401,7 +408,7 @@ async function main() {
   if (args.team) {
     if (args.dryRun) {
       const team = await findTeam(key, args.team)
-      const rawIssues = await fetchAllIssues(key, { team: { id: { eq: team.id } } })
+      const rawIssues = await fetchAllIssues(key, teamIssueFilter(team))
       console.log(`issues --team: ${team.name} (${team.key}) — ${rawIssues.length} issues`)
       console.log("--dry-run: not writing")
       return
