@@ -97,6 +97,7 @@ const ISSUES_QUERY = `
         id
         identifier
         archivedAt
+        createdAt
         title
         url
         description
@@ -165,6 +166,7 @@ type IssueNode = {
   id: string
   identifier: string
   archivedAt: string | null
+  createdAt: string
   title: string
   url: string
   description: string | null

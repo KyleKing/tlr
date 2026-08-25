@@ -13,6 +13,9 @@ export type Issue = {
   // Linear's internal UUID, captured only on a real ingest. Absent in offline seed data. A write
   // needs it because issueUpdate keys on the UUID, not the human identifier held in `id`.
   linearId?: string
+  // When the ticket was filed, from a real ingest. Absent in offline seed data and in captures taken
+  // before ingest recorded it. `context --project` centres each issue's search window on it.
+  createdAt?: string | null
   title: string
   url: string
   estimate: number

@@ -177,6 +177,7 @@ export function transformIssue(raw, milestoneKeyById) {
     // Linear hides archived issues unless the query asks for them, so an archived ticket and one
     // removed from the project look the same downstream. Ingest asks for both and flags which is which.
     archived: Boolean(raw.archivedAt),
+    createdAt: raw.createdAt ?? null,
     title: raw.title,
     url: raw.url,
     description: raw.description ?? "",

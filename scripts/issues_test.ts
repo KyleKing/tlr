@@ -17,6 +17,7 @@ function issueFixture(over: Partial<Record<string, unknown>> & { identifier: str
   return {
     id: `uuid-${id}`,
     archivedAt: null,
+    createdAt: "2026-07-21T00:00:00.000Z",
     title: id as string,
     url: `https://linear.app/team/issue/${id}`,
     description: null,
