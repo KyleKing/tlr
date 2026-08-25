@@ -39,6 +39,60 @@ Ingest would need a team mode (`issues --team DEV`) writing one data file per te
 and `projectIdentity` keying off the team, after which `standup` groups by project with no other
 change. Cycle-hop history needs nothing new, because it already comes from each issue's own history.
 
+## Next — context sources
+
+A read-only enrichment layer over external systems (a linked support ticket, a Slack thread, a GitHub
+PR) that an agent doing triage queries once instead of making its own live API call per source per
+issue. Design and rationale: [ADR 0011](adr/0011-context-sources.md). This section is the build order for
+a follow-up session to pick up; commit at the end of each numbered step (Conventional Commits,
+lowercase, one subject line), never push, and run `hk run pre-commit --all` before each commit. Re-check
+this list against ADR 0011 before starting, in case a decision recorded there has moved since this was
+written.
+
+0. **Generalize the cache/search layer off per-project keys, first.** This is the same gap
+   [ideas.txt #7](ideas.txt) and "team-wide capture" above already name: anything keyed on a Linear
+   project id cannot answer a question that spans projects or has no project at all, and a context
+   source's results (a Pylon ticket, a Slack message) are never project-scoped to begin with. Do this
+   once, generically, rather than letting a context-source adapter re-introduce project-scoping by
+   copying an existing pattern. Test: a unit test that stores and retrieves two cache entries for the
+   same source and different query fingerprints, with no project id anywhere in the key or the call
+   signature.
+
+1. **The `ContextSource` port and a fake adapter.** Add the types and interface from ADR 0011
+   (`src/contextSource.ts` or similar — follow the existing port style in `src/*.ts`, not a new
+   subdirectory unless a second file is clearly needed). Ship one fake/fixture-backed adapter alongside
+   it (no network), enough to prove the shape: `search()` returns `linked` results when a query supplies
+   `linkedId`, `candidate` results otherwise, both cache-backed via the generalized layer from step 0.
+   Test: unit tests against the fake adapter only, no live credentials, following the existing
+   fixture-test pattern (`src/*_test.ts` beside the module it tests).
+
+2. **A `context` CLI command.** `deno task cli context --issue DEV-1234` (or the equivalent identifier
+   for whatever tracker is wired in), printing JSON: every `ContextItem` found across configured
+   sources, `linked` results first. No `--project` flag — see step 0. Test: an end-to-end CLI test
+   against the fake adapter from step 1, asserting the JSON shape and the linked-before-candidate
+   ordering.
+
+3. **First real adapter.** Pick the source with the clearest "linked" signal to start from (a custom
+   field or attachment that names the tracker identifier directly beats a text/time search from a cold
+   start). Spike its shape via that source's MCP connector inside a session first, per
+   [ADR 0007](adr/0007-productization-and-domains.md), then productionize behind the port: a direct
+   REST/GraphQL call, credentials from `src/secrets.ts` (new service name, same env-var-else-keychain
+   pattern), no MCP dependency at runtime. Test: record a VCR-style fixture from one real call (see how
+   `scripts/issues.ts`'s ingest tests do this) and replay it in the unit test; never commit a real
+   credential or a real ticket's content (ADR 0003).
+
+4. **Second and third adapters**, same shape as step 3, in whatever order the next real use case wants
+   them. Each is a new adapter file plus a registration line, no change to the port, the cache, or the
+   CLI command — that is the point of building the port first.
+
+5. **Do not hardcode a label name, a workspace name, or a company name anywhere in this layer.**
+   "Needs Info" (or whatever a workspace calls its label for "not enough information to act"), and the
+   choice to check a context source only when an issue is unlinked and cast a wider net by date range,
+   are triage _policy_ — they belong in the prompt or script that calls `context`, not in tlr. If a
+   follow-up session is tempted to add a `--policy triage` flag or similar, that is the signal this
+   boundary is being crossed; keep tlr answering "what do you know," and leave "what should I do about
+   it" to the caller.
+
 ## Done — the relationship view
 
 Answered by a throwaway spike against the real project, then deleted. Recording the outcome here so the
@@ -109,6 +163,10 @@ that volume. Tabled as an idea, not a scoped feature.
 
 The UI would show two or more tickets together and resolve to merge or mark-duplicate-and-close, so it
 shares little with the single-ticket editor.
+
+Narrower than this: the candidate-net search in a [context source](adr/0011-context-sources.md) (one
+external system, one time window, unlinked issues only). That is scoped and buildable now; this stays
+tabled.
 
 ## Known issues
 
