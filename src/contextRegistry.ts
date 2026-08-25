@@ -5,10 +5,11 @@
 // machine with a Pylon token and no GitHub token should still get its Pylon answers.
 
 import type { ContextSource } from "@/contextSource.ts"
+import { pylonFromEnv } from "@/contextPylon.ts"
 
 type Factory = () => Promise<ContextSource | null>
 
-const ADAPTERS: Record<string, Factory> = {}
+const ADAPTERS: Record<string, Factory> = { pylon: pylonFromEnv }
 
 export function adapterNames(): string[] {
   return Object.keys(ADAPTERS).sort()
