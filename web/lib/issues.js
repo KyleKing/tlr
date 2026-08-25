@@ -139,6 +139,28 @@ export function workflowStates(teams, issue) {
 }
 
 // Raw Linear issue (see scripts/issues.ts's GraphQL query) → the board's issue shape.
+// Every cycle a ticket has ever been assigned to, oldest first, read from Linear's issue history.
+// `cyclePath.length - 1` is how many times the ticket was copied between cycles, which is the one
+// planning signal a single snapshot cannot supply: a ticket rolled forward all quarter looks
+// identical to one opened this week once it lands in the current cycle. A move to no cycle at all
+// (backlog) is skipped rather than recorded, because a ticket parked and later re-scheduled has not
+// earned two hops for one decision. Undefined when the capture predates this field, which callers
+// must treat as unknown rather than zero.
+export function cyclePathFromHistory(nodes) {
+  if (!nodes) return undefined
+  const moves = nodes
+    .filter((n) => n.fromCycle || n.toCycle)
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+  const path = []
+  for (const m of moves) {
+    const from = m.fromCycle?.number
+    const to = m.toCycle?.number
+    if (!path.length && from != null) path.push(from)
+    if (to != null && to !== path.at(-1)) path.push(to)
+  }
+  return path
+}
+
 export function transformIssue(raw, milestoneKeyById) {
   const blocks = []
   const blockedBy = []
@@ -173,6 +195,7 @@ export function transformIssue(raw, milestoneKeyById) {
     parentId: raw.parent?.identifier ?? null,
     milestone: raw.projectMilestone ? milestoneKeyById.get(raw.projectMilestone.id) ?? null : null,
     cycle: raw.cycle?.number ?? null,
+    cyclePath: cyclePathFromHistory(raw.history?.nodes),
     blocks,
     blockedBy,
     // Linear's own "related" link: hand-curated, and the only relationship channel a person sets

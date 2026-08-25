@@ -28,6 +28,9 @@ export type Issue = {
   parentId: string | null
   milestone: string | null
   cycle: number | null
+  // Every cycle this ticket has been assigned to, oldest first. Absent in offline seed data and in
+  // captures taken before ingest recorded it, which is not the same as an empty path.
+  cyclePath?: number[]
   description: string
   blocks: string[]
   blockedBy: string[]

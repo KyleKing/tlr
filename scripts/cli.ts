@@ -5,6 +5,7 @@
 // Commands:
 //   scan   --text "<t>" | --file <path> | --project <file>   slop score for text, or every issue
 //   capacity --project <file>                                 per-person load vs capacity per cycle
+//   standup  --project <file> [--cycle n] [--out a,b]         weekly roll-up: closed, carry-in, hops, next-cycle fit
 //   balance  --project <file> [--weekly n] [--start c] [--end c] [--weeks n]  propose assignee+cycle
 //   timeline --project <file>                                 dependency waves and chain risks
 //   diff   --a <file> --b <file> | --from <id> --to <id>      plan-level change between two snapshots
@@ -22,6 +23,7 @@ import { scanIssues, scanText } from "@/commands/scan.ts"
 import { projectCapacity } from "@/commands/capacity.ts"
 import { balance } from "@/commands/balance.ts"
 import { projectTimeline } from "@/commands/timeline.ts"
+import { standup } from "@/commands/standup.ts"
 import { diffSnapshots } from "@/diff.ts"
 import { renderReport, weeklyReport } from "@/report.ts"
 import { milestoneForecast } from "@/forecast.ts"
@@ -82,6 +84,16 @@ async function run(cmd: string | undefined, f: Flags): Promise<void> {
       if (text !== undefined) return out(scanText(text))
       if (file) return out(scanText(await Deno.readTextFile(resolveDataPath(file))))
       return out(scanIssues(await loadData(project ?? "data-sample.json")))
+    }
+    case "standup": {
+      const n = (k: string) => (str(f, k) !== undefined ? Number(str(f, k)) : undefined)
+      const away = str(f, "out")
+      return out(standup(await loadData(str(f, "project") ?? "data-sample.json"), {
+        cycle: n("cycle"),
+        lookback: n("lookback"),
+        target: n("target"),
+        out: away ? away.split(",").map((p) => p.trim()).filter(Boolean) : undefined,
+      }))
     }
     case "capacity":
       return out(projectCapacity(await loadData(str(f, "project") ?? "data-sample.json")))
@@ -207,6 +219,7 @@ function usage(): void {
       "",
       "  scan      --text <t> | --file <path> | --project <file>",
       "  capacity  --project <file>",
+      "  standup   --project <file> [--cycle <n>] [--lookback <n>] [--target <0-1>] [--out <name,name>]",
       "  balance   --project <file> [--weekly <n>] [--start <cycle>] [--end <cycle>] [--weeks <n>] [--lead <cycles>]",
       "  timeline  --project <file>",
       "  diff      --a <file> --b <file> | --from <id> --to <id>",

@@ -98,6 +98,7 @@ const ISSUES_QUERY = `
         parent { identifier }
         projectMilestone { id }
         relations(first: 20) { nodes { type relatedIssue { identifier } } }
+        history(first: 100) { nodes { createdAt fromCycle { number } toCycle { number } } }
       }
     }
   }
@@ -145,6 +146,7 @@ type IssueNode = {
   parent: { identifier: string } | null
   projectMilestone: { id: string } | null
   relations: { nodes: { type: string; relatedIssue: { identifier: string } }[] }
+  history?: { nodes: { createdAt: string; fromCycle: { number: number } | null; toCycle: { number: number } | null }[] }
 }
 type IssuesResponse = {
   issues: { pageInfo: { hasNextPage: boolean; endCursor: string | null }; nodes: IssueNode[] }

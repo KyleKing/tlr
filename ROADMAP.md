@@ -27,6 +27,18 @@ How it works is in [ARCHITECTURE.md](ARCHITECTURE.md), including the accepted tr
 limits. What tlr deliberately will not do is in [adr/0009](adr/0009-scope-boundaries.md). Everything
 below is unbuilt.
 
+## Next — team-wide capture
+
+`standup` answers for one project because the snapshot store is keyed per project
+([adr/0006](adr/0006-normalized-tracker-schema.md)), and a standup covers a team. Every project-level
+number it reports is right, but the roll-up groups by milestone rather than by project, and work with
+no project at all cannot appear because a project-scoped ingest never sees it. On the real workspace
+that gap is large: unfiled tickets were 29% of a recent cycle's open scope.
+
+Ingest would need a team mode (`issues --team DEV`) writing one data file per team, with the manifest
+and `projectIdentity` keying off the team, after which `standup` groups by project with no other
+change. Cycle-hop history needs nothing new, because it already comes from each issue's own history.
+
 ## Done — the relationship view
 
 Answered by a throwaway spike against the real project, then deleted. Recording the outcome here so the

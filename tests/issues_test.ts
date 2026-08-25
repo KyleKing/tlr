@@ -113,6 +113,8 @@ Deno.test("transformIssue maps fields and splits relations into blocks/blockedBy
     },
   }
   assertEquals(transformIssue(raw, milestoneKeyById), {
+    // Neither fixture carries history, so the cycle path is unknown rather than empty.
+    cyclePath: undefined,
     id: "ENG-1",
     linearId: "uuid-eng-1",
     archived: true,
@@ -154,6 +156,8 @@ Deno.test("transformIssue defaults missing optionals to null/empty, and a missin
     relations: { nodes: [] },
   }
   assertEquals(transformIssue(raw, new Map()), {
+    // Neither fixture carries history, so the cycle path is unknown rather than empty.
+    cyclePath: undefined,
     id: "ENG-9",
     linearId: "uuid-eng-9",
     archived: false,
