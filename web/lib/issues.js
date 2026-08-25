@@ -189,6 +189,9 @@ export function transformIssue(raw, milestoneKeyById) {
     // Which team's workflow states and estimate scale apply to this ticket. A project can span teams,
     // and the two need not share either.
     teamKey: raw.team?.key ?? identifierTeamKey(raw.identifier),
+    // Only meaningful on a team-wide ingest, where a single snapshot spans many projects and none at
+    // all; a project-scoped ingest doesn't request this field, so it is always null there.
+    project: raw.project?.name ?? null,
     priority: priorityLabel(raw.priority),
     priorityValue: raw.priority ?? null,
     labels: (raw.labels?.nodes ?? []).map((l) => l.name),

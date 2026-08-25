@@ -12,6 +12,7 @@ import { liveIssues } from "../../web/lib/issues.js"
 import type { Issue, Snapshot } from "@/seed.ts"
 
 const NO_MILESTONE = "— unfiled —"
+const NO_PROJECT = "— no project —"
 
 export type StandupOptions = {
   // The cycle under review. Defaults to the snapshot's current cycle.
@@ -51,10 +52,12 @@ function isClosed(issue: Issue): boolean {
   return issue.statusType === "completed" || issue.statusType === "canceled"
 }
 
-// A snapshot holds one project, so milestone is the coarsest grouping available. Unfiled work is
-// called out on its own because a ticket in a cycle with no milestone is scope nobody is tracking.
-function groupOf(issue: Issue): string {
-  return issue.milestone ?? NO_MILESTONE
+// A single-project snapshot groups by milestone, the coarsest grouping available within it. A
+// team-wide snapshot (`issues --team`) spans every project on the team instead, so it groups by
+// project, with issues that have none of their own falling into an explicit bucket.
+function groupOfFor(snapshot: Snapshot): (issue: Issue) => string {
+  if (snapshot.project?.teamId) return (issue) => issue.project ?? NO_PROJECT
+  return (issue) => issue.milestone ?? NO_MILESTONE
 }
 
 export function standup(snapshot: Snapshot, options: StandupOptions = {}) {
@@ -63,6 +66,7 @@ export function standup(snapshot: Snapshot, options: StandupOptions = {}) {
   const lookback = options.lookback ?? 4
   const out = new Set(options.out ?? [])
   const target = options.target ?? 0.75
+  const groupOf = groupOfFor(snapshot)
 
   const issues = liveIssues(snapshot.issues) as Issue[]
   const inCycle = issues.filter((i) => i.cycle === cycle)

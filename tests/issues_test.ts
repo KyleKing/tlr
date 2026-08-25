@@ -103,6 +103,7 @@ Deno.test("transformIssue maps fields and splits relations into blocks/blockedBy
     cycle: { number: 48 },
     labels: { nodes: [{ name: "bug" }] },
     parent: { identifier: "ENG-0" },
+    project: { name: "Horse Tinder" },
     projectMilestone: { id: "mile-1" },
     relations: {
       nodes: [
@@ -126,6 +127,7 @@ Deno.test("transformIssue maps fields and splits relations into blocks/blockedBy
     status: "In Progress",
     statusType: "started",
     teamKey: "ENG",
+    project: "Horse Tinder",
     priority: "High",
     priorityValue: 2,
     labels: ["bug"],
@@ -169,6 +171,7 @@ Deno.test("transformIssue defaults missing optionals to null/empty, and a missin
     status: null,
     statusType: null,
     teamKey: "ENG",
+    project: null,
     priority: null,
     priorityValue: null,
     labels: [],

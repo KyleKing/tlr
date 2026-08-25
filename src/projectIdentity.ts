@@ -5,7 +5,14 @@
 // slugId survives a rename, so it is the best rename-stable key available from data already captured.
 // When ingest starts recording `id`/`slugId` directly, those win without a migration.
 
-export type ProjectRef = { name: string; url?: string | null; id?: string | null; slugId?: string | null }
+export type ProjectRef = {
+  name: string
+  url?: string | null
+  id?: string | null
+  slugId?: string | null
+  // Set instead of id/slugId by a team-wide ingest, where there is no single project to key on.
+  teamId?: string | null
+}
 
 const SLUG_ID = /-([0-9a-f]{8,32})$/i
 
@@ -25,6 +32,7 @@ function slugIdFromUrl(url: string | null | undefined): string | null {
 
 // A key of the form `<kind>:<value>`. Only `name:` keys are unstable across a rename.
 export function projectKey(project: ProjectRef): string {
+  if (project.teamId) return `team:${project.teamId}`
   if (project.id) return `id:${project.id}`
   const slug = project.slugId ?? slugIdFromUrl(project.url)
   if (slug) return `slug:${slug.toLowerCase()}`

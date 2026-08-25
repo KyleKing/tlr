@@ -25,9 +25,11 @@ function issue(over: Partial<Issue> & { id: string }): Issue {
   } as Issue
 }
 
-function snapshot(issues: Issue[], currentCycle = 52): Snapshot {
+function snapshot(issues: Issue[], currentCycle = 52, teamId?: string): Snapshot {
   return {
-    project: { name: "P", start: "2026-07-01", target: "2026-11-30", url: "https://linear.app/x/project/p" },
+    project: teamId
+      ? { name: "DEV", teamId }
+      : { name: "P", start: "2026-07-01", target: "2026-11-30", url: "https://linear.app/x/project/p" },
     cycles: [],
     asOf: "2026-08-21",
     currentCycle,
@@ -134,4 +136,20 @@ Deno.test("chronic tickets are the ones past four hops, and unfiled work groups 
   assertEquals(unfiled.next, 8)
   assertEquals(unfiled.carry, 12)
   assertEquals(unfiled.worstHop, 5)
+})
+
+Deno.test("a team snapshot groups by project instead of milestone, with an explicit no-project bucket", () => {
+  const s = standup(
+    snapshot(
+      [
+        issue({ id: "A-1", cycle: 52, estimate: 3, milestone: "m1", project: "Horse Tinder" }),
+        issue({ id: "A-2", cycle: 52, estimate: 5, milestone: "m1", project: null }),
+      ],
+      52,
+      "team-uuid-dev",
+    ),
+  )
+  assertEquals(s.groups.map((g) => g.name).sort(), ["Horse Tinder", "— no project —"])
+  assertEquals(s.groups.find((g) => g.name === "Horse Tinder")!.open, 3)
+  assertEquals(s.groups.find((g) => g.name === "— no project —")!.open, 5)
 })
