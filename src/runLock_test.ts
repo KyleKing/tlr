@@ -4,9 +4,11 @@ import {
   isSameLock,
   lockDecision,
   MIN_RUN_INTERVAL_MS,
+  minRunIntervalFor,
   parseLock,
   shouldSkipRun,
   STALE_LOCK_MS,
+  staleLockFor,
 } from "@/runLock.ts"
 
 const NOW = Date.parse("2026-07-24T09:00:00.000Z")
@@ -69,7 +71,7 @@ Deno.test("shouldSkipRun lets the next scheduled run through", () => {
 })
 
 // The gate exists to swallow a wake catch-up, not a scheduled run. It is measured start-to-start, so
-// the margin below the cadence only has to absorb launchd firing late, and an hour of it is plenty.
+// the margin below the cadence only has to absorb launchd firing late.
 Deno.test("the minimum interval clears every scheduled run and still swallows a catch-up", () => {
   assert(MIN_RUN_INTERVAL_MS < CADENCE_MS)
   assert(CADENCE_MS - MIN_RUN_INTERVAL_MS >= 60 * 60000)
@@ -83,6 +85,21 @@ Deno.test("shouldSkipRun runs when nothing has ever succeeded, or the clock move
   assertEquals(shouldSkipRun(null, NOW), false)
   assertEquals(shouldSkipRun("not a date", NOW), false)
   assertEquals(shouldSkipRun(new Date(NOW + 60000).toISOString(), NOW), false)
+})
+
+// An hourly install must not sit under a two-hour gate, or half its runs are skipped, and must not wait
+// 90 minutes to clear a wedged lock the next run should be stealing.
+Deno.test("both windows scale with the installed cadence", () => {
+  assertEquals(minRunIntervalFor(3), MIN_RUN_INTERVAL_MS)
+  assertEquals(staleLockFor(3), STALE_LOCK_MS)
+  assertEquals(minRunIntervalFor(1) / 60000, 40)
+  assertEquals(staleLockFor(1) / 60000, 45)
+  for (const hours of [1, 2, 3, 4, 6, 8, 12]) {
+    assert(minRunIntervalFor(hours) < hours * 60 * 60000)
+    assert(staleLockFor(hours) < hours * 60 * 60000)
+    assert(staleLockFor(hours) > 2 * 60000)
+  }
+  assertEquals(shouldSkipRun(new Date(NOW - 61 * 60000).toISOString(), NOW, minRunIntervalFor(1)), false)
 })
 
 Deno.test("acquireLock blocks a second run and releases for the next one", async () => {

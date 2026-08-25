@@ -163,10 +163,12 @@ be ignored. Google OAuth keeps its own browser flow and shows status plus the ta
 
 ## Scheduled capture
 
-`deno task snapshot` refreshes every project in the manifest and captures, run every three hours by a
-launchd LaunchAgent (`scripts/schedule.sh install`). launchd fires a missed run on wake, so a sleeping
-laptop still gets its capture. A lock file and a two-hour minimum interval (`src/runLock.ts`) keep a
-catch-up run from colliding with or duplicating one that already landed.
+`deno task snapshot` refreshes every project in the manifest and captures, run by a launchd LaunchAgent
+(`scripts/schedule.sh install`) every three hours, or every `--every` hours. launchd fires a missed run
+on wake, so a sleeping laptop still gets its capture. A lock file and a minimum interval two thirds of
+the cadence (`src/runLock.ts`) keep a catch-up run from colliding with or duplicating one that already
+landed; both windows are read back off the installed plist, so a faster schedule is not gated by a
+window sized for a slower one.
 
 Ingest records which Linear workspace a project came from, and a run skips a project belonging to
 another workspace as not-applicable rather than asking a key that cannot see it (the demo-workspace

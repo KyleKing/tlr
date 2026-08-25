@@ -17,7 +17,7 @@ import { renderPage } from "../web/templates/helpers.ts"
 import { openStore, type SnapshotRow, type SnapshotStore } from "@/snapshot.ts"
 import { captureSnapshot, DATA_ROOT, RUN_LOG_PATH, SNAPSHOT_DB, writeJsonAtomic } from "@/capture.ts"
 import { readRunLog } from "@/runLog.ts"
-import { isScheduleInstalled, scheduleHealth } from "@/schedule.ts"
+import { installedCadenceHours, scheduleHealth } from "@/schedule.ts"
 import { diffSnapshots } from "@/diff.ts"
 import { weeklyReport } from "@/report.ts"
 import { reviewSince } from "@/review.ts"
@@ -412,8 +412,13 @@ app.post("/api/review/pointer", async (c) => {
 // How the snapshot schedule is doing, for the banner in web/lib/scheduleBanner.js. A machine
 // with no LaunchAgent installed answers "unscheduled" with no message, which is the ordinary state.
 app.get("/api/schedule/health", async (c) => {
-  const [installed, entries] = await Promise.all([isScheduleInstalled(), readRunLog(RUN_LOG_PATH)])
-  return c.json(scheduleHealth({ entries, installed, nowMs: Date.now() }))
+  const [cadenceHours, entries] = await Promise.all([installedCadenceHours(), readRunLog(RUN_LOG_PATH)])
+  return c.json(scheduleHealth({
+    entries,
+    installed: cadenceHours !== null,
+    cadenceHours: cadenceHours ?? undefined,
+    nowMs: Date.now(),
+  }))
 })
 
 // Which workspace writes land in, so the client can label buttons and confirm before a live mutation.

@@ -45,8 +45,9 @@ import {
   summarizeResults,
 } from "@/runLog.ts"
 import { type PruneResult, pruneStore } from "@/retention.ts"
-import { acquireLock, MIN_RUN_INTERVAL_MS, shouldSkipRun } from "@/runLock.ts"
+import { acquireLock, minRunIntervalFor, shouldSkipRun, staleLockFor } from "@/runLock.ts"
 import { openStore } from "@/snapshot.ts"
+import { DEFAULT_CADENCE_HOURS, installedCadenceHours } from "@/schedule.ts"
 import { type CapacityData, refreshCapacity } from "./capacity.ts"
 import { ingestProject, linearKey } from "./issues.ts"
 import { slugIdFromUrl } from "@/linearAccess.ts"
@@ -218,11 +219,12 @@ async function captureAll(args: Args): Promise<Result> {
   return { detail, outcome: combineOutcomes(results) }
 }
 
-async function guardedRun(args: Args, startedAt: number): Promise<Result> {
+async function guardedRun(args: Args, startedAt: number, cadenceHours: number): Promise<Result> {
   const previous = lastSuccessAt(await readRunLog(RUN_LOG_PATH))
-  if (!args.force && shouldSkipRun(previous, startedAt)) {
-    const hours = Math.round(MIN_RUN_INTERVAL_MS / 3600000)
-    return { detail: `a successful run landed under ${hours}h ago; --force to run anyway`, outcome: "skipped" }
+  const minInterval = minRunIntervalFor(cadenceHours)
+  if (!args.force && shouldSkipRun(previous, startedAt, minInterval)) {
+    const minutes = Math.round(minInterval / 60000)
+    return { detail: `a successful run landed under ${minutes}m ago; --force to run anyway`, outcome: "skipped" }
   }
   try {
     return await captureAll(args)
@@ -235,8 +237,9 @@ async function main(): Promise<number> {
   const args = parseArgs(Deno.args)
   const startedAt = Date.now()
 
-  const release = await acquireLock(RUN_LOCK_PATH, startedAt)
-  const result = release ? await guardedRun(args, startedAt) : {
+  const cadenceHours = (await installedCadenceHours()) ?? DEFAULT_CADENCE_HOURS
+  const release = await acquireLock(RUN_LOCK_PATH, startedAt, staleLockFor(cadenceHours))
+  const result = release ? await guardedRun(args, startedAt, cadenceHours) : {
     detail: "another snapshot run holds the lock",
     outcome: "skipped" as const,
   }

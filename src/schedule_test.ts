@@ -1,6 +1,15 @@
 import { assert, assertEquals } from "@std/assert"
 import type { RunEntry, RunOutcome } from "@/runLog.ts"
-import { plistPath, relativeTime, SCHEDULE_LABEL, scheduleHealth, STALE_AFTER_MS } from "@/schedule.ts"
+import {
+  cadenceHoursFromPlist,
+  DEFAULT_CADENCE_HOURS,
+  plistPath,
+  relativeTime,
+  SCHEDULE_LABEL,
+  scheduleHealth,
+  STALE_AFTER_MS,
+  staleAfterFor,
+} from "@/schedule.ts"
 
 const NOW = Date.parse("2026-07-24T09:00:00.000Z")
 
@@ -33,6 +42,22 @@ Deno.test("the staleness window spans several missed runs without tripping on a 
   assertEquals(STALE_AFTER_MS / 3600000, 12)
   assertEquals(scheduleHealth({ entries: [entry(11, "captured")], installed: true, nowMs: NOW }).state, "ok")
   assertEquals(scheduleHealth({ entries: [entry(13, "captured")], installed: true, nowMs: NOW }).state, "stale")
+})
+
+Deno.test("the cadence comes from the installed agent's own calendar intervals", () => {
+  const intervals = (hours: number) =>
+    Array.from({ length: 24 / hours }, (_, i) => `<dict><key>Hour</key><integer>${i * hours}</integer></dict>`).join("")
+  assertEquals(cadenceHoursFromPlist(intervals(1)), 1)
+  assertEquals(cadenceHoursFromPlist(intervals(3)), 3)
+  assertEquals(cadenceHoursFromPlist("<plist></plist>"), DEFAULT_CADENCE_HOURS)
+})
+
+Deno.test("a slower cadence widens the staleness window, a faster one does not narrow it", () => {
+  assertEquals(staleAfterFor(1), STALE_AFTER_MS)
+  assertEquals(staleAfterFor(3), STALE_AFTER_MS)
+  assertEquals(staleAfterFor(6) / 3600000, 24)
+  const stale = scheduleHealth({ entries: [entry(13, "captured")], installed: true, cadenceHours: 1, nowMs: NOW })
+  assertEquals(stale.message, "No snapshot has been captured since 13 hours ago, though the snapshot runs every hour.")
 })
 
 Deno.test("scheduleHealth says which part of a partial run failed, not that the run failed", () => {

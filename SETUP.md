@@ -195,7 +195,7 @@ back empty.
 
 `deno task snapshot` refreshes every project in `web/data/projects.json` from Linear and Incident.io and
 captures a snapshot, the same work the board's Refresh button does. Run it by hand any time; the section
-below puts it on a launchd timer that fires every three hours, so the history builds without anyone
+below puts it on a launchd timer, every three hours by default, so the history builds without anyone
 remembering.
 
 Out-of-office is left out of a scheduled run. Google Calendar consent can need a browser, which a
@@ -204,12 +204,17 @@ background job cannot answer, so out-days stay whatever the last interactive `de
 ```sh
 ./scripts/schedule.sh install              # 00:00, 03:00, 06:00 … 21:00
 ./scripts/schedule.sh install --at 07:30   # 01:30, 04:30, 07:30 … 22:30
+./scripts/schedule.sh install --every 1    # hourly
 ./scripts/schedule.sh install --dry-run    # print the plist and the commands, change nothing
 ```
 
-Eight runs a day, three hours apart. `--at` names one of them and the other seven follow every three
-hours, so only the minute and the hour's remainder mod 3 change anything: `--at 07:30` and `--at 22:30`
-install the same schedule.
+Eight runs a day, three hours apart, unless `--every` says otherwise (any whole number of hours dividing
+24). `--at` names one of them and the rest follow at that cadence, so only the minute and the hour's
+remainder change anything: `--at 07:30` and `--at 22:30` install the same three-hourly schedule.
+
+The two guards in `src/runLock.ts` scale with whatever cadence is installed, so an hourly agent is not
+half-skipped by a gate sized for three hours. Re-run install after changing `--every`: the guards read
+the cadence back off the plist.
 
 Install is safe to re-run, and you have to re-run it after upgrading Deno: the plist holds the absolute
 path to the `deno` binary, because a LaunchAgent gets no shell `PATH`.
