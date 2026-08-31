@@ -139,6 +139,28 @@ export function workflowStates(teams, issue) {
 }
 
 // Raw Linear issue (see scripts/issues.ts's GraphQL query) → the board's issue shape.
+// Every cycle a ticket has ever been assigned to, oldest first, read from Linear's issue history.
+// `cyclePath.length - 1` is how many times the ticket was copied between cycles, which is the one
+// planning signal a single snapshot cannot supply: a ticket rolled forward all quarter looks
+// identical to one opened this week once it lands in the current cycle. A move to no cycle at all
+// (backlog) is skipped rather than recorded, because a ticket parked and later re-scheduled has not
+// earned two hops for one decision. Undefined when the capture predates this field, which callers
+// must treat as unknown rather than zero.
+export function cyclePathFromHistory(nodes) {
+  if (!nodes) return undefined
+  const moves = nodes
+    .filter((n) => n.fromCycle || n.toCycle)
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+  const path = []
+  for (const m of moves) {
+    const from = m.fromCycle?.number
+    const to = m.toCycle?.number
+    if (!path.length && from != null) path.push(from)
+    if (to != null && to !== path.at(-1)) path.push(to)
+  }
+  return path
+}
+
 export function transformIssue(raw, milestoneKeyById) {
   const blocks = []
   const blockedBy = []
@@ -155,6 +177,7 @@ export function transformIssue(raw, milestoneKeyById) {
     // Linear hides archived issues unless the query asks for them, so an archived ticket and one
     // removed from the project look the same downstream. Ingest asks for both and flags which is which.
     archived: Boolean(raw.archivedAt),
+    createdAt: raw.createdAt ?? null,
     title: raw.title,
     url: raw.url,
     description: raw.description ?? "",
@@ -167,12 +190,16 @@ export function transformIssue(raw, milestoneKeyById) {
     // Which team's workflow states and estimate scale apply to this ticket. A project can span teams,
     // and the two need not share either.
     teamKey: raw.team?.key ?? identifierTeamKey(raw.identifier),
+    // Only meaningful on a team-wide ingest, where a single snapshot spans many projects and none at
+    // all. A project-scoped snapshot answers the same question with snapshot.project.name.
+    project: raw.project?.name ?? null,
     priority: priorityLabel(raw.priority),
     priorityValue: raw.priority ?? null,
     labels: (raw.labels?.nodes ?? []).map((l) => l.name),
     parentId: raw.parent?.identifier ?? null,
     milestone: raw.projectMilestone ? milestoneKeyById.get(raw.projectMilestone.id) ?? null : null,
     cycle: raw.cycle?.number ?? null,
+    cyclePath: cyclePathFromHistory(raw.history?.nodes),
     blocks,
     blockedBy,
     // Linear's own "related" link: hand-curated, and the only relationship channel a person sets

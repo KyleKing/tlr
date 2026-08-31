@@ -13,6 +13,9 @@ export type Issue = {
   // Linear's internal UUID, captured only on a real ingest. Absent in offline seed data. A write
   // needs it because issueUpdate keys on the UUID, not the human identifier held in `id`.
   linearId?: string
+  // When the ticket was filed, from a real ingest. Absent in offline seed data and in captures taken
+  // before ingest recorded it. `context --project` centres each issue's search window on it.
+  createdAt?: string | null
   title: string
   url: string
   estimate: number
@@ -24,10 +27,17 @@ export type Issue = {
   // The Linear team key ("DEV") whose workflow states and estimate scale govern this issue. Absent in
   // offline seed data and in captures taken before ingest recorded it.
   teamKey?: string | null
+  // The project this issue sits on, by name. Only set on a team-wide ingest (`issues --team`), where a
+  // single snapshot spans many projects and none at all; a project-scoped snapshot leaves it unset
+  // because snapshot.project.name already answers the question.
+  project?: string | null
   labels: string[]
   parentId: string | null
   milestone: string | null
   cycle: number | null
+  // Every cycle this ticket has been assigned to, oldest first. Absent in offline seed data and in
+  // captures taken before ingest recorded it, which is not the same as an empty path.
+  cyclePath?: number[]
   description: string
   blocks: string[]
   blockedBy: string[]
@@ -58,10 +68,13 @@ export type Snapshot = {
     id?: string
     name: string
     slugId?: string
-    start: string
-    target: string
-    url: string
+    start?: string
+    target?: string
+    url?: string
     workspaceKey?: string | null
+    // The Linear team id, set only by a team-wide ingest (`issues --team`) in place of a project id,
+    // so src/projectIdentity.ts keys the snapshot history off the team instead.
+    teamId?: string | null
   }
   teams?: ProjectTeam[]
   // Every estimate value any of the project's teams allows. Null when no team estimates.

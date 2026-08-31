@@ -2,6 +2,7 @@
 //
 //   deno task issues "Project name"                      # write web/data/cpu.json
 //   deno task issues "Project name" --data web/data/other.json --dry-run
+//   deno task issues --team DEV                          # every issue on a team, into web/data/team-dev.json
 //
 // Fetches the project (and its team's cycles and its milestones) by name or slug, then every issue
 // on the project, and replaces the project/cycles/currentCycle/milestones/issues blocks in the data
@@ -16,6 +17,11 @@
 // team's cycles connection is also ordered oldest-first, so `last: N` (not `first: N`) is required to
 // get the N most recent cycles — on a long-running team, `first: 12` would return the earliest 12
 // cycles ever created, none of which overlap any current issue's cycle.
+//
+// `--team <KEY>` ingests a whole team instead of a project: every issue on the team, including one
+// with no project at all, into its own data file keyed by the team (src/projectIdentity.ts). There is
+// no team-wide milestone in Linear, so milestones is left empty; each issue still carries which
+// project it sits on (or null), which is what lets `standup` roll a team snapshot up by project.
 
 import {
   buildCycles,
@@ -77,14 +83,21 @@ const PROJECT_QUERY = `
 // includeArchived: true because Linear's issues connection hides archived issues by default, which
 // makes an archived ticket byte-identical to one deleted or moved off the project. The diff has to be
 // able to tell those apart, so ingest fetches both and marks each issue with archivedAt.
+//
+// filter is an IssueFilter rather than a fixed projectId, so the same query serves both a project
+// ingest (`{ project: { id: { eq } } }`) and a team ingest (`{ team: { id: { eq } } }`), the latter
+// also picking up issues with no project. project is fetched unconditionally: a project-scoped ingest
+// already knows it from its own snapshot.project, but a team-wide one needs it per issue to roll a
+// standup up by project instead of by milestone.
 const ISSUES_QUERY = `
-  query ProjectIssues($projectId: ID!, $after: String) {
-    issues(filter: { project: { id: { eq: $projectId } } }, first: 100, after: $after, includeArchived: true) {
+  query Issues($filter: IssueFilter, $after: String) {
+    issues(filter: $filter, first: 100, after: $after, includeArchived: true) {
       pageInfo { hasNextPage endCursor }
       nodes {
         id
         identifier
         archivedAt
+        createdAt
         title
         url
         description
@@ -96,8 +109,28 @@ const ISSUES_QUERY = `
         cycle { number }
         labels(first: 20) { nodes { name } }
         parent { identifier }
+        project { name }
         projectMilestone { id }
         relations(first: 20) { nodes { type relatedIssue { identifier } } }
+        history(first: 100) { nodes { createdAt fromCycle { number } toCycle { number } } }
+      }
+    }
+  }
+`
+
+// A team query mirrors the project query's teams(first: 10) block, but for one team by key.
+const TEAM_QUERY = `
+  query Team($key: String) {
+    teams(filter: { key: { eq: $key } }, first: 1) {
+      nodes {
+        id
+        key
+        name
+        issueEstimationType
+        issueEstimationAllowZero
+        issueEstimationExtended
+        cycles(last: 12) { nodes { number startsAt endsAt } }
+        states(first: 50) { nodes { id name type position } }
       }
     }
   }
@@ -127,11 +160,13 @@ type ProjectNode = {
   teams: { nodes: TeamNode[] }
 }
 type ProjectsResponse = { projects: { nodes: ProjectNode[] } }
+type TeamsResponse = { teams: { nodes: TeamNode[] } }
 
 type IssueNode = {
   id: string
   identifier: string
   archivedAt: string | null
+  createdAt: string
   title: string
   url: string
   description: string | null
@@ -143,8 +178,10 @@ type IssueNode = {
   cycle: { number: number } | null
   labels: { nodes: { name: string }[] }
   parent: { identifier: string } | null
+  project: { name: string } | null
   projectMilestone: { id: string } | null
   relations: { nodes: { type: string; relatedIssue: { identifier: string } }[] }
+  history?: { nodes: { createdAt: string; fromCycle: { number: number } | null; toCycle: { number: number } | null }[] }
 }
 type IssuesResponse = {
   issues: { pageInfo: { hasNextPage: boolean; endCursor: string | null }; nodes: IssueNode[] }
@@ -153,7 +190,7 @@ type IssuesResponse = {
 type GqlResponse<T> = { errors?: { message: string }[]; data: T }
 
 function parseArgs(argv: string[]) {
-  const args: Record<string, string | boolean> = { data: DEFAULT_DATA }
+  const args: Record<string, string | boolean> = {}
   const positional: string[] = []
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i]
@@ -161,7 +198,14 @@ function parseArgs(argv: string[]) {
     else if (a.startsWith("--")) args[a.slice(2)] = argv[++i]
     else positional.push(a)
   }
-  return { ...(args as { data: string; dryRun?: boolean }), project: positional[0] }
+  const parsed = args as { data?: string; dryRun?: boolean; team?: string }
+  return { ...parsed, data: parsed.data ?? defaultDataPath(parsed.team), project: positional[0] }
+}
+
+// A team ingest writes its own file. Sharing the project default would overwrite a project's data with
+// a team-wide snapshot the first time someone runs `--team` without `--data`.
+export function defaultDataPath(team: string | undefined): string {
+  return team ? new URL(`../web/data/team-${team.toLowerCase()}.json`, import.meta.url).pathname : DEFAULT_DATA
 }
 
 // account "api-key" is the real workspace; "demo-key" is the free/test workspace used in demo mode.
@@ -202,11 +246,24 @@ async function findProject(key: string, query: string): Promise<ProjectNode> {
   throw new Error(`"${query}" matches ${nodes.length} Linear projects: ${candidates} — pass an exact name or slug`)
 }
 
-async function fetchAllIssues(key: string, projectId: string): Promise<IssueNode[]> {
+async function findTeam(key: string, teamKey: string): Promise<TeamNode> {
+  const nodes = (await gql<TeamsResponse>(key, TEAM_QUERY, { key: teamKey })).teams.nodes
+  if (!nodes.length) throw new Error(`no Linear team matches "${teamKey}"`)
+  return nodes[0]
+}
+
+// Filter a team's issues by key, never by id: Linear's `team: { id: { eq } }` also returns issues from
+// other teams (a DEV-id filter answered with 1305 CUS and DES tickets), which lands foreign issues in a
+// team snapshot and inflates every count read off it. The key filter returns that team's issues alone.
+export function teamIssueFilter(team: TeamNode): Record<string, unknown> {
+  return { team: { key: { eq: team.key } } }
+}
+
+async function fetchAllIssues(key: string, filter: Record<string, unknown>): Promise<IssueNode[]> {
   const issues: IssueNode[] = []
   let after: string | null = null
   do {
-    const page: IssuesResponse["issues"] = (await gql<IssuesResponse>(key, ISSUES_QUERY, { projectId, after })).issues
+    const page: IssuesResponse["issues"] = (await gql<IssuesResponse>(key, ISSUES_QUERY, { filter, after })).issues
     issues.push(...page.nodes)
     // A next page with no cursor to reach it would otherwise end the loop quietly, and a truncated
     // issue list captured as a snapshot reads as a mass deletion. Fail the ingest instead.
@@ -224,7 +281,7 @@ async function fetchAllIssues(key: string, projectId: string): Promise<IssueNode
 // config panel's /api/refresh endpoint (scripts/serve.ts).
 export async function ingestProject(key: string, projectQuery: string, existingData: unknown, dataFile: string) {
   const project = await findProject(key, projectQuery)
-  const rawIssues = await fetchAllIssues(key, project.id)
+  const rawIssues = await fetchAllIssues(key, { project: { id: { eq: project.id } } })
 
   const milestones = buildMilestones(project.projectMilestones.nodes)
   const milestoneKeyById = new Map(project.projectMilestones.nodes.map((m) => [m.id, milestoneKey(m.name)]))
@@ -274,6 +331,59 @@ export async function ingestProject(key: string, projectQuery: string, existingD
     `issues: ${project.name} — ${fresh.issues.length} issues, ${milestones.length} milestones, ` +
     `${fresh.teams.length} teams`,
   ]
+  return await finishIngest(key, fresh, existingData, dataFile, { slug: project.slugId, name: project.name }, log)
+}
+
+// The project/cycles/currentCycle/milestones/issues blocks for a team-wide ingest, built from an
+// already-fetched team and its issues. No I/O, so a test can drive it straight off fixture nodes.
+// teamId (not id/slugId) is what src/projectIdentity.ts keys a team-wide history on, and there is no
+// team-wide milestone in Linear, so milestones is left empty.
+export function buildTeamSnapshot(team: TeamNode, rawIssues: IssueNode[]) {
+  const issues: ReturnType<typeof transformIssue>[] = linkRelations(
+    rawIssues.map((i) => transformIssue(i, new Map())),
+  )
+  const asOf = new Date().toISOString().slice(0, 10)
+
+  const referencedCycles = new Set(issues.map((i) => i.cycle).filter((n) => n != null))
+  const cycles = buildCycles(team.cycles.nodes).filter((c) => referencedCycles.has(c.n))
+
+  const teams = buildTeams([team])
+  return {
+    project: { name: team.key, teamId: team.id },
+    teams,
+    estimateScale: projectEstimateScale(teams),
+    cycles,
+    currentCycle: currentCycleNumber(cycles, asOf),
+    milestones: [],
+    issues,
+    asOf,
+  }
+}
+
+// Fetches every issue on teamQuery's team (including one with no project), merges it into
+// existingData under the team's own manifest slug, and resolves the roster — the team-wide analogue
+// of ingestProject, above.
+export async function ingestTeam(key: string, teamQuery: string, existingData: unknown, dataFile: string) {
+  const team = await findTeam(key, teamQuery)
+  const rawIssues = await fetchAllIssues(key, teamIssueFilter(team))
+  const fresh = buildTeamSnapshot(team, rawIssues)
+
+  const log = [`issues --team: ${team.name} (${team.key}) — ${fresh.issues.length} issues`]
+  return await finishIngest(key, fresh, existingData, dataFile, { slug: team.key, name: team.name }, log)
+}
+
+// Shared tail of ingestProject/ingestTeam: merge the freshly fetched blocks into existingData,
+// resolve the roster, and upsert the projects.json manifest entry for dataFile (its basename).
+// Returns the merged data (not yet written) and a human-readable log. Used by both the CLI (main,
+// below) and the config panel's /api/refresh endpoint (scripts/serve.ts).
+async function finishIngest(
+  key: string,
+  fresh: Record<string, unknown>,
+  existingData: unknown,
+  dataFile: string,
+  manifestEntry: { slug: string; name: string },
+  log: string[],
+) {
   const merged = mergeIngest(existingData ?? {}, fresh)
 
   const roster = await resolveRoster(key, merged)
@@ -283,23 +393,41 @@ export async function ingestProject(key: string, projectQuery: string, existingD
 
   const manifest = await Deno.readTextFile(MANIFEST_PATH).then(JSON.parse).catch(() => [])
   const updatedManifest = dedupeByDataFile(
-    upsertProjectManifest(manifest, { slug: project.slugId, name: project.name, dataFile }),
+    upsertProjectManifest(manifest, { ...manifestEntry, dataFile }),
   )
   await writeJsonAtomic(MANIFEST_URL, updatedManifest)
   log.push(`wrote ${MANIFEST_PATH}`)
 
-  return { data: merged, project, log }
+  return { data: merged, log }
 }
 
 async function main() {
   const args = parseArgs(Deno.args)
-  if (!args.project) throw new Error("usage: deno task issues <project name or slug> [--data path] [--dry-run]")
-
   const key = await linearKey()
+
+  if (args.team) {
+    if (args.dryRun) {
+      const team = await findTeam(key, args.team)
+      const rawIssues = await fetchAllIssues(key, teamIssueFilter(team))
+      console.log(`issues --team: ${team.name} (${team.key}) — ${rawIssues.length} issues`)
+      console.log("--dry-run: not writing")
+      return
+    }
+    const existing = await Deno.readTextFile(args.data).then(JSON.parse).catch(() => ({}))
+    const { data, log } = await ingestTeam(key, args.team, existing, args.data.split("/").pop()!)
+    for (const line of log) console.log(line)
+    await Deno.writeTextFile(args.data, `${JSON.stringify(data, null, 2)}\n`)
+    console.log(`wrote ${args.data}`)
+    return
+  }
+
+  if (!args.project) {
+    throw new Error("usage: deno task issues <project name or slug> [--data path] [--dry-run] | --team <KEY>")
+  }
 
   if (args.dryRun) {
     const project = await findProject(key, args.project)
-    const rawIssues = await fetchAllIssues(key, project.id)
+    const rawIssues = await fetchAllIssues(key, { project: { id: { eq: project.id } } })
     const milestones = buildMilestones(project.projectMilestones.nodes)
     const teams = buildTeams(project.teams.nodes)
     console.log(`issues: ${project.name} — ${rawIssues.length} issues, ${milestones.length} milestones`)

@@ -4,7 +4,10 @@
 //
 // Commands:
 //   scan   --text "<t>" | --file <path> | --project <file>   slop score for text, or every issue
+//   context --issue DEV-1234 [--created <iso>] [--days n]   what external systems know about an issue
+//   context --project <file> [--issues a,b] [--days n]       the same lookup over many issues at once
 //   capacity --project <file>                                 per-person load vs capacity per cycle
+//   standup  --project <file> [--cycle n] [--out a,b]         weekly roll-up: closed, carry-in, hops, next-cycle fit
 //   balance  --project <file> [--weekly n] [--start c] [--end c] [--weeks n]  propose assignee+cycle
 //   timeline --project <file>                                 dependency waves and chain risks
 //   diff   --a <file> --b <file> | --from <id> --to <id>      plan-level change between two snapshots
@@ -19,9 +22,11 @@
 // A --project/--a/--b value with no slash is looked up under web/data; otherwise it is a path.
 
 import { scanIssues, scanText } from "@/commands/scan.ts"
+import { issueContext, issueContextBatch } from "@/commands/context.ts"
 import { projectCapacity } from "@/commands/capacity.ts"
 import { balance } from "@/commands/balance.ts"
 import { projectTimeline } from "@/commands/timeline.ts"
+import { standup } from "@/commands/standup.ts"
 import { diffSnapshots } from "@/diff.ts"
 import { renderReport, weeklyReport } from "@/report.ts"
 import { milestoneForecast } from "@/forecast.ts"
@@ -30,6 +35,9 @@ import { openStore } from "@/snapshot.ts"
 import { planFromText } from "@/plan.ts"
 import { applyOps } from "@/ops.ts"
 import { boardSvg, timelineSvg } from "@/export.ts"
+import { openCache } from "@/cache.ts"
+import { configuredSources } from "@/contextRegistry.ts"
+import { type ContextSource, type FixtureRecord, fixtureSource } from "@/contextSource.ts"
 import type { Snapshot } from "@/seed.ts"
 
 const DATA_ROOT = new URL("../web/data/", import.meta.url)
@@ -58,6 +66,18 @@ function resolveDataPath(nameOrPath: string): URL {
   return new URL(nameOrPath, DATA_ROOT)
 }
 
+// Which issues a batch answers is the caller's choice, so this only resolves what it was handed: the
+// snapshot supplies each identifier's own createdAt, and an issue whose capture predates that field
+// falls back to --created, then to now. A snapshot taken before ingest recorded createdAt gives every
+// issue the same window, which is a re-ingest away from being right.
+async function batchIssues(file: string | undefined, named: string[] | undefined, fallback: string | undefined) {
+  const filed = new Map<string, string | null | undefined>()
+  if (file) { for (const i of (await loadData(file)).issues) filed.set(i.id, i.createdAt) }
+  const ids = named ?? [...filed.keys()]
+  if (!ids.length) fail("context found no issues to look up")
+  return ids.map((issue) => ({ issue, createdAt: filed.get(issue) ?? fallback }))
+}
+
 async function loadData(nameOrPath: string): Promise<Snapshot> {
   return JSON.parse(await Deno.readTextFile(resolveDataPath(nameOrPath))) as Snapshot
 }
@@ -82,6 +102,16 @@ async function run(cmd: string | undefined, f: Flags): Promise<void> {
       if (text !== undefined) return out(scanText(text))
       if (file) return out(scanText(await Deno.readTextFile(resolveDataPath(file))))
       return out(scanIssues(await loadData(project ?? "data-sample.json")))
+    }
+    case "standup": {
+      const n = (k: string) => (str(f, k) !== undefined ? Number(str(f, k)) : undefined)
+      const away = str(f, "out")
+      return out(standup(await loadData(str(f, "project") ?? "data-sample.json"), {
+        cycle: n("cycle"),
+        lookback: n("lookback"),
+        target: n("target"),
+        out: away ? away.split(",").map((p) => p.trim()).filter(Boolean) : undefined,
+      }))
     }
     case "capacity":
       return out(projectCapacity(await loadData(str(f, "project") ?? "data-sample.json")))
@@ -151,6 +181,42 @@ async function run(cmd: string | undefined, f: Flags): Promise<void> {
       }
       return out(svg)
     }
+    case "context": {
+      const batchFile = str(f, "project")
+      const named = str(f, "issues")?.split(",").map((n) => n.trim()).filter(Boolean)
+      const issue = batchFile || named ? undefined : str(f, "issue") ?? fail("context needs --issue <identifier>")
+      const names = str(f, "sources")
+      const { sources, unconfigured } = await configuredSources(
+        names ? names.split(",").map((n) => n.trim()).filter(Boolean) : undefined,
+      )
+      const fixture = str(f, "fixture")
+      if (fixture) sources.push(await fixtureFromFile(fixture))
+      const num = (k: string) => (str(f, k) !== undefined ? Number(str(f, k)) : undefined)
+      const cachePath = str(f, "cache")
+      const cache = openCache(f["no-cache"] === true ? null : cachePath)
+      const shared = {
+        tracker: str(f, "tracker"),
+        days: num("days"),
+        actor: str(f, "actor"),
+        text: str(f, "text"),
+        limit: num("limit"),
+      }
+      try {
+        if (issue !== undefined) {
+          const result = await issueContext({ ...shared, issue, createdAt: str(f, "created") }, sources, cache)
+          return out({ ...result, unconfigured })
+        }
+        const batch = await issueContextBatch(
+          await batchIssues(batchFile, named, str(f, "created")),
+          shared,
+          sources,
+          cache,
+        )
+        return out({ ...batch, unconfigured })
+      } finally {
+        cache.close()
+      }
+    }
     default:
       fail(`unknown command "${cmd ?? ""}". run with no args to see usage.`)
   }
@@ -200,13 +266,20 @@ async function twoSnapshots(
   return { before, after, history: [] }
 }
 
+async function fixtureFromFile(path: string): Promise<ContextSource> {
+  const records = JSON.parse(await Deno.readTextFile(resolveDataPath(path))) as FixtureRecord[]
+  return fixtureSource(records[0]?.source ?? "fixture", records)
+}
+
 function usage(): void {
   console.log(
     [
       "tlr <command> [flags]",
       "",
       "  scan      --text <t> | --file <path> | --project <file>",
+      "  context   --issue <id> [--created <iso>] [--days <n>] [--actor <who>] [--text <t>] [--sources <a,b>]",
       "  capacity  --project <file>",
+      "  standup   --project <file> [--cycle <n>] [--lookback <n>] [--target <0-1>] [--out <name,name>]",
       "  balance   --project <file> [--weekly <n>] [--start <cycle>] [--end <cycle>] [--weeks <n>] [--lead <cycles>]",
       "  timeline  --project <file>",
       "  diff      --a <file> --b <file> | --from <id> --to <id>",
@@ -222,6 +295,8 @@ function usage(): void {
     ].join("\n"),
   )
 }
+
+export { parseFlags, run }
 
 if (import.meta.main) {
   const [cmd, ...rest] = Deno.args

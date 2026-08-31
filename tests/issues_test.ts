@@ -92,6 +92,7 @@ Deno.test("transformIssue maps fields and splits relations into blocks/blockedBy
     id: "uuid-eng-1",
     identifier: "ENG-1",
     archivedAt: "2026-07-20T09:00:00.000Z",
+    createdAt: "2026-07-28T11:02:00.000Z",
     title: "Fix the thing",
     url: "https://linear.app/team/issue/ENG-1",
     description: "some description",
@@ -103,6 +104,7 @@ Deno.test("transformIssue maps fields and splits relations into blocks/blockedBy
     cycle: { number: 48 },
     labels: { nodes: [{ name: "bug" }] },
     parent: { identifier: "ENG-0" },
+    project: { name: "Horse Tinder" },
     projectMilestone: { id: "mile-1" },
     relations: {
       nodes: [
@@ -113,9 +115,12 @@ Deno.test("transformIssue maps fields and splits relations into blocks/blockedBy
     },
   }
   assertEquals(transformIssue(raw, milestoneKeyById), {
+    // Neither fixture carries history, so the cycle path is unknown rather than empty.
+    cyclePath: undefined,
     id: "ENG-1",
     linearId: "uuid-eng-1",
     archived: true,
+    createdAt: "2026-07-28T11:02:00.000Z",
     title: "Fix the thing",
     url: "https://linear.app/team/issue/ENG-1",
     description: "some description",
@@ -124,6 +129,7 @@ Deno.test("transformIssue maps fields and splits relations into blocks/blockedBy
     status: "In Progress",
     statusType: "started",
     teamKey: "ENG",
+    project: "Horse Tinder",
     priority: "High",
     priorityValue: 2,
     labels: ["bug"],
@@ -154,9 +160,12 @@ Deno.test("transformIssue defaults missing optionals to null/empty, and a missin
     relations: { nodes: [] },
   }
   assertEquals(transformIssue(raw, new Map()), {
+    // Neither fixture carries history, so the cycle path is unknown rather than empty.
+    cyclePath: undefined,
     id: "ENG-9",
     linearId: "uuid-eng-9",
     archived: false,
+    createdAt: null,
     title: "No frills",
     url: "https://linear.app/team/issue/ENG-9",
     description: "",
@@ -165,6 +174,7 @@ Deno.test("transformIssue defaults missing optionals to null/empty, and a missin
     status: null,
     statusType: null,
     teamKey: "ENG",
+    project: null,
     priority: null,
     priorityValue: null,
     labels: [],

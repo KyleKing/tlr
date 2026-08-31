@@ -16,6 +16,8 @@ with per-user namespaced secrets ([Long-term](#long-term-a-hosted-runner)), so t
 | Linear          | personal API key                | keychain `tlr-linear` or `op read`     | issue fetch, `deno task roster`        |
 | Incident.io     | API key (read schedules)        | keychain `tlr-incidentio` or `op read` | `deno task capacity --source incident` |
 | Google Calendar | OAuth client JSON (Desktop app) | `web/data/gcal-client.json`            | `deno task gcal:freebusy`              |
+| Pylon           | API token (read issues)         | keychain `tlr-pylon` or `op read`      | `deno task cli context`                |
+| Slack           | user token, `search:read`       | keychain `tlr-slack` or `op read`      | `deno task cli context`                |
 
 ## Storing a secret
 
@@ -30,12 +32,17 @@ Read it back with the same `-s`/`-a` and `-w` to confirm. Delete and re-add to r
 
 ### From 1Password
 
-If a secret already lives in 1Password, skip the keychain and pass it inline. The scripts read the env
-vars `LINEAR_API_KEY` and `INCIDENT_IO_TOKEN` as well as the keychain:
+If a secret already lives in 1Password, skip the keychain and pass it inline. Every secret reads its
+env var first and the keychain second, so `INCIDENT_IO_TOKEN`, `LINEAR_API_KEY`, `LINEAR_DEMO_API_KEY`,
+and `PYLON_API_TOKEN` all work this way:
 
 ```sh
 LINEAR_API_KEY=$(op read "op://<vault>/<item>/<field>") deno task roster --dry-run --force
+PYLON_API_TOKEN=$(op read "op://Private/Pylon API Token/password") deno task cli context --issue DEV-1234
 ```
+
+An env var wins over the keychain on read, which is why the Settings page refuses to edit a secret while
+one is set.
 
 ## Linear
 
@@ -103,6 +110,45 @@ team-filtered; `teams: []` sees every schedule.
 
 Verify: `deno task capacity --source incident --dry-run`. Note that on-call only shows for people already
 in `capacity.roster` (add them under Settings → Roster), so anyone on call who isn't rostered is dropped.
+
+## Pylon
+
+Support tickets reach tlr as a [context source](adr/0011-context-sources.md): read-only, one search per
+issue, never part of the plan. Direct REST, because an MCP connector does not survive a scheduled run.
+
+1. [Pylon → API tokens](https://app.usepylon.com/settings/api-tokens): create a token named `tlr`. Every
+   action is attributed to the token's name, so give it one you will recognize in an audit log
+2. Store it: `security add-generic-password -s tlr-pylon -a api-token -w` (env var `PYLON_API_TOKEN`)
+
+The base host is `https://api.usepylon.com` and the header is `Authorization: Bearer <token>`. Issue
+search is limited to 20 requests a minute, which is why every lookup goes through the cache in
+`src/cache.ts`.
+
+Which custom field records the tracker identifier is a workspace's own choice. tlr looks at
+`linear_ticket` unless `TLR_PYLON_LINK_FIELD` names another one; `GET /custom-fields?object_type=issue`
+lists what a workspace has.
+
+Verify: `deno task cli context --issue <identifier>`.
+
+## Slack
+
+The same [context source](adr/0011-context-sources.md) port, over messages. Search needs a **user**
+token (`xoxp-`), not a bot token: `search.messages` refuses a bot token outright.
+
+1. [Slack → Your apps](https://api.slack.com/apps): create an app in the workspace, add the
+   `search:read` **user** token scope under OAuth & Permissions, install it, and copy the User OAuth
+   Token
+2. Store it: `security add-generic-password -s tlr-slack -a user-token -w` (env var `SLACK_USER_TOKEN`)
+
+`TLR_SLACK_CHANNELS` optionally scopes every search to a comma-separated channel list
+(`eng,product-triage`); several channels are OR, so the list widens rather than narrows. Search is
+limited to 20 requests a minute.
+
+The wider net asks for search text or a reporter before it runs, because a date range on its own is
+every message in the workspace for a fortnight. A reporter has to be a Slack user id (`U…`), which is
+the same trap Pylon's requester filter sets: an email is dropped rather than resolved.
+
+Verify: `deno task cli context --issue <identifier> --sources slack`.
 
 ## Google Calendar
 
@@ -175,7 +221,7 @@ back empty.
 
 `deno task snapshot` refreshes every project in `web/data/projects.json` from Linear and Incident.io and
 captures a snapshot, the same work the board's Refresh button does. Run it by hand any time; the section
-below puts it on a launchd timer that fires every three hours, so the history builds without anyone
+below puts it on a launchd timer, every three hours by default, so the history builds without anyone
 remembering.
 
 Out-of-office is left out of a scheduled run. Google Calendar consent can need a browser, which a
@@ -184,12 +230,17 @@ background job cannot answer, so out-days stay whatever the last interactive `de
 ```sh
 ./scripts/schedule.sh install              # 00:00, 03:00, 06:00 … 21:00
 ./scripts/schedule.sh install --at 07:30   # 01:30, 04:30, 07:30 … 22:30
+./scripts/schedule.sh install --every 1    # hourly
 ./scripts/schedule.sh install --dry-run    # print the plist and the commands, change nothing
 ```
 
-Eight runs a day, three hours apart. `--at` names one of them and the other seven follow every three
-hours, so only the minute and the hour's remainder mod 3 change anything: `--at 07:30` and `--at 22:30`
-install the same schedule.
+Eight runs a day, three hours apart, unless `--every` says otherwise (any whole number of hours dividing
+24). `--at` names one of them and the rest follow at that cadence, so only the minute and the hour's
+remainder change anything: `--at 07:30` and `--at 22:30` install the same three-hourly schedule.
+
+The two guards in `src/runLock.ts` scale with whatever cadence is installed, so an hourly agent is not
+half-skipped by a gate sized for three hours. Re-run install after changing `--every`: the guards read
+the cadence back off the plist.
 
 Install is safe to re-run, and you have to re-run it after upgrading Deno: the plist holds the absolute
 path to the `deno` binary, because a LaunchAgent gets no shell `PATH`.

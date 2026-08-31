@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
-# Install, inspect, or remove the launchd LaunchAgent that runs `deno task snapshot` every three hours.
+# Install, inspect, or remove the launchd LaunchAgent that runs `deno task snapshot` on a fixed cadence.
 #
-#   ./scripts/schedule.sh install            # 00:00, 03:00, 06:00 … 21:00
-#   ./scripts/schedule.sh install --at 07:30 # same eight-a-day cadence, phased to 07:30
+#   ./scripts/schedule.sh install            # every 3 hours: 00:00, 03:00, 06:00 … 21:00
+#   ./scripts/schedule.sh install --at 07:30 # same cadence, phased to 07:30
+#   ./scripts/schedule.sh install --every 1  # hourly
 #   ./scripts/schedule.sh install --dry-run  # print the plist and the commands, change nothing
 #   ./scripts/schedule.sh status
 #   ./scripts/schedule.sh uninstall
 #
-# --at names one run of the day and the other seven follow every three hours from it, which is why only
-# the hour's remainder mod 3 changes the result: --at 07:30 and --at 22:30 both give 01:30, 04:30, …
-# 22:30. Eight StartCalendarInterval dicts in an array, not a StartInterval, because launchd fires a
+# --at names one run of the day and the rest follow every --every hours from it, which is why only the
+# hour's remainder mod the cadence changes the result: at a three-hour cadence --at 07:30 and --at 22:30
+# both give 01:30, 04:30, … 22:30. --every must divide 24, so the wrap past midnight keeps the same gap
+# as every other step. A StartCalendarInterval dict per run, not a StartInterval, because launchd fires a
 # missed calendar interval when the machine wakes and coalesces several missed ones into a single run
 # (`man launchd.plist`); an interval timer has no such catch-up and this schedule is built on it.
 #
@@ -20,7 +22,8 @@
 set -euo pipefail
 
 LABEL="me.kyleking.tlr.snapshot"
-HOURS_APART=3
+DEFAULT_HOURS_APART=3
+HOURS_APART="${DEFAULT_HOURS_APART}"
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TEMPLATE="${REPO}/scripts/launchagent.plist.template"
 PLIST="${HOME}/Library/LaunchAgents/${LABEL}.plist"
@@ -90,6 +93,10 @@ install_agent() {
         at="${2:-}"
         shift 2
         ;;
+      --every)
+        HOURS_APART="${2:-}"
+        shift 2
+        ;;
       --dry-run)
         dry_run=1
         shift
@@ -99,6 +106,8 @@ install_agent() {
   done
 
   [ -f "${TEMPLATE}" ] || die "missing ${TEMPLATE}"
+  [[ "${HOURS_APART}" =~ ^[0-9]+$ ]] && [ "${HOURS_APART}" -ge 1 ] && [ "${HOURS_APART}" -le 24 ] &&
+    [ $((24 % HOURS_APART)) -eq 0 ] || die "--every wants a whole number of hours dividing 24, got '${HOURS_APART}'"
   [[ "${at}" =~ ^([0-9]{1,2}):([0-9]{2})$ ]] || die "--at wants HH:MM, got '${at}'"
   hour="$((10#${BASH_REMATCH[1]}))"
   minute="$((10#${BASH_REMATCH[2]}))"
@@ -146,8 +155,8 @@ case "${1:-}" in
   status) status_agent ;;
   uninstall) uninstall_agent ;;
   *)
-    echo "usage: $0 {install [--at HH:MM] [--dry-run]|status|uninstall}" >&2
-    echo "       --at names one run; the other seven follow every ${HOURS_APART} hours" >&2
+    echo "usage: $0 {install [--at HH:MM] [--every HOURS] [--dry-run]|status|uninstall}" >&2
+    echo "       --at names one run; the rest follow every --every hours (default ${DEFAULT_HOURS_APART}, must divide 24)" >&2
     exit 2
     ;;
 esac

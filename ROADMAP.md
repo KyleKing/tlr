@@ -24,8 +24,77 @@ credentials, and `deno task seed:linear` seeds the same story into a throwaway f
 testing.
 
 How it works is in [ARCHITECTURE.md](ARCHITECTURE.md), including the accepted trade-offs under Known
-limits. What tlr deliberately will not do is in [adr/0009](adr/0009-scope-boundaries.md). Everything
-below is unbuilt.
+limits. What tlr deliberately will not do is in [adr/0009](adr/0009-scope-boundaries.md). Each section
+below says whether it is built.
+
+## Next — context sources
+
+A read-only enrichment layer over external systems (a linked support ticket, a Slack thread, a GitHub
+PR) that an agent doing triage queries once instead of making its own live API call per source per
+issue. Design and rationale: [ADR 0011](adr/0011-context-sources.md).
+
+The port, the cache under it, the `context` command, and the first adapter shipped. `src/cache.ts` keys
+on `(source, query fingerprint)` and takes no project id, closing the same project-scoping gap that
+[ideas.txt #7](ideas.txt) and team-wide capture both name. `deno task cli context --issue DEV-1234`
+prints every `ContextItem` across configured sources, linked results first, and names any source with
+no credential on this machine instead of passing its silence off as an empty answer.
+
+Pylon went first because its linked signal is the clearest: a custom field holds the bare tracker
+identifier, so the linked lookup is one `equals` filter rather than a text search. The request shapes
+came from a session spike against the live API, the tests replay a redacted recording, and both tiers
+have since run against a real token: the linked lookup returned the support ticket recorded against a
+live Linear identifier, and the wider net returned tickets in the window.
+[SETUP.md](SETUP.md#pylon) has the two steps to mint a token, and
+`deno task cli context --issue <identifier>` is the check. Two things to know before writing a second
+adapter: Pylon filters a requester by contact id rather than by email (so `ContextQuery.actor` is
+dropped unless it is a uuid), and its issue search allows 20 requests a minute, which is what the cache
+keeps a batch run under.
+
+Slack followed, and cost one adapter file plus one line in `src/contextRegistry.ts`, which is what the
+port was built first to buy. Its search behaves differently enough from Pylon's to be worth writing
+down: `after:`/`before:` exclude the day they name, a range that excludes everything is ignored rather
+than obeyed (the search answers as if no dates were given), several `in:` terms are OR, the identifier
+search is fuzzy so a match only counts as linked once the text is confirmed to contain the identifier,
+and Linear's own bot posts carry no `text` at all. The wider net refuses to run on a date range alone,
+because that is every message in the workspace for a fortnight.
+
+`deno task cli context --project <file>` answers a whole list in one run, taking each issue's window
+from its own `createdAt` (now recorded by ingest) and holding each source to its published call budget
+through `paced`. The window snaps to its UTC day, so issues filed the same day share one lookup and the
+cache serves the rest. A capture taken before ingest recorded `createdAt` gives every issue the same
+window, which is a re-ingest away from being right.
+
+What is left:
+
+1. **A third adapter** (GitHub PRs), same shape as Pylon and Slack, when a real use case wants it.
+   Spike its shape via the MCP connector inside a session per
+   [ADR 0007](adr/0007-productization-and-domains.md), then productionize behind the port with a direct
+   REST/GraphQL call and a secret from `src/secrets.ts`; never commit a real credential or a real
+   ticket's content (ADR 0003).
+
+2. **Do not hardcode a label name, a workspace name, or a company name anywhere in this layer.**
+   "Needs Info" (or whatever a workspace calls its label for "not enough information to act"), and the
+   choice to check a context source only when an issue is unlinked and cast a wider net by date range,
+   are triage _policy_ — they belong in the prompt or script that calls `context`, not in tlr. If a
+   follow-up session is tempted to add a `--policy triage` flag or similar, that is the signal this
+   boundary is being crossed; keep tlr answering "what do you know," and leave "what should I do about
+   it" to the caller.
+
+## Done — team-wide capture
+
+`standup` answered for one project because the snapshot store is keyed per project
+([adr/0006](adr/0006-normalized-tracker-schema.md)), so the roll-up grouped by milestone and work on no
+project at all could not appear: unfiled tickets were 29% of a recent cycle's open scope on the real
+workspace.
+
+`deno task issues --team DEV` now ingests every issue on a team into its own data file, keyed
+`team:<id>`, and `standup` groups a team snapshot by project with an explicit bucket for work on none.
+Cycle-hop history needed nothing new, as expected, because it comes from each issue's own history. The
+scheduled run refreshes a team file the same way it refreshes a project one.
+
+Two things a follow-up should know. Linear has no team-wide milestone, so a team snapshot's milestone
+block is empty and every milestone-shaped view stays project-only. And the estimate scale and workflow
+states come from the one team, where a project ingest pools them across every team it touches.
 
 ## Done — the relationship view
 
@@ -121,6 +190,10 @@ that volume. Tabled as an idea, not a scoped feature.
 
 The UI would show two or more tickets together and resolve to merge or mark-duplicate-and-close, so it
 shares little with the single-ticket editor.
+
+Narrower than this, and now built: the candidate-net search in a
+[context source](adr/0011-context-sources.md) covers one external system, one time window, and unlinked
+issues only. This stays tabled.
 
 ## Known issues
 

@@ -30,6 +30,11 @@ what is next, and [AGENTS.md](AGENTS.md) for where to start.
   point ceiling (deflated for on-call and OOO), keeping a dependency chain with one owner and reporting
   which milestones the estimates say will land late. Reviewable and applicable from the Balance page
 - Weekly-update narrative (shipped, moved, at risk) generated from a plan-level diff
+- Weekly standup roll-up: what the cycle closed against what it committed, how much of the cycle was
+  scope carried in rather than new work, which tickets have been copied between cycles enough times to
+  stop counting as planned, and whether next cycle's commitment fits demonstrated throughput once time
+  off is subtracted. Hop counts come from Linear's own issue history, so they are correct on the first
+  run rather than accumulating over weeks of snapshots
 - Slop scan of ticket text for AI tells (dashes, stock phrases, checklists, length), with a review
   queue for recent edits and a way to mark each one reviewed
 - Review-and-fix loop for bulk AI changes: the Review page groups every change to a ticket, lets you
@@ -106,6 +111,7 @@ Balance (proposed owners and cycles), and Settings.
 deno task dev              # serve the web app at localhost:8000
 deno task seed             # write synthetic snapshots + a demo project into web/data (no Linear key)
 deno task issues "Name"    # refresh project / cycles / milestones / issues from Linear
+deno task issues --team DEV # every issue on a team, including work on no project, into team-dev.json
 deno task capacity         # refresh on-call / out-days / velocity into web/data/cpu.json
 deno task roster           # resolve assignee names to emails from Linear
 deno task gcal:freebusy    # spike: read teammates' free/busy from Google Calendar
@@ -120,6 +126,7 @@ cleanly.
 ```sh
 deno task cli scan     --project seed-b.json          # slop score per issue, or --text "<t>"
 deno task cli capacity --project seed-b.json          # load vs capacity per person per cycle
+deno task cli standup  --project seed-b.json [--cycle 52] [--out "Ada,Grace"]  # weekly roll-up: closed, carry-in, cycle-hops, next-cycle fit
 deno task cli balance  --project seed-b.json --weekly 14 --start 49 --end 54 --lead 8  # propose assignee+cycle, with milestone deadline risk
 deno task cli timeline --project seed-b.json          # dependency waves and chain risks
 deno task cli diff     --a seed-a.json --b seed-b.json # plan-level change between two snapshots

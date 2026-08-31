@@ -10,19 +10,30 @@
 // signal permission the task does not otherwise want, and a run that has held the lock for longer than
 // any bounded run can take is wedged whether its process still exists or not.
 //
-// Both windows are sized against the three-hour schedule (scripts/schedule.sh):
+// Both windows are sized against the installed cadence (scripts/schedule.sh --every), and the constants
+// are what a three-hour schedule works out to:
 //
-// - MIN_RUN_INTERVAL_MS has to sit below the cadence with room to spare, or a legitimate scheduled run
+// - the minimum interval has to sit below the cadence with room to spare, or a legitimate scheduled run
 //   is intermittently skipped. It is measured start-to-start (see lastSuccessAt in runLog.ts), so the
-//   only shortfall against a true three-hour gap is launchd's own lateness.
-// - STALE_LOCK_MS has to sit above the worst-case duration of a live run, or a run still fetching gets
-//   its lock stolen, and below the cadence, so the next scheduled run clears a wedged lock instead of
-//   being blocked by it. Every Linear read is bounded by src/httpRetry.ts at three attempts, a 15s
-//   per-attempt timeout, and two backoffs capped at 30s each: 105s per call at the very worst, so 90
-//   minutes covers roughly fifty calls in one run.
+//   only shortfall against a true cadence gap is launchd's own lateness.
+// - the stale-lock window has to sit above the worst-case duration of a live run, or a run still
+//   fetching gets its lock stolen, and below the cadence, so the next scheduled run clears a wedged
+//   lock instead of being blocked by it. Every Linear read is bounded by src/httpRetry.ts at three
+//   attempts, a 15s per-attempt timeout, and two backoffs capped at 30s each: 105s per call at the very
+//   worst, so 90 minutes covers roughly fifty calls in one run, and an hourly cadence still leaves 45.
 
 export const MIN_RUN_INTERVAL_MS = 2 * 60 * 60 * 1000
 export const STALE_LOCK_MS = 90 * 60 * 1000
+
+const HOUR_MS = 60 * 60 * 1000
+
+export function minRunIntervalFor(cadenceHours: number): number {
+  return Math.round((cadenceHours * HOUR_MS * 2) / 3)
+}
+
+export function staleLockFor(cadenceHours: number): number {
+  return Math.min(STALE_LOCK_MS, Math.round(cadenceHours * HOUR_MS * 0.75))
+}
 
 export type LockInfo = { pid: number; startedAt: string }
 export type LockDecision = "acquire" | "blocked" | "steal"
@@ -86,7 +97,11 @@ async function releaseOwnedLock(path: string, owner: LockInfo): Promise<void> {
 // Take the lock, or return null when a live run already holds it. Creating the file with `createNew`
 // is the atomic step: two runs racing here cannot both succeed, and the loser then decides on the age
 // of what it found. Do not reuse the returned release after calling it.
-export async function acquireLock(path: string, nowMs: number = Date.now()): Promise<ReleaseLock | null> {
+export async function acquireLock(
+  path: string,
+  nowMs: number = Date.now(),
+  staleAfterMs: number = STALE_LOCK_MS,
+): Promise<ReleaseLock | null> {
   const owner: LockInfo = { pid: Deno.pid, startedAt: new Date(nowMs).toISOString() }
   const body = `${JSON.stringify(owner)}\n`
   const release: ReleaseLock = () => releaseOwnedLock(path, owner)
@@ -99,7 +114,7 @@ export async function acquireLock(path: string, nowMs: number = Date.now()): Pro
   }
 
   const existing = parseLock(await Deno.readTextFile(path).catch(() => ""))
-  if (lockDecision(existing, nowMs) === "blocked") return null
+  if (lockDecision(existing, nowMs, staleAfterMs) === "blocked") return null
   await Deno.writeTextFile(path, body)
   return release
 }

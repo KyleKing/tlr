@@ -11,6 +11,12 @@ Deno.test("projectKey prefers the project id, then the slug id, then the name", 
   assertEquals(projectKey({ name: "  Horse   Tinder " }), "name:horse tinder")
 })
 
+Deno.test("projectKey prefers a team id over id/slug/name, for a team-wide ingest", () => {
+  assertEquals(projectKey({ name: "DEV", teamId: "team-uuid" }), "team:team-uuid")
+  assertEquals(projectKey({ name: "DEV", teamId: "team-uuid", id: "proj-1" }), "team:team-uuid")
+  assertEquals(isStableProjectKey(projectKey({ name: "DEV", teamId: "team-uuid" })), true)
+})
+
 Deno.test("projectKey is stable across a rename that keeps the slug id", () => {
   const before = projectKey({ name: "Horse Tinder", url: "https://linear.app/acme/project/horse-tinder-c0ffee001122" })
   const after = projectKey({

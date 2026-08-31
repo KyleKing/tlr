@@ -1,0 +1,54 @@
+{
+  "note": "Shapes recorded from POST https://slack.com/api/search.messages. Content is redacted: no real message, channel, or person ever lands in this repo (ADR 0003).",
+  "linked": {
+    "ok": true,
+    "messages": {
+      "total": 2,
+      "matches": [
+        {
+          "type": "message",
+          "ts": "1783632226.751039",
+          "user": "U000000AAAA",
+          "username": "redacted",
+          "text": "Worth a look: <https://example.invalid/issue/DEV-1|DEV-1> &amp; the auth change <@U000000BBBB|someone> made",
+          "permalink": "https://example.invalid/archives/C000000AAAA/p1783632226751039",
+          "channel": { "id": "C000000AAAA", "name": "redacted-eng" }
+        },
+        {
+          "type": "message",
+          "ts": "1784847039.373869",
+          "user": "U000000CCCC",
+          "username": "redacted-two",
+          "text": "Unrelated message the fuzzy search returned anyway",
+          "permalink": "https://example.invalid/archives/C000000AAAA/p1784847039373869",
+          "channel": { "id": "C000000AAAA", "name": "redacted-eng" }
+        }
+      ]
+    }
+  },
+  "candidate": {
+    "ok": true,
+    "messages": {
+      "total": 2,
+      "matches": [
+        {
+          "type": "message",
+          "ts": "1783635103.737079",
+          "user": "U000000DDDD",
+          "text": "Redacted candidate message",
+          "permalink": "https://example.invalid/archives/C000000BBBB/p1783635103737079",
+          "channel": { "id": "C000000BBBB", "name": "redacted-triage" }
+        },
+        {
+          "type": "message",
+          "ts": "1783635104.000100",
+          "user": "U000000EEEE",
+          "text": "",
+          "permalink": "https://example.invalid/archives/C000000BBBB/p1783635104000100",
+          "channel": { "id": "C000000BBBB", "name": "redacted-triage" }
+        }
+      ]
+    }
+  },
+  "badScope": { "ok": false, "error": "missing_scope" }
+}

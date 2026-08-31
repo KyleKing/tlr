@@ -74,6 +74,11 @@ end a run, and a capture whose issue count collapses is refused rather than stor
 An ambiguous project-name match, a page reporting more results with no cursor, and a hung connection
 all raise rather than quietly produce a short issue list.
 
+`--team <KEY>` ingests a whole team instead: every issue on it, including work that sits on no project
+at all, into its own data file keyed on the team id (`team:<id>` in `src/projectIdentity.ts`). Linear has
+no team-wide milestone, so the milestone block is empty and each issue instead carries the project it
+sits on, which is what lets `standup` roll a team snapshot up by project rather than by milestone.
+
 `src/snapshot.ts` persists project state to SQLite on demand, keyed by a stable project key so a rename
 in Linear does not fork the history. `src/diff.ts` rolls a pair of snapshots up to the milestone level,
 matching on `linearId` so a ticket moved between teams reads as a rename rather than a delete plus an
@@ -163,10 +168,12 @@ be ignored. Google OAuth keeps its own browser flow and shows status plus the ta
 
 ## Scheduled capture
 
-`deno task snapshot` refreshes every project in the manifest and captures, run every three hours by a
-launchd LaunchAgent (`scripts/schedule.sh install`). launchd fires a missed run on wake, so a sleeping
-laptop still gets its capture. A lock file and a two-hour minimum interval (`src/runLock.ts`) keep a
-catch-up run from colliding with or duplicating one that already landed.
+`deno task snapshot` refreshes every project in the manifest and captures, run by a launchd LaunchAgent
+(`scripts/schedule.sh install`) every three hours, or every `--every` hours. launchd fires a missed run
+on wake, so a sleeping laptop still gets its capture. A lock file and a minimum interval two thirds of
+the cadence (`src/runLock.ts`) keep a catch-up run from colliding with or duplicating one that already
+landed; both windows are read back off the installed plist, so a faster schedule is not gated by a
+window sized for a slower one.
 
 Ingest records which Linear workspace a project came from, and a run skips a project belonging to
 another workspace as not-applicable rather than asking a key that cannot see it (the demo-workspace

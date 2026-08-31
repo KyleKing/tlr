@@ -1,7 +1,7 @@
 ---
 theme: roughdraft
 title: Deck title
-titleTemplate: '%s'
+titleTemplate: "%s"
 info: |
   One sentence on what this deck asks the room to decide.
 drawings:
