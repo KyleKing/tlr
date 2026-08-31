@@ -1,41 +1,27 @@
-# Working in this repo
+# Agent guidelines
 
-The front door for anyone (human or agent) making changes. This file stays short on purpose: it points
-at the canonical source for each topic instead of restating it, so nothing here goes stale when a
-decision changes.
+## Commands
 
-| To understand                                 | Read                                     |
-| --------------------------------------------- | ---------------------------------------- |
-| The shape, how it works, and its known limits | [ARCHITECTURE.md](ARCHITECTURE.md)       |
-| What is next, ranked                          | [ROADMAP.md](ROADMAP.md)                 |
-| What tlr will not do                          | [adr/0009](adr/0009-scope-boundaries.md) |
-| Credentials and how to get them               | [SETUP.md](SETUP.md)                     |
-| Why a thing is the way it is                  | [adr/](adr)                              |
+- `deno task check` type checks, `deno task fmt` formats, and `deno task biome check .` lints
+- `deno task test` runs unit tests (co-located `*_test.ts`) and `deno task test:e2e` runs Playwright
+- `mise run dev` starts the dev server with CSS and shared builds, and `mise run build` builds everything
+- `hk check --all` runs the git-hook checks against the whole tree
 
-## The one rule: spike, then productionize
+Run `deno task check` and `deno task test` before reporting work as done.
 
-The project moves by spikes: prove a slice fast, then harden it. A spike may take a shortcut, but only
-behind a port. The caller depends on an interface (`CapacitySource`, `SecretStore`, `TrackerSource`),
-never on the shortcut, so productionizing is a new adapter and a delete rather than a caller rewrite.
+## Layout
 
-In practice that means MCP connectors are for exploring in a session, not for the shipped path. The
-product reads through a script with a direct REST or GraphQL call and a secret from `src/secrets.ts` (an
-env var, else the macOS keychain), because an MCP dependency at runtime does not survive a hosted runner.
-`secrets.ts` is the realized `SecretStore` port; on-call (Incident.io) and the roster (Linear) follow the
-spike-then-productionize rule, and Google Calendar out-days are the remaining spike. The full reasoning
-and domain boundaries are in [ADR 0007](adr/0007-productization-and-domains.md).
+- `src/app.ts` wires the Hono app and routes register in `src/routes.ts`
+- Templates are Vento under `src/templates/{layouts,pages,partials}`. A new page is a `.vto` under `pages/` plus a registration in `src/routes.ts`
+- Styles live in `styles/`, static assets in `public/`, e2e specs in `tests/e2e/`
 
-One hard rule that falls out of this: writes to Linear happen only from the web app, never the CLI or an
-MCP. Bulk edits already go through the Linear MCP in Claude Code, so a CLI write path would only
-duplicate it. Do not add one. [ADR 0009](adr/0009-scope-boundaries.md) has this and the other scope
-limits.
+## Conventions
 
-## Before a commit
+- Server-rendered semantic HTML with htmx for interactivity. Prefer server-side rendering when all else is equal
+- Vento autoescaping stays on. Pass pre-rendered HTML through `|> safe` explicitly and never disable autoescape
+- Accessibility is tested, not asserted: axe-core runs against `wcag2aa` plus `color-contrast` in the e2e suite
+- Deno permissions are explicit in each task. Do not broaden them without need
 
-Run `hk run pre-commit --all` (or let the installed git hook run it on staged files): `deno task check`,
-`deno fmt`, `deno lint`, `deno task biome check`, `dprint` over JSON/Markdown/TOML, `deno test`, and the
-Chrome e2e project. Biome is the one most often missed, and it fails the hook on rules `deno lint` does
-not carry (`useTemplate`, `noControlCharactersInRegex`). Keep pure logic in `web/lib/*.js` free
-of I/O so tests drive it without a network. Never commit real ticket data or echo a key (see
-[ADR 0003](adr/0003-local-data-public-repo.md) and [SETUP.md](SETUP.md)). Conventional Commits,
-lowercase, one subject line, a body only when the "why" is not obvious.
+This file is template-owned and `copier update` keeps it current. Put project-specific guidance in `AGENTS.local.md` (loaded below when present) or in a nested `AGENTS.md` scoped to its directory.
+
+@AGENTS.local.md
