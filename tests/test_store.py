@@ -228,3 +228,42 @@ def test_failed_upsert_rolls_back_the_delete(tmp_path: Path) -> None:
     labels = store.get_issue_labels(con)
     assert labels['label'].to_list() == ['bug'], 'a rolled-back replace must not leave the row deleted'
     con.close()
+
+
+def test_migration_two_upgrades_a_v1_file_keeping_its_rows(tmp_path: Path) -> None:
+    db_path = tmp_path / 'v1.duckdb'
+    con = duckdb.connect(str(db_path))
+    for statement in store._MIGRATIONS[0][1]:  # noqa: SLF001
+        con.execute(statement)
+    con.execute('INSERT INTO schema_version VALUES (1)')
+    con.execute(
+        'INSERT INTO pylon_issues (id, link_status, field_provenance, locked_fields, updated_at)'
+        " VALUES ('issue-1', 'linked', '{}', '[]', now())",
+    )
+    con.close()
+
+    upgraded = store.connect(db_path)
+    rows = store.get_pylon_issues(upgraded)
+
+    assert rows['id'].to_list() == ['issue-1'], 'the upgrade must not drop existing rows'
+    assert rows['state_category'].to_list() == [None]
+    assert store.get_pylon_issue_labels(upgraded).is_empty()
+    assert store.get_pylon_accounts(upgraded).is_empty()
+    upgraded.close()
+
+
+def test_a_hand_set_tier_survives_a_later_pylon_refresh(tmp_path: Path) -> None:
+    con = store.connect(tmp_path / 'tlr.duckdb')
+    store.upsert_pylon_accounts(con, pl.DataFrame({'id': ['acct-1'], 'name': ['Example'], 'tier': [None]}))
+    store.upsert_pylon_accounts(
+        con,
+        pl.DataFrame({'id': ['acct-1'], 'tier': ['enterprise']}),
+        source=store.MANUAL_SOURCE,
+    )
+    store.upsert_pylon_accounts(con, pl.DataFrame({'id': ['acct-1'], 'name': ['Example Renamed'], 'tier': [None]}))
+
+    row = store.get_pylon_accounts(con).row(0, named=True)
+
+    assert row['tier'] == 'enterprise'
+    assert row['name'] == 'Example Renamed'
+    con.close()

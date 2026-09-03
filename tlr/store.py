@@ -18,7 +18,7 @@ from typing import Any
 import duckdb
 import polars as pl
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 _PROVENANCE_COL = 'field_provenance'
 _LOCKED_COL = 'locked_fields'
@@ -134,6 +134,41 @@ _MIGRATIONS: tuple[tuple[int, tuple[str, ...]], ...] = (
             """,
         ),
     ),
+    (
+        2,
+        (
+            'ALTER TABLE pylon_issues ADD COLUMN state TEXT',
+            'ALTER TABLE pylon_issues ADD COLUMN state_category TEXT',
+            'ALTER TABLE pylon_issues ADD COLUMN priority TEXT',
+            'ALTER TABLE pylon_issues ADD COLUMN account_id TEXT',
+            'ALTER TABLE pylon_issues ADD COLUMN assignee_id TEXT',
+            'ALTER TABLE pylon_issues ADD COLUMN issue_type TEXT',
+            'ALTER TABLE pylon_issues ADD COLUMN is_issue_group BOOLEAN',
+            'ALTER TABLE pylon_issues ADD COLUMN resolution_time TIMESTAMP',
+            'ALTER TABLE pylon_issues ADD COLUMN first_response_time TIMESTAMP',
+            'ALTER TABLE pylon_issues ADD COLUMN latest_message_time TIMESTAMP',
+            'ALTER TABLE pylon_issues ADD COLUMN source_updated_at TIMESTAMP',
+            """
+            CREATE TABLE pylon_issue_labels (
+                issue_id TEXT NOT NULL,
+                kind TEXT NOT NULL,
+                label TEXT NOT NULL,
+                source TEXT NOT NULL,
+                PRIMARY KEY (issue_id, kind, label)
+            )
+            """,
+            """
+            CREATE TABLE pylon_accounts (
+                id TEXT PRIMARY KEY,
+                name TEXT,
+                tier TEXT,
+                field_provenance TEXT NOT NULL,
+                locked_fields TEXT NOT NULL,
+                updated_at TIMESTAMP NOT NULL
+            )
+            """,
+        ),
+    ),
 )
 
 # link_status values for pylon_issues, distinguishing an explicit "no link" from an
@@ -198,6 +233,17 @@ _PYLON_DOMAIN_COLS = (
     'requester_email',
     'link_status',
     'linear_identifier',
+    'state',
+    'state_category',
+    'priority',
+    'account_id',
+    'assignee_id',
+    'issue_type',
+    'is_issue_group',
+    'resolution_time',
+    'first_response_time',
+    'latest_message_time',
+    'source_updated_at',
 )
 _PYLON_SCHEMA: dict[str, Any] = {
     'id': pl.Utf8,
@@ -209,6 +255,39 @@ _PYLON_SCHEMA: dict[str, Any] = {
     'requester_email': pl.Utf8,
     'link_status': pl.Utf8,
     'linear_identifier': pl.Utf8,
+    'state': pl.Utf8,
+    'state_category': pl.Utf8,
+    'priority': pl.Utf8,
+    'account_id': pl.Utf8,
+    'assignee_id': pl.Utf8,
+    'issue_type': pl.Utf8,
+    'is_issue_group': pl.Boolean,
+    'resolution_time': pl.Datetime('us'),
+    'first_response_time': pl.Datetime('us'),
+    'latest_message_time': pl.Datetime('us'),
+    'source_updated_at': pl.Datetime('us'),
+    _PROVENANCE_COL: pl.Utf8,
+    _LOCKED_COL: pl.Utf8,
+    _UPDATED_AT_COL: pl.Datetime('us'),
+}
+
+_PYLON_LABEL_COLS = ('issue_id', 'kind', 'label', 'source')
+_PYLON_LABEL_SCHEMA: dict[str, Any] = {
+    'issue_id': pl.Utf8,
+    'kind': pl.Utf8,
+    'label': pl.Utf8,
+    'source': pl.Utf8,
+}
+
+PYLON_LABEL_KIND_TAG = 'tag'
+PYLON_LABEL_KIND_QUESTION_TYPE = 'question_type'
+
+_PYLON_ACCOUNT_KEY_COLS = ('id',)
+_PYLON_ACCOUNT_DOMAIN_COLS = ('name', 'tier')
+_PYLON_ACCOUNT_SCHEMA: dict[str, Any] = {
+    'id': pl.Utf8,
+    'name': pl.Utf8,
+    'tier': pl.Utf8,
     _PROVENANCE_COL: pl.Utf8,
     _LOCKED_COL: pl.Utf8,
     _UPDATED_AT_COL: pl.Datetime('us'),
@@ -473,9 +552,42 @@ def upsert_pylon_issues(con: duckdb.DuckDBPyConnection, df: pl.DataFrame, *, sou
     )
 
 
+def upsert_pylon_accounts(con: duckdb.DuckDBPyConnection, df: pl.DataFrame, *, source: str = 'pylon') -> None:
+    """Merge Pylon account rows keyed on `id`, same provenance rule as `upsert_issues`.
+
+    No Pylon workspace is required to expose a tier field, so `tier` is often written by hand
+    with `source='manual'` and must survive every later refresh.
+    """
+    _upsert_with_provenance(
+        con,
+        table='pylon_accounts',
+        key_cols=_PYLON_ACCOUNT_KEY_COLS,
+        domain_cols=_PYLON_ACCOUNT_DOMAIN_COLS,
+        incoming=df,
+        source=source,
+    )
+
+
+def upsert_pylon_issue_labels(con: duckdb.DuckDBPyConnection, df: pl.DataFrame, *, source: str = 'pylon') -> None:
+    """Replace `source`'s tags and question types for every Pylon issue named in `df`."""
+    if df.is_empty():
+        return
+    rows = df.select('issue_id', 'kind', 'label').to_dicts()
+    for row in rows:
+        row['source'] = source
+    issue_ids = sorted({row['issue_id'] for row in rows})
+    placeholders = ', '.join(['?'] * len(issue_ids))
+    with _transaction(con):
+        con.execute(
+            f'DELETE FROM pylon_issue_labels WHERE source = ? AND issue_id IN ({placeholders})',  # noqa: S608
+            [source, *issue_ids],
+        )
+        _insert_rows(con, 'pylon_issue_labels', _PYLON_LABEL_COLS, rows)
+
+
 def set_locked_fields(con: duckdb.DuckDBPyConnection, *, table: str, key: str, fields: list[str]) -> None:
     """Replace the locked-field list for one `issues` or `pylon_issues` row, freezing it against refreshes."""
-    if table not in {'issues', 'pylon_issues'}:
+    if table not in {'issues', 'pylon_accounts', 'pylon_issues'}:
         msg = f'{table} has no provenance to lock'
         raise ValueError(msg)
     con.execute(f'UPDATE {table} SET locked_fields = ? WHERE id = ?', [json.dumps(fields), key])  # noqa: S608
@@ -619,6 +731,16 @@ def get_allocation_events(con: duckdb.DuckDBPyConnection) -> pl.DataFrame:
 def get_pylon_issues(con: duckdb.DuckDBPyConnection) -> pl.DataFrame:
     """Return every Pylon issue row, including its link state to a Linear issue."""
     return _query_table(con, 'pylon_issues', _PYLON_SCHEMA)
+
+
+def get_pylon_issue_labels(con: duckdb.DuckDBPyConnection) -> pl.DataFrame:
+    """Return every Pylon tag and question-type row."""
+    return _query_table(con, 'pylon_issue_labels', _PYLON_LABEL_SCHEMA)
+
+
+def get_pylon_accounts(con: duckdb.DuckDBPyConnection) -> pl.DataFrame:
+    """Return every Pylon account row, including a tier that may have been set by hand."""
+    return _query_table(con, 'pylon_accounts', _PYLON_ACCOUNT_SCHEMA)
 
 
 def get_milestone_scope(con: duckdb.DuckDBPyConnection) -> pl.DataFrame:
