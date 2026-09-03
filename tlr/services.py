@@ -13,8 +13,8 @@ import polars as pl
 from tlr import store
 from tlr.config import TlrConfig, get_default_config_path, load_config
 from tlr.domain import capacity as capacity_domain
-from tlr.render.json import frame_to_json
-from tlr.render.markdown import frame_to_markdown
+from tlr.render.json import frame_to_json, sections_to_json
+from tlr.render.markdown import frame_to_markdown, sections_to_markdown
 
 SOURCES = ('linear', 'pylon')
 
@@ -31,6 +31,14 @@ def _emit_error(text: str) -> None:
 
 def _render(frame: pl.DataFrame, output_format: str) -> str:
     return frame_to_markdown(frame) if output_format == 'md' else frame_to_json(frame)
+
+
+def _render_sections(sections: list[tuple[str, pl.DataFrame]], output_format: str) -> str:
+    return sections_to_markdown(sections) if output_format == 'md' else sections_to_json(sections)
+
+
+def _now() -> datetime:
+    return datetime.now(UTC).replace(tzinfo=None)
 
 
 def _open_store(args: argparse.Namespace, config: TlrConfig) -> duckdb.DuckDBPyConnection:
@@ -95,11 +103,14 @@ def _refresh_pylon(con: duckdb.DuckDBPyConnection, config: TlrConfig) -> int:
         msg = 'refresh linear before pylon: the Pylon lookup keys on Linear issue identifiers'
         raise ValueError(msg)
     client = pylon.build_client()
+    status_categories = pylon.parse_issue_statuses(pylon.fetch_issue_statuses(client))
+    store.upsert_pylon_accounts(con, pylon.fetch_accounts(client, config.tiers), source='pylon')
     rows = 0
     for identifier in issues['identifier'].to_list():
-        frame = pylon.fetch_issue_by_linear_ticket(client, config.pylon, identifier)
-        store.upsert_pylon_issues(con, frame, source='pylon')
-        rows += frame.height
+        result = pylon.fetch_issue_by_linear_ticket(client, config.pylon, identifier, status_categories)
+        store.upsert_pylon_issues(con, result.issues, source='pylon')
+        store.upsert_pylon_issue_labels(con, result.labels, source='pylon')
+        rows += result.issues.height
     return rows
 
 
@@ -159,10 +170,110 @@ def _capacity_command(args: argparse.Namespace, config: TlrConfig) -> int:
     return 0
 
 
-_UNBUILT = {
-    'triage': 'phase 2 builds the triage queue',
-    'backlog': 'phase 2 builds the backlog health metrics',
-    'import-snapshots': 'phase 2 builds the one-time Deno snapshot import',
+_TRIAGE_DISPLAY_NAMES = {
+    'pylon_number': 'Pylon',
+    'title': 'Title',
+    'age_days': 'Age (days)',
+    'priority': 'Priority',
+    'tier': 'Tier',
+    'linear_identifier': 'Linear',
+    'linear_state': 'Linear state',
+    'link_status': 'Link',
+    'waiting_on_customer': 'Waiting on customer',
+    'agent_owned': 'Agent',
+    'sla_target_days': 'SLA target (days)',
+    'sla_days_remaining': 'SLA left (days)',
+    'link': 'URL',
+}
+
+
+def _triage_command(args: argparse.Namespace, config: TlrConfig) -> int:
+    from tlr.domain import triage as triage_domain  # noqa: PLC0415
+
+    con = _open_store(args, config)
+    try:
+        result = triage_domain.build_triage_queue(
+            store.get_pylon_issues(con),
+            store.get_issues(con),
+            store.get_pylon_issue_labels(con),
+            store.get_pylon_accounts(con),
+            now=_now(),
+            triage=config.triage,
+            tiers=config.tiers,
+            sla=config.sla,
+            pylon=config.pylon,
+            linear=config.linear,
+        )
+    finally:
+        con.close()
+
+    def _display(frame: pl.DataFrame) -> pl.DataFrame:
+        return frame.head(args.limit).rename(_TRIAGE_DISPLAY_NAMES)
+
+    sections = [('Triage queue', _display(result.queue))]
+    if args.include_excluded:
+        sections.extend((heading, _display(frame)) for heading, frame in result.sections)
+    _emit(_render_sections(sections, args.format))
+    return 0
+
+
+def _backlog_command(args: argparse.Namespace, config: TlrConfig) -> int:
+    from tlr.domain import backlog as backlog_domain  # noqa: PLC0415
+
+    con = _open_store(args, config)
+    try:
+        pylon_issues = store.get_pylon_issues(con)
+    finally:
+        con.close()
+
+    sections = backlog_domain.backlog_health_sections(
+        pylon_issues,
+        config.thresholds,
+        config.sla,
+        config.triage.agent_assignee_ids,
+        now=_now(),
+    )
+    _emit(_render_sections(sections, args.format))
+    return 0
+
+
+def _import_snapshots_command(args: argparse.Namespace, config: TlrConfig) -> int:
+    from tlr.imports import snapshots  # noqa: PLC0415
+
+    sqlite_path = Path(args.sqlite_path).expanduser()
+    if args.dry_run:
+        summary = snapshots.import_snapshots(sqlite_path, lambda _frame: None)
+        _emit(
+            f'would import {summary.rows_written} row(s) from {summary.snapshots_read} snapshot(s); '
+            f'{summary.rows_dropped_no_milestone} issue(s) carry no milestone',
+        )
+        return 0
+
+    con = _open_store(args, config)
+    try:
+        if not store.get_milestone_scope(con).is_empty():
+            _emit_error('milestone_scope already holds rows; this import runs once against an empty table')
+            return 1
+        summary = snapshots.import_snapshots(sqlite_path, lambda frame: store.capture_milestone_scope(con, frame))
+        store.record_refresh(
+            con,
+            source='deno-snapshots',
+            last_run_at=_now(),
+            row_count=summary.rows_written,
+            note=f'{summary.snapshots_read} snapshot(s)',
+        )
+    finally:
+        con.close()
+    _emit(f'imported {summary.rows_written} row(s) from {summary.snapshots_read} snapshot(s)')
+    return 0
+
+
+_COMMANDS = {
+    'backlog': _backlog_command,
+    'capacity': _capacity_command,
+    'import-snapshots': _import_snapshots_command,
+    'refresh': _refresh_command,
+    'triage': _triage_command,
 }
 
 
@@ -170,10 +281,8 @@ def run(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
     """Dispatch one parsed command, returning the process exit status."""
     if args.command == 'config':
         return _config_command(args)
-    if reason := _UNBUILT.get(args.command):
-        parser.exit(status=2, message=f'{args.command}: not built yet ({reason})\n')
-
-    config = load_config(Path(args.config).expanduser() if args.config else None)
-    if args.command == 'refresh':
-        return _refresh_command(args, config)
-    return _capacity_command(args, config)
+    handler = _COMMANDS.get(args.command)
+    if handler is None:
+        parser.print_help()
+        return 2
+    return handler(args, load_config(Path(args.config).expanduser() if args.config else None))

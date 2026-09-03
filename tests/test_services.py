@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import sqlite3
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -15,7 +16,6 @@ from tlr.services import run
 
 _CYCLE = 5
 _ALEX_ALLOCATED = 8.0
-_UNBUILT_EXIT = 2
 
 _ROSTER_TOML = """[[capacity.roster]]
 name = "Alex Doe"
@@ -164,10 +164,122 @@ def test_refresh_rejects_an_unknown_source(config_file: Path, seeded_db: Path) -
         _run(['--config', str(config_file), '--db', str(seeded_db), 'refresh', '--source', 'jira'])
 
 
-@pytest.mark.parametrize('command', ['triage', 'backlog'])
-def test_unbuilt_commands_exit_two_naming_the_phase(command: str, capsys: pytest.CaptureFixture[str]) -> None:
-    with pytest.raises(SystemExit) as exc_info:
-        _run([command])
+def _seed_pylon(db_path: Path) -> None:
+    con = store.connect(db_path)
+    store.upsert_pylon_issues(
+        con,
+        pl.DataFrame(
+            {
+                'id': ['py-1', 'py-2', 'py-3'],
+                'number': [101, 102, 103],
+                'title': ['Widget broke', 'Feature idea', 'Closed one'],
+                'created_at': [datetime(2026, 8, 1, tzinfo=UTC).replace(tzinfo=None)] * 3,
+                'link': ['https://example.invalid/1', 'https://example.invalid/2', 'https://example.invalid/3'],
+                'link_status': ['linked', 'no_link', 'no_link'],
+                'linear_identifier': ['DEV-1', None, None],
+                'state': ['waiting_on_you', 'waiting_on_you', 'nar'],
+                'state_category': ['waiting_on_you', 'waiting_on_you', 'closed'],
+                'priority': ['high', 'low', 'low'],
+            },
+        ),
+        source='pylon',
+    )
+    store.upsert_pylon_issue_labels(
+        con,
+        pl.DataFrame({'issue_id': ['py-2'], 'kind': ['question_type'], 'label': ['feature_request']}),
+    )
+    con.close()
 
-    assert exc_info.value.code == _UNBUILT_EXIT
-    assert 'phase 2' in capsys.readouterr().err
+
+def test_triage_orders_the_queue_and_holds_back_an_excluded_row(
+    seeded_db: Path,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    _seed_pylon(seeded_db)
+    config = tmp_path / 'triage.toml'
+    config.write_text('[triage]\n[triage.exclusions]\nfeature_request = ["feature_request"]\n', encoding='utf-8')
+
+    exit_code = _run(['--config', str(config), '--db', str(seeded_db), 'triage', '--include-excluded'])
+
+    assert exit_code == 0
+    sections = json.loads(capsys.readouterr().out)
+    assert [row['Pylon'] for row in sections['Triage queue']] == [101], 'closed and excluded rows leave the queue'
+    assert [row['Pylon'] for row in sections['feature_request']] == [102]
+
+
+def test_triage_markdown_is_pasteable(seeded_db: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    _seed_pylon(seeded_db)
+
+    _run(['--db', str(seeded_db), 'triage', '--format', 'md'])
+
+    out = capsys.readouterr().out
+    assert out.startswith('## Triage queue')
+    assert '| Pylon' in out
+
+
+def test_backlog_reports_every_section(seeded_db: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    _seed_pylon(seeded_db)
+
+    exit_code = _run(['--db', str(seeded_db), 'backlog'])
+
+    assert exit_code == 0
+    sections = json.loads(capsys.readouterr().out)
+    assert set(sections) == {'Backlog age', 'Close time', 'Stuck tickets', 'Week over week', 'Resolved split'}
+
+
+def test_import_snapshots_dry_run_writes_nothing(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    sqlite_path = tmp_path / 'deno.sqlite'
+    con = sqlite3.connect(sqlite_path)
+    con.execute(
+        'CREATE TABLE snapshots (id INTEGER PRIMARY KEY, captured_at INTEGER NOT NULL, label TEXT,'
+        ' project_name TEXT NOT NULL, as_of TEXT NOT NULL, json TEXT NOT NULL, project_key TEXT)',
+    )
+    document = json.dumps(
+        {
+            'milestones': [{'key': 'M1', 'name': 'Phase 1'}],
+            'issues': [{'id': 'DEV-1', 'linearId': 'uuid-1', 'milestone': 'M1', 'estimate': 3, 'status': 'Backlog'}],
+        },
+    )
+    con.execute(
+        'INSERT INTO snapshots (id, captured_at, label, project_name, as_of, json) VALUES (1, 0, NULL, ?, ?, ?)',
+        ('Rebuild', '2026-01-01', document),
+    )
+    con.commit()
+    con.close()
+    absent = tmp_path / 'never-created.duckdb'
+
+    exit_code = _run(['--db', str(absent), 'import-snapshots', str(sqlite_path), '--dry-run'])
+
+    assert exit_code == 0
+    assert 'would import 1 row(s)' in capsys.readouterr().out
+    assert not absent.exists(), 'a dry run must not create the database'
+
+
+def test_import_snapshots_refuses_a_second_run(
+    seeded_db: Path,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    con = store.connect(seeded_db)
+    store.capture_milestone_scope(
+        con,
+        pl.DataFrame(
+            {
+                'captured_at': [datetime(2026, 1, 1, tzinfo=UTC).replace(tzinfo=None)],
+                'project_name': ['Rebuild'],
+                'milestone_id': ['M1'],
+                'milestone_name': ['Phase 1'],
+                'issue_id': ['uuid-1'],
+                'issue_identifier': ['DEV-1'],
+                'estimate': [3.0],
+                'state_name': ['Backlog'],
+            },
+        ),
+    )
+    con.close()
+
+    exit_code = _run(['--db', str(seeded_db), 'import-snapshots', str(tmp_path / 'unused.sqlite')])
+
+    assert exit_code == 1
+    assert 'runs once' in capsys.readouterr().err
