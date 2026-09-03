@@ -1,5 +1,7 @@
+[env]
+DISABLE_MKDOCS_2_WARNING = "true"
+_.python.venv = {path = ".venv"}
+
 [tools]
-deno = "latest"
-dprint = "latest"
-hk = "1.53.0"
-pkl = "latest"
+pkl = "0.32.1"
+python = ["3.13.11", "3.13.11"]

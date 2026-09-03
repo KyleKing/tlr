@@ -1,0 +1,129 @@
+## Unreleased
+
+### Feat
+
+- **context**: add the slack adapter
+- **context**: answer a list of issues in one run, paced to each source's limit
+- **ingest**: record each issue's createdAt
+- add team-wide ingest and standup grouping by project
+- **schedule**: let install pick the capture cadence and size both run guards to it
+- **context**: add the pylon adapter behind the context-source port
+- **cli**: add a context command over the context-source port
+- add the ContextSource port and a fixture-backed adapter
+- add a lookup cache keyed on source and query, not project
+- add weekly standup roll-up command
+- merge dev-boards from shoal into ADRs and gh-cli script
+- **presentations**: measure the deck palette in tests instead of by eye
+- **presentations**: add deck scaffolding tasks and the authoring checklist
+- **presentations**: add a starter deck template covering every layout
+- **presentations**: promote the roughdraft slidev theme out of the deck spike
+- **motion**: add motion tokens and record them in the design system
+- **relationships**: add layout and structural similarity as pure logic
+- **balance**: review and apply a balance proposal from its own page
+- **capacity**: separate the roster from the people a forecast plans for
+- **planning**: replace ordering risk with chain risk
+- **edit**: show what an edit costs beside the form
+- **edit**: replace the in-place form with a real editor modal
+- **snapshot**: run a daily snapshot on a launchd schedule
+- add a secrets pane, a roadmap plane, and what-if planning
+- **board**: edit on-call/out-days overrides on the board, remove the Settings panel
+- **board**: edit a ticket in place from the hover card, not just Review
+- **board**: hide buckets with nothing currently visible, scroll to the current cycle
+- **board**: convert Flags to a dropdown and make filter counts a badge
+- **board**: encode filter state in the URL, not just the project
+- **changes**: replace From/To snapshot dropdowns with step nav + a range picker
+- **board**: bigger/legible ticket pills, fix "Open in Linear" contrast, merge Cycle+Milestone filters, remove Timeline
+- **changes**: browse snapshot history with From/To pickers
+- **web**: surface client-side errors in a visible banner, add a board loading state
+- **demo**: reflavor synthetic seed/sample data as Horse Tinder
+- **nav**: global project picker with a live-access warning
+- **board**: searchable multi-select for milestone filtering
+- **board**: drop cycle columns with no scheduled issues
+- **board**: base the milestone forecast on deflated capacity, not raw velocity
+- **balance**: milestone deadline risk, per-person capacity, and input warnings
+- **balance**: initialize tool for AI scheduling
+- edit milestone, status, cycle, and assignee from the review form
+- resolve milestone, status, cycle, and assignee edits to Linear ids
+- seed the demo Linear workspace, fix issues query ID type
+- routed settings page, config moved off the board dialog
+- edit and fix tickets inline on the review page
+- UI-only write path to Linear for reviewed ticket fixes
+- demo/live workspace mode with a visible banner
+- routed changes and review pages with shared nav
+- snapshot history in the server with report and review endpoints
+- milestone headers show truncated name with detail in hover
+- show milestone slip forecast on the board
+- per-group filter toggles and narrower wrapping milestone headers
+- weekly-update report and milestone slip forecast (cli)
+- **cli**: read-and-preview analysis surface for claude code
+- phase 3 svg export of the board and dependency timeline
+- phase 2 op model with plan parsing and in-memory apply
+- phase 1 snapshot store, plan-level diff, and review queue
+- **seed**: deterministic synthetic snapshots for offline testing
+- **board**: data-freshness banner, keyboard nav, and narrow layout
+- **server**: add env config, structured errors, and request logging
+- render the board through vento templates
+- refresh from the UI, calendar overrides, and a clearer config panel
+- edit capacity and roster from the configuration panel
+- fold roster resolution into issues ingest
+- linear-close visual redesign with catppuccin themes
+- project switcher for multi-project boards
+- fetch project issues from linear in deno
+- serve the web app through hono
+- wire GoogleCalendarSource live free/busy and history velocity
+- add free/busy out-day heuristic and history-based velocity
+- add gcal free/busy spike and fix oauth setup steps
+- resolve capacity roster emails from linear
+- fetch capacity from incident.io on-call and calendar out-days
+- dependency-ordered timeline view with topological waves
+- capacity realism with on-call and time-off deflation per person per cycle
+- rebuild expand cards, grouped filters, fixed capacity, sync/refresh, collapsible legend
+- labeled tickets, not-slop dismissal, rich hover card, transpose and solo filters
+- dense planning board with capacity heat, slop and dependency flags
+- add linear capacity-matrix planning spike (deno)
+- create full Python project
+- init Linear-based Project reporting
+
+### Fix
+
+- resolve issue filter
+- **context**: decode numeric and named HTML entities in Pylon bodies
+- give a team ingest its own data file and refresh it on schedule
+- **ingest**: keep the related links Linear reports
+- **css**: resolve the theme tokens that no flavor defined
+- **css**: route the chain path through the mono token
+- **changes**: give the shipped milestone tag its own muted class
+- derive cycle length from data instead of assuming one week
+- close out the three deferred capacity and retention items
+- **capacity**: measure velocity over the cycles a person worked
+- repair four faults found by running the editor against Linear
+- scope the review pointer per project and close the ingest timeouts
+- harden capture and move the schedule to every three hours
+- **issues**: fetch cycles from every project team, not just the first
+- **settings**: fill the page width instead of a boxed popup-sized panel
+- **board**: stop stretching columns to fill the width when few are visible
+- **board**: icon sizing/alignment, full ticket ids, and a real Refresh
+- **board**: show every cycle with tickets, not a fixed 47/48/49 window
+- **theme**: correct the accent-fg contrast helper, add a comprehensive contrast test
+- **board**: normalize a null assignee instead of crashing render's people sort
+- **web**: define missing status/flag CSS vars and fix contrast bugs
+- satisfy the pre-commit hook now that it's enforced
+- default capacity merges to protect hand-typed values
+- drop hand-typed velocity protection, fix misleading merge docs
+- grant capacity task the gcal net/run perms it now needs
+- raise on-call capacity penalty to 45%
+- raise slop-flag threshold to require two signals
+- read email from roster objects in gcal free/busy spike
+- timeline view leaked under the board after toggling back
+
+### Refactor
+
+- delete the Deno app, the deck theme, and the app-template scaffolding
+- fresh start
+- **css**: carry status and identity on a 1px border, never a thick tab
+- **relationships**: drop the rejected directions and carry status as a wash
+- **balance**: reuse personCycleCapacity for deflation, dedupe roster resolution
+- centralize secret access in one env-or-keychain module
+- expose capacity/issues refresh as reusable functions
+- rename main file
+- replace plain strings with StrEnum (#1)
