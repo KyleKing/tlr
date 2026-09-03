@@ -32,45 +32,44 @@ class LinearConfig:
 
 @dataclass(slots=True)
 class PylonConfig:
-    """Which Pylon custom fields and statuses carry triage-relevant state."""
+    """Which Pylon custom fields carry triage-relevant state, and how their values rank."""
 
     linear_ticket_field: str = 'linear_ticket'
     priority_field: str = 'priority'
-    priority_values: list[str] = field(default_factory=lambda: ['urgent', 'high', 'normal', 'low'])
-    waiting_on_customer_statuses: list[str] = field(default_factory=lambda: ['waiting_on_customer'])
+    priority_values: list[str] = field(default_factory=lambda: ['urgent', 'high', 'medium', 'low'])
+    """Most to least urgent. Pylon's own `priority` select ships these four options."""
+    question_type_field: str = 'question_type'
 
 
 @dataclass(slots=True)
 class TiersConfig:
-    """Customer tier names and how a Pylon account maps to one."""
+    """Customer tier names, best first, and which Pylon account field carries one.
 
-    names: list[str] = field(default_factory=lambda: ['enterprise', 'standard', 'free'])
-    account_tier_field: str = 'tier'
-    default_tier: str = 'free'
+    No Pylon workspace is required to have a tier field. An empty `account_tier_field`
+    leaves every account on `default_tier`, which makes the tier ordering step a no-op.
+    """
+
+    names: list[str] = field(default_factory=list)
+    account_tier_field: str = ''
+    default_tier: str = ''
 
 
 @dataclass(slots=True)
 class SlaConfig:
     """Target close time per priority, and optionally per tier."""
 
-    target_days_by_priority: dict[str, int] = field(
-        default_factory=lambda: {'urgent': 1, 'high': 3, 'normal': 5, 'low': 10},
-    )
+    target_days_by_priority: dict[str, int] = field(default_factory=dict)
     target_days_by_tier: dict[str, int] = field(default_factory=dict)
 
 
 @dataclass(slots=True)
 class TriageConfig:
-    """Ordering rules applied in sequence, and heading name to the Pylon tags it excludes."""
+    """Ordering rules applied in sequence, and the heading each held-out row is listed under."""
 
     ordering: list[str] = field(default_factory=lambda: ['priority', 'tier', 'age', 'sla_distance'])
-    exclusions: dict[str, list[str]] = field(
-        default_factory=lambda: {
-            'feature_request': ['feature-request'],
-            'config_work': ['config'],
-            'waiting_on_customer': ['waiting-on-customer'],
-        },
-    )
+    exclusions: dict[str, list[str]] = field(default_factory=dict)
+    """Heading to the Pylon tags and question types that move a row under it."""
+    agent_assignee_ids: list[str] = field(default_factory=list)
 
 
 @dataclass(slots=True)

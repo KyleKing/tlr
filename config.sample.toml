@@ -28,15 +28,21 @@ linear_ticket_field = "linear_ticket"
 # Pylon custom field that holds the ticket's priority.
 priority_field = "priority"
 # Priority values, most urgent first. Used both to read a ticket's priority and to
-# order the triage queue.
-priority_values = ["urgent", "high", "normal", "low"]
-# Pylon issue statuses that count as waiting on the customer rather than on us.
-waiting_on_customer_statuses = ["waiting_on_customer"]
+# order the triage queue. These four are what Pylon's own priority select ships.
+priority_values = ["urgent", "high", "medium", "low"]
+# Pylon custom field holding the question type, used by the exclusion rules below.
+question_type_field = "question_type"
+
+# Whether a ticket is waiting on the customer, on us, or closed comes from the status
+# category Pylon reports for it, not from a list here.
 
 [tiers]
-# Customer tier names, highest priority first.
+# Customer tier names, highest priority first. Empty (the default) means the tier
+# ordering rule does nothing.
 names = ["enterprise", "standard", "free"]
-# Pylon account custom field that holds an account's tier.
+# Pylon account custom field that holds an account's tier. Pylon ships no tier field,
+# so this names whichever account field your workspace uses for it. Unset (the
+# default) leaves every account on default_tier.
 account_tier_field = "tier"
 # Tier assumed for an account with no tier set.
 default_tier = "free"
@@ -46,7 +52,7 @@ default_tier = "free"
 [sla.target_days_by_priority]
 urgent = 1
 high = 3
-normal = 5
+medium = 5
 low = 10
 
 # Optional target close time, in days, per customer tier, applied alongside the
@@ -57,13 +63,16 @@ low = 10
 # Rules applied in sequence when ranking the triage queue.
 ordering = ["priority", "tier", "age", "sla_distance"]
 
-# Exclusion rules: a row carrying one of these Pylon tags is pulled out of the
-# ordering and listed under its own heading instead. The TOML key is the heading
-# shown in the queue.
+# Pylon assignee ids that are agents, not humans, so triage can skip a row an agent
+# already owns. The Linear side of this is [linear].agent_accounts.
+agent_assignee_ids = []
+
+# Exclusion rules: a row carrying one of these Pylon tags or question types is pulled
+# out of the ordering and listed under its own heading instead. The TOML key is the
+# heading shown in the queue. Empty (the default) excludes nothing.
 [triage.exclusions]
-feature_request = ["feature-request"]
+feature_request = ["feature_request"]
 config_work = ["config"]
-waiting_on_customer = ["waiting-on-customer"]
 
 [thresholds]
 # Backlog age buckets, in days, for the over-30/60/90-days counts.

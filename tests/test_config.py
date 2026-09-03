@@ -20,8 +20,8 @@ def test_load_config_absent_file_returns_defaults(tmp_path: Path) -> None:
 
     assert config.linear.team_keys == []
     assert config.pylon.linear_ticket_field == 'linear_ticket'
-    assert config.tiers.names == ['enterprise', 'standard', 'free']
-    assert config.sla.target_days_by_priority == {'urgent': 1, 'high': 3, 'normal': 5, 'low': 10}
+    assert config.tiers.names == []
+    assert config.sla.target_days_by_priority == {}
     assert config.triage.ordering == ['priority', 'tier', 'age', 'sla_distance']
     assert config.thresholds.backlog_age_days == [30, 60, 90]
     assert config.capacity.roster == []
@@ -34,10 +34,10 @@ def test_load_config_sample_round_trips() -> None:
 
     assert config.linear.team_keys == ['ENG']
     assert config.linear.agent_accounts == ['watch-doggo@example.com']
-    assert config.pylon.priority_values == ['urgent', 'high', 'normal', 'low']
+    assert config.pylon.priority_values == ['urgent', 'high', 'medium', 'low']
     assert config.tiers.default_tier == 'free'
     assert config.sla.target_days_by_tier == {}
-    assert config.triage.exclusions['feature_request'] == ['feature-request']
+    assert config.triage.exclusions['feature_request'] == ['feature_request']
     assert config.thresholds.commitment_accuracy_low == pytest.approx(0.8)
     assert config.capacity.roster == [
         Person(name='Alex Doe', email='alex@example.com', points_per_cycle=10.0),
