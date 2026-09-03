@@ -1,0 +1,1245 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="tlr project documentation">
+      
+      
+        <meta name="author" content="Kyle King">
+      
+      
+        <link rel="canonical" href="https://tlr.kyleking.me/api-notes/">
+      
+      
+        <link rel="prev" href="..">
+      
+      
+        <link rel="next" href="../docs/CHANGELOG/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>API notes - tlr</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../_styles/mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="green">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#api-notes" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="tlr" class="md-header__button md-logo" aria-label="tlr" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            tlr
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              API notes
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="green"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/kyleking/tlr" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    kyleking/tlr
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="tlr" class="md-nav__button md-logo" aria-label="tlr" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    tlr
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/kyleking/tlr" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    kyleking/tlr
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    tlr
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API notes
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#auth-per-service" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auth, per service
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#linear-graphql" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Linear GraphQL
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Linear GraphQL">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#query-complexity-is-a-real-wall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Query complexity is a real wall
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#projects-teams-cycles-and-states" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Projects, teams, cycles, and states
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#team-by-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Team by key
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Issues
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#users" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Users
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workspace-identity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workspace identity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#issue-context-for-a-write" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Issue context for a write
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-one-write" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The one write
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#field-rationale-worth-keeping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Field rationale worth keeping
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pylon-rest" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pylon REST
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#incidentio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Incident.io
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#google-calendar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Google Calendar
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#slack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Slack
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#retry-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Retry policy
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Docs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/CHANGELOG/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CHANGELOG
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/DEVELOPER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/STYLE_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Personal Style Guides
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#auth-per-service" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auth, per service
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#linear-graphql" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Linear GraphQL
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Linear GraphQL">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#query-complexity-is-a-real-wall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Query complexity is a real wall
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#projects-teams-cycles-and-states" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Projects, teams, cycles, and states
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#team-by-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Team by key
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Issues
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#users" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Users
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workspace-identity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workspace identity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#issue-context-for-a-write" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Issue context for a write
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-one-write" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The one write
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#field-rationale-worth-keeping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Field rationale worth keeping
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pylon-rest" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pylon REST
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#incidentio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Incident.io
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#google-calendar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Google Calendar
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#slack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Slack
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#retry-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Retry policy
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="api-notes">API notes<a class="headerlink" href="#api-notes" title="Permanent link">⚓︎</a></h1>
+<p>What Linear, Pylon, Incident.io, and Google Calendar actually do, as opposed to what their docs say.
+Every fact here was paid for once against a real workspace by the Deno implementation, and this file is
+where it survives that implementation&rsquo;s deletion. Exact strings beat prose: an approximate query is
+worth nothing.</p>
+<h2 id="auth-per-service">Auth, per service<a class="headerlink" href="#auth-per-service" title="Permanent link">⚓︎</a></h2>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>Header</th>
+<th>Secret source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Linear</td>
+<td><code>Authorization: &lt;key&gt;</code> (raw)</td>
+<td><code>LINEAR_API_KEY</code>, else keychain <code>tlr-linear</code> / <code>api-key</code></td>
+</tr>
+<tr>
+<td>Linear (demo)</td>
+<td><code>Authorization: &lt;key&gt;</code> (raw)</td>
+<td><code>LINEAR_DEMO_API_KEY</code>, else keychain <code>tlr-linear</code> / <code>demo-key</code></td>
+</tr>
+<tr>
+<td>Pylon</td>
+<td><code>Authorization: Bearer &lt;token&gt;</code></td>
+<td><code>PYLON_API_TOKEN</code>, else keychain <code>tlr-pylon</code> / <code>api-token</code></td>
+</tr>
+<tr>
+<td>Incident.io</td>
+<td><code>Authorization: Bearer &lt;token&gt;</code></td>
+<td><code>INCIDENT_IO_TOKEN</code>, else keychain <code>tlr-incidentio</code> / <code>api-key</code></td>
+</tr>
+<tr>
+<td>Slack</td>
+<td><code>Authorization: Bearer &lt;token&gt;</code></td>
+<td><code>SLACK_USER_TOKEN</code>, else keychain <code>tlr-slack</code> / <code>user-token</code></td>
+</tr>
+<tr>
+<td>Google Calendar</td>
+<td><code>Authorization: Bearer &lt;token&gt;</code></td>
+<td>OAuth loopback, client JSON and refresh token in the data dir</td>
+</tr>
+</tbody>
+</table>
+<p>Linear is the odd one: the header carries the raw personal API key with no <code>Bearer</code> prefix. A <code>Bearer</code>
+prefix fails with an auth error indistinguishable from a wrong key.</p>
+<p>Keychain reads shell out to <code>security find-generic-password -s &lt;service&gt; -a &lt;account&gt; -w</code> with an
+argument array, never an interpolated shell string. A non-zero exit or a missing <code>security</code> binary
+resolves to &ldquo;not found&rdquo; rather than an error, which is the non-macOS path. Writes use
+<code>add-generic-password -U</code> with the value piped on stdin twice (the tool prompts for confirmation),
+never as an argv element where the process table would show it. A write is refused while the
+corresponding env var is set, because the env var wins on read and the write would be invisible.</p>
+<h2 id="linear-graphql">Linear GraphQL<a class="headerlink" href="#linear-graphql" title="Permanent link">⚓︎</a></h2>
+<p>Endpoint <code>https://api.linear.app/graphql</code>. Relay pagination throughout: <code>first</code>/<code>after</code> with
+<code>pageInfo { hasNextPage endCursor }</code>.</p>
+<h3 id="query-complexity-is-a-real-wall">Query complexity is a real wall<a class="headerlink" href="#query-complexity-is-a-real-wall" title="Permanent link">⚓︎</a></h3>
+<p>Complexity scales as <code>outer * teams * (cycles + states)</code>. The project query caps the outer <code>projects</code>
+connection at <code>first: 10</code> because that was the measured ceiling before Linear answers &ldquo;Query too
+complex&rdquo;. If that error appears, the nested limits are the first thing to cut, not the outer one.</p>
+<h3 id="projects-teams-cycles-and-states">Projects, teams, cycles, and states<a class="headerlink" href="#projects-teams-cycles-and-states" title="Permanent link">⚓︎</a></h3>
+<div class="highlight"><pre><span></span><code><span class="linenos" data-linenos=" 1 "></span><span class="k">query</span><span class="w"> </span><span class="nf">Projects</span><span class="p">(</span><span class="nv">$filter</span><span class="p">:</span><span class="w"> </span><span class="nc">ProjectFilter</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos" data-linenos=" 2 "></span><span class="w">  </span><span class="n">projects</span><span class="p">(</span><span class="n">filter</span><span class="p">:</span><span class="w"> </span><span class="nv">$filter</span><span class="p">,</span><span class="w"> </span><span class="n">first</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos" data-linenos=" 3 "></span><span class="w">    </span><span class="n">nodes</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos" data-linenos=" 4 "></span><span class="w">      </span><span class="n">id</span>
+<span class="linenos" data-linenos=" 5 "></span><span class="w">      </span><span class="n">name</span>
+<span class="linenos" data-linenos=" 6 "></span><span class="w">      </span><span class="n">url</span>
+<span class="linenos" data-linenos=" 7 "></span><span class="w">      </span><span class="n">slugId</span>
+<span class="linenos" data-linenos=" 8 "></span><span class="w">      </span><span class="n">startDate</span>
+<span class="linenos" data-linenos=" 9 "></span><span class="w">      </span><span class="n">targetDate</span>
+<span class="linenos" data-linenos="10 "></span><span class="w">      </span><span class="n">projectMilestones</span><span class="p">(</span><span class="n">first</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">nodes</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="n">targetDate</span><span class="w"> </span><span class="n">progress</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+<span class="linenos" data-linenos="11 "></span><span class="w">      </span><span class="n">teams</span><span class="p">(</span><span class="n">first</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos" data-linenos="12 "></span><span class="w">        </span><span class="n">nodes</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos" data-linenos="13 "></span><span class="w">          </span><span class="n">id</span>
+<span class="linenos" data-linenos="14 "></span><span class="w">          </span><span class="n">key</span>
+<span class="linenos" data-linenos="15 "></span><span class="w">          </span><span class="n">name</span>
+<span class="linenos" data-linenos="16 "></span><span class="w">          </span><span class="n">issueEstimationType</span>
+<span class="linenos" data-linenos="17 "></span><span class="w">          </span><span class="n">issueEstimationAllowZero</span>
+<span class="linenos" data-linenos="18 "></span><span class="w">          </span><span class="n">issueEstimationExtended</span>
+<span class="linenos" data-linenos="19 "></span><span class="w">          </span><span class="n">cycles</span><span class="p">(</span><span class="n">last</span><span class="p">:</span><span class="w"> </span><span class="mi">12</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">nodes</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">number</span><span class="w"> </span><span class="n">startsAt</span><span class="w"> </span><span class="n">endsAt</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+<span class="linenos" data-linenos="20 "></span><span class="w">          </span><span class="n">states</span><span class="p">(</span><span class="n">first</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">nodes</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="n">type</span><span class="w"> </span><span class="n">position</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+<span class="linenos" data-linenos="21 "></span><span class="w">        </span><span class="p">}</span>
+<span class="linenos" data-linenos="22 "></span><span class="w">      </span><span class="p">}</span>
+<span class="linenos" data-linenos="23 "></span><span class="w">    </span><span class="p">}</span>
+<span class="linenos" data-linenos="24 "></span><span class="w">  </span><span class="p">}</span>
+<span class="linenos" data-linenos="25 "></span><span class="p">}</span>
+</code></pre></div>
+<p>Filter by <code>containsIgnoreCase</code> on <code>name</code>, then fall back to <code>slugId</code>.</p>
+<p>The cycles connection is ordered oldest first, so <code>last: 12</code> is required. <code>first: 12</code> silently returns
+the twelve earliest cycles a long-running team ever had.</p>
+<h3 id="team-by-key">Team by key<a class="headerlink" href="#team-by-key" title="Permanent link">⚓︎</a></h3>
+<div class="highlight"><pre><span></span><code><span class="linenos" data-linenos=" 1 "></span><span class="k">query</span><span class="w"> </span><span class="nf">Team</span><span class="p">(</span><span class="nv">$key</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos" data-linenos=" 2 "></span><span class="w">  </span><span class="n">teams</span><span class="p">(</span><span class="n">filter</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">key</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">eq</span><span class="p">:</span><span class="w"> </span><span class="nv">$key</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">first</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos" data-linenos=" 3 "></span><span class="w">    </span><span class="n">nodes</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos" data-linenos=" 4 "></span><span class="w">      </span><span class="n">id</span><span class="w"> </span><span class="n">key</span><span class="w"> </span><span class="n">name</span>
+<span class="linenos" data-linenos=" 5 "></span><span class="w">      </span><span class="n">issueEstimationType</span><span class="w"> </span><span class="n">issueEstimationAllowZero</span><span class="w"> </span><span class="n">issueEstimationExtended</span>
+<span class="linenos" data-linenos=" 6 "></span><span class="w">      </span><span class="n">cycles</span><span class="p">(</span><span class="n">last</span><span class="p">:</span><span class="w"> </span><span class="mi">12</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">nodes</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">number</span><span class="w"> </span><span class="n">startsAt</span><span class="w"> </span><span class="n">endsAt</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+<span class="linenos" data-linenos=" 7 "></span><span class="w">      </span><span class="n">states</span><span class="p">(</span><span class="n">first</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">nodes</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="n">type</span><span class="w"> </span><span class="n">position</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+<span class="linenos" data-linenos=" 8 "></span><span class="w">    </span><span class="p">}</span>
+<span class="linenos" data-linenos=" 9 "></span><span class="w">  </span><span class="p">}</span>
+<span class="linenos" data-linenos="10 "></span><span class="p">}</span>
+</code></pre></div>
+<h3 id="issues">Issues<a class="headerlink" href="#issues" title="Permanent link">⚓︎</a></h3>
+<div class="highlight"><pre><span></span><code><span class="linenos" data-linenos=" 1 "></span><span class="k">query</span><span class="w"> </span><span class="nf">Issues</span><span class="p">(</span><span class="nv">$filter</span><span class="p">:</span><span class="w"> </span><span class="nc">IssueFilter</span><span class="p">,</span><span class="w"> </span><span class="nv">$after</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos" data-linenos=" 2 "></span><span class="w">  </span><span class="n">issues</span><span class="p">(</span><span class="n">filter</span><span class="p">:</span><span class="w"> </span><span class="nv">$filter</span><span class="p">,</span><span class="w"> </span><span class="n">first</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="n">after</span><span class="p">:</span><span class="w"> </span><span class="nv">$after</span><span class="p">,</span><span class="w"> </span><span class="n">includeArchived</span><span class="p">:</span><span class="w"> </span><span class="nb">true</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos" data-linenos=" 3 "></span><span class="w">    </span><span class="n">pageInfo</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">hasNextPage</span><span class="w"> </span><span class="n">endCursor</span><span class="w"> </span><span class="p">}</span>
+<span class="linenos" data-linenos=" 4 "></span><span class="w">    </span><span class="n">nodes</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos" data-linenos=" 5 "></span><span class="w">      </span><span class="n">id</span>
+<span class="linenos" data-linenos=" 6 "></span><span class="w">      </span><span class="n">identifier</span>
+<span class="linenos" data-linenos=" 7 "></span><span class="w">      </span><span class="n">archivedAt</span>
+<span class="linenos" data-linenos=" 8 "></span><span class="w">      </span><span class="n">createdAt</span>
+<span class="linenos" data-linenos=" 9 "></span><span class="w">      </span><span class="n">title</span>
+<span class="linenos" data-linenos="10 "></span><span class="w">      </span><span class="n">url</span>
+<span class="linenos" data-linenos="11 "></span><span class="w">      </span><span class="n">description</span>
+<span class="linenos" data-linenos="12 "></span><span class="w">      </span><span class="n">estimate</span>
+<span class="linenos" data-linenos="13 "></span><span class="w">      </span><span class="n">priority</span>
+<span class="linenos" data-linenos="14 "></span><span class="w">      </span><span class="n">state</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="n">type</span><span class="w"> </span><span class="p">}</span>
+<span class="linenos" data-linenos="15 "></span><span class="w">      </span><span class="n">team</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">key</span><span class="w"> </span><span class="p">}</span>
+<span class="linenos" data-linenos="16 "></span><span class="w">      </span><span class="n">assignee</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="p">}</span>
+<span class="linenos" data-linenos="17 "></span><span class="w">      </span><span class="n">cycle</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">number</span><span class="w"> </span><span class="p">}</span>
+<span class="linenos" data-linenos="18 "></span><span class="w">      </span><span class="n">labels</span><span class="p">(</span><span class="n">first</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">nodes</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+<span class="linenos" data-linenos="19 "></span><span class="w">      </span><span class="n">parent</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">identifier</span><span class="w"> </span><span class="p">}</span>
+<span class="linenos" data-linenos="20 "></span><span class="w">      </span><span class="n">project</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="p">}</span>
+<span class="linenos" data-linenos="21 "></span><span class="w">      </span><span class="n">projectMilestone</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="p">}</span>
+<span class="linenos" data-linenos="22 "></span><span class="w">      </span><span class="n">relations</span><span class="p">(</span><span class="n">first</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">nodes</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">type</span><span class="w"> </span><span class="n">relatedIssue</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">identifier</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+<span class="linenos" data-linenos="23 "></span><span class="w">      </span><span class="n">history</span><span class="p">(</span><span class="n">first</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">nodes</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">createdAt</span><span class="w"> </span><span class="n">fromCycle</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">number</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">toCycle</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">number</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+<span class="linenos" data-linenos="24 "></span><span class="w">    </span><span class="p">}</span>
+<span class="linenos" data-linenos="25 "></span><span class="w">  </span><span class="p">}</span>
+<span class="linenos" data-linenos="26 "></span><span class="p">}</span>
+</code></pre></div>
+<p>Project scope filters <code>{ project: { id: { eq: $projectId } } }</code>. Team scope filters
+<code>{ team: { key: { eq: $teamKey } } }</code> by key, never by id: a filter on a DEV team&rsquo;s id returned 1305
+issues belonging to the CUS and DES teams.</p>
+<p><code>includeArchived: true</code> is mandatory. Without it an archived issue and a deleted one look identical.</p>
+<h3 id="users">Users<a class="headerlink" href="#users" title="Permanent link">⚓︎</a></h3>
+<div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="1 "></span><span class="k">query</span><span class="w"> </span><span class="nf">Users</span><span class="p">(</span><span class="nv">$after</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos" data-linenos="2 "></span><span class="w">  </span><span class="n">users</span><span class="p">(</span><span class="n">first</span><span class="p">:</span><span class="w"> </span><span class="mi">250</span><span class="p">,</span><span class="w"> </span><span class="n">after</span><span class="p">:</span><span class="w"> </span><span class="nv">$after</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos" data-linenos="3 "></span><span class="w">    </span><span class="n">nodes</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="n">displayName</span><span class="w"> </span><span class="n">email</span><span class="w"> </span><span class="n">active</span><span class="w"> </span><span class="n">app</span><span class="w"> </span><span class="n">guest</span><span class="w"> </span><span class="p">}</span>
+<span class="linenos" data-linenos="4 "></span><span class="w">    </span><span class="n">pageInfo</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">hasNextPage</span><span class="w"> </span><span class="n">endCursor</span><span class="w"> </span><span class="p">}</span>
+<span class="linenos" data-linenos="5 "></span><span class="w">  </span><span class="p">}</span>
+<span class="linenos" data-linenos="6 "></span><span class="p">}</span>
+</code></pre></div>
+<p><code>app: true</code> marks Linear&rsquo;s own integration accounts (Slack, Sentry, Codex, Incident.io) which carry
+synthetic <code>@*.linear.app</code> addresses, and <code>guest: true</code> marks external collaborators. Neither is ever on
+call or out of office, so both are dropped from the roster.</p>
+<h3 id="workspace-identity">Workspace identity<a class="headerlink" href="#workspace-identity" title="Permanent link">⚓︎</a></h3>
+<div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="1 "></span><span class="k">query</span><span class="w"> </span><span class="nf">Workspace</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">organization</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">urlKey</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<h3 id="issue-context-for-a-write">Issue context for a write<a class="headerlink" href="#issue-context-for-a-write" title="Permanent link">⚓︎</a></h3>
+<p>Fetched only when an edit touches milestone, status, cycle, or assignee, because those arrive as names
+and numbers and have to become UUIDs.</p>
+<div class="highlight"><pre><span></span><code><span class="linenos" data-linenos=" 1 "></span><span class="k">query</span><span class="w"> </span><span class="nf">IssueContext</span><span class="p">(</span><span class="nv">$id</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">!)</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos" data-linenos=" 2 "></span><span class="w">  </span><span class="n">issue</span><span class="p">(</span><span class="n">id</span><span class="p">:</span><span class="w"> </span><span class="nv">$id</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos" data-linenos=" 3 "></span><span class="w">    </span><span class="n">team</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos" data-linenos=" 4 "></span><span class="w">      </span><span class="n">states</span><span class="p">(</span><span class="n">first</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">nodes</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="n">type</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+<span class="linenos" data-linenos=" 5 "></span><span class="w">      </span><span class="n">cycles</span><span class="p">(</span><span class="n">first</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">nodes</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="n">number</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+<span class="linenos" data-linenos=" 6 "></span><span class="w">      </span><span class="n">members</span><span class="p">(</span><span class="n">first</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">nodes</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="n">displayName</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+<span class="linenos" data-linenos=" 7 "></span><span class="w">    </span><span class="p">}</span>
+<span class="linenos" data-linenos=" 8 "></span><span class="w">    </span><span class="n">project</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">projectMilestones</span><span class="p">(</span><span class="n">first</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">nodes</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+<span class="linenos" data-linenos=" 9 "></span><span class="w">  </span><span class="p">}</span>
+<span class="linenos" data-linenos="10 "></span><span class="p">}</span>
+</code></pre></div>
+<h3 id="the-one-write">The one write<a class="headerlink" href="#the-one-write" title="Permanent link">⚓︎</a></h3>
+<div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="1 "></span><span class="k">mutation</span><span class="w"> </span><span class="nf">UpdateIssue</span><span class="p">(</span><span class="nv">$id</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">!,</span><span class="w"> </span><span class="nv">$input</span><span class="p">:</span><span class="w"> </span><span class="nc">IssueUpdateInput</span><span class="p">!)</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos" data-linenos="2 "></span><span class="w">  </span><span class="n">issueUpdate</span><span class="p">(</span><span class="n">id</span><span class="p">:</span><span class="w"> </span><span class="nv">$id</span><span class="p">,</span><span class="w"> </span><span class="n">input</span><span class="p">:</span><span class="w"> </span><span class="nv">$input</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">success</span><span class="w"> </span><span class="p">}</span>
+<span class="linenos" data-linenos="3 "></span><span class="p">}</span>
+</code></pre></div>
+<p><code>IssueUpdateInput</code> fields used: <code>title</code>, <code>description</code>, <code>estimate</code>, <code>priority</code>, <code>projectMilestoneId</code>,
+<code>stateId</code>, <code>cycleId</code>, <code>assigneeId</code>. The three id fields accept <code>null</code> to clear.</p>
+<p>A write requires the issue&rsquo;s Linear UUID recorded at ingest. Seed and offline data has no UUID and can
+never be a write target until re-ingested.</p>
+<p>Status resolution disambiguates by state <code>name</code> on the issue&rsquo;s own team before falling back to the first
+state of the matching <code>type</code>, because a team routinely has two <code>type: started</code> states (&ldquo;In Progress&rdquo; and
+&ldquo;In Review&rdquo;) and picking by type alone moves the ticket to the wrong column.</p>
+<p><code>TeamUpdateInput</code>&rsquo;s field names were never exercised against the real API. Introspect
+<code>__type(name: "TeamUpdateInput")</code> before trusting any of <code>cyclesEnabled</code>, <code>cycleDuration</code>,
+<code>issueEstimationType</code>, <code>issueEstimationAllowZero</code>, <code>issueEstimationExtended</code>, or <code>triageEnabled</code>.</p>
+<h3 id="field-rationale-worth-keeping">Field rationale worth keeping<a class="headerlink" href="#field-rationale-worth-keeping" title="Permanent link">⚓︎</a></h3>
+<p><code>state { name type }</code> needs both: <code>type</code> is the coarse bucket and <code>name</code> separates same-type states.
+<code>assignee { name }</code> rather than <code>displayName</code>, because the roster and every grouping key on <code>name</code>, and
+the two differ per user. A null assignee normalizes to the string <code>Unassigned</code>, since downstream sorts
+call <code>localeCompare</code> and crash on null. <code>history</code> with <code>fromCycle</code>/<code>toCycle</code> reconstructs which cycles an
+issue passed through, which is how hop counts are correct on a first run instead of after weeks of
+snapshots.</p>
+<p>Cycle numbers are unique per team, not per project. A project spanning two teams gets two cycles both
+numbered 12 with overlapping dates. Keep only the cycle numbers the project&rsquo;s own issues reference.</p>
+<p><code>relations</code> reports each relation once, on the owning issue: <code>A blocks B</code> appears on A and never as
+<code>blocked</code> on B. Symmetrize in application code across the fetched set, or fetch <code>inverseRelations</code> and
+pay the complexity. Either way a blocker outside the fetched scope stays invisible.</p>
+<p>Pagination fails loudly when <code>hasNextPage</code> is true and <code>endCursor</code> is empty. Truncating instead reads
+downstream as a mass deletion.</p>
+<h2 id="pylon-rest">Pylon REST<a class="headerlink" href="#pylon-rest" title="Permanent link">⚓︎</a></h2>
+<p>Base <code>https://api.usepylon.com</code>. One endpoint carries the whole integration: <code>POST /issues/search</code>.
+Rate limit is 20 searches a minute, enforced with a sliding 60-second window of call timestamps. The
+response cache sits outside the limiter so a cache hit costs no quota.</p>
+<p>Lookup by tracker link:</p>
+<div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="1 "></span><span class="p">{</span>
+<span class="linenos" data-linenos="2 "></span><span class="w">  </span><span class="nt">"filter"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos" data-linenos="3 "></span><span class="w">    </span><span class="nt">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"linear_ticket"</span><span class="p">,</span>
+<span class="linenos" data-linenos="4 "></span><span class="w">    </span><span class="nt">"operator"</span><span class="p">:</span><span class="w"> </span><span class="s2">"equals"</span><span class="p">,</span>
+<span class="linenos" data-linenos="5 "></span><span class="w">    </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="s2">"DEV-1234"</span>
+<span class="linenos" data-linenos="6 "></span><span class="w">  </span><span class="p">},</span>
+<span class="linenos" data-linenos="7 "></span><span class="w">  </span><span class="nt">"limit"</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span>
+<span class="linenos" data-linenos="8 "></span><span class="p">}</span>
+</code></pre></div>
+<p>Wider net over a time window, optionally by requester and free text:</p>
+<div class="highlight"><pre><span></span><code><span class="linenos" data-linenos=" 1 "></span><span class="p">{</span>
+<span class="linenos" data-linenos=" 2 "></span><span class="w">  </span><span class="nt">"filter"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos" data-linenos=" 3 "></span><span class="w">    </span><span class="nt">"operator"</span><span class="p">:</span><span class="w"> </span><span class="s2">"and"</span><span class="p">,</span>
+<span class="linenos" data-linenos=" 4 "></span><span class="w">    </span><span class="nt">"subfilters"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="linenos" data-linenos=" 5 "></span><span class="w">      </span><span class="p">{</span>
+<span class="linenos" data-linenos=" 6 "></span><span class="w">        </span><span class="nt">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"created_at"</span><span class="p">,</span>
+<span class="linenos" data-linenos=" 7 "></span><span class="w">        </span><span class="nt">"operator"</span><span class="p">:</span><span class="w"> </span><span class="s2">"time_range"</span><span class="p">,</span>
+<span class="linenos" data-linenos=" 8 "></span><span class="w">        </span><span class="nt">"values"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"&lt;start&gt;"</span><span class="p">,</span><span class="w"> </span><span class="s2">"&lt;end&gt;"</span><span class="p">]</span>
+<span class="linenos" data-linenos=" 9 "></span><span class="w">      </span><span class="p">},</span>
+<span class="linenos" data-linenos="10 "></span><span class="w">      </span><span class="p">{</span>
+<span class="linenos" data-linenos="11 "></span><span class="w">        </span><span class="nt">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"requester_id"</span><span class="p">,</span>
+<span class="linenos" data-linenos="12 "></span><span class="w">        </span><span class="nt">"operator"</span><span class="p">:</span><span class="w"> </span><span class="s2">"equals"</span><span class="p">,</span>
+<span class="linenos" data-linenos="13 "></span><span class="w">        </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;pylon-contact-uuid&gt;"</span>
+<span class="linenos" data-linenos="14 "></span><span class="w">      </span><span class="p">}</span>
+<span class="linenos" data-linenos="15 "></span><span class="w">    </span><span class="p">]</span>
+<span class="linenos" data-linenos="16 "></span><span class="w">  </span><span class="p">},</span>
+<span class="linenos" data-linenos="17 "></span><span class="w">  </span><span class="nt">"limit"</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span><span class="p">,</span>
+<span class="linenos" data-linenos="18 "></span><span class="w">  </span><span class="nt">"search_text"</span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;free text&gt;"</span>
+<span class="linenos" data-linenos="19 "></span><span class="p">}</span>
+</code></pre></div>
+<p>A single subfilter drops the <code>and</code> wrapper. No window and no tracker id means no request at all: a bare
+date range over the whole workspace is never asked for.</p>
+<p>Which custom field holds the tracker identifier is workspace configuration, defaulting to
+<code>linear_ticket</code>. Discover it with <code>GET /custom-fields?object_type=issue</code>.</p>
+<p>The requester filter wants a Pylon contact UUID matching
+<code>^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$</code>. An email-shaped value is dropped
+rather than resolved.</p>
+<p>Responses shape as <code>{ data: [{ id, number, title, body_html, created_at, link, requester: { id, email } }],
+pagination, request_id }</code>. <code>body_html</code> needs entity decoding and tag stripping, with <code>&lt;br&gt;</code>, <code>&lt;/p&gt;</code>,
+<code>&lt;/div&gt;</code>, and <code>&lt;/li&gt;</code> becoming newlines.</p>
+<h2 id="incidentio">Incident.io<a class="headerlink" href="#incidentio" title="Permanent link">⚓︎</a></h2>
+<p>Base <code>https://api.incident.io</code>.</p>
+<ul>
+<li><code>GET /v2/schedules</code>, paginated by <code>pagination_meta.after</code> passed back as <code>?after=&lt;cursor&gt;</code></li>
+<li><code>GET /v2/schedule_entries?schedule_id=&lt;id&gt;&amp;entry_window_start=&lt;ISO&gt;&amp;entry_window_end=&lt;ISO&gt;</code>, reading
+  <code>schedule_entries.final[]</code> for <code>user.email</code>, <code>user.name</code>, <code>start_at</code>, and <code>end_at</code></li>
+<li><code>GET /v1/identity</code> is the diagnostic: its <code>teams</code> array tells you whether the key is team-scoped</li>
+</ul>
+<p>The expensive fact: an API key must have <strong>empty</strong> team-level permissions. Any team-level grant filters
+<code>GET /v2/schedules</code> to that team&rsquo;s own schedules, so an org-wide schedule (<code>team_ids: []</code>) vanishes from
+the list even though the account-level &ldquo;Read schedules&rdquo; grant is present and fetching that same schedule
+by id still works. The failure mode is a silent zero, not an error.</p>
+<h2 id="google-calendar">Google Calendar<a class="headerlink" href="#google-calendar" title="Permanent link">⚓︎</a></h2>
+<p>OAuth 2.0 desktop-app flow over a loopback listener, scope
+<code>https://www.googleapis.com/auth/calendar.freebusy</code> (the narrowest that answers the question).</p>
+<ul>
+<li>Consent <code>https://accounts.google.com/o/oauth2/v2/auth</code> with <code>access_type=offline&amp;prompt=consent</code></li>
+<li>Token <code>https://oauth2.googleapis.com/token</code>, <code>grant_type=authorization_code</code> then <code>refresh_token</code></li>
+<li>Data <code>POST https://www.googleapis.com/calendar/v3/freeBusy</code> with <code>{ timeMin, timeMax, items: [{ id }] }</code></li>
+</ul>
+<p><code>access_type=offline&amp;prompt=consent</code> are request parameters, and they are the only way to guarantee a
+refresh token on first consent. No Console setting substitutes.</p>
+<p>Refresh-token lifetime follows the consent screen&rsquo;s publishing status rather than the grant type. An
+External app left in Testing issues tokens that expire in seven days, which means re-consenting weekly.
+Internal, or External in production, issues tokens that live until revoked or unused for six months.</p>
+<p>Free/busy under-reports time off: a busy day is inferred from five hours of busy time or an all-day
+block, so an onsite that never reaches the calendar is invisible, and an all-day event marked Free does
+not appear in free/busy at all.</p>
+<p>The OAuth flow can open a browser, so out-of-office is excluded from any unattended scheduled run.</p>
+<h2 id="slack">Slack<a class="headerlink" href="#slack" title="Permanent link">⚓︎</a></h2>
+<p><code>POST /search.messages</code> with a user token (<code>xoxp-</code>). Bot tokens are refused outright, which is why the
+grant flow insists on user token scopes.</p>
+<ul>
+<li><code>after:</code> and <code>before:</code> exclude the day they name, so widen the window by a day on each side</li>
+<li>A window that excludes everything is ignored rather than rejected, answering as though no dates were
+  given, so never send an empty or inverted window</li>
+<li>Multiple <code>in:</code> channel terms OR together and widen the search rather than narrowing it</li>
+<li>A bad token or a missing scope returns HTTP 200 with <code>{ "ok": false, "error": "missing_scope" }</code>, so
+  check the body and not the status, or a scope error reads as &ldquo;nobody discussed this ticket&rdquo;</li>
+<li>Identifier search is fuzzy, so confirm client-side that the identifier really appears in the body</li>
+</ul>
+<h2 id="retry-policy">Retry policy<a class="headerlink" href="#retry-policy" title="Permanent link">⚓︎</a></h2>
+<p>Three attempts, 15-second timeout per attempt with its own abort signal, backoff
+<code>500ms * 2 ** (attempt - 1)</code> capped at 30 seconds.</p>
+<p>Retry on transport failures and on HTTP 429 or 5xx. Any other 4xx returns immediately, because an auth
+failure or a malformed query is the caller&rsquo;s bug and retrying only burns quota.</p>
+<p><code>Retry-After</code> (delta seconds, which is the form Linear sends) overrides the computed backoff when
+present and positive, capped at the same 30 seconds.</p>
+<p>No jitter, deliberately. A single-process scheduled run has no herd to spread out, and a pure function
+of the attempt number is testable.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["toc.autohide"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/tablesort/5.6.0/tablesort.min.js"></script>
+      
+        <script src="../_javascript/tables.js"></script>
+      
+    
+  </body>
+</html>
