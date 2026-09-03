@@ -12,8 +12,7 @@ changes and sloppy text do not reach a wider audience unchecked.
 One Deno/TypeScript core owns every read, the snapshot store, and the change model. A vanilla web app
 and a CLI sit on top, so neither talks to Linear on its own terms. This Deno app is frozen: a Python
 rebuild with a terminal UI replaces it, and [ROADMAP.md](ROADMAP.md) says why and in what order.
-[DECISIONS.md](DECISIONS.md) records each decision and what it superseded, [RESEARCH.md](RESEARCH.md)
-the research behind them, and [AGENTS.md](AGENTS.md) is where to start.
+[DECISIONS.md](DECISIONS.md) records each decision, its sources, and what it superseded, and [AGENTS.md](AGENTS.md) is where to start.
 
 ## What it does beyond Linear
 

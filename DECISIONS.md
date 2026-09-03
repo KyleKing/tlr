@@ -4,7 +4,7 @@ One Y-statement per decision: in the context of a use case, facing a concern, we
 the alternatives, to get a quality, accepting a downside. Newest first within each section. A decision
 that no longer holds moves to Superseded with the date and what replaced it, rather than being deleted,
 so the reasoning stays findable. Before September 2026 these lived in `adr/`; the git history has the
-long form.
+long form, and the web research that informed the September decisions (`RESEARCH.md`, since removed).
 
 ## Accepted
 
@@ -29,7 +29,8 @@ vocabulary in the source, accepting a config schema to maintain and a sample tha
 
 **Read history from Linear, spend snapshots on what it lacks** (2026-09). In the context of assuming
 local snapshots were the only way to know anything over time, facing the fact that Linear's
-`IssueHistory` records cycle, assignee, state, and estimate changes completely and retroactively, we
+[`IssueHistory`](https://studio.apollographql.com/public/Linear-API/variant/current/schema/reference/objects/IssueHistory)
+records cycle, assignee, state, and estimate changes completely and retroactively, we
 chose to read change history from the API and keep local capture only for milestone scope and
 cross-system state (Pylon links, calendar, on-call), to get correct answers on the first run rather
 than after weeks of accumulation, accepting a heavier first ingest and dependence on Linear's history
@@ -58,8 +59,9 @@ public demo, accepting that screenshots of real data stay a judgment call each t
 as a one-operator shortcut (an MCP call in a session, a keychain read), facing the risk that making it
 real means rewriting callers, we chose to put each outside dependency behind an interface with a
 direct REST or GraphQL call and a secret store, over wiring the shortcut into the product, to get
-"productionize means a new adapter and a delete", accepting one interface per dependency. A CLI over
-MCP at runtime has since been measured to cost far fewer tokens ([RESEARCH.md](RESEARCH.md)).
+"productionize means a new adapter and a delete", accepting one interface per dependency. One vendor
+eval ([Arize](https://arize.com/blog/mcp-vs-cli-skills-for-agents-what-our-eval-found-and-which-you-should-use/))
+measured a CLI path at 90,000 fewer tokens than MCP for the same task, which matches my experience.
 
 **Writes only after a preview a person confirms** (2026-07). In the context of bulk AI edits already
 running through the Linear MCP, facing a second competing write surface, we chose that tlr writes only
@@ -69,7 +71,9 @@ CLI write flags, to get one reviewed write path, accepting no unattended batch f
 **Capacity is per person and deflated by real constraints** (2026-07). In the context of a flat
 points-per-cycle number hiding on-call weeks and days out, facing plans that looked safe but were
 over-committed, we chose per-person velocity deflated by on-call (Incident.io) and out-days (Google
-Calendar) over a team-level velocity, to get an honest over-allocation flag, accepting that each source
+Calendar) over a team-level velocity (Linear's own capacity is a team number from the last three cycles,
+per its [cycles docs](https://linear.app/docs/use-cycles), and it points capacity work at a
+[Float integration](https://linear.app/integrations/float)), to get an honest over-allocation flag, accepting that each source
 is another credential and refresh path.
 
 **Refresh merges by provenance** (2026-07). In the context of automated refreshes overwriting
@@ -86,8 +90,8 @@ another project stays invisible.
 landing under the user's own Linear account, facing no way to tell them from hand edits, we chose a
 text heuristic for AI tells plus a review queue of everything changed since the last review pointer
 over actor-based filtering, to get a review path that works whoever made the edit, accepting that
-"who did this" is never answered. Linear's agent sessions and text attribution may change this; see
-the roadmap.
+"who did this" is never answered. Linear's [agent sessions](https://linear.app/developers/agents) and text attribution may change
+this; see the roadmap.
 
 **Keys scoped to the focused region, every binding on screen** (2026-08). In the context of
 bindings accumulating with no rule, we chose per-region key maps with a hint bar over a command palette,
@@ -137,13 +141,14 @@ Tried or scoped, then dropped. Listed so they do not come back unexamined.
   any chain, six of seven clusters were pairs or triples, and the drawing added nothing over a wave
   plane. The text beside each chain carried the information
 - Ordering risk (blocker scheduled after its dependent). Zero hits on 25 real edges
-- Cross-project duplicate detection. Linear's Triage Intelligence does semantic duplicate suggestion
-  at intake on Business and Enterprise plans, and the daily triage meeting already merges duplicates by
+- Cross-project duplicate detection. Linear's [Triage Intelligence](https://linear.app/docs/triage-intelligence) does semantic duplicate
+  suggestion at intake on Business and Enterprise plans, and the daily triage meeting already merges duplicates by
   hand. The spike's gold set found only 18 of 205 candidates were true duplicates under Linear's own
   symmetric relation, and same-day intake bursts could not gate candidates (13 of 112 gold pairs were
   legitimate same-burst tickets). Its code stays gitignored under `spike/duplicates/`
-- Standup and weekly-update prose generation. Linear's agent-drafted project updates and Loops cover
-  it. tlr feeds numbers into an update and does not write the sentences
-- Project-level slip forecasting. Linear's project graph draws it. Milestone-level and
+- Standup and weekly-update prose generation. Linear's [agent-drafted project updates](https://linear.app/changelog/2026-06-18-agent-assisted-project-updates)
+  and Loops cover it. tlr feeds numbers into an update and does not write the sentences
+- Project-level slip forecasting. Linear's [project graph](https://linear.app/docs/project-graph) draws it with optimistic and
+  pessimistic bands. Milestone-level and
   capacity-deflated forecasts stay
 - A "what could I pick up" view and reading handoff from `gh search prs` alone

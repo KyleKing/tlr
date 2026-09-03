@@ -1,11 +1,10 @@
 # tlr
 
-| To understand                            | Read                         |
-| ---------------------------------------- | ---------------------------- |
-| What is next, ranked, and why            | [ROADMAP.md](ROADMAP.md)     |
-| Why a thing is the way it is             | [DECISIONS.md](DECISIONS.md) |
-| What Linear and adjacent tools do (2026) | [RESEARCH.md](RESEARCH.md)   |
-| Credentials and how to get them          | [SETUP.md](SETUP.md)         |
+| To understand                   | Read                         |
+| ------------------------------- | ---------------------------- |
+| What is next, ranked, and why   | [ROADMAP.md](ROADMAP.md)     |
+| Why a thing is the way it is    | [DECISIONS.md](DECISIONS.md) |
+| Credentials and how to get them | [SETUP.md](SETUP.md)         |
 
 ## State of the repo
 
