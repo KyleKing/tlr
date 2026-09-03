@@ -350,7 +350,7 @@ There is no `resolved_at` on the record: that name
 exists only as a filter attribute, alongside `solved_at`.
 `assignee` is `null` when nobody
 owns the ticket.
-`link` looks like `https://app.usepylon.com/issues?issueNumber=2161`, not
+`link` looks like `https://app.usepylon.com/issues?issueNumber=<number>`, not
 the `/issues/<id>` form an earlier note claimed.
 
 `time_in_status_seconds` breaks time down per status, and
@@ -394,18 +394,18 @@ Discover them with
 `type`, `domain`, `tags`, `custom_fields` in the same shape as above, `owner`, and
 `external_ids`.
 
-There is no tier field. This workspace's account custom fields are `lifecycle` (select:
-prospect, poc, implementation, live, churned, lost, internal_na, partner), `products`
-(multiselect), two Hubspot revenue fields, and two calendar meeting dates.
+There is no tier field. This workspace's account custom fields are a lifecycle select, a
+products multiselect, two Hubspot revenue fields, and two calendar meeting dates.
+Their
+option values are workspace vocabulary, so they stay out of this repo and in the local
+config.
 So tier ordering in
 the triage queue has no data source until someone picks a field for it, and
 `[tiers].account_tier_field` names whichever one that turns out to be.
 Left empty, every
 account keeps `[tiers].default_tier` and the tier ordering rule does nothing.
-`lifecycle` and
-annual revenue are the two candidates, and choosing between them is a judgment call
-rather
-than a lookup.
+The lifecycle field and annual revenue are the two candidates, and choosing
+between them is a judgment call rather than a lookup.
 
 A tier set by hand survives every later refresh, because `pylon_accounts` is
 provenance-tracked and `manual` outranks `pylon` on a field.

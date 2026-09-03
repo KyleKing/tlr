@@ -237,7 +237,7 @@ planning code once the ledger gives them better inputs than a sum of open estima
     with accepted events from other people and refine
 - Which account field stands in for customer tier.
     This Pylon workspace has no tier field, and the
-    candidates are `lifecycle` and annual revenue.
+    candidates are its lifecycle field and annual revenue.
     Until one is chosen the triage queue lists every
     account at the default tier
 - How an agent-owned ticket is recognized.
