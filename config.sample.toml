@@ -83,6 +83,10 @@ calendar_ids = ["alex@example.com", "sam@example.com"]
 # Which calendar events count as meeting hours. "accepted_from_others" counts
 # events organized by someone else that this person accepted.
 meeting_hours_rule = "accepted_from_others"
+# Working days in one cycle, and hours in one working day. Together they convert an
+# out-day, an on-call day, or an hour of meetings into the points it costs.
+working_days_per_cycle = 10
+working_hours_per_day = 8
 
 # Roster: one table per person, with their points per cycle before deflation.
 [[capacity.roster]]

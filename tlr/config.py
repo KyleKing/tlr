@@ -100,6 +100,8 @@ class CapacityConfig:
     on_call_schedule_ids: list[str] = field(default_factory=list)
     calendar_ids: list[str] = field(default_factory=list)
     meeting_hours_rule: str = 'accepted_from_others'
+    working_days_per_cycle: float = 10.0
+    working_hours_per_day: float = 8.0
 
 
 @dataclass(slots=True)
