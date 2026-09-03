@@ -36,6 +36,9 @@ readme = "docs/README.md"
 requires-python = ">=3.13.11"
 version = "0.0.1"
 
+[project.scripts]
+tlr = "tlr.__main__:main"
+
 [project.urls]
 "Bug Tracker" = "https://github.com/kyleking/tlr/issues"
 "Changelog" = "https://github.com/kyleking/tlr/blob/main/docs/docs/CHANGELOG.md"
