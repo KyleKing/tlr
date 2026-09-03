@@ -904,6 +904,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../domain/backlog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../domain/capacity/" class="md-nav__link">
         
   
@@ -912,6 +940,34 @@
     
   
     Capacity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../domain/triage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Triage
   
 
     
@@ -958,7 +1014,7 @@
   <span class="md-ellipsis">
     
   
-    Render
+    Imports
   
 
     
@@ -971,6 +1027,89 @@
         
         <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_6_1_8_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6_1_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Imports
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../imports/snapshots/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Snapshots
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_1_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_1_9" id="__nav_6_1_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Render
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_6_1_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_1_9">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1059,10 +1198,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_1_9" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_1_10" >
         
           
-          <label class="md-nav__link" for="__nav_6_1_9" id="__nav_6_1_9_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_6_1_10" id="__nav_6_1_10_label" tabindex="0">
             
   
   
@@ -1080,8 +1219,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_6_1_9_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_6_1_9">
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_6_1_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_1_10">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1313,17 +1452,15 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/services.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="169 "></span><span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="n">argparse</span><span class="o">.</span><span class="n">Namespace</span><span class="p">,</span> <span class="n">parser</span><span class="p">:</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="linenos" data-linenos="170 "></span><span class="w">    </span><span class="sd">"""Dispatch one parsed command, returning the process exit status."""</span>
-<span class="linenos" data-linenos="171 "></span>    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">command</span> <span class="o">==</span> <span class="s1">'config'</span><span class="p">:</span>
-<span class="linenos" data-linenos="172 "></span>        <span class="k">return</span> <span class="n">_config_command</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
-<span class="linenos" data-linenos="173 "></span>    <span class="k">if</span> <span class="n">reason</span> <span class="o">:=</span> <span class="n">_UNBUILT</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">command</span><span class="p">):</span>
-<span class="linenos" data-linenos="174 "></span>        <span class="n">parser</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">command</span><span class="si">}</span><span class="s1">: not built yet (</span><span class="si">{</span><span class="n">reason</span><span class="si">}</span><span class="s1">)</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span>
-<span class="linenos" data-linenos="175 "></span>
-<span class="linenos" data-linenos="176 "></span>    <span class="n">config</span> <span class="o">=</span> <span class="n">load_config</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">config</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span> <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">config</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
-<span class="linenos" data-linenos="177 "></span>    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">command</span> <span class="o">==</span> <span class="s1">'refresh'</span><span class="p">:</span>
-<span class="linenos" data-linenos="178 "></span>        <span class="k">return</span> <span class="n">_refresh_command</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
-<span class="linenos" data-linenos="179 "></span>    <span class="k">return</span> <span class="n">_capacity_command</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="280 "></span><span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="n">argparse</span><span class="o">.</span><span class="n">Namespace</span><span class="p">,</span> <span class="n">parser</span><span class="p">:</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="linenos" data-linenos="281 "></span><span class="w">    </span><span class="sd">"""Dispatch one parsed command, returning the process exit status."""</span>
+<span class="linenos" data-linenos="282 "></span>    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">command</span> <span class="o">==</span> <span class="s1">'config'</span><span class="p">:</span>
+<span class="linenos" data-linenos="283 "></span>        <span class="k">return</span> <span class="n">_config_command</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+<span class="linenos" data-linenos="284 "></span>    <span class="n">handler</span> <span class="o">=</span> <span class="n">_COMMANDS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">command</span><span class="p">)</span>
+<span class="linenos" data-linenos="285 "></span>    <span class="k">if</span> <span class="n">handler</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos" data-linenos="286 "></span>        <span class="n">parser</span><span class="o">.</span><span class="n">print_help</span><span class="p">()</span>
+<span class="linenos" data-linenos="287 "></span>        <span class="k">return</span> <span class="mi">2</span>
+<span class="linenos" data-linenos="288 "></span>    <span class="k">return</span> <span class="n">handler</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">load_config</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">config</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span> <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">config</span> <span class="k">else</span> <span class="kc">None</span><span class="p">))</span>
 </code></pre></div>
             </details>
     </div>

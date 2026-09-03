@@ -902,6 +902,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../reference/tlr/domain/backlog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../reference/tlr/domain/capacity/" class="md-nav__link">
         
   
@@ -910,6 +938,34 @@
     
   
     Capacity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/tlr/domain/triage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Triage
   
 
     
@@ -956,7 +1012,7 @@
   <span class="md-ellipsis">
     
   
-    Render
+    Imports
   
 
     
@@ -969,6 +1025,89 @@
         
         <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_6_1_8_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6_1_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Imports
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/tlr/imports/snapshots/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Snapshots
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_1_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_1_9" id="__nav_6_1_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Render
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_6_1_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_1_9">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1057,10 +1196,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_1_9" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_1_10" >
         
           
-          <label class="md-nav__link" for="__nav_6_1_9" id="__nav_6_1_9_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_6_1_10" id="__nav_6_1_10_label" tabindex="0">
             
   
   
@@ -1078,8 +1217,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_6_1_9_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_6_1_9">
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_6_1_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_1_10">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1267,6 +1406,11 @@
 <h2 id="unreleased">Unreleased<a class="headerlink" href="#unreleased" title="Permanent link">⚓︎</a></h2>
 <h3 id="feat">Feat<a class="headerlink" href="#feat" title="Permanent link">⚓︎</a></h3>
 <ul>
+<li>dispatch triage, backlog, and import-snapshots</li>
+<li>report backlog age, close time, and resolved splits</li>
+<li>order the triage queue across Pylon and Linear</li>
+<li>import the Deno milestone-scope snapshots</li>
+<li><strong>store</strong>: carry Pylon state, tags, and account tiers</li>
 <li>dispatch the tlr commands through config, the store, and the domain</li>
 <li>add the Linear GraphQL adapter</li>
 <li>add the Pylon issue-search adapter</li>
@@ -1360,6 +1504,8 @@
 </ul>
 <h3 id="fix">Fix<a class="headerlink" href="#fix" title="Permanent link">⚓︎</a></h3>
 <ul>
+<li><strong>pylon</strong>: send the cursor as a query param and read custom fields as objects</li>
+<li><strong>config</strong>: match Pylon&rsquo;s real field vocabulary</li>
 <li>point the import check at the real entry point</li>
 <li>keep the config sample&rsquo;s semantic ordering out of toml-sort</li>
 <li>resolve issue filter</li>
