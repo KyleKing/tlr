@@ -113,7 +113,7 @@ in `capacity.roster` (add them under Settings → Roster), so anyone on call who
 
 ## Pylon
 
-Support tickets reach tlr as a [context source](adr/0011-context-sources.md): read-only, one search per
+Support tickets reach tlr as a context source (see [DECISIONS.md](DECISIONS.md)): read-only, one search per
 issue, never part of the plan. Direct REST, because an MCP connector does not survive a scheduled run.
 
 1. [Pylon → API tokens](https://app.usepylon.com/settings/api-tokens): create a token named `tlr`. Every
@@ -132,7 +132,7 @@ Verify: `deno task cli context --issue <identifier>`.
 
 ## Slack
 
-The same [context source](adr/0011-context-sources.md) port, over messages. Search needs a **user**
+The same context source (see [DECISIONS.md](DECISIONS.md)) port, over messages. Search needs a **user**
 token (`xoxp-`), not a bot token: `search.messages` refuses a bot token outright.
 
 1. [Slack → Your apps](https://api.slack.com/apps): create an app in the workspace, add the
@@ -189,7 +189,7 @@ app published to **In production** issues refresh tokens that do not expire on a
 consent holds until the token is revoked or unused for six months. Set the consent screen to Internal,
 or publish to production, to avoid the weekly re-consent.
 
-This is the `CapacitySource.outDays` port's live adapter ([ADR 0007](adr/0007-productization-and-domains.md));
+This is the `CapacitySource.outDays` port's live adapter (the spike-then-productionize rule in [DECISIONS.md](DECISIONS.md));
 it still runs as a local OAuth client rather than a hosted, per-user credential, which is the remaining
 gap before a shared runner can use it.
 

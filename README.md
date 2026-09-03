@@ -10,9 +10,10 @@ against the dependency graph, and gives you a reviewed, deterministic path for b
 changes and sloppy text do not reach a wider audience unchecked.
 
 One Deno/TypeScript core owns every read, the snapshot store, and the change model. A vanilla web app
-and a CLI sit on top, so neither talks to Linear on its own terms. See
-[ARCHITECTURE.md](ARCHITECTURE.md) for the shape and how each part works, [ROADMAP.md](ROADMAP.md) for
-what is next, and [AGENTS.md](AGENTS.md) for where to start.
+and a CLI sit on top, so neither talks to Linear on its own terms. This Deno app is frozen: a Python
+rebuild with a terminal UI replaces it, and [ROADMAP.md](ROADMAP.md) says why and in what order.
+[DECISIONS.md](DECISIONS.md) records each decision and what it superseded, [RESEARCH.md](RESEARCH.md)
+the research behind them, and [AGENTS.md](AGENTS.md) is where to start.
 
 ## What it does beyond Linear
 
@@ -172,5 +173,6 @@ web/lib/          pure logic (planning.js, capacity.js), imported by both the br
 web/templates/    Vento page and layout templates rendered by the server
 tests/            Deno unit tests plus tests/e2e Playwright smoke tests
 presentations/    the Slidev theme and deck template for internal decision talks
-adr/              decisions and why
 ```
+
+Decisions and their reasoning are in [DECISIONS.md](DECISIONS.md).
