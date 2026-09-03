@@ -236,7 +236,7 @@ def scrub_json(value: Any, *, key_cls: str | None = None) -> Any:
         return {k: scrub_json(v, key_cls=classify_json_key(k)) for k, v in value.items()}
     if isinstance(value, list):
         return [scrub_json(item, key_cls=key_cls) for item in value]
-    if value is None or key_cls in {None, 'structural', 'unknown'}:
+    if value is None or key_cls is None or key_cls in {'structural', 'unknown'}:
         return value
     return REDACTED_PLACEHOLDERS[key_cls]
 

@@ -165,7 +165,7 @@ _ISSUE_DOMAIN_COLS = (
     'project_milestone_id',
     'parent_identifier',
 )
-_ISSUE_SCHEMA = {
+_ISSUE_SCHEMA: dict[str, Any] = {
     'id': pl.Utf8,
     'identifier': pl.Utf8,
     'title': pl.Utf8,
@@ -199,7 +199,7 @@ _PYLON_DOMAIN_COLS = (
     'link_status',
     'linear_identifier',
 )
-_PYLON_SCHEMA = {
+_PYLON_SCHEMA: dict[str, Any] = {
     'id': pl.Utf8,
     'number': pl.Int64,
     'title': pl.Utf8,
@@ -215,7 +215,7 @@ _PYLON_SCHEMA = {
 }
 
 _CYCLE_COLS = ('team_key', 'number', 'starts_at', 'ends_at')
-_CYCLE_SCHEMA = {
+_CYCLE_SCHEMA: dict[str, Any] = {
     'team_key': pl.Utf8,
     'number': pl.Int64,
     'starts_at': pl.Datetime('us'),
@@ -223,10 +223,10 @@ _CYCLE_SCHEMA = {
 }
 
 _ISSUE_LABEL_COLS = ('issue_id', 'label', 'source')
-_ISSUE_LABEL_SCHEMA = {'issue_id': pl.Utf8, 'label': pl.Utf8, 'source': pl.Utf8}
+_ISSUE_LABEL_SCHEMA: dict[str, Any] = {'issue_id': pl.Utf8, 'label': pl.Utf8, 'source': pl.Utf8}
 
 _ISSUE_RELATION_COLS = ('issue_id', 'relation_type', 'related_identifier', 'source')
-_ISSUE_RELATION_SCHEMA = {
+_ISSUE_RELATION_SCHEMA: dict[str, Any] = {
     'issue_id': pl.Utf8,
     'relation_type': pl.Utf8,
     'related_identifier': pl.Utf8,
@@ -244,7 +244,7 @@ _ALLOCATION_EVENT_COLS = (
     'recorded_at',
     'source',
 )
-_ALLOCATION_EVENT_SCHEMA = {
+_ALLOCATION_EVENT_SCHEMA: dict[str, Any] = {
     'event_id': pl.Utf8,
     'person': pl.Utf8,
     'cycle_team': pl.Utf8,
@@ -266,7 +266,7 @@ _MILESTONE_SCOPE_COLS = (
     'estimate',
     'state_name',
 )
-_MILESTONE_SCOPE_SCHEMA = {
+_MILESTONE_SCOPE_SCHEMA: dict[str, Any] = {
     'captured_at': pl.Datetime('us'),
     'project_name': pl.Utf8,
     'milestone_id': pl.Utf8,
@@ -278,7 +278,7 @@ _MILESTONE_SCOPE_SCHEMA = {
 }
 
 _REFRESH_RUN_COLS = ('source', 'last_run_at', 'covered_from', 'covered_to', 'row_count', 'note')
-_REFRESH_RUN_SCHEMA = {
+_REFRESH_RUN_SCHEMA: dict[str, Any] = {
     'source': pl.Utf8,
     'last_run_at': pl.Datetime('us'),
     'covered_from': pl.Datetime('us'),

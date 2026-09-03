@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 import httpx
 import pytest
@@ -15,7 +16,7 @@ from tlr.sources import linear
 _API_KEY = 'lin_api_test_key'
 
 
-def _issue_node(*, identifier: str = 'DEV-1', labels: list[str] | None = None) -> dict:
+def _issue_node(*, identifier: str = 'DEV-1', labels: list[str] | None = None) -> dict[str, Any]:
     return {
         'id': f'uuid-{identifier}',
         'identifier': identifier,
@@ -39,7 +40,7 @@ def _issue_node(*, identifier: str = 'DEV-1', labels: list[str] | None = None) -
     }
 
 
-def _issues_page(nodes: list[dict], *, has_next: bool = False, end_cursor: str = '') -> dict:
+def _issues_page(nodes: list[dict[str, Any]], *, has_next: bool = False, end_cursor: str = '') -> dict[str, Any]:
     return {'issues': {'pageInfo': {'hasNextPage': has_next, 'endCursor': end_cursor}, 'nodes': nodes}}
 
 
@@ -51,7 +52,7 @@ def _client(handler: Callable[[httpx.Request], httpx.Response]) -> linear.Linear
     return linear.LinearClient(http=_transport(handler), api_key=_API_KEY)
 
 
-def _graphql_response(data: dict) -> httpx.Response:
+def _graphql_response(data: dict[str, Any]) -> httpx.Response:
     return httpx.Response(200, json={'data': data})
 
 
@@ -222,7 +223,7 @@ def test_fetch_projects_flattens_project_milestones_and_team_keys() -> None:
 
 
 def test_parse_projects_keeps_project_with_no_milestones() -> None:
-    data = {
+    data: dict[str, Any] = {
         'projects': {
             'nodes': [
                 {
@@ -252,7 +253,7 @@ def test_parse_projects_keeps_project_with_no_milestones() -> None:
         (linear.project_slug_filter, 'rebuild-abc', {'slugId': {'eq': 'rebuild-abc'}}),
     ],
 )
-def test_filter_builders(build_filter: Callable[[str], dict], arg: str, expected: dict) -> None:
+def test_filter_builders(build_filter: Callable[[str], dict[str, Any]], arg: str, expected: dict[str, Any]) -> None:
     assert build_filter(arg) == expected
 
 

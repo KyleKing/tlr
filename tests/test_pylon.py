@@ -149,7 +149,7 @@ def test_parse_issues_produces_store_shaped_columns() -> None:
 
     result = pylon.parse_issues(body, config)
 
-    assert set(result.columns) == {'id', *pylon._PYLON_DOMAIN_COLS}  # noqa: SLF001
+    assert set(result.columns) == {'id', *store._PYLON_DOMAIN_COLS}  # noqa: SLF001
     assert result['body'].to_list() == ['First line\nSecond line']
     assert result['created_at'].to_list() == [datetime(2026, 1, 1, 12, 0, 0, tzinfo=UTC).replace(tzinfo=None)]
     assert result['requester_email'].to_list() == ['requester@example.test']

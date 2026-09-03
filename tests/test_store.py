@@ -19,7 +19,7 @@ _EXPECTED_SCOPE_ROWS = 2
 
 
 def _issue_row(**overrides: object) -> dict[str, object]:
-    row = {
+    row: dict[str, object] = {
         'id': 'uuid-1',
         'identifier': 'DEV-1',
         'title': 'Original title',

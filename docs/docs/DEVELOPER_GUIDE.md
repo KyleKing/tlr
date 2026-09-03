@@ -72,8 +72,23 @@ uv publish
 | File                               | Statements | Missing | Excluded | Coverage |
 |------------------------------------|-----------:|--------:|---------:|---------:|
 | `tlr/__init__.py`                  | 4          | 0       | 0        | 100.0%   |
+| `tlr/__main__.py`                  | 17         | 5       | 0        | 66.7%    |
 | `tlr/_runtime_type_check_setup.py` | 13         | 0       | 37       | 100.0%   |
-| **Totals**                         | 17         | 0       | 37       | 100.0%   |
+| `tlr/cli.py`                       | 32         | 0       | 0        | 100.0%   |
+| `tlr/config.py`                    | 181        | 13      | 0        | 89.4%    |
+| `tlr/domain/__init__.py`           | 0          | 0       | 0        | 100.0%   |
+| `tlr/domain/capacity.py`           | 43         | 0       | 0        | 100.0%   |
+| `tlr/http.py`                      | 61         | 3       | 0        | 94.8%    |
+| `tlr/render/__init__.py`           | 0          | 0       | 0        | 100.0%   |
+| `tlr/render/json.py`               | 15         | 0       | 0        | 100.0%   |
+| `tlr/render/markdown.py`           | 22         | 1       | 0        | 92.9%    |
+| `tlr/secrets.py`                   | 46         | 0       | 1        | 100.0%   |
+| `tlr/services.py`                  | 127        | 41      | 0        | 64.8%    |
+| `tlr/sources/__init__.py`          | 0          | 0       | 0        | 100.0%   |
+| `tlr/sources/linear.py`            | 115        | 0       | 0        | 100.0%   |
+| `tlr/sources/pylon.py`             | 88         | 3       | 0        | 92.5%    |
+| `tlr/store.py`                     | 217        | 11      | 0        | 92.1%    |
+| **Totals**                         | 981        | 77      | 38       | 89.6%    |
 
 Generated on: 2026-09-02
 <!-- {cte} -->

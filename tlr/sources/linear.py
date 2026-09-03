@@ -85,7 +85,7 @@ query Issues($filter: IssueFilter, $after: String) {
 }
 """
 
-_ISSUE_SCHEMA = {
+_ISSUE_SCHEMA: dict[str, Any] = {
     'id': pl.Utf8,
     'identifier': pl.Utf8,
     'title': pl.Utf8,
@@ -104,15 +104,15 @@ _ISSUE_SCHEMA = {
     'project_milestone_id': pl.Utf8,
     'parent_identifier': pl.Utf8,
 }
-_ISSUE_LABEL_SCHEMA = {'issue_id': pl.Utf8, 'label': pl.Utf8}
-_ISSUE_RELATION_SCHEMA = {'issue_id': pl.Utf8, 'relation_type': pl.Utf8, 'related_identifier': pl.Utf8}
-_CYCLE_SCHEMA = {
+_ISSUE_LABEL_SCHEMA: dict[str, Any] = {'issue_id': pl.Utf8, 'label': pl.Utf8}
+_ISSUE_RELATION_SCHEMA: dict[str, Any] = {'issue_id': pl.Utf8, 'relation_type': pl.Utf8, 'related_identifier': pl.Utf8}
+_CYCLE_SCHEMA: dict[str, Any] = {
     'team_key': pl.Utf8,
     'number': pl.Int64,
     'starts_at': pl.Datetime('us'),
     'ends_at': pl.Datetime('us'),
 }
-_PROJECT_SCHEMA = {
+_PROJECT_SCHEMA: dict[str, Any] = {
     'project_id': pl.Utf8,
     'project_name': pl.Utf8,
     'project_url': pl.Utf8,

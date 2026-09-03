@@ -38,7 +38,10 @@ _CONTACT_UUID_RE = re.compile(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}
 _NEWLINE_TAG_RE = re.compile(r'<(?:br\s*/?|/p|/div|/li)>', re.IGNORECASE)
 _TAG_RE = re.compile(r'<[^>]+>')
 
-_ISSUE_FRAME_SCHEMA = {'id': _PYLON_SCHEMA['id'], **{col: _PYLON_SCHEMA[col] for col in _PYLON_DOMAIN_COLS}}
+_ISSUE_FRAME_SCHEMA: dict[str, Any] = {
+    'id': _PYLON_SCHEMA['id'],
+    **{col: _PYLON_SCHEMA[col] for col in _PYLON_DOMAIN_COLS},
+}
 
 
 @dataclass

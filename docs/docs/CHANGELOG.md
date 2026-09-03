@@ -2,6 +2,14 @@
 
 ### Feat
 
+- add the Linear GraphQL adapter
+- add the Pylon issue-search adapter
+- compute per-person capacity with unestimated counts beside every total
+- render frames as JSON alongside the markdown output
+- add the DuckDB store with provenance-aware upserts
+- load nested TOML config sections with fail-fast validation
+- resolve secrets from env or keychain and share the HTTP retry policy
+- add the tlr command surface and a markdown renderer
 - **context**: add the slack adapter
 - **context**: answer a list of issues in one run, paced to each source's limit
 - **ingest**: record each issue's createdAt
@@ -86,6 +94,8 @@
 
 ### Fix
 
+- point the import check at the real entry point
+- keep the config sample's semantic ordering out of toml-sort
 - resolve issue filter
 - **context**: decode numeric and named HTML entities in Pylon bodies
 - give a team ingest its own data file and refresh it on schedule

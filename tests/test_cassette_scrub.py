@@ -30,7 +30,13 @@ class _FakeRequest:
     body: str
 
 
-def _cassette_text(*, request_headers: dict, request_body: dict, response_headers: dict, response_body: dict) -> str:
+def _cassette_text(
+    *,
+    request_headers: dict[str, Any],
+    request_body: dict[str, Any],
+    response_headers: dict[str, Any],
+    response_body: dict[str, Any],
+) -> str:
     interaction = {
         'request': {
             'body': {'string': json.dumps(request_body)},

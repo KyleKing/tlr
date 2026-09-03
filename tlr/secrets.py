@@ -43,6 +43,7 @@ class SecretStore(Protocol):
 
     def read_secret(self, name: str) -> str:
         """Return the secret value, raising when it is configured nowhere."""
+        ...  # ruff:ignore[unnecessary-placeholder]
 
 
 SecurityRunner = Callable[[list[str]], subprocess.CompletedProcess[str]]

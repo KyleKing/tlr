@@ -28,7 +28,7 @@ _ISSUE_DEFAULTS = {
 
 
 def _issue(**overrides: object) -> dict[str, object]:
-    row = dict(_ISSUE_DEFAULTS)
+    row: dict[str, object] = dict(_ISSUE_DEFAULTS)
     row.update(overrides)
     return row
 

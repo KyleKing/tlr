@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from collections.abc import Collection, Sequence
 from datetime import datetime
-from typing import Final
+from typing import Any, Final
 
 import polars as pl
 
@@ -18,7 +18,7 @@ DELIVERED_STATE_TYPES: Final[frozenset[str]] = frozenset({'completed'})
 ALLOCATED_STATE_TYPES: Final[frozenset[str]] = frozenset({'backlog', 'unstarted', 'started', 'completed', 'triage'})
 """Every Linear state_type except `canceled`, which is work nobody is carrying."""
 
-_GROUP_COL_DTYPES = {
+_GROUP_COL_DTYPES: dict[str, Any] = {
     'assignee_name': pl.Utf8,
     'team_key': pl.Utf8,
     'cycle_number': pl.Int64,
@@ -26,7 +26,7 @@ _GROUP_COL_DTYPES = {
 
 _POINTS_SUMMARY_COLS: Final[tuple[str, str]] = ('points', 'unestimated_count')
 
-_STANDUP_SCHEMA = {
+_STANDUP_SCHEMA: dict[str, Any] = {
     'Person': pl.Utf8,
     'Allocated points': pl.Float64,
     'Allocated unestimated': pl.Int64,
@@ -36,7 +36,7 @@ _STANDUP_SCHEMA = {
     'Capacity remaining': pl.Float64,
 }
 
-_DEFLATION_SCHEMA = {
+_DEFLATION_SCHEMA: dict[str, Any] = {
     'person': pl.Utf8,
     'points_per_cycle': pl.Float64,
     'out_day_points': pl.Float64,
