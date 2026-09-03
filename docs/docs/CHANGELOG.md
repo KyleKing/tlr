@@ -2,6 +2,9 @@
 
 ### Feat
 
+- dispatch triage, backlog, and import-snapshots
+- report backlog age, close time, and resolved splits
+- order the triage queue across Pylon and Linear
 - import the Deno milestone-scope snapshots
 - **store**: carry Pylon state, tags, and account tiers
 - dispatch the tlr commands through config, the store, and the domain
@@ -97,6 +100,7 @@
 
 ### Fix
 
+- **pylon**: send the cursor as a query param and read custom fields as objects
 - **config**: match Pylon's real field vocabulary
 - point the import check at the real entry point
 - keep the config sample's semantic ordering out of toml-sort
