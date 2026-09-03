@@ -240,6 +240,8 @@ coverage.json
 
 # Real ticket data, snapshots, and caches never enter this public repo
 /web/data/
+*.duckdb
+*.duckdb.wal
 *.tlr.sqlite
 *.tlr.sqlite-*
 
