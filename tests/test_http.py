@@ -10,6 +10,7 @@ import pytest
 from tlr.http import (
     MAX_ATTEMPTS,
     MAX_BACKOFF_SECONDS,
+    Sleeper,
     SlidingWindowLimiter,
     _backoff_seconds,
     request_with_retry,
@@ -27,7 +28,7 @@ def _client(transport: httpx.MockTransport) -> httpx.Client:
     return httpx.Client(transport=transport, base_url='https://example.test')
 
 
-def _recording_sleep() -> tuple[list[float], object]:
+def _recording_sleep() -> tuple[list[float], Sleeper]:
     delays: list[float] = []
 
     def _sleep(seconds: float) -> None:

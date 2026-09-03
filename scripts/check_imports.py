@@ -2,6 +2,6 @@
 
 from pprint import pprint
 
-from tlr import replace_me
+from tlr.__main__ import main
 
 pprint(locals())  # ruff:ignore[p-print]
