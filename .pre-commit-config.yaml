@@ -81,6 +81,15 @@ repos:
         stages: ["pre-commit"]
   - repo: local
     hooks:
+      - id: cassette-scrub
+        description: "Verify recorded API cassettes carry no unclassified or leaked fields"
+        entry: uv run python -m tests.cassette_scrub
+        files: tests/.*/cassettes/.*\.yaml
+        language: system
+        name: Cassette Scrub
+        pass_filenames: false
+        require_serial: true
+        stages: ["pre-commit"]
       - id: copier-forbidden-files
         entry: |
           Found copier update rejection files; review them and remove them
