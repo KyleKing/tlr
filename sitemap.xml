@@ -9,6 +9,14 @@
          <lastmod>2026-09-03</lastmod>
     </url>
     <url>
+         <loc>https://tlr.kyleking.me/cassettes/</loc>
+         <lastmod>2026-09-03</lastmod>
+    </url>
+    <url>
+         <loc>https://tlr.kyleking.me/store-schema/</loc>
+         <lastmod>2026-09-03</lastmod>
+    </url>
+    <url>
          <loc>https://tlr.kyleking.me/docs/CHANGELOG/</loc>
          <lastmod>2026-09-03</lastmod>
     </url>
@@ -18,6 +26,30 @@
     </url>
     <url>
          <loc>https://tlr.kyleking.me/docs/STYLE_GUIDE/</loc>
+         <lastmod>2026-09-03</lastmod>
+    </url>
+    <url>
+         <loc>https://tlr.kyleking.me/reference/tlr/cli/</loc>
+         <lastmod>2026-09-03</lastmod>
+    </url>
+    <url>
+         <loc>https://tlr.kyleking.me/reference/tlr/config/</loc>
+         <lastmod>2026-09-03</lastmod>
+    </url>
+    <url>
+         <loc>https://tlr.kyleking.me/reference/tlr/http/</loc>
+         <lastmod>2026-09-03</lastmod>
+    </url>
+    <url>
+         <loc>https://tlr.kyleking.me/reference/tlr/secrets/</loc>
+         <lastmod>2026-09-03</lastmod>
+    </url>
+    <url>
+         <loc>https://tlr.kyleking.me/reference/tlr/store/</loc>
+         <lastmod>2026-09-03</lastmod>
+    </url>
+    <url>
+         <loc>https://tlr.kyleking.me/reference/tlr/render/markdown/</loc>
          <lastmod>2026-09-03</lastmod>
     </url>
 </urlset>

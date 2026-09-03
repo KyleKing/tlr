@@ -12,29 +12,31 @@
         <meta name="author" content="Kyle King">
       
       
-        <link rel="canonical" href="https://tlr.kyleking.me/">
+        <link rel="canonical" href="https://tlr.kyleking.me/reference/tlr/cli/">
       
       
+        <link rel="prev" href="../../../docs/STYLE_GUIDE/">
       
-        <link rel="next" href="api-notes/">
+      
+        <link rel="next" href="../config/">
       
       
         
       
       
-      <link rel="icon" href="assets/images/favicon.png">
+      <link rel="icon" href="../../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
-        <title>tlr</title>
+        <title>Cli - tlr</title>
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
-        <link rel="stylesheet" href="assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -53,11 +55,11 @@
       
     
     
-      <link rel="stylesheet" href="assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="_styles/mkdocstrings.css">
+      <link rel="stylesheet" href="../../../_styles/mkdocstrings.css">
     
-    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -82,7 +84,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#tlr" class="md-skip">
+        <a href="#tlr.cli" class="md-skip">
           Skip to content
         </a>
       
@@ -98,7 +100,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="." title="tlr" class="md-header__button md-logo" aria-label="tlr" data-md-component="logo">
+    <a href="../../.." title="tlr" class="md-header__button md-logo" aria-label="tlr" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -118,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              tlr
+              Cli
             
           </span>
         </div>
@@ -220,7 +222,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="." title="tlr" class="md-nav__button md-logo" aria-label="tlr" data-md-component="logo">
+    <a href="../../.." title="tlr" class="md-nav__button md-logo" aria-label="tlr" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -247,37 +249,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    tlr
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="." class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
         
   
   
@@ -293,125 +268,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#status" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Status
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#installation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Installation
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#design" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Design
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#project-status" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Project Status
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#contributing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Contributing
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#code-of-conduct" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Code of Conduct
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#open-source-status" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Open Source Status
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#responsible-disclosure" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Responsible Disclosure
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#license" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        License
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -423,7 +279,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api-notes/" class="md-nav__link">
+      <a href="../../../api-notes/" class="md-nav__link">
         
   
   
@@ -450,7 +306,7 @@
   
   
     <li class="md-nav__item">
-      <a href="cassettes/" class="md-nav__link">
+      <a href="../../../cassettes/" class="md-nav__link">
         
   
   
@@ -477,7 +333,7 @@
   
   
     <li class="md-nav__item">
-      <a href="store-schema/" class="md-nav__link">
+      <a href="../../../store-schema/" class="md-nav__link">
         
   
   
@@ -551,7 +407,7 @@
   
   
     <li class="md-nav__item">
-      <a href="docs/CHANGELOG/" class="md-nav__link">
+      <a href="../../../docs/CHANGELOG/" class="md-nav__link">
         
   
   
@@ -579,7 +435,7 @@
   
   
     <li class="md-nav__item">
-      <a href="docs/DEVELOPER_GUIDE/" class="md-nav__link">
+      <a href="../../../docs/DEVELOPER_GUIDE/" class="md-nav__link">
         
   
   
@@ -607,7 +463,7 @@
   
   
     <li class="md-nav__item">
-      <a href="docs/STYLE_GUIDE/" class="md-nav__link">
+      <a href="../../../docs/STYLE_GUIDE/" class="md-nav__link">
         
   
   
@@ -639,18 +495,20 @@
       
   
   
+    
   
   
+  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
           <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
@@ -671,7 +529,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
@@ -686,18 +544,20 @@
                 
   
   
+    
   
   
+  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_1" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_1" checked>
         
           
           <label class="md-nav__link" for="__nav_6_1" id="__nav_6_1_label" tabindex="0">
@@ -718,7 +578,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_1_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_1_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_6_1">
             <span class="md-nav__icon md-icon"></span>
             
@@ -733,10 +593,35 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="reference/tlr/cli/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cli
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -752,6 +637,63 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#tlr.cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cli
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tlr.cli-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Functions:
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions:">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tlr.cli.build_parser" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        build_parser
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -764,7 +706,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/tlr/config/" class="md-nav__link">
+      <a href="../config/" class="md-nav__link">
         
   
   
@@ -792,7 +734,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/tlr/http/" class="md-nav__link">
+      <a href="../http/" class="md-nav__link">
         
   
   
@@ -820,7 +762,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/tlr/secrets/" class="md-nav__link">
+      <a href="../secrets/" class="md-nav__link">
         
   
   
@@ -848,7 +790,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/tlr/store/" class="md-nav__link">
+      <a href="../store/" class="md-nav__link">
         
   
   
@@ -923,7 +865,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/tlr/render/markdown/" class="md-nav__link">
+      <a href="../render/markdown/" class="md-nav__link">
         
   
   
@@ -984,8 +926,6 @@
   
   
   
-    
-  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -994,10 +934,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#status" class="md-nav__link">
+  <a href="#tlr.cli" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Status
+        cli
       
     </span>
   </a>
@@ -1005,90 +945,30 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#installation" class="md-nav__link">
+  <a href="#tlr.cli-functions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Installation
+        Functions:
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions:">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tlr.cli.build_parser" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        build_parser
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#design" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Design
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#project-status" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Project Status
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#contributing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Contributing
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#code-of-conduct" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Code of Conduct
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#open-source-status" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Open Source Status
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#responsible-disclosure" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Responsible Disclosure
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#license" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        License
-      
-    </span>
-  </a>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1112,78 +992,106 @@
   
 
 
-<h1 id="tlr">tlr<a class="headerlink" href="#tlr" title="Permanent link">⚓︎</a></h1>
-<p>tlr, pronounced &ldquo;teller&rdquo;</p>
-<p>Linear and Pylon each know the current state of their own tickets.
-Neither answers the questions a tech
-lead carries into a daily triage meeting, a standup, or a report up the chain: which
-support ticket to
-look at next and whether anyone is already on it, who is over their real capacity once
-on-call, days
-out, meetings, and review load are counted, and whether the milestone will land.</p>
-<p>tlr answers those from the two systems&rsquo; APIs plus a calendar and an on-call roster, in a
-terminal, in
-the few minutes before a meeting starts.
-It is a single-user tool with no server to run.</p>
-<h2 id="status">Status<a class="headerlink" href="#status" title="Permanent link">⚓︎</a></h2>
-<p>A Deno web app and CLI lived here until September 2026.
-Its daily paths never held up well enough to
-use, so it is gone and a Python rebuild with a Textual TUI replaces it.
-Nothing runs yet.</p>
-<ul>
-<li><a href="https://github.com/kyleking/tlr/blob/main/ROADMAP.md">ROADMAP.md</a> has the phases, in
-    order, with
-    what each one has to deliver</li>
-<li><a href="https://github.com/kyleking/tlr/blob/main/DECISIONS.md">DECISIONS.md</a> has every
-    decision, its
-    sources, and what it superseded</li>
-<li><a href="api-notes/">api-notes.md</a> has what Linear, Pylon, Incident.io, and Google Calendar
-    actually do,
-    including the quirks that cost a day each to find</li>
-<li><a href="https://github.com/kyleking/tlr/blob/main/SETUP.md">SETUP.md</a> has every credential and
-    where to get
-    it</li>
-</ul>
-<p>The Deno implementation is readable at commit
-<a href="https://github.com/kyleking/tlr/commit/f16cb07"><code>f16cb07</code></a> if you need to see how
-something worked.</p>
-<h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">⚓︎</a></h2>
-<div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="1 "></span>uv<span class="w"> </span>tool<span class="w"> </span>install<span class="w"> </span>tlr
+  <h1>Cli</h1>
+
+<div class="doc doc-object doc-module">
+
+
+
+<a id="tlr.cli"></a>
+    <div class="doc doc-contents first">
+
+        <p>Argument parsing for the tlr command line.</p>
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+<h2 id="tlr.cli-functions">Functions:<a href="#tlr.cli-functions" class="headerlink" title="Permanent link">⚓︎</a></h2>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="tlr.cli.build_parser" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">build_parser</span>
+
+
+<a href="#tlr.cli.build_parser" class="headerlink" title="Permanent link">⚓︎</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">build_parser</span><span class="p">()</span>
 </code></pre></div>
-<h2 id="design">Design<a class="headerlink" href="#design" title="Permanent link">⚓︎</a></h2>
-<p>Reads come from a local DuckDB file, so opening the tool is instant and refreshing is an
-explicit
-action whose age shows on screen.
-Every outside dependency sits behind an interface with a direct REST
-or GraphQL call, because an MCP dependency does not survive a scheduled run.</p>
-<p>Writes reach Linear or Pylon only after a preview a person confirms in the UI, and never
-from a piped
-command.
-Bulk edits stay with the Linear MCP in Claude Code.</p>
-<p>Nothing specific to one employer (names, labels, customer tiers, thresholds) appears in
-the source.
-It
-lives in a TOML config outside the repo, with a committed sample.</p>
-<h2 id="project-status">Project Status<a class="headerlink" href="#project-status" title="Permanent link">⚓︎</a></h2>
-<p>See the <code>Open Issues</code> and/or the <a href="https://tlr.kyleking.me/docs/CODE_TAG_SUMMARY">CODE_TAG_SUMMARY</a>.
-For release history, see the <a href="https://tlr.kyleking.me/docs/CHANGELOG">CHANGELOG</a>.</p>
-<h2 id="contributing">Contributing<a class="headerlink" href="#contributing" title="Permanent link">⚓︎</a></h2>
-<p>We welcome pull requests! For your pull request to be accepted smoothly, we suggest that
-you first open
-a GitHub issue to discuss your idea.
-For resources on getting started with Open Source, see the
-<a href="https://opensource.guide/how-to-contribute">Open Source Guides</a>.</p>
-<h2 id="code-of-conduct">Code of Conduct<a class="headerlink" href="#code-of-conduct" title="Permanent link">⚓︎</a></h2>
-<p>We follow the <a href="https://www.contributor-covenant.org">Contributor Covenant Code of Conduct</a>.</p>
-<h2 id="open-source-status">Open Source Status<a class="headerlink" href="#open-source-status" title="Permanent link">⚓︎</a></h2>
-<p>We try to reasonably meet most aspects of the &ldquo;OpenSSF scorecard&rdquo; from
-<a href="https://deps.dev/pypi/tlr">Open Source Insights</a></p>
-<h2 id="responsible-disclosure">Responsible Disclosure<a class="headerlink" href="#responsible-disclosure" title="Permanent link">⚓︎</a></h2>
-<p>If you have any security issue to report, contact project maintainers privately.
-You can reach us at
-<a href="mailto:dev.act.kyle@gmail.com">dev.act.kyle@gmail.com</a></p>
-<h2 id="license">License<a class="headerlink" href="#license" title="Permanent link">⚓︎</a></h2>
-<p><a href="https://github.com/kyleking/tlr/blob/main/LICENSE">LICENSE</a></p>
+
+    <div class="doc doc-contents ">
+
+        <p>Build the top-level parser with every subcommand attached.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>tlr/cli.py</code></summary>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="16 "></span><span class="k">def</span><span class="w"> </span><span class="nf">build_parser</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">:</span>
+<span class="linenos" data-linenos="17 "></span><span class="w">    </span><span class="sd">"""Build the top-level parser with every subcommand attached."""</span>
+<span class="linenos" data-linenos="18 "></span>    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+<span class="linenos" data-linenos="19 "></span>        <span class="n">prog</span><span class="o">=</span><span class="n">__pkg_name__</span><span class="p">,</span>
+<span class="linenos" data-linenos="20 "></span>        <span class="n">description</span><span class="o">=</span><span class="s1">'Triage, capacity, and goals for a tech lead, from Linear and Pylon'</span><span class="p">,</span>
+<span class="linenos" data-linenos="21 "></span>    <span class="p">)</span>
+<span class="linenos" data-linenos="22 "></span>    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--version'</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">'version'</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="sa">f</span><span class="s1">'%(prog)s </span><span class="si">{</span><span class="n">__version__</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+<span class="linenos" data-linenos="23 "></span>    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--config'</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s1">'PATH'</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">'config file to read instead of the default XDG path'</span><span class="p">)</span>
+<span class="linenos" data-linenos="24 "></span>    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--db'</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s1">'PATH'</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">'DuckDB file to read instead of the configured one'</span><span class="p">)</span>
+<span class="linenos" data-linenos="25 "></span>    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'-v'</span><span class="p">,</span> <span class="s1">'--verbose'</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">'count'</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">'raise log verbosity (repeatable)'</span><span class="p">)</span>
+<span class="linenos" data-linenos="26 "></span>
+<span class="linenos" data-linenos="27 "></span>    <span class="n">sub</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_subparsers</span><span class="p">(</span><span class="n">dest</span><span class="o">=</span><span class="s1">'command'</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s1">'&lt;command&gt;'</span><span class="p">)</span>
+<span class="linenos" data-linenos="28 "></span>
+<span class="linenos" data-linenos="29 "></span>    <span class="n">refresh</span> <span class="o">=</span> <span class="n">sub</span><span class="o">.</span><span class="n">add_parser</span><span class="p">(</span><span class="s1">'refresh'</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">'fetch from every configured source into the local store'</span><span class="p">)</span>
+<span class="linenos" data-linenos="30 "></span>    <span class="n">refresh</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--source'</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">'append'</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s1">'NAME'</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">'limit to one source (repeatable)'</span><span class="p">)</span>
+<span class="linenos" data-linenos="31 "></span>    <span class="n">refresh</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--dry-run'</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">'store_true'</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">'report what would be fetched and write nothing'</span><span class="p">)</span>
+<span class="linenos" data-linenos="32 "></span>
+<span class="linenos" data-linenos="33 "></span>    <span class="n">capacity</span> <span class="o">=</span> <span class="n">sub</span><span class="o">.</span><span class="n">add_parser</span><span class="p">(</span><span class="s1">'capacity'</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">'points allocated and delivered per person per cycle'</span><span class="p">)</span>
+<span class="linenos" data-linenos="34 "></span>    <span class="n">capacity</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--cycle'</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s1">'N'</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">'cycle number (default: the current one)'</span><span class="p">)</span>
+<span class="linenos" data-linenos="35 "></span>    <span class="n">capacity</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--person'</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">'append'</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s1">'NAME'</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">'limit to one person (repeatable)'</span><span class="p">)</span>
+<span class="linenos" data-linenos="36 "></span>    <span class="n">_add_format</span><span class="p">(</span><span class="n">capacity</span><span class="p">)</span>
+<span class="linenos" data-linenos="37 "></span>
+<span class="linenos" data-linenos="38 "></span>    <span class="n">triage</span> <span class="o">=</span> <span class="n">sub</span><span class="o">.</span><span class="n">add_parser</span><span class="p">(</span><span class="s1">'triage'</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">'one ordered queue across Pylon and Linear'</span><span class="p">)</span>
+<span class="linenos" data-linenos="39 "></span>    <span class="n">triage</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--limit'</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s1">'N'</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">'rows to show (default: 25)'</span><span class="p">)</span>
+<span class="linenos" data-linenos="40 "></span>    <span class="n">triage</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--include-excluded'</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">'store_true'</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">'list rows held out of the ordering'</span><span class="p">)</span>
+<span class="linenos" data-linenos="41 "></span>    <span class="n">_add_format</span><span class="p">(</span><span class="n">triage</span><span class="p">)</span>
+<span class="linenos" data-linenos="42 "></span>
+<span class="linenos" data-linenos="43 "></span>    <span class="n">backlog</span> <span class="o">=</span> <span class="n">sub</span><span class="o">.</span><span class="n">add_parser</span><span class="p">(</span><span class="s1">'backlog'</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">'backlog age, close times, and resolved split'</span><span class="p">)</span>
+<span class="linenos" data-linenos="44 "></span>    <span class="n">_add_format</span><span class="p">(</span><span class="n">backlog</span><span class="p">)</span>
+<span class="linenos" data-linenos="45 "></span>
+<span class="linenos" data-linenos="46 "></span>    <span class="n">config</span> <span class="o">=</span> <span class="n">sub</span><span class="o">.</span><span class="n">add_parser</span><span class="p">(</span><span class="s1">'config'</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">'show or create the config file'</span><span class="p">)</span>
+<span class="linenos" data-linenos="47 "></span>    <span class="n">config</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'action'</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">(</span><span class="s1">'path'</span><span class="p">,</span> <span class="s1">'init'</span><span class="p">,</span> <span class="s1">'show'</span><span class="p">),</span> <span class="n">help</span><span class="o">=</span><span class="s1">'what to do'</span><span class="p">)</span>
+<span class="linenos" data-linenos="48 "></span>
+<span class="linenos" data-linenos="49 "></span>    <span class="n">imports</span> <span class="o">=</span> <span class="n">sub</span><span class="o">.</span><span class="n">add_parser</span><span class="p">(</span><span class="s1">'import-snapshots'</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">'one-time import of the Deno milestone-scope history'</span><span class="p">)</span>
+<span class="linenos" data-linenos="50 "></span>    <span class="n">imports</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'sqlite_path'</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s1">'PATH'</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">'path to the Deno tlr.sqlite file'</span><span class="p">)</span>
+<span class="linenos" data-linenos="51 "></span>    <span class="n">imports</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--dry-run'</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">'store_true'</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">'report what would be imported and write nothing'</span><span class="p">)</span>
+<span class="linenos" data-linenos="52 "></span>
+<span class="linenos" data-linenos="53 "></span>    <span class="k">return</span> <span class="n">parser</span>
+</code></pre></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
 
 
 
@@ -1233,14 +1141,14 @@ You can reach us at
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": ["toc.autohide"], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["toc.autohide"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/tablesort/5.6.0/tablesort.min.js"></script>
       
-        <script src="_javascript/tables.js"></script>
+        <script src="../../../_javascript/tables.js"></script>
       
     
   </body>

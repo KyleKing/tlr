@@ -12,31 +12,31 @@
         <meta name="author" content="Kyle King">
       
       
-        <link rel="canonical" href="https://tlr.kyleking.me/docs/DEVELOPER_GUIDE/">
+        <link rel="canonical" href="https://tlr.kyleking.me/cassettes/">
       
       
-        <link rel="prev" href="../CHANGELOG/">
+        <link rel="prev" href="../api-notes/">
       
       
-        <link rel="next" href="../STYLE_GUIDE/">
+        <link rel="next" href="../store-schema/">
       
       
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
-        <title>Developer Notes - tlr</title>
+        <title>Cassettes - tlr</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -55,11 +55,11 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../_styles/mkdocstrings.css">
+      <link rel="stylesheet" href="../_styles/mkdocstrings.css">
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -84,7 +84,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#developer-notes" class="md-skip">
+        <a href="#cassettes" class="md-skip">
           Skip to content
         </a>
       
@@ -100,7 +100,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="tlr" class="md-header__button md-logo" aria-label="tlr" data-md-component="logo">
+    <a href=".." title="tlr" class="md-header__button md-logo" aria-label="tlr" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -120,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Developer Notes
+              Cassettes
             
           </span>
         </div>
@@ -222,7 +222,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="tlr" class="md-nav__button md-logo" aria-label="tlr" data-md-component="logo">
+    <a href=".." title="tlr" class="md-nav__button md-logo" aria-label="tlr" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -252,7 +252,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href=".." class="md-nav__link">
         
   
   
@@ -279,7 +279,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-notes/" class="md-nav__link">
+      <a href="../api-notes/" class="md-nav__link">
         
   
   
@@ -303,137 +303,6 @@
       
   
   
-  
-  
-    <li class="md-nav__item">
-      <a href="../../cassettes/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Cassettes
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../store-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Store schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-    
-  
-  
-  
-    
-    
-    
-    
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
-        
-          
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Docs
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_5">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Docs
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../CHANGELOG/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    CHANGELOG
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
     
   
   
@@ -453,7 +322,7 @@
   <span class="md-ellipsis">
     
   
-    Developer Notes
+    Cassettes
   
 
     
@@ -471,7 +340,7 @@
   <span class="md-ellipsis">
     
   
-    Developer Notes
+    Cassettes
   
 
     
@@ -497,77 +366,54 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#local-development" class="md-nav__link">
+  <a href="#how-it-stays-safe" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Local Development
+        How it stays safe
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Local Development">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#maintenance" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Maintenance
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#publishing" class="md-nav__link">
+  <a href="#recording-a-new-cassette" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Publishing
+        Recording a new cassette
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Publishing">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#initial-setup" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Initial Setup
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#manual-publishing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Manual Publishing
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#current-status" class="md-nav__link">
+  <a href="#when-the-verifier-rejects-a-field" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Current Status
+        When the verifier rejects a field
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-not-classified-yet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is not classified yet
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#matching-without-matching-on-body" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Matching without matching on body
       
     </span>
   </a>
@@ -581,6 +427,107 @@
     </li>
   
 
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../store-schema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store schema
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Docs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/CHANGELOG/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CHANGELOG
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
               
             
               
@@ -590,7 +537,35 @@
   
   
     <li class="md-nav__item">
-      <a href="../STYLE_GUIDE/" class="md-nav__link">
+      <a href="../docs/DEVELOPER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/STYLE_GUIDE/" class="md-nav__link">
         
   
   
@@ -719,7 +694,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/tlr/cli/" class="md-nav__link">
+      <a href="../reference/tlr/cli/" class="md-nav__link">
         
   
   
@@ -747,7 +722,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/tlr/config/" class="md-nav__link">
+      <a href="../reference/tlr/config/" class="md-nav__link">
         
   
   
@@ -775,7 +750,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/tlr/http/" class="md-nav__link">
+      <a href="../reference/tlr/http/" class="md-nav__link">
         
   
   
@@ -803,7 +778,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/tlr/secrets/" class="md-nav__link">
+      <a href="../reference/tlr/secrets/" class="md-nav__link">
         
   
   
@@ -831,7 +806,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/tlr/store/" class="md-nav__link">
+      <a href="../reference/tlr/store/" class="md-nav__link">
         
   
   
@@ -906,7 +881,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/tlr/render/markdown/" class="md-nav__link">
+      <a href="../reference/tlr/render/markdown/" class="md-nav__link">
         
   
   
@@ -977,77 +952,54 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#local-development" class="md-nav__link">
+  <a href="#how-it-stays-safe" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Local Development
+        How it stays safe
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Local Development">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#maintenance" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Maintenance
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#publishing" class="md-nav__link">
+  <a href="#recording-a-new-cassette" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Publishing
+        Recording a new cassette
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Publishing">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#initial-setup" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Initial Setup
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#manual-publishing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Manual Publishing
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#current-status" class="md-nav__link">
+  <a href="#when-the-verifier-rejects-a-field" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Current Status
+        When the verifier rejects a field
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-not-classified-yet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is not classified yet
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#matching-without-matching-on-body" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Matching without matching on body
       
     </span>
   </a>
@@ -1074,90 +1026,100 @@
   
 
 
-<h1 id="developer-notes">Developer Notes<a class="headerlink" href="#developer-notes" title="Permanent link">⚓︎</a></h1>
-<h2 id="local-development">Local Development<a class="headerlink" href="#local-development" title="Permanent link">⚓︎</a></h2>
-<div class="highlight"><pre><span></span><code><span class="linenos" data-linenos=" 1 "></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/kyleking/tlr.git
-<span class="linenos" data-linenos=" 2 "></span><span class="nb">cd</span><span class="w"> </span>tlr
-<span class="linenos" data-linenos=" 3 "></span>uv<span class="w"> </span>sync<span class="w"> </span>--all-extras
-<span class="linenos" data-linenos=" 4 "></span>
-<span class="linenos" data-linenos=" 5 "></span><span class="c1"># See the available tasks</span>
-<span class="linenos" data-linenos=" 6 "></span>uv<span class="w"> </span>run<span class="w"> </span>calcipy
-<span class="linenos" data-linenos=" 7 "></span><span class="c1"># Or use a local 'run' file (so that 'calcipy' can be extended)</span>
-<span class="linenos" data-linenos=" 8 "></span>./run
-<span class="linenos" data-linenos=" 9 "></span>
-<span class="linenos" data-linenos="10 "></span><span class="c1"># Run the default task list (lint, auto-format, test coverage, etc.)</span>
-<span class="linenos" data-linenos="11 "></span>./run<span class="w"> </span>main
-<span class="linenos" data-linenos="12 "></span>
-<span class="linenos" data-linenos="13 "></span><span class="c1"># Make code changes and run specific tasks as needed:</span>
-<span class="linenos" data-linenos="14 "></span>./run<span class="w"> </span>lint.fix<span class="w"> </span><span class="nb">test</span>
-</code></pre></div>
-<h3 id="maintenance">Maintenance<a class="headerlink" href="#maintenance" title="Permanent link">⚓︎</a></h3>
-<p>Dependency upgrades can be accomplished with:</p>
-<div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="1 "></span>uv<span class="w"> </span>lock<span class="w"> </span>--upgrade
-<span class="linenos" data-linenos="2 "></span>uv<span class="w"> </span>sync<span class="w"> </span>--all-extras
-</code></pre></div>
-<h2 id="publishing">Publishing<a class="headerlink" href="#publishing" title="Permanent link">⚓︎</a></h2>
-<p>Publishing is automated via GitHub Actions using PyPI Trusted Publishing. Tag creation triggers automated publishing.</p>
-<div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="1 "></span>./run<span class="w"> </span>release<span class="w">              </span><span class="c1"># Bumps version, creates tag, pushes → triggers publish</span>
-<span class="linenos" data-linenos="2 "></span>./run<span class="w"> </span>release<span class="w"> </span>--suffix<span class="o">=</span>rc<span class="w">  </span><span class="c1"># For pre-releases</span>
-</code></pre></div>
-<h3 id="initial-setup">Initial Setup<a class="headerlink" href="#initial-setup" title="Permanent link">⚓︎</a></h3>
-<p>One-time setup to enable PyPI Trusted Publishing:</p>
-<p><strong>Configure GitHub Environments</strong></p>
-<p>Repository Settings → Environments:
-- Create <code>testpypi</code> environment (no protection rules)
-- Create <code>pypi</code> environment with &ldquo;Required reviewers&rdquo; enabled</p>
-<p><strong>Register Trusted Publishers</strong></p>
-<p>PyPI: https://pypi.org/manage/project/tlr/settings/publishing/
-- Owner: <code>kyleking</code>
-- Repository: <code>tlr</code>
-- Workflow: <code>publish.yml</code>
-- Environment: <code>pypi</code>
-    - Or environment <code>testpypi</code> (for <a href="https://test.pypi.org/manage/account/publishing">TestPyPI</a>)</p>
-<h3 id="manual-publishing">Manual Publishing<a class="headerlink" href="#manual-publishing" title="Permanent link">⚓︎</a></h3>
-<p>For emergency manual publish:</p>
-<div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="1 "></span><span class="nb">export</span><span class="w"> </span><span class="nv">UV_PUBLISH_TOKEN</span><span class="o">=</span>pypi-...
-<span class="linenos" data-linenos="2 "></span>uv<span class="w"> </span>build
-<span class="linenos" data-linenos="3 "></span>uv<span class="w"> </span>publish
-</code></pre></div>
-<h2 id="current-status">Current Status<a class="headerlink" href="#current-status" title="Permanent link">⚓︎</a></h2>
-<!-- {cts} COVERAGE -->
-<table>
-<thead>
-<tr>
-<th>File</th>
-<th style="text-align: right;">Statements</th>
-<th style="text-align: right;">Missing</th>
-<th style="text-align: right;">Excluded</th>
-<th style="text-align: right;">Coverage</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>tlr/__init__.py</code></td>
-<td style="text-align: right;">4</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">100.0%</td>
-</tr>
-<tr>
-<td><code>tlr/_runtime_type_check_setup.py</code></td>
-<td style="text-align: right;">13</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">37</td>
-<td style="text-align: right;">100.0%</td>
-</tr>
-<tr>
-<td><strong>Totals</strong></td>
-<td style="text-align: right;">17</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">37</td>
-<td style="text-align: right;">100.0%</td>
-</tr>
-</tbody>
-</table>
-<p>Generated on: 2026-09-02</p>
-<!-- {cte} -->
+<h1 id="cassettes">Cassettes<a class="headerlink" href="#cassettes" title="Permanent link">⚓︎</a></h1>
+<p>tlr&rsquo;s adapter tests replay real API responses recorded once against a real Linear and
+Pylon
+workspace, using <a href="https://github.com/kiwicom/pytest-recording">pytest-recording</a> (vcrpy
+under the
+hood).
+A raw response carries customer names, ticket text, roadmap content, emails, and API
+keys,
+and tlr is a public repo, so none of that may ever reach a commit.</p>
+<h2 id="how-it-stays-safe">How it stays safe<a class="headerlink" href="#how-it-stays-safe" title="Permanent link">⚓︎</a></h2>
+<p>Scrubbing happens twice, for two different reasons.</p>
+<p><strong>At record time</strong>, <code>tests/conftest.py</code>&rsquo;s <code>vcr_config</code> fixture wires <code>scrub_request</code> and
+<code>scrub_response</code> (<code>tests/cassette_scrub.py</code>) into vcrpy&rsquo;s <code>before_record_request</code> /
+<code>before_record_response</code> hooks.
+They rewrite the interaction as the cassette is written, so an
+unscrubbed cassette never exists on disk, not even transiently.</p>
+<p><strong>At commit time</strong>, the <code>cassette-scrub</code> pre-commit hook runs
+<code>uv run python -m tests.cassette_scrub</code>, which rescans every committed cassette from
+scratch.
+It does not try to
+scrub anything: it fails the commit on any header or JSON key it does not recognize, any
+Authorization-like header that survived, or any value that looks like a credential or a
+real
+email.
+Unknown always means rejected. This is the actual gate; record-time scrubbing is only
+what keeps a cassette clean by the time it reaches that gate.</p>
+<h2 id="recording-a-new-cassette">Recording a new cassette<a class="headerlink" href="#recording-a-new-cassette" title="Permanent link">⚓︎</a></h2>
+<ol>
+<li>Set the real credential in the environment or keychain per <code>SETUP.md</code>.</li>
+<li>Run the test that needs a fixture:
+    <code>uv run pytest tests/path/to/test_thing.py --record-mode=once</code>.
+    pytest-recording writes the cassette under that test module&rsquo;s <code>cassettes/</code> directory.</li>
+<li>Run <code>uv run prek run --all-files</code> (or just <code>uv run python -m tests.cassette_scrub</code>)
+    before
+    staging the cassette.
+    If it fails, see below.</li>
+<li>Read the generated YAML once. The verifier only proves that no <em>known-sensitive</em> field
+    leaked, so skim the file for anything that surprises you.</li>
+</ol>
+<p>Never hand-edit a recorded cassette to &ldquo;fix&rdquo; a scrub failure.
+Fix the classification instead (see
+below), then re-record so the fix is real.</p>
+<h2 id="when-the-verifier-rejects-a-field">When the verifier rejects a field<a class="headerlink" href="#when-the-verifier-rejects-a-field" title="Permanent link">⚓︎</a></h2>
+<p>The verifier&rsquo;s output names the file, the JSON path (or header name), and why: an
+unclassified
+key, a redacted-class key holding something other than its placeholder, a surviving
+Authorization-shaped header, or a value that matches a credential or real-email pattern.</p>
+<p>An unclassified key means a new field showed up in a response that
+<code>tests/cassette_scrub.py</code>
+has never seen.
+Classify it before it can be committed:</p>
+<ul>
+<li><strong>Structural</strong> (kept verbatim): the field carries no workspace-specific content, e.g. a
+    pagination cursor, a count, an enum, a boolean, a small integer.
+    Add the key name to
+    <code>STRUCTURAL_JSON_KEYS</code>.</li>
+<li><strong>Redacted</strong> (replaced by a stable, shape-preserving placeholder): the field is an id, a
+    name,
+    a timestamp, free text, an email, or a URL.
+    Add the key name to <code>_REDACTED_KEY_CLASS</code>, pointing
+    at whichever placeholder class in <code>REDACTED_PLACEHOLDERS</code> matches its shape (a UUID
+    stays
+    UUID-shaped, an ISO timestamp stays a valid ISO timestamp, an identifier stays
+    <code>TEAM-123</code>-shaped), and re-record so the cassette actually contains the placeholder.</li>
+</ul>
+<p>The same header-name rule applies to <code>STRUCTURAL_HEADERS</code>.
+There is no &ldquo;allow everything under
+this prefix&rdquo; shortcut and no environment variable to bypass the check.
+Classifying an
+unclassified field costs a two-line diff to <code>tests/cassette_scrub.py</code>.</p>
+<h2 id="what-is-not-classified-yet">What is not classified yet<a class="headerlink" href="#what-is-not-classified-yet" title="Permanent link">⚓︎</a></h2>
+<p>Only Linear GraphQL and Pylon REST fields documented in <code>docs/api-notes.md</code> are
+classified today.
+Incident.io, Google Calendar, and Slack fields are added when their first cassette is
+recorded,
+and until then the verifier rejects them by design, including Google Calendar&rsquo;s
+<code>calendars</code>
+object (keyed by calendar id, which is usually an email address).
+A dict whose keys are
+themselves redacted data needs handling a key-name classifier cannot express, and that
+is
+deliberately left unbuilt until a real cassette forces the question.</p>
+<h2 id="matching-without-matching-on-body">Matching without matching on body<a class="headerlink" href="#matching-without-matching-on-body" title="Permanent link">⚓︎</a></h2>
+<p><code>vcr_config</code>&rsquo;s <code>match_on</code> is <code>method, scheme, host, port, path, query</code>, deliberately
+excluding the
+request body.
+Linear&rsquo;s GraphQL endpoint is a single path for every query, and matching on the
+scrubbed body (fixed placeholders in place of every id and timestamp) can&rsquo;t distinguish
+one
+recorded operation from another anyway.
+Keep one interaction per distinct operation in a given
+cassette (pytest-recording already scopes one cassette per test by default) rather than
+relying on
+body matching to disambiguate.</p>
 
 
 
@@ -1207,14 +1169,14 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["toc.autohide"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["toc.autohide"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/tablesort/5.6.0/tablesort.min.js"></script>
       
-        <script src="../../_javascript/tables.js"></script>
+        <script src="../_javascript/tables.js"></script>
       
     
   </body>

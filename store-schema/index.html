@@ -12,31 +12,31 @@
         <meta name="author" content="Kyle King">
       
       
-        <link rel="canonical" href="https://tlr.kyleking.me/docs/DEVELOPER_GUIDE/">
+        <link rel="canonical" href="https://tlr.kyleking.me/store-schema/">
       
       
-        <link rel="prev" href="../CHANGELOG/">
+        <link rel="prev" href="../cassettes/">
       
       
-        <link rel="next" href="../STYLE_GUIDE/">
+        <link rel="next" href="../docs/CHANGELOG/">
       
       
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
-        <title>Developer Notes - tlr</title>
+        <title>Store schema - tlr</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -55,11 +55,11 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../_styles/mkdocstrings.css">
+      <link rel="stylesheet" href="../_styles/mkdocstrings.css">
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -84,7 +84,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#developer-notes" class="md-skip">
+        <a href="#store-schema" class="md-skip">
           Skip to content
         </a>
       
@@ -100,7 +100,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="tlr" class="md-header__button md-logo" aria-label="tlr" data-md-component="logo">
+    <a href=".." title="tlr" class="md-header__button md-logo" aria-label="tlr" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -120,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Developer Notes
+              Store schema
             
           </span>
         </div>
@@ -222,7 +222,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="tlr" class="md-nav__button md-logo" aria-label="tlr" data-md-component="logo">
+    <a href=".." title="tlr" class="md-nav__button md-logo" aria-label="tlr" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -252,7 +252,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href=".." class="md-nav__link">
         
   
   
@@ -279,7 +279,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-notes/" class="md-nav__link">
+      <a href="../api-notes/" class="md-nav__link">
         
   
   
@@ -306,7 +306,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../cassettes/" class="md-nav__link">
+      <a href="../cassettes/" class="md-nav__link">
         
   
   
@@ -330,110 +330,6 @@
       
   
   
-  
-  
-    <li class="md-nav__item">
-      <a href="../../store-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Store schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-    
-  
-  
-  
-    
-    
-    
-    
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
-        
-          
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Docs
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_5">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Docs
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../CHANGELOG/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    CHANGELOG
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
     
   
   
@@ -453,7 +349,7 @@
   <span class="md-ellipsis">
     
   
-    Developer Notes
+    Store schema
   
 
     
@@ -471,7 +367,7 @@
   <span class="md-ellipsis">
     
   
-    Developer Notes
+    Store schema
   
 
     
@@ -497,77 +393,43 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#local-development" class="md-nav__link">
+  <a href="#tables" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Local Development
+        Tables
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Local Development">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#maintenance" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Maintenance
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#publishing" class="md-nav__link">
+  <a href="#provenance-aware-merge" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Publishing
+        Provenance-aware merge
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Publishing">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#initial-setup" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Initial Setup
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#manual-publishing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Manual Publishing
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#current-status" class="md-nav__link">
+  <a href="#why-the-keys-are-shaped-this-way" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Current Status
+        Why the keys are shaped this way
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#migrations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migrations
       
     </span>
   </a>
@@ -581,6 +443,80 @@
     </li>
   
 
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Docs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/CHANGELOG/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CHANGELOG
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
               
             
               
@@ -590,7 +526,35 @@
   
   
     <li class="md-nav__item">
-      <a href="../STYLE_GUIDE/" class="md-nav__link">
+      <a href="../docs/DEVELOPER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/STYLE_GUIDE/" class="md-nav__link">
         
   
   
@@ -719,7 +683,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/tlr/cli/" class="md-nav__link">
+      <a href="../reference/tlr/cli/" class="md-nav__link">
         
   
   
@@ -747,7 +711,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/tlr/config/" class="md-nav__link">
+      <a href="../reference/tlr/config/" class="md-nav__link">
         
   
   
@@ -775,7 +739,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/tlr/http/" class="md-nav__link">
+      <a href="../reference/tlr/http/" class="md-nav__link">
         
   
   
@@ -803,7 +767,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/tlr/secrets/" class="md-nav__link">
+      <a href="../reference/tlr/secrets/" class="md-nav__link">
         
   
   
@@ -831,7 +795,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/tlr/store/" class="md-nav__link">
+      <a href="../reference/tlr/store/" class="md-nav__link">
         
   
   
@@ -906,7 +870,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/tlr/render/markdown/" class="md-nav__link">
+      <a href="../reference/tlr/render/markdown/" class="md-nav__link">
         
   
   
@@ -977,77 +941,43 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#local-development" class="md-nav__link">
+  <a href="#tables" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Local Development
+        Tables
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Local Development">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#maintenance" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Maintenance
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#publishing" class="md-nav__link">
+  <a href="#provenance-aware-merge" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Publishing
+        Provenance-aware merge
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Publishing">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#initial-setup" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Initial Setup
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#manual-publishing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Manual Publishing
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#current-status" class="md-nav__link">
+  <a href="#why-the-keys-are-shaped-this-way" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Current Status
+        Why the keys are shaped this way
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#migrations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migrations
       
     </span>
   </a>
@@ -1074,90 +1004,154 @@
   
 
 
-<h1 id="developer-notes">Developer Notes<a class="headerlink" href="#developer-notes" title="Permanent link">⚓︎</a></h1>
-<h2 id="local-development">Local Development<a class="headerlink" href="#local-development" title="Permanent link">⚓︎</a></h2>
-<div class="highlight"><pre><span></span><code><span class="linenos" data-linenos=" 1 "></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/kyleking/tlr.git
-<span class="linenos" data-linenos=" 2 "></span><span class="nb">cd</span><span class="w"> </span>tlr
-<span class="linenos" data-linenos=" 3 "></span>uv<span class="w"> </span>sync<span class="w"> </span>--all-extras
-<span class="linenos" data-linenos=" 4 "></span>
-<span class="linenos" data-linenos=" 5 "></span><span class="c1"># See the available tasks</span>
-<span class="linenos" data-linenos=" 6 "></span>uv<span class="w"> </span>run<span class="w"> </span>calcipy
-<span class="linenos" data-linenos=" 7 "></span><span class="c1"># Or use a local 'run' file (so that 'calcipy' can be extended)</span>
-<span class="linenos" data-linenos=" 8 "></span>./run
-<span class="linenos" data-linenos=" 9 "></span>
-<span class="linenos" data-linenos="10 "></span><span class="c1"># Run the default task list (lint, auto-format, test coverage, etc.)</span>
-<span class="linenos" data-linenos="11 "></span>./run<span class="w"> </span>main
-<span class="linenos" data-linenos="12 "></span>
-<span class="linenos" data-linenos="13 "></span><span class="c1"># Make code changes and run specific tasks as needed:</span>
-<span class="linenos" data-linenos="14 "></span>./run<span class="w"> </span>lint.fix<span class="w"> </span><span class="nb">test</span>
-</code></pre></div>
-<h3 id="maintenance">Maintenance<a class="headerlink" href="#maintenance" title="Permanent link">⚓︎</a></h3>
-<p>Dependency upgrades can be accomplished with:</p>
-<div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="1 "></span>uv<span class="w"> </span>lock<span class="w"> </span>--upgrade
-<span class="linenos" data-linenos="2 "></span>uv<span class="w"> </span>sync<span class="w"> </span>--all-extras
-</code></pre></div>
-<h2 id="publishing">Publishing<a class="headerlink" href="#publishing" title="Permanent link">⚓︎</a></h2>
-<p>Publishing is automated via GitHub Actions using PyPI Trusted Publishing. Tag creation triggers automated publishing.</p>
-<div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="1 "></span>./run<span class="w"> </span>release<span class="w">              </span><span class="c1"># Bumps version, creates tag, pushes → triggers publish</span>
-<span class="linenos" data-linenos="2 "></span>./run<span class="w"> </span>release<span class="w"> </span>--suffix<span class="o">=</span>rc<span class="w">  </span><span class="c1"># For pre-releases</span>
-</code></pre></div>
-<h3 id="initial-setup">Initial Setup<a class="headerlink" href="#initial-setup" title="Permanent link">⚓︎</a></h3>
-<p>One-time setup to enable PyPI Trusted Publishing:</p>
-<p><strong>Configure GitHub Environments</strong></p>
-<p>Repository Settings → Environments:
-- Create <code>testpypi</code> environment (no protection rules)
-- Create <code>pypi</code> environment with &ldquo;Required reviewers&rdquo; enabled</p>
-<p><strong>Register Trusted Publishers</strong></p>
-<p>PyPI: https://pypi.org/manage/project/tlr/settings/publishing/
-- Owner: <code>kyleking</code>
-- Repository: <code>tlr</code>
-- Workflow: <code>publish.yml</code>
-- Environment: <code>pypi</code>
-    - Or environment <code>testpypi</code> (for <a href="https://test.pypi.org/manage/account/publishing">TestPyPI</a>)</p>
-<h3 id="manual-publishing">Manual Publishing<a class="headerlink" href="#manual-publishing" title="Permanent link">⚓︎</a></h3>
-<p>For emergency manual publish:</p>
-<div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="1 "></span><span class="nb">export</span><span class="w"> </span><span class="nv">UV_PUBLISH_TOKEN</span><span class="o">=</span>pypi-...
-<span class="linenos" data-linenos="2 "></span>uv<span class="w"> </span>build
-<span class="linenos" data-linenos="3 "></span>uv<span class="w"> </span>publish
-</code></pre></div>
-<h2 id="current-status">Current Status<a class="headerlink" href="#current-status" title="Permanent link">⚓︎</a></h2>
-<!-- {cts} COVERAGE -->
+<h1 id="store-schema">Store schema<a class="headerlink" href="#store-schema" title="Permanent link">⚓︎</a></h1>
+<p><code>tlr/store.py</code> holds the local DuckDB file every other phase reads and writes.
+The DDL lives in its <code>_MIGRATIONS</code>. What follows is why each table is keyed the way it
+is,
+and how a refresh touches a row without clobbering a hand correction.</p>
+<h2 id="tables">Tables<a class="headerlink" href="#tables" title="Permanent link">⚓︎</a></h2>
 <table>
 <thead>
 <tr>
-<th>File</th>
-<th style="text-align: right;">Statements</th>
-<th style="text-align: right;">Missing</th>
-<th style="text-align: right;">Excluded</th>
-<th style="text-align: right;">Coverage</th>
+<th>Table</th>
+<th>Key</th>
+<th>Purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>tlr/__init__.py</code></td>
-<td style="text-align: right;">4</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">100.0%</td>
+<td><code>schema_version</code></td>
+<td>(single row)</td>
+<td>Tracks which migrations have run, so an older file upgrades on open</td>
 </tr>
 <tr>
-<td><code>tlr/_runtime_type_check_setup.py</code></td>
-<td style="text-align: right;">13</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">37</td>
-<td style="text-align: right;">100.0%</td>
+<td><code>issues</code></td>
+<td><code>id</code> (Linear UUID)</td>
+<td>Linear issues, merged by provenance so a refresh never overwrites a locked or hand-corrected field</td>
 </tr>
 <tr>
-<td><strong>Totals</strong></td>
-<td style="text-align: right;">17</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">37</td>
-<td style="text-align: right;">100.0%</td>
+<td><code>issue_labels</code></td>
+<td><code>(issue_id, label)</code></td>
+<td>Many-to-many labels, replaced per source per issue on each refresh</td>
+</tr>
+<tr>
+<td><code>issue_relations</code></td>
+<td><code>(issue_id, relation_type, related_identifier)</code></td>
+<td>Relations exactly as Linear reports them: one-directional</td>
+</tr>
+<tr>
+<td><code>cycles</code></td>
+<td><code>(team_key, number)</code></td>
+<td>Cycles, since a number is unique only within one team</td>
+</tr>
+<tr>
+<td><code>allocation_events</code></td>
+<td><code>event_id</code> (append-only)</td>
+<td>The phase 4 ledger: dated events per person, cycle, and issue</td>
+</tr>
+<tr>
+<td><code>pylon_issues</code></td>
+<td><code>id</code> (Pylon UUID)</td>
+<td>Pylon issues plus their link state to a Linear issue</td>
+</tr>
+<tr>
+<td><code>milestone_scope</code></td>
+<td><code>(captured_at, milestone_id, issue_id)</code></td>
+<td>Dated snapshots of which issues sat in which milestone</td>
+</tr>
+<tr>
+<td><code>refresh_runs</code></td>
+<td><code>source</code></td>
+<td>The latest refresh per source: when it ran and what it covered</td>
 </tr>
 </tbody>
 </table>
-<p>Generated on: 2026-09-02</p>
-<!-- {cte} -->
+<h2 id="provenance-aware-merge">Provenance-aware merge<a class="headerlink" href="#provenance-aware-merge" title="Permanent link">⚓︎</a></h2>
+<p><code>issues</code> and <code>pylon_issues</code> are the two tables a scheduled refresh rewrites, and both
+carry
+<code>field_provenance</code> (JSON, column name to the source that last wrote it) and
+<code>locked_fields</code>
+(JSON list) alongside <code>updated_at</code>.
+<code>_upsert_with_provenance</code> (in <code>tlr/store.py</code>) enforces one
+rule per field on every upsert:</p>
+<ul>
+<li>a locked field is never touched, regardless of which source is writing</li>
+<li>otherwise, a field already owned by a different source is left alone, so an automated
+    refresh from <code>linear</code> cannot silently overwrite a value <code>pylon</code> or a person wrote</li>
+<li><code>MANUAL_SOURCE</code> (&lsquo;manual&rsquo;) is the one exception to the second rule: a hand correction
+    may
+    overwrite whatever source owned the field before it, because correcting is the point of
+    a
+    manual write.
+    Locking is still the only way to freeze a value against a <em>later</em> manual edit
+    or a same-source refresh</li>
+</ul>
+<p>A field a source never mentions in its DataFrame is left exactly as it was; only columns
+actually present in the incoming frame participate in the merge for that call.
+This is what
+lets a narrow Pylon-only update (say, just <code>link_status</code>) coexist with the fuller row
+Linear
+already wrote, without either source needing to know the other&rsquo;s columns.</p>
+<p><code>set_locked_fields</code> replaces the whole locked list for one row; there is no partial lock
+or
+unlock helper because freezing a field is a deliberate, whole-value operation done from
+the
+TUI, not something a refresh should ever need to compute.</p>
+<h2 id="why-the-keys-are-shaped-this-way">Why the keys are shaped this way<a class="headerlink" href="#why-the-keys-are-shaped-this-way" title="Permanent link">⚓︎</a></h2>
+<p><code>issues.id</code> is the Linear UUID because a write back to Linear is refused without it;
+<code>identifier</code>
+(<code>DEV-123</code>) is a separate unique-indexed column so lookups by the human-readable id stay
+fast
+without making it the primary key an issue could theoretically outlive (a team transfer
+changes
+the identifier, never the UUID).</p>
+<p><code>cycles</code> is keyed on <code>(team_key, number)</code> because cycle numbers repeat across teams: two
+teams
+can each have a &ldquo;cycle 12&rdquo; with different, overlapping dates.
+Number alone would silently merge
+them.</p>
+<p><code>issue_relations</code> stores exactly what Linear&rsquo;s API returns: a relation appears once, on
+the
+issue that owns it.
+The store never invents the inverse edge; <code>get_issue_relations(symmetrize=True)</code>
+adds it as a read-time convenience, and only for issues already present in <code>issues</code>,
+since a
+related issue outside the fetched scope has no id to construct the mirrored row from.</p>
+<p><code>pylon_issues.link_status</code> is <code>linked</code> / <code>no_link</code> / <code>unknown</code> rather than a nullable
+<code>linear_identifier</code> alone, because &ldquo;Pylon confirmed there is no Linear ticket&rdquo; and &ldquo;tlr
+has not
+looked yet&rdquo; are different facts the triage queue needs to tell apart.</p>
+<p><code>allocation_events</code> and <code>milestone_scope</code> are both append-only.
+The ledger is the source phase 4
+derives every capacity number from (DECISIONS.md: &ldquo;Allocation is a ledger, not a sum of
+open
+estimates&rdquo;), so a bug in a downstream aggregation can be fixed by re-deriving, never by
+trusting
+a mutated summary row.
+Milestone scope is captured the same way because it is the one fact
+Linear&rsquo;s own history does not retroactively provide, which is why the old snapshot job
+existed
+in the first place.</p>
+<p><code>refresh_runs</code> keeps only the latest row per source (not a log) because the TUI&rsquo;s use of
+it is
+&ldquo;how stale is this screen right now&rdquo;, not an audit trail.</p>
+<h2 id="migrations">Migrations<a class="headerlink" href="#migrations" title="Permanent link">⚓︎</a></h2>
+<p><code>SCHEMA_VERSION</code> and <code>_MIGRATIONS</code> in <code>tlr/store.py</code> are the whole mechanism: an ordered
+list of
+<code>(version, statements)</code> tuples, applied in a single pass by <code>connect()</code> against whatever
+version
+the file is already at (0 for a brand new file).
+Adding a table or column later means appending a
+new <code>(version, statements)</code> entry, never editing an already-shipped one.</p>
+<p>Every write that replaces rows (the provenance upserts, the label and relation
+replacements,
+<code>upsert_cycles</code>, <code>record_refresh</code>, and each migration) runs inside <code>_transaction</code>,
+because each
+one deletes before it inserts and DuckDB otherwise autocommits the delete on its own.
+Any new
+write that follows that delete-then-insert shape needs the same wrapper or a crash
+between the
+two statements loses the rows.</p>
 
 
 
@@ -1207,14 +1201,14 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["toc.autohide"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["toc.autohide"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/tablesort/5.6.0/tablesort.min.js"></script>
       
-        <script src="../../_javascript/tables.js"></script>
+        <script src="../_javascript/tables.js"></script>
       
     
   </body>
