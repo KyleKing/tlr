@@ -5,6 +5,8 @@ requires = ["uv_build>=0.9.26,<2.0"]
 [dependency-groups]
 dev = [
   "calcipy[recommended]>=6.0.1",
+  "pytest-recording>=0.13.4",
+  "pytest-xdist>=3.8.0",
 ]
 
 [project]
@@ -18,7 +20,12 @@ classifiers = [
   "Programming Language :: Python :: 3.14",
 ] # https://pypi.org/classifiers/
 dependencies = [
+  "beartype>=0.22.9",
   "corallium>=2.2.0",
+  "duckdb>=1.5.5",
+  "httpx>=0.28.1",
+  "platformdirs>=4.11.7",
+  "polars>=1.44.1",
 ]
 description = "Triage, capacity, and goals for a tech lead, from Linear and Pylon, in a terminal"
 keywords = ["capacity", "linear", "planning", "pylon", "textual", "triage", "tui"]
