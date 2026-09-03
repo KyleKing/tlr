@@ -2156,7 +2156,7 @@ There is no <code>resolved_at</code> on the record: that name
 exists only as a filter attribute, alongside <code>solved_at</code>.
 <code>assignee</code> is <code>null</code> when nobody
 owns the ticket.
-<code>link</code> looks like <code>https://app.usepylon.com/issues?issueNumber=2161</code>, not
+<code>link</code> looks like <code>https://app.usepylon.com/issues?issueNumber=&lt;number&gt;</code>, not
 the <code>/issues/&lt;id&gt;</code> form an earlier note claimed.</p>
 <p><code>time_in_status_seconds</code> breaks time down per status, and
 <code>issue_in_current_state_duration</code>
@@ -2190,18 +2190,18 @@ Discover them with
 <code>name</code>,
 <code>type</code>, <code>domain</code>, <code>tags</code>, <code>custom_fields</code> in the same shape as above, <code>owner</code>, and
 <code>external_ids</code>.</p>
-<p>There is no tier field. This workspace&rsquo;s account custom fields are <code>lifecycle</code> (select:
-prospect, poc, implementation, live, churned, lost, internal_na, partner), <code>products</code>
-(multiselect), two Hubspot revenue fields, and two calendar meeting dates.
+<p>There is no tier field. This workspace&rsquo;s account custom fields are a lifecycle select, a
+products multiselect, two Hubspot revenue fields, and two calendar meeting dates.
+Their
+option values are workspace vocabulary, so they stay out of this repo and in the local
+config.
 So tier ordering in
 the triage queue has no data source until someone picks a field for it, and
 <code>[tiers].account_tier_field</code> names whichever one that turns out to be.
 Left empty, every
 account keeps <code>[tiers].default_tier</code> and the tier ordering rule does nothing.
-<code>lifecycle</code> and
-annual revenue are the two candidates, and choosing between them is a judgment call
-rather
-than a lookup.</p>
+The lifecycle field and annual revenue are the two candidates, and choosing
+between them is a judgment call rather than a lookup.</p>
 <p>A tier set by hand survives every later refresh, because <code>pylon_accounts</code> is
 provenance-tracked and <code>manual</code> outranks <code>pylon</code> on a field.</p>
 <h3 id="pagination">Pagination<a class="headerlink" href="#pagination" title="Permanent link">⚓︎</a></h3>
