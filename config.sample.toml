@@ -5,39 +5,22 @@
 # No table or key is required: whatever you omit takes its default from
 # `tlr/config.py`, which for a list or string is usually empty. The values below
 # are illustrative. An unrecognized key raises an error naming it.
-
-[capacity]
-# Calendar ids checked for out-days and meeting hours.
-calendar_ids = ["alex@example.com", "sam@example.com"]
-# Which calendar events count as meeting hours. "accepted_from_others" counts
-# events organized by someone else that this person accepted.
-meeting_hours_rule = "accepted_from_others"
-# On-call schedule ids (Incident.io) used to deflate capacity for on-call weeks.
-on_call_schedule_ids = ["schedule-primary"]
-
-# Roster: one table per person, with their points per cycle before deflation.
-[[capacity.roster]]
-email = "alex@example.com"
-name = "Alex Doe"
-points_per_cycle = 10
-
-[[capacity.roster]]
-email = "sam@example.com"
-name = "Sam Roe"
-points_per_cycle = 8
+#
+# Table and array order carries meaning here (priority order, tier order, age
+# buckets ascending), so this file is excluded from toml-sort in .pre-commit-config.yaml.
 
 [linear]
+# Team keys to ingest, the "ENG" in ENG-123. Empty means every team in scope.
+team_keys = ["ENG"]
+# Project names or slug ids to ingest. Empty means every project in scope.
+project_names = ["Roadmap"]
+# The workspace's URL key: the segment right after linear.app/ in any workspace link.
+workspace_url_key = "example-workspace"
 # Linear account names or emails that are agents, not humans, so triage can skip a
 # row an agent already owns instead of surfacing it for a person.
 agent_accounts = ["watch-doggo@example.com"]
 # Point values tried when Linear's own estimate scale can't be read from the API.
-estimate_scale = [0, 1, 13, 2, 3, 5, 8]
-# Project names or slug ids to ingest. Empty means every project in scope.
-project_names = ["Roadmap"]
-# Team keys to ingest, the "ENG" in ENG-123. Empty means every team in scope.
-team_keys = ["ENG"]
-# The workspace's URL key: the segment right after linear.app/ in any workspace link.
-workspace_url_key = "example-workspace"
+estimate_scale = [0, 1, 2, 3, 5, 8, 13]
 
 [pylon]
 # Pylon custom field that holds the linked Linear issue identifier.
@@ -46,56 +29,73 @@ linear_ticket_field = "linear_ticket"
 priority_field = "priority"
 # Priority values, most urgent first. Used both to read a ticket's priority and to
 # order the triage queue.
-priority_values = ["high", "low", "normal", "urgent"]
+priority_values = ["urgent", "high", "normal", "low"]
 # Pylon issue statuses that count as waiting on the customer rather than on us.
 waiting_on_customer_statuses = ["waiting_on_customer"]
 
-[sla]
+[tiers]
+# Customer tier names, highest priority first.
+names = ["enterprise", "standard", "free"]
+# Pylon account custom field that holds an account's tier.
+account_tier_field = "tier"
+# Tier assumed for an account with no tier set.
+default_tier = "free"
 
 # Target close time, in days, per Pylon priority value. Missing a priority here
 # means that priority has no SLA target.
 [sla.target_days_by_priority]
-high = 3
-low = 10
-normal = 5
 urgent = 1
+high = 3
+normal = 5
+low = 10
 
 # Optional target close time, in days, per customer tier, applied alongside the
 # priority target. Empty (the default) means tier does not affect the target.
 [sla.target_days_by_tier]
 
-[store]
+[triage]
+# Rules applied in sequence when ranking the triage queue.
+ordering = ["priority", "tier", "age", "sla_distance"]
+
+# Exclusion rules: a row carrying one of these Pylon tags is pulled out of the
+# ordering and listed under its own heading instead. The TOML key is the heading
+# shown in the queue.
+[triage.exclusions]
+feature_request = ["feature-request"]
+config_work = ["config"]
+waiting_on_customer = ["waiting-on-customer"]
 
 [thresholds]
 # Backlog age buckets, in days, for the over-30/60/90-days counts.
 backlog_age_days = [30, 60, 90]
-commitment_accuracy_high = 0.9
+# Days in progress before a ticket is flagged as stuck.
+in_progress_days = 14
 # Commitment accuracy band: a cycle below commitment_accuracy_low under-committed,
 # above commitment_accuracy_high over-committed.
 commitment_accuracy_low = 0.8
-# Days in progress before a ticket is flagged as stuck.
-in_progress_days = 14
+commitment_accuracy_high = 0.9
 
-[tiers]
-# Pylon account custom field that holds an account's tier.
-account_tier_field = "tier"
-# Tier assumed for an account with no tier set.
-default_tier = "free"
-# Customer tier names, highest priority first.
-names = ["enterprise", "free", "standard"]
+[capacity]
+# On-call schedule ids (Incident.io) used to deflate capacity for on-call weeks.
+on_call_schedule_ids = ["schedule-primary"]
+# Calendar ids checked for out-days and meeting hours.
+calendar_ids = ["alex@example.com", "sam@example.com"]
+# Which calendar events count as meeting hours. "accepted_from_others" counts
+# events organized by someone else that this person accepted.
+meeting_hours_rule = "accepted_from_others"
 
-[triage]
-# Rules applied in sequence when ranking the triage queue.
-ordering = ["age", "priority", "sla_distance", "tier"]
+# Roster: one table per person, with their points per cycle before deflation.
+[[capacity.roster]]
+name = "Alex Doe"
+email = "alex@example.com"
+points_per_cycle = 10
 
-# Exclusion rules: a row carrying one of these Pylon tags is pulled out of the
-# ordering and listed under its own heading instead, so it stops competing for
-# attention in the ranked queue. The TOML key is the heading shown in the queue.
-[triage.exclusions]
-config_work = ["config"]
-feature_request = ["feature-request"]
-waiting_on_customer = ["waiting-on-customer"]
+[[capacity.roster]]
+name = "Sam Roe"
+email = "sam@example.com"
+points_per_cycle = 8
 
+[store]
 # DuckDB file path. Unset (the default) resolves under get_data_dir(), the
 # platform's XDG data directory for "tlr" (or $TLR_DATA_DIR when set).
 # database_path = "/path/to/tlr.duckdb"
