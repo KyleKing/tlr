@@ -2,6 +2,9 @@
 
 ### Feat
 
+- import the Deno milestone-scope snapshots
+- **store**: carry Pylon state, tags, and account tiers
+- dispatch the tlr commands through config, the store, and the domain
 - add the Linear GraphQL adapter
 - add the Pylon issue-search adapter
 - compute per-person capacity with unestimated counts beside every total
@@ -94,6 +97,7 @@
 
 ### Fix
 
+- **config**: match Pylon's real field vocabulary
 - point the import check at the real entry point
 - keep the config sample's semantic ordering out of toml-sort
 - resolve issue filter

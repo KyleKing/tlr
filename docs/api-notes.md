@@ -247,12 +247,11 @@ downstream as a mass deletion.
 
 ## Pylon REST
 
-Base `https://api.usepylon.com`. One endpoint carries the whole integration:
-`POST /issues/search`.
-Rate limit is 20 searches a minute, enforced with a sliding 60-second window of call
-timestamps.
-The
-response cache sits outside the limiter so a cache hit costs no quota.
+Base `https://api.usepylon.com`. The endpoints tlr uses are `POST /issues/search`,
+`GET /issue-statuses`, and
+`GET /accounts`.
+`GET /issues`, `GET /issues/{id}`, and `POST /accounts/search` also exist.
+The response cache sits outside the rate limiter so a cache hit costs no quota.
 
 Lookup by tracker link:
 
@@ -308,41 +307,155 @@ The requester filter wants a Pylon contact UUID matching
 An email-shaped value is dropped
 rather than resolved.
 
-Responses shape as
-`{ data: [{ id, number, title, body_html, created_at, link, requester: { id, email } }], pagination, request_id }`.
-`body_html` needs entity decoding and tag stripping, with `<br>`, `</p>`,
-`</div>`, and `</li>` becoming newlines.
+`body_html` needs entity decoding and tag stripping, with `<br>`, `</p>`, `</div>`, and
+`</li>` becoming newlines.
+The record's full shape is below.
 
-### Unverified against a real workspace
+### Statuses and categories
 
-The Deno implementation never exercised these, so `tlr/sources/pylon.py` assumes them
-and the first
-real run is what confirms or breaks each one.
-Fix the adapter, then fix this section.
+`GET /issue-statuses` returns every status this workspace has.
+Each one carries a `value`
+(the slug), a `label`, and a `category`.
+The five categories are Pylon's own vocabulary and
+are stable across workspaces: `new`, `waiting_on_you`, `waiting_on_customer`, `on_hold`,
+and
+`closed`.
+The slugs are not stable, because an admin adds statuses freely.
 
-- **`pagination.cursor`.** The response carries a `pagination` object, but nothing
-    recorded which field
-    inside it continues the page.
-    `_paginate` reads `pagination.cursor` and sends it back as a top-level
-    `cursor`.
-    A wrong name means every fetch silently returns only the first page, which is the
-    failure
-    mode to watch for: no error, just a short answer
-- **`custom_fields` as a slug-keyed container.** Both the tracker link and an account's
-    tier are custom
-    fields, and the recorded response above shows no `custom_fields` key at all.
-    The adapter assumes
-    `custom_fields: {<slug>: <value>}` on an issue record.
-    A different shape reads as
-    `link_status: unknown` for every row rather than raising
-- **No accounts endpoint exists in these notes.** Tier resolution needs one and
-    `POST /accounts/search`
-    was a guess, so it is not implemented: an invented URL in a scheduled run is worse than
-    an absent
-    feature.
-    Until the real endpoint is confirmed, every account resolves to `[tiers].default_tier`,
-    so a
-    triage queue where nobody has a tier is this gap showing, not a config mistake
+This workspace has ten statuses across those five categories, and four of them
+(`closed`, `nar`, `resolved`, `won_t_fix`) sit in the `closed` category.
+So a query that
+excludes the slug `closed` still returns closed tickets, which I confirmed by running
+one:
+it came back full of `nar` rows.
+Read the category for every open, closed, or
+waiting-on-customer decision, and treat the slug as display text.
+
+`state_category` is stored on each row for exactly this reason, and an unmapped slug
+stores
+`NULL` rather than a guess.
+
+### The issue record
+
+A real record carries `id`, `number`, `title`, `body_html`, `created_at`, `updated_at`,
+`link`, `state`, `tags`, `custom_fields`, `source`, `type`, `is_issue_group`, `account`,
+`assignee`, `requester`, `team`, `resolution_time`, `resolution_seconds`,
+`business_hours_resolution_seconds`, `first_response_time`, `latest_message_time`,
+`time_in_status_seconds`, `business_hours_time_in_status_seconds`, `number_of_touches`,
+`attachment_urls`, `customer_portal_visible`, `author_unverified`, and
+`workspace_email`.
+
+`resolution_time` is the close timestamp.
+There is no `resolved_at` on the record: that name
+exists only as a filter attribute, alongside `solved_at`.
+`assignee` is `null` when nobody
+owns the ticket.
+`link` looks like `https://app.usepylon.com/issues?issueNumber=2161`, not
+the `/issues/<id>` form an earlier note claimed.
+
+`time_in_status_seconds` breaks time down per status, and
+`issue_in_current_state_duration`
+exists as a filter attribute.
+tlr stores neither, which is why the backlog metric counts days
+since creation rather than days in the current state.
+
+### Custom fields
+
+`custom_fields` is keyed by slug, and each value is an object rather than a scalar:
+
+```text
+"custom_fields": {
+  "priority": {"value": "low", "interpreted_value": "Low"},
+  "question_type": {"value": "", "values": ["no_action_required"], "interpreted_values": ["No Action Required"]}
+}
+```
+
+Single-valued fields use `value`, multiselects use `values`, and the `interpreted_*`
+variants
+carry the human label.
+Reading the container as `{<slug>: <scalar>}` yields a dict where a
+string belongs, so a linked ticket looks linked while its identifier is unusable.
+An entry
+present in an unexpected shape resolves to `link_status: unknown`, because a confident
+`no_link` on a shape nobody has seen is the worse answer.
+
+This workspace's issue fields include `linear_ticket` (text), `priority` (select, with
+the
+options `urgent`, `high`, `medium`, `low`), `question_type` (multiselect, with `bug`,
+`feature_request`, `user_error`, `general_support`, `no_action_required`, and
+`admin_request`), `due_date`, and `article_status`.
+Discover them with
+`GET /custom-fields?object_type=issue`.
+
+### Accounts and tiers
+
+`GET /accounts` and `POST /accounts/search` both exist, and an account carries `id`,
+`name`,
+`type`, `domain`, `tags`, `custom_fields` in the same shape as above, `owner`, and
+`external_ids`.
+
+There is no tier field. This workspace's account custom fields are `lifecycle` (select:
+prospect, poc, implementation, live, churned, lost, internal_na, partner), `products`
+(multiselect), two Hubspot revenue fields, and two calendar meeting dates.
+So tier ordering in
+the triage queue has no data source until someone picks a field for it, and
+`[tiers].account_tier_field` names whichever one that turns out to be.
+Left empty, every
+account keeps `[tiers].default_tier` and the tier ordering rule does nothing.
+`lifecycle` and
+annual revenue are the two candidates, and choosing between them is a judgment call
+rather
+than a lookup.
+
+A tier set by hand survives every later refresh, because `pylon_accounts` is
+provenance-tracked and `manual` outranks `pylon` on a field.
+
+### Pagination
+
+Every list and search response wraps its payload the same way:
+
+```json
+{
+  "data": [],
+  "pagination": {
+    "cursor": "string",
+    "has_next_page": true
+  },
+  "request_id": "string"
+}
+```
+
+The cursor goes back as a **query parameter** (`?cursor=<value>`), not as a field in the
+request body, and `has_next_page` says whether to ask again.
+Sending the cursor in the body
+returns page one every time, with no error to notice.
+
+### Rate limiting
+
+The documented limit covers issue searches: 20 a minute, enforced with a sliding
+60-second
+window of call timestamps.
+tlr passes `POST` searches through that window and lets `GET`
+requests past it, because no published limit covers them.
+If a `GET` starts returning 429 the
+shared retry policy already honors `Retry-After`, so the failure degrades into slowness
+rather than an error, and that is the signal to widen the limiter.
+
+### Still unverified
+
+- Whether `GET` endpoints share the search quota, as above
+- Whether `POST /issues/search` accepts the cursor as a query parameter the same way the
+    documented `GET` list endpoints do.
+    The envelope is shared, so it should, and a search that
+    never advances past page one is how a wrong answer would show up
+- The AI-agent filter attributes (`issue_ai_agent_has_resolved`, `issue_ai_agent_id`, and
+    about a dozen more) appear in the filter vocabulary but did not appear on the record I
+    read,
+    which had no agent involvement.
+    They are the native answer to splitting resolved tickets by
+    human against agent, and tlr's configured-id list is the stopgap until their record
+    shape is
+    known
 
 ## Incident.io
 

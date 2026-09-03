@@ -75,20 +75,24 @@ uv publish
 | `tlr/__main__.py`                  | 17         | 5       | 0        | 66.7%    |
 | `tlr/_runtime_type_check_setup.py` | 13         | 0       | 37       | 100.0%   |
 | `tlr/cli.py`                       | 32         | 0       | 0        | 100.0%   |
-| `tlr/config.py`                    | 181        | 13      | 0        | 89.4%    |
+| `tlr/config.py`                    | 184        | 13      | 0        | 89.9%    |
 | `tlr/domain/__init__.py`           | 0          | 0       | 0        | 100.0%   |
+| `tlr/domain/backlog.py`            | 56         | 1       | 0        | 96.8%    |
 | `tlr/domain/capacity.py`           | 43         | 0       | 0        | 100.0%   |
+| `tlr/domain/triage.py`             | 72         | 2       | 0        | 95.3%    |
 | `tlr/http.py`                      | 61         | 3       | 0        | 94.8%    |
+| `tlr/imports/__init__.py`          | 0          | 0       | 0        | 100.0%   |
+| `tlr/imports/snapshots.py`         | 80         | 3       | 0        | 95.0%    |
 | `tlr/render/__init__.py`           | 0          | 0       | 0        | 100.0%   |
 | `tlr/render/json.py`               | 15         | 0       | 0        | 100.0%   |
 | `tlr/render/markdown.py`           | 22         | 1       | 0        | 92.9%    |
 | `tlr/secrets.py`                   | 46         | 0       | 1        | 100.0%   |
-| `tlr/services.py`                  | 127        | 41      | 0        | 64.8%    |
+| `tlr/services.py`                  | 173        | 49      | 0        | 68.4%    |
 | `tlr/sources/__init__.py`          | 0          | 0       | 0        | 100.0%   |
 | `tlr/sources/linear.py`            | 115        | 0       | 0        | 100.0%   |
-| `tlr/sources/pylon.py`             | 88         | 3       | 0        | 92.5%    |
-| `tlr/store.py`                     | 217        | 11      | 0        | 92.1%    |
-| **Totals**                         | 981        | 77      | 38       | 89.6%    |
+| `tlr/sources/pylon.py`             | 139        | 2       | 0        | 96.3%    |
+| `tlr/store.py`                     | 241        | 12      | 0        | 92.2%    |
+| **Totals**                         | 1313       | 91      | 38       | 90.9%    |
 
 Generated on: 2026-09-02
 <!-- {cte} -->
