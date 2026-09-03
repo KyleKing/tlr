@@ -63,7 +63,7 @@ and keeping every real ticket out of the repo.
 | Web app, Vento templates, e2e suite | Drop                  | TUI replaces it                                               |
 | Balance affinities, hardcoded names | Drop                  | Employer-specific in a public repo                            |
 | Hosted deployment plan              | Drop                  | Single-user TUI has nothing to host                           |
-| Slidev theme and `deno task deck`   | Keep as is            | Unrelated to the rebuild, used for talks                      |
+| Slidev theme and `deno task deck`   | Drop                  | Moved out of tlr; the rebuild has no deck path                |
 
 ## Phases
 
@@ -72,8 +72,10 @@ Each phase ends with something I use in a real meeting that week. A phase that d
 ### 0. Cut the docs and freeze the Deno app (this change)
 
 DECISIONS.md replaces `adr/`, the plan and notes files are gone, and this file carries everything open.
-The Deno code stays on `main` untouched until phase 2 replaces its snapshot job, because that job is the
-only thing capturing milestone scope over time today.
+The Deno code, the Slidev theme, and the app-template scaffolding are deleted, and what the Deno app
+knew about each API is written down in [docs/api-notes.md](docs/api-notes.md). The hourly snapshot
+LaunchAgent is unloaded, so nothing captures milestone scope until phase 2 ingests it. The 1.6 GB of
+snapshot history it already wrote stays on disk under `web/data/`, and phase 2 imports it once.
 
 ### 1. A Python core and a CLI that agents can drive
 

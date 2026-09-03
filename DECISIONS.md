@@ -112,6 +112,14 @@ is unsettled; the allocation ledger above is where it lands.
 flight, and no grouping tlr has (milestone, cycle, project, chain, assignee) expresses it. Where a
 stream is defined is the open question. Nothing gets built against it until that is answered.
 
+**Delete rather than freeze** (2026-09). In the context of a Deno app that phase 0 planned to leave
+on `main` until phase 2 replaced its snapshot job, facing a repo where every agent and every lint config
+would carry a dead implementation, we chose to delete the Deno code, the Slidev theme, and the
+app-template scaffolding in one change and write the API knowledge down in `docs/api-notes.md`, over
+freezing it in place, to get a tree that only holds what the rebuild uses, accepting that milestone
+scope goes uncaptured until phase 2 ingests it and that reading the old implementation means checking
+out `f16cb07`.
+
 ## Superseded
 
 **Deno and TypeScript over Python** (2026-07, superseded 2026-09 by the Python rebuild). Chosen so

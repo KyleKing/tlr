@@ -1,177 +1,37 @@
-# TLR - Tech Lead Reporter
+# tlr
 
-TLR, pronounced "Teller"
+tlr, pronounced "teller"
 
-Linear tracks the current state of every issue. It does not tell you how the plan moved since last
-week, whether a milestone will land on its target date, who is overloaded next cycle once on-call and
-time off are counted, or which ticket descriptions read as AI slop. tlr answers those from the same
-data. It keeps a local snapshot history so it can diff the plan over time, models per-person capacity
-against the dependency graph, and gives you a reviewed, deterministic path for batch edits so AI-made
-changes and sloppy text do not reach a wider audience unchecked.
+Linear and Pylon each know the current state of their own tickets. Neither answers the questions a tech
+lead carries into a daily triage meeting, a standup, or a report up the chain: which support ticket to
+look at next and whether anyone is already on it, who is over their real capacity once on-call, days
+out, meetings, and review load are counted, and whether the milestone will land.
 
-One Deno/TypeScript core owns every read, the snapshot store, and the change model. A vanilla web app
-and a CLI sit on top, so neither talks to Linear on its own terms. This Deno app is frozen: a Python
-rebuild with a terminal UI replaces it, and [ROADMAP.md](ROADMAP.md) says why and in what order.
-[DECISIONS.md](DECISIONS.md) records each decision, its sources, and what it superseded, and [AGENTS.md](AGENTS.md) is where to start.
+tlr answers those from the two systems' APIs plus a calendar and an on-call roster, in a terminal, in
+the few minutes before a meeting starts. It is a single-user tool with no server to run.
 
-## What it does beyond Linear
+## State
 
-- Plan-level diff over time, the one thing Linear structurally cannot show, because its history is
-  per-issue and never milestone-scope-over-time. tlr snapshots project state locally and diffs two
-  captures
-- Capacity forecast per person per cycle, deflated for on-call weeks (Incident.io) and days out of
-  office (Google Calendar), with per-person velocity from past-cycle throughput
-- Dependency waves and chain risk from the blocking graph: a chain runs one ticket at a time, so its
-  points are charged to the people who own it and compared against the time left before the milestone
-  it is aimed at
-- Milestone slip forecast, a realistic landing date against the target from remaining scope and team
-  throughput, always labeled a forecast and never a real date
-- Balance proposal, a deterministic assignee-and-cycle plan for unscheduled work under a per-person
-  point ceiling (deflated for on-call and OOO), keeping a dependency chain with one owner and reporting
-  which milestones the estimates say will land late. Reviewable and applicable from the Balance page
-- Weekly-update narrative (shipped, moved, at risk) generated from a plan-level diff
-- Weekly standup roll-up: what the cycle closed against what it committed, how much of the cycle was
-  scope carried in rather than new work, which tickets have been copied between cycles enough times to
-  stop counting as planned, and whether next cycle's commitment fits demonstrated throughput once time
-  off is subtracted. Hop counts come from Linear's own issue history, so they are correct on the first
-  run rather than accumulating over weeks of snapshots
-- Slop scan of ticket text for AI tells (dashes, stock phrases, checklists, length), with a review
-  queue for recent edits and a way to mark each one reviewed
-- Review-and-fix loop for bulk AI changes: the Review page groups every change to a ticket, lets you
-  clear each as reviewed, and edits a ticket in place (title, description, estimate, priority, milestone,
-  status, cycle, assignee). It previews the change first (a dry run), then writes it to Linear on
-  confirm. That is the only path tlr has to Linear, and it only runs from the UI, because bulk edits
-  already go through the Linear MCP in Claude Code and tlr's job is to catch and fix what they got wrong
+A Deno web app and CLI lived here until September 2026. Its daily paths never held up well enough to
+use, so it is gone and a Python rebuild with a Textual TUI replaces it. Nothing in this repo runs yet.
 
-## The board
+- [ROADMAP.md](ROADMAP.md) has the phases, in order, with what each one has to deliver
+- [DECISIONS.md](DECISIONS.md) has every decision, its sources, and what it superseded
+- [docs/api-notes.md](docs/api-notes.md) has what Linear, Pylon, Incident.io, and Google Calendar
+  actually do, including the quirks that cost a day each to find
+- [SETUP.md](SETUP.md) has every credential and where to get it
 
-Capacity heat per person against cycles and milestones, with slop, chain-risk, and missing-data
-flags. Milestone headers carry a slip marker and move the detail to the hover.
+The Deno implementation is readable at commit
+[`f16cb07`](https://github.com/kyleking/tlr/commit/f16cb07) if you need to see how something worked.
 
-![The planning board](docs/images/board.png)
+## Design
 
-Changes steps through snapshot history by capture or by day and writes the weekly update.
+Read paths come from a local DuckDB file, so opening the tool is instant and refreshing is an explicit
+action whose age shows on screen. Every outside dependency sits behind an interface with a direct REST
+or GraphQL call, because an MCP dependency does not survive a scheduled run.
 
-![The changes page](docs/images/changes.png)
+Writes reach Linear or Pylon only after a preview a person confirms in the UI, and never from a piped
+command. Bulk edits stay with the Linear MCP in Claude Code.
 
-Review runs from your last review to the newest capture, groups every change to a ticket into one unit,
-and lets you mark it reviewed. Editing a ticket opens a modal (title, description, estimate, priority,
-milestone, status, cycle, assignee) whose right column shows what the edit costs: the owner's load in
-the target cycle before and after, any milestone whose forecast landing moves, blockers and blocked
-work with the chain they sit in, and a slop scan of the rewritten description. Preview is a dry run, so nothing reaches Linear
-until you confirm.
-
-![The review page](docs/images/review.png)
-
-Roadmap puts every ticket on one pannable plane: time across, dependency depth down, with edges between
-blockers. Below the filters, Dependency chains lists each connected group worst first, with the points on
-its critical path and whether its owners can finish before the milestone it is aimed at.
-
-![The roadmap page](docs/images/roadmap.png)
-
-Balance proposes an owner and a cycle for every unscheduled ticket, under each person's own capacity
-after on-call and time off. Untick anything you disagree with, preview it as a dry run, then apply.
-
-![The balance page](docs/images/balance.png)
-
-Writes run in one of two modes, chosen at launch. Live mode (the default) uses your real workspace key.
-Demo mode (`TLR_DEMO=1`) points every write at a free/test workspace and shows a banner, so you can try
-edits without touching real tickets. See [SETUP.md](SETUP.md) for storing each key in the keychain.
-
-Settings holds appearance, capacity, roster, integrations, and credentials on its own page.
-
-![The settings page](docs/images/settings.png)
-
-Screenshots come from the end-to-end suite against seed data. They refresh only on demand, so they do
-not churn on every run. Regenerate them after a UI change with `deno task screenshots`.
-
-## Setup
-
-```sh
-mise install
-deno install
-hk install
-```
-
-`mise install` pins Deno, [hk](https://hk.jdx.dev) (git hooks), and [dprint](https://dprint.dev)
-(JSON/Markdown/TOML formatting) to this repo's versions. `hk install` wires `hk.pkl`'s `pre-commit`
-hook into git so fmt/lint/test run automatically.
-
-See [SETUP.md](SETUP.md) for the credentials (Linear, Incident.io, Google Calendar) the data-refresh
-scripts need. To run everything offline without a Linear key, `deno task seed` writes two dated
-synthetic snapshots and registers a demo project, which is also what the tests use.
-
-## Usage
-
-The web app, at `localhost:8000`, has six pages behind a shared nav: Board (capacity and
-dependencies), Changes (the weekly update), Review (recent edits), Roadmap (the dependency plane),
-Balance (proposed owners and cycles), and Settings.
-
-```sh
-deno task dev              # serve the web app at localhost:8000
-deno task seed             # write synthetic snapshots + a demo project into web/data (no Linear key)
-deno task issues "Name"    # refresh project / cycles / milestones / issues from Linear
-deno task issues --team DEV # every issue on a team, including work on no project, into team-dev.json
-deno task capacity         # refresh on-call / out-days / velocity into web/data/cpu.json
-deno task roster           # resolve assignee names to emails from Linear
-deno task gcal:freebusy    # spike: read teammates' free/busy from Google Calendar
-```
-
-### CLI
-
-`deno task cli` is the read-and-preview surface for Claude Code (or a person) to pull facts Linear does
-not aggregate, before making a batch edit. Every command prints JSON (SVG for `export`), so it pipes
-cleanly.
-
-```sh
-deno task cli scan     --project seed-b.json          # slop score per issue, or --text "<t>"
-deno task cli capacity --project seed-b.json          # load vs capacity per person per cycle
-deno task cli standup  --project seed-b.json [--cycle 52] [--out "Ada,Grace"]  # weekly roll-up: closed, carry-in, cycle-hops, next-cycle fit
-deno task cli balance  --project seed-b.json --weekly 14 --start 49 --end 54 --lead 8  # propose assignee+cycle, with milestone deadline risk
-deno task cli timeline --project seed-b.json          # dependency waves and chain risks
-deno task cli diff     --a seed-a.json --b seed-b.json # plan-level change between two snapshots
-deno task cli report   --a seed-a.json --b seed-b.json # weekly-update narrative from a diff
-deno task cli forecast --project seed-b.json [--weekly 25]  # realistic landing date per milestone (--weekly overrides throughput)
-deno task cli review   --a seed-a.json --b seed-b.json # what changed worth a look since last review
-deno task cli plan     --project seed-b.json --text "move SEED-105 to M2"  # guidance -> ops, preview diff
-deno task cli snapshot --project seed-b.json          # capture a snapshot into the local store
-deno task cli export   --project seed-b.json          # SVG of the board (or --timeline)
-```
-
-The CLI reads and previews only; it never writes to Linear (`plan` shows the ops and the resulting diff
-but applies nothing). Writes run from the Review page. There is no MCP server by design, and none is
-planned: bulk edits already go through the Linear MCP in Claude Code, so a tlr write command would only
-duplicate it. If tlr is ever hosted, the CLI can gain a mode that calls the hosted API instead of
-reading local files, reusing the same handlers.
-
-## Development
-
-```sh
-deno task test            # run unit tests
-deno task test:e2e        # run the end-to-end suite (seeds data, no Linear key)
-deno task screenshots     # regenerate the README screenshots on demand
-deno task fmt             # format *.ts/*.js
-deno task lint            # lint *.ts/*.js
-deno task check           # type-check
-hk run pre-commit --all   # everything the pre-commit hook runs, on the whole repo
-```
-
-Unit and VCR tests cover the ingest path, so real Linear data lands in the right shape. The
-end-to-end suite runs against seed data with no live connection, so it checks that the interactions
-work (a refresh would fire, an edit would call the API) rather than re-testing the data format.
-
-## Architecture
-
-```
-src/              the core: seed (data contract), snapshot store, diff, review, ops, plan,
-                  linear_write (the one write adapter), report, forecast, export, and
-                  commands/ (scan, capacity, balance, timeline)
-scripts/          data-refresh and dev-server scripts (issues, capacity, roster, serve, seed, cli)
-web/              the app: app.js (board), changes.js, review.js, style.css
-web/lib/          pure logic (planning.js, capacity.js), imported by both the browser and Deno tests
-web/templates/    Vento page and layout templates rendered by the server
-tests/            Deno unit tests plus tests/e2e Playwright smoke tests
-presentations/    the Slidev theme and deck template for internal decision talks
-```
-
-Decisions and their reasoning are in [DECISIONS.md](DECISIONS.md).
+Nothing specific to one employer (names, labels, customer tiers, thresholds) appears in the source. It
+lives in a TOML config outside the repo, with a committed sample.
