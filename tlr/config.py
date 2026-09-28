@@ -28,6 +28,10 @@ class LinearConfig:
     workspace_url_key: str = ''
     agent_accounts: list[str] = field(default_factory=list)
     estimate_scale: list[float] = field(default_factory=lambda: [0, 1, 2, 3, 5, 8, 13])
+    closed_like_state_names: list[str] = field(default_factory=list)
+    """Status names (e.g. "Duplicate") treated as closed for open counts, alongside completed/canceled."""
+    bot_label: str = ''
+    """Label marking a bot-filed issue, reported as its own snapshot row and excluded from the human count."""
 
 
 @dataclass(slots=True)

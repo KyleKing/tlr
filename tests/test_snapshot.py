@@ -18,8 +18,10 @@ _LINEAR_DEFAULTS = {
     'identifier': 'DEV-1',
     'title': 'Fix the widget',
     'created_at': NOW - timedelta(days=1),
+    'archived_at': None,
     'completed_at': None,
     'canceled_at': None,
+    'state_name': 'In Progress',
     'priority': 2,
     'assignee_name': 'Ada Example',
 }
@@ -48,8 +50,10 @@ def _linear_issues(*rows: dict[str, object]) -> pl.DataFrame:
             'identifier': pl.Utf8,
             'title': pl.Utf8,
             'created_at': pl.Datetime('us'),
+            'archived_at': pl.Datetime('us'),
             'completed_at': pl.Datetime('us'),
             'canceled_at': pl.Datetime('us'),
+            'state_name': pl.Utf8,
             'priority': pl.Int64,
             'assignee_name': pl.Utf8,
         },
@@ -116,6 +120,41 @@ def test_linear_priority_breakdown_reconstructs_open_count_and_delta():
     assert urgent['open_count'] == _EXPECTED_URGENT_OPEN_COUNT
     assert urgent['delta'] == 1
     assert result['priority'].to_list() == snapshot.LINEAR_PRIORITY_ORDER
+
+
+@pytest.mark.parametrize(
+    ('overrides', 'expected_urgent_open'),
+    [
+        ({'archived_at': NOW - timedelta(days=1)}, 0),
+        ({'state_name': 'Duplicate'}, 0),
+    ],
+    ids=['archived-is-excluded', 'closed-like-state-is-excluded'],
+)
+def test_linear_priority_breakdown_excludes_archived_and_closed_like_states(overrides, expected_urgent_open):
+    issue = _linear_issue(priority=1, **overrides)
+    issues = _linear_issues(issue)
+
+    result = snapshot.linear_priority_breakdown(
+        issues,
+        now=NOW,
+        previous_at=NOW - timedelta(days=7),
+        closed_like_state_names=['Duplicate'],
+    )
+
+    urgent = result.filter(pl.col('priority') == 'Urgent').to_dicts()[0]
+    assert urgent['open_count'] == expected_urgent_open
+
+
+def test_linear_bot_filed_split_separates_the_bot_label_from_every_other_open_issue():
+    bot_issue = _linear_issue(id='bot', priority=1)
+    human_issue = _linear_issue(id='human', identifier='DEV-2', priority=1)
+    issues = _linear_issues(bot_issue, human_issue)
+    issue_labels = pl.DataFrame({'issue_id': ['bot'], 'label': ['watch-doggo:maintained']})
+
+    result = snapshot.linear_bot_filed_split(issues, issue_labels, bot_label='watch-doggo:maintained', now=NOW)
+
+    counts = dict(zip(result['category'].to_list(), result['open_count'].to_list(), strict=True))
+    assert counts == {'bot-filed': 1, 'human': 1}
 
 
 def test_linear_created_closed_counts_within_window():
@@ -344,7 +383,9 @@ def test_build_snapshot_sections_covers_every_documented_heading():
 
     headings = [title for title, _ in sections]
     assert headings == [
+        'Snapshot',
         'Linear: open by priority',
+        'Linear: bot-filed vs human, open now',
         'Linear: created/closed this period',
         'Linear: untracked',
         'Linear: oldest open by priority',

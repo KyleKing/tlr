@@ -75,11 +75,11 @@ uv publish
 | `tlr/__main__.py`                  | 17         | 5       | 0        | 66.7%    |
 | `tlr/_runtime_type_check_setup.py` | 13         | 0       | 37       | 100.0%   |
 | `tlr/cli.py`                       | 36         | 0       | 0        | 100.0%   |
-| `tlr/config.py`                    | 189        | 13      | 0        | 90.1%    |
+| `tlr/config.py`                    | 193        | 13      | 0        | 90.3%    |
 | `tlr/domain/__init__.py`           | 0          | 0       | 0        | 100.0%   |
 | `tlr/domain/backlog.py`            | 56         | 1       | 0        | 96.8%    |
 | `tlr/domain/capacity.py`           | 43         | 0       | 0        | 100.0%   |
-| `tlr/domain/snapshot.py`           | 136        | 2       | 0        | 97.4%    |
+| `tlr/domain/snapshot.py`           | 151        | 2       | 0        | 97.6%    |
 | `tlr/domain/triage.py`             | 72         | 2       | 0        | 95.3%    |
 | `tlr/http.py`                      | 61         | 3       | 0        | 94.8%    |
 | `tlr/imports/__init__.py`          | 0          | 0       | 0        | 100.0%   |
@@ -94,7 +94,7 @@ uv publish
 | `tlr/sources/pylon.py`             | 139        | 2       | 0        | 96.3%    |
 | `tlr/sources/sentry.py`            | 64         | 1       | 0        | 97.2%    |
 | `tlr/store.py`                     | 248        | 12      | 0        | 92.4%    |
-| **Totals**                         | 1560       | 101     | 38       | 91.5%    |
+| **Totals**                         | 1579       | 101     | 38       | 91.5%    |
 
 Generated on: 2026-09-28
 <!-- {cte} -->

@@ -19,6 +19,7 @@ What the period-over-period delta can and cannot reconstruct:
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
 from typing import Any, Final
@@ -53,6 +54,7 @@ _OVER_SLA_SCHEMA: dict[str, Any] = {
     'sla_target_days': pl.Int64,
 }
 _NOTE_SCHEMA: dict[str, Any] = {'note': pl.Utf8}
+_BOT_SPLIT_SCHEMA: dict[str, Any] = {'category': pl.Utf8, 'open_count': pl.Int64}
 
 NOT_COMPUTED_NOTE = pl.DataFrame(
     {
@@ -112,11 +114,20 @@ def period_window(period: str, as_of: datetime) -> PeriodWindow:
     )
 
 
-def _linear_open_at(issues: pl.DataFrame, at: datetime) -> pl.DataFrame:
+def _linear_open_at(issues: pl.DataFrame, at: datetime, closed_like_state_names: Sequence[str] = ()) -> pl.DataFrame:
+    """Issues open at `at`: created, not archived, not completed/canceled, and not in a closed-like state.
+
+    Archived is excluded because Linear archives issues out of the default view independent of
+    `completedAt`/`canceledAt`; an archived backlog issue with neither timestamp set otherwise reads
+    as open forever. `closed_like_state_names` covers a workspace state (e.g. a literal "Duplicate"
+    status) whose type does not set either timestamp.
+    """
     return issues.filter(
         (pl.col('created_at') <= at)
+        & pl.col('archived_at').is_null()
         & (pl.col('completed_at').is_null() | (pl.col('completed_at') > at))
-        & (pl.col('canceled_at').is_null() | (pl.col('canceled_at') > at)),
+        & (pl.col('canceled_at').is_null() | (pl.col('canceled_at') > at))
+        & ~pl.col('state_name').is_in(list(closed_like_state_names)),
     )
 
 
@@ -147,10 +158,20 @@ def _priority_breakdown(
     )
 
 
-def linear_priority_breakdown(issues: pl.DataFrame, *, now: datetime, previous_at: datetime) -> pl.DataFrame:
+def linear_priority_breakdown(
+    issues: pl.DataFrame,
+    *,
+    now: datetime,
+    previous_at: datetime,
+    closed_like_state_names: Sequence[str] = (),
+) -> pl.DataFrame:
     """Open Linear issues by priority as of `now`, with the delta against the same count as of `previous_at`."""
-    current = _linear_open_at(issues, now).with_columns(_linear_priority_label().alias('priority_label'))
-    previous = _linear_open_at(issues, previous_at).with_columns(_linear_priority_label().alias('priority_label'))
+    current = _linear_open_at(issues, now, closed_like_state_names).with_columns(
+        _linear_priority_label().alias('priority_label'),
+    )
+    previous = _linear_open_at(issues, previous_at, closed_like_state_names).with_columns(
+        _linear_priority_label().alias('priority_label'),
+    )
     return _priority_breakdown(current, previous, 'priority_label', LINEAR_PRIORITY_ORDER)
 
 
@@ -162,17 +183,28 @@ def linear_created_closed(issues: pl.DataFrame, *, window_start: datetime, windo
     return pl.DataFrame([{'created': created, 'closed': closed}], schema=_CREATED_CLOSED_SCHEMA)
 
 
-def linear_untracked(issues: pl.DataFrame, *, now: datetime) -> pl.DataFrame:
+def linear_untracked(
+    issues: pl.DataFrame,
+    *,
+    now: datetime,
+    closed_like_state_names: Sequence[str] = (),
+) -> pl.DataFrame:
     """Currently-open Linear issues with no priority set and with no assignee, as of `now`."""
-    open_now = _linear_open_at(issues, now)
+    open_now = _linear_open_at(issues, now, closed_like_state_names)
     no_priority = open_now.filter(pl.col('priority').fill_null(0) == 0).height
     no_assignee = open_now.filter(pl.col('assignee_name').is_null() | (pl.col('assignee_name') == UNASSIGNED)).height
     return pl.DataFrame([{'no_priority': no_priority, 'no_assignee': no_assignee}], schema=_UNTRACKED_SCHEMA)
 
 
-def linear_oldest_open(issues: pl.DataFrame, *, now: datetime, limit: int = 5) -> pl.DataFrame:
+def linear_oldest_open(
+    issues: pl.DataFrame,
+    *,
+    now: datetime,
+    limit: int = 5,
+    closed_like_state_names: Sequence[str] = (),
+) -> pl.DataFrame:
     """The `limit` oldest open Linear issues per priority, ordered Urgent, High, Medium, Low, None."""
-    open_now = _linear_open_at(issues, now).with_columns(
+    open_now = _linear_open_at(issues, now, closed_like_state_names).with_columns(
         _linear_priority_label().alias('priority'),
         (pl.lit(now) - pl.col('created_at')).dt.total_days().cast(pl.Int64).alias('age_days'),
     )
@@ -231,6 +263,57 @@ def linear_label_distribution(
         .head(top_n)
         .select(list(_LABEL_SCHEMA))
     )
+
+
+def linear_bot_filed_split(
+    issues: pl.DataFrame,
+    issue_labels: pl.DataFrame,
+    *,
+    bot_label: str,
+    now: datetime,
+    closed_like_state_names: Sequence[str] = (),
+) -> pl.DataFrame:
+    """Currently-open Linear issues carrying `bot_label`, against every other open issue.
+
+    Excluded from the "human backlog" reading of the other sections, which count every open issue
+    regardless of this split; this row is what to subtract to get the human-filed count.
+    """
+    open_now = _linear_open_at(issues, now, closed_like_state_names)
+    bot_ids = (
+        set(issue_labels.filter(pl.col('label') == bot_label)['issue_id'].to_list())
+        if bot_label and not issue_labels.is_empty()
+        else set()
+    )
+    bot_count = open_now.filter(pl.col('id').is_in(bot_ids)).height
+    human_count = open_now.height - bot_count
+    return pl.DataFrame(
+        [{'category': 'bot-filed', 'open_count': bot_count}, {'category': 'human', 'open_count': human_count}],
+        schema=_BOT_SPLIT_SCHEMA,
+    )
+
+
+def snapshot_header(
+    window: PeriodWindow,
+    *,
+    period: str,
+    closed_like_state_names: Sequence[str],
+    bot_label: str,
+) -> pl.DataFrame:
+    """Period bounds and the open/bot-filed definitions this snapshot uses, for the check-in's header."""
+    closed_like = ', '.join(closed_like_state_names) if closed_like_state_names else 'none configured'
+    period_line = (
+        f'{period.capitalize()}: {window.start.date()} to {window.end.date()} (exclusive), '
+        f'compared against {window.previous_start.date()} to {window.previous_end.date()}.'
+    )
+    open_line = (
+        'Open: created by this instant, not archived, not completed/canceled, and not in a '
+        f'closed-like state ({closed_like}).'
+    )
+    bot_line = (
+        f'Bot-filed: open issues carrying the label {bot_label!r}.' if bot_label else 'Bot-filed: not configured.'
+    )
+    lines = [period_line, open_line, bot_line]
+    return pl.DataFrame({'note': lines}, schema=_NOTE_SCHEMA)
 
 
 def pylon_priority_breakdown(
@@ -348,14 +431,27 @@ def build_snapshot_sections(
     sentry_configured: bool,
     oldest_limit: int = 5,
     top_n: int = 10,
+    period: str = 'week',
+    closed_like_state_names: Sequence[str] = (),
+    bot_label: str = '',
 ) -> list[tuple[str, pl.DataFrame]]:
     """Assemble every snapshot section, ready for `tlr.render.markdown.sections_to_markdown`."""
     sparse = labels_are_sparse(issues, issue_labels, window_start=window.start, window_end=window.end)
     label_heading = 'Linear: top labels created this period' + (' (labels are sparse this period)' if sparse else '')
 
-    linear_priority = linear_priority_breakdown(issues, now=window.end, previous_at=window.previous_end)
+    linear_priority = linear_priority_breakdown(
+        issues,
+        now=window.end,
+        previous_at=window.previous_end,
+        closed_like_state_names=closed_like_state_names,
+    )
     linear_created_closed_counts = linear_created_closed(issues, window_start=window.start, window_end=window.end)
-    linear_oldest = linear_oldest_open(issues, now=window.end, limit=oldest_limit)
+    linear_oldest = linear_oldest_open(
+        issues,
+        now=window.end,
+        limit=oldest_limit,
+        closed_like_state_names=closed_like_state_names,
+    )
     linear_labels = linear_label_distribution(
         issues,
         issue_labels,
@@ -377,9 +473,31 @@ def build_snapshot_sections(
     pylon_resolution_time = close_time(pylon_issues, sla, window_start=window.start, window_end=window.end)
 
     sections: list[tuple[str, pl.DataFrame]] = [
+        (
+            'Snapshot',
+            snapshot_header(
+                window,
+                period=period,
+                closed_like_state_names=closed_like_state_names,
+                bot_label=bot_label,
+            ),
+        ),
         ('Linear: open by priority', linear_priority),
+        (
+            'Linear: bot-filed vs human, open now',
+            linear_bot_filed_split(
+                issues,
+                issue_labels,
+                bot_label=bot_label,
+                now=window.end,
+                closed_like_state_names=closed_like_state_names,
+            ),
+        ),
         ('Linear: created/closed this period', linear_created_closed_counts),
-        ('Linear: untracked', linear_untracked(issues, now=window.end)),
+        (
+            'Linear: untracked',
+            linear_untracked(issues, now=window.end, closed_like_state_names=closed_like_state_names),
+        ),
         ('Linear: oldest open by priority', linear_oldest),
         (label_heading, linear_labels),
         ('Pylon: open by priority', pylon_priority),

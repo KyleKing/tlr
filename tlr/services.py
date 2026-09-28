@@ -285,6 +285,9 @@ def _snapshot_command(args: argparse.Namespace, config: TlrConfig) -> int:
         pylon_priority_values=config.pylon.priority_values,
         sla=config.sla,
         sentry_configured=_sentry_configured(),
+        period=args.period,
+        closed_like_state_names=config.linear.closed_like_state_names,
+        bot_label=config.linear.bot_label,
     )
     _emit(_render_sections(sections, args.format))
     return 0

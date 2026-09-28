@@ -2,6 +2,7 @@
 
 ### Feat
 
+- **snapshot**: add weekly/monthly Linear, Pylon, and Sentry check-in snapshot
 - dispatch triage, backlog, and import-snapshots
 - report backlog age, close time, and resolved splits
 - order the triage queue across Pylon and Linear

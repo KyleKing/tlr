@@ -21,6 +21,15 @@ workspace_url_key = "example-workspace"
 agent_accounts = ["watch-doggo@example.com"]
 # Point values tried when Linear's own estimate scale can't be read from the API.
 estimate_scale = [0, 1, 2, 3, 5, 8, 13]
+# Status names treated as closed for the snapshot's open counts, on top of a completed or
+# canceled state. Most workspaces don't need this: Linear sets canceledAt on entering a
+# "Duplicate" state too, so it is already excluded. Use this only for a status your
+# completedAt/canceledAt check misses.
+closed_like_state_names = []
+# Label marking an issue as bot-filed (e.g. an automated monitoring alert). The snapshot
+# reports it as its own row instead of folding it into the human backlog count. Empty
+# (the default) means no split is computed.
+bot_label = ""
 
 [pylon]
 # Pylon custom field that holds the linked Linear issue identifier.
