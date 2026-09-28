@@ -65,6 +65,8 @@ query Issues($filter: IssueFilter, $after: String) {
       identifier
       archivedAt
       createdAt
+      completedAt
+      canceledAt
       title
       url
       description
@@ -103,6 +105,8 @@ _ISSUE_SCHEMA: dict[str, Any] = {
     'project_name': pl.Utf8,
     'project_milestone_id': pl.Utf8,
     'parent_identifier': pl.Utf8,
+    'completed_at': pl.Datetime('us'),
+    'canceled_at': pl.Datetime('us'),
 }
 _ISSUE_LABEL_SCHEMA: dict[str, Any] = {'issue_id': pl.Utf8, 'label': pl.Utf8}
 _ISSUE_RELATION_SCHEMA: dict[str, Any] = {'issue_id': pl.Utf8, 'relation_type': pl.Utf8, 'related_identifier': pl.Utf8}
@@ -216,6 +220,8 @@ def parse_issues(data: dict[str, Any]) -> pl.DataFrame:
                 'url': node.get('url'),
                 'archived_at': _parse_datetime(node.get('archivedAt')),
                 'created_at': _parse_datetime(node.get('createdAt')),
+                'completed_at': _parse_datetime(node.get('completedAt')),
+                'canceled_at': _parse_datetime(node.get('canceledAt')),
                 'estimate': node.get('estimate'),
                 'priority': node.get('priority'),
                 'state_name': state.get('name'),

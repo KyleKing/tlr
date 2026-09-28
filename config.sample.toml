@@ -36,6 +36,14 @@ question_type_field = "question_type"
 # Whether a ticket is waiting on the customer, on us, or closed comes from the status
 # category Pylon reports for it, not from a list here.
 
+[sentry]
+# Organization slug, the segment right after sentry.io/organizations/ in any org link.
+# The auth token is never in this file; it comes from the secret store like every other
+# service token (see SETUP.md).
+org_slug = "example-org"
+# Project slugs to scope issue queries to. Empty means every project in the org.
+project_slugs = ["backend"]
+
 [tiers]
 # Customer tier names, highest priority first. Empty (the default) means the tier
 # ordering rule does nothing.

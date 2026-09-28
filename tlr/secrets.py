@@ -29,6 +29,7 @@ SECRETS: dict[str, SecretSpec] = {
         keychain_account='demo-key',
     ),
     'pylon': SecretSpec(env_var='PYLON_API_TOKEN', keychain_service='tlr-pylon', keychain_account='api-token'),
+    'sentry': SecretSpec(env_var='SENTRY_AUTH_TOKEN', keychain_service='tlr-sentry', keychain_account='api-token'),
     'incidentio': SecretSpec(
         env_var='INCIDENT_IO_TOKEN',
         keychain_service='tlr-incidentio',

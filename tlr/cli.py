@@ -43,6 +43,30 @@ def build_parser() -> argparse.ArgumentParser:
     backlog = sub.add_parser('backlog', help='backlog age, close times, and resolved split')
     _add_format(backlog)
 
+    snapshot = sub.add_parser(
+        'snapshot',
+        help='weekly/monthly picture of Linear, Pylon, and Sentry for a team check-in',
+        description=(
+            'A weekly or monthly picture of Linear, Pylon, and (when configured) Sentry, for a '
+            'team check-in, compared against the period immediately before it.\n\n'
+            "Reconstruction limits: Pylon's open-at-a-past-instant counts assume resolution_time "
+            'is set once and never cleared, so a reopened-then-resolved ticket undercounts as '
+            "having been open the whole time. Linear's equivalent reads completed_at/canceled_at, "
+            'which Linear clears to null on reopen, so the same undercount applies there too. '
+            'Priority carries no timestamp in either source as stored here, so "crossed a '
+            'priority upward" and ticket reopens are not computed at all: both need a snapshot '
+            'from a prior run to diff against, and none is persisted.'
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    snapshot.add_argument('--period', choices=('week', 'month'), default='week', help='period length (default: week)')
+    snapshot.add_argument(
+        '--as-of',
+        metavar='DATE',
+        help='ISO date (YYYY-MM-DD) the period is computed around (default: today)',
+    )
+    _add_format(snapshot)
+
     config = sub.add_parser('config', help='show or create the config file')
     config.add_argument('action', choices=('path', 'init', 'show'), help='what to do')
 

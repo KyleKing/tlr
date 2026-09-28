@@ -228,6 +228,24 @@ def test_backlog_reports_every_section(seeded_db: Path, capsys: pytest.CaptureFi
     assert set(sections) == {'Backlog age', 'Close time', 'Stuck tickets', 'Week over week', 'Resolved split'}
 
 
+def test_snapshot_reports_sentry_not_configured_and_a_pinned_period(
+    monkeypatch: pytest.MonkeyPatch,
+    seeded_db: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.delenv('SENTRY_AUTH_TOKEN', raising=False)
+    monkeypatch.setattr('tlr.secrets.EnvKeychainSecretStore._read_keychain', lambda self, spec: None)  # noqa: ARG005
+    _seed_pylon(seeded_db)
+
+    exit_code = _run(['--db', str(seeded_db), 'snapshot', '--period', 'week', '--as-of', '2026-09-03'])
+
+    assert exit_code == 0
+    sections = json.loads(capsys.readouterr().out)
+    assert sections['Sentry'] == [{'note': 'Sentry: not configured'}]
+    assert 'Linear: open by priority' in sections
+    assert 'Pylon: top tags' in sections
+
+
 def test_import_snapshots_dry_run_writes_nothing(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     sqlite_path = tmp_path / 'deno.sqlite'
     con = sqlite3.connect(sqlite_path)

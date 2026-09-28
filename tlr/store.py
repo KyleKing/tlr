@@ -18,7 +18,7 @@ from typing import Any
 import duckdb
 import polars as pl
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 _PROVENANCE_COL = 'field_provenance'
 _LOCKED_COL = 'locked_fields'
@@ -169,6 +169,30 @@ _MIGRATIONS: tuple[tuple[int, tuple[str, ...]], ...] = (
             """,
         ),
     ),
+    (
+        3,
+        (
+            'ALTER TABLE issues ADD COLUMN completed_at TIMESTAMP',
+            'ALTER TABLE issues ADD COLUMN canceled_at TIMESTAMP',
+            """
+            CREATE TABLE sentry_issues (
+                id TEXT PRIMARY KEY,
+                project_slug TEXT,
+                title TEXT,
+                culprit TEXT,
+                level TEXT,
+                status TEXT,
+                times_seen INTEGER,
+                first_seen TIMESTAMP,
+                last_seen TIMESTAMP,
+                permalink TEXT,
+                field_provenance TEXT NOT NULL,
+                locked_fields TEXT NOT NULL,
+                updated_at TIMESTAMP NOT NULL
+            )
+            """,
+        ),
+    ),
 )
 
 # link_status values for pylon_issues, distinguishing an explicit "no link" from an
@@ -199,6 +223,8 @@ _ISSUE_DOMAIN_COLS = (
     'project_name',
     'project_milestone_id',
     'parent_identifier',
+    'completed_at',
+    'canceled_at',
 )
 _ISSUE_SCHEMA: dict[str, Any] = {
     'id': pl.Utf8,
@@ -218,6 +244,8 @@ _ISSUE_SCHEMA: dict[str, Any] = {
     'project_name': pl.Utf8,
     'project_milestone_id': pl.Utf8,
     'parent_identifier': pl.Utf8,
+    'completed_at': pl.Datetime('us'),
+    'canceled_at': pl.Datetime('us'),
     _PROVENANCE_COL: pl.Utf8,
     _LOCKED_COL: pl.Utf8,
     _UPDATED_AT_COL: pl.Datetime('us'),
@@ -288,6 +316,34 @@ _PYLON_ACCOUNT_SCHEMA: dict[str, Any] = {
     'id': pl.Utf8,
     'name': pl.Utf8,
     'tier': pl.Utf8,
+    _PROVENANCE_COL: pl.Utf8,
+    _LOCKED_COL: pl.Utf8,
+    _UPDATED_AT_COL: pl.Datetime('us'),
+}
+
+_SENTRY_KEY_COLS = ('id',)
+_SENTRY_DOMAIN_COLS = (
+    'project_slug',
+    'title',
+    'culprit',
+    'level',
+    'status',
+    'times_seen',
+    'first_seen',
+    'last_seen',
+    'permalink',
+)
+_SENTRY_SCHEMA: dict[str, Any] = {
+    'id': pl.Utf8,
+    'project_slug': pl.Utf8,
+    'title': pl.Utf8,
+    'culprit': pl.Utf8,
+    'level': pl.Utf8,
+    'status': pl.Utf8,
+    'times_seen': pl.Int64,
+    'first_seen': pl.Datetime('us'),
+    'last_seen': pl.Datetime('us'),
+    'permalink': pl.Utf8,
     _PROVENANCE_COL: pl.Utf8,
     _LOCKED_COL: pl.Utf8,
     _UPDATED_AT_COL: pl.Datetime('us'),
@@ -568,6 +624,18 @@ def upsert_pylon_accounts(con: duckdb.DuckDBPyConnection, df: pl.DataFrame, *, s
     )
 
 
+def upsert_sentry_issues(con: duckdb.DuckDBPyConnection, df: pl.DataFrame, *, source: str = 'sentry') -> None:
+    """Merge Sentry issue rows keyed on `id`, same provenance rule as `upsert_issues`."""
+    _upsert_with_provenance(
+        con,
+        table='sentry_issues',
+        key_cols=_SENTRY_KEY_COLS,
+        domain_cols=_SENTRY_DOMAIN_COLS,
+        incoming=df,
+        source=source,
+    )
+
+
 def upsert_pylon_issue_labels(con: duckdb.DuckDBPyConnection, df: pl.DataFrame, *, source: str = 'pylon') -> None:
     """Replace `source`'s tags and question types for every Pylon issue named in `df`."""
     if df.is_empty():
@@ -587,7 +655,7 @@ def upsert_pylon_issue_labels(con: duckdb.DuckDBPyConnection, df: pl.DataFrame, 
 
 def set_locked_fields(con: duckdb.DuckDBPyConnection, *, table: str, key: str, fields: list[str]) -> None:
     """Replace the locked-field list for one `issues` or `pylon_issues` row, freezing it against refreshes."""
-    if table not in {'issues', 'pylon_accounts', 'pylon_issues'}:
+    if table not in {'issues', 'pylon_accounts', 'pylon_issues', 'sentry_issues'}:
         msg = f'{table} has no provenance to lock'
         raise ValueError(msg)
     con.execute(f'UPDATE {table} SET locked_fields = ? WHERE id = ?', [json.dumps(fields), key])  # noqa: S608
@@ -741,6 +809,11 @@ def get_pylon_issue_labels(con: duckdb.DuckDBPyConnection) -> pl.DataFrame:
 def get_pylon_accounts(con: duckdb.DuckDBPyConnection) -> pl.DataFrame:
     """Return every Pylon account row, including a tier that may have been set by hand."""
     return _query_table(con, 'pylon_accounts', _PYLON_ACCOUNT_SCHEMA)
+
+
+def get_sentry_issues(con: duckdb.DuckDBPyConnection) -> pl.DataFrame:
+    """Return every Sentry issue row."""
+    return _query_table(con, 'sentry_issues', _SENTRY_SCHEMA)
 
 
 def get_milestone_scope(con: duckdb.DuckDBPyConnection) -> pl.DataFrame:

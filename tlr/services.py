@@ -16,7 +16,7 @@ from tlr.domain import capacity as capacity_domain
 from tlr.render.json import frame_to_json, sections_to_json
 from tlr.render.markdown import frame_to_markdown, sections_to_markdown
 
-SOURCES = ('linear', 'pylon')
+SOURCES = ('linear', 'pylon', 'sentry')
 
 _SAMPLE_CONFIG = Path(__file__).resolve().parent.parent / 'config.sample.toml'
 
@@ -114,13 +114,25 @@ def _refresh_pylon(con: duckdb.DuckDBPyConnection, config: TlrConfig) -> int:
     return rows
 
 
+def _refresh_sentry(con: duckdb.DuckDBPyConnection, config: TlrConfig) -> int:
+    from tlr.sources import sentry  # noqa: PLC0415
+
+    if not config.sentry.org_slug:
+        msg = 'no [sentry].org_slug configured; nothing to refresh'
+        raise ValueError(msg)
+    client = sentry.build_client()
+    issues = sentry.fetch_issues(client, config.sentry)
+    store.upsert_sentry_issues(con, issues)
+    return issues.height
+
+
 def _refresh_command(args: argparse.Namespace, config: TlrConfig) -> int:
     sources = _requested_sources(args)
     if args.dry_run:
         _emit(_render(pl.DataFrame({'source': sources, 'action': ['would fetch'] * len(sources)}), 'md'))
         return 0
     con = _open_store(args, config)
-    refreshers = {'linear': _refresh_linear, 'pylon': _refresh_pylon}
+    refreshers = {'linear': _refresh_linear, 'pylon': _refresh_pylon, 'sentry': _refresh_sentry}
     try:
         for name in sources:
             row_count = refreshers[name](con, config)
@@ -237,6 +249,47 @@ def _backlog_command(args: argparse.Namespace, config: TlrConfig) -> int:
     return 0
 
 
+def _sentry_configured() -> bool:
+    from tlr.secrets import read_secret  # noqa: PLC0415
+
+    try:
+        read_secret('sentry')
+    except LookupError:
+        return False
+    return True
+
+
+def _snapshot_command(args: argparse.Namespace, config: TlrConfig) -> int:
+    from tlr.domain import snapshot as snapshot_domain  # noqa: PLC0415
+
+    as_of = datetime.fromisoformat(args.as_of) if args.as_of else _now()
+    window = snapshot_domain.period_window(args.period, as_of)
+
+    con = _open_store(args, config)
+    try:
+        issues = store.get_issues(con)
+        issue_labels = store.get_issue_labels(con)
+        pylon_issues = store.get_pylon_issues(con)
+        pylon_issue_labels = store.get_pylon_issue_labels(con)
+        sentry_issues = store.get_sentry_issues(con)
+    finally:
+        con.close()
+
+    sections = snapshot_domain.build_snapshot_sections(
+        issues,
+        issue_labels,
+        pylon_issues,
+        pylon_issue_labels,
+        sentry_issues,
+        window=window,
+        pylon_priority_values=config.pylon.priority_values,
+        sla=config.sla,
+        sentry_configured=_sentry_configured(),
+    )
+    _emit(_render_sections(sections, args.format))
+    return 0
+
+
 def _import_snapshots_command(args: argparse.Namespace, config: TlrConfig) -> int:
     from tlr.imports import snapshots  # noqa: PLC0415
 
@@ -273,6 +326,7 @@ _COMMANDS = {
     'capacity': _capacity_command,
     'import-snapshots': _import_snapshots_command,
     'refresh': _refresh_command,
+    'snapshot': _snapshot_command,
     'triage': _triage_command,
 }
 

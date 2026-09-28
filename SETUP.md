@@ -26,10 +26,11 @@ entry below; this table follows it.
 | Linear (demo)   | free-workspace API key          | `LINEAR_DEMO_API_KEY` | `tlr-linear` / `demo-key`    |
 | Incident.io     | API key (read schedules)        | `INCIDENT_IO_TOKEN`   | `tlr-incidentio` / `api-key` |
 | Pylon           | API token (read issues)         | `PYLON_API_TOKEN`     | `tlr-pylon` / `api-token`    |
+| Sentry          | auth token (read issues)        | `SENTRY_AUTH_TOKEN`   | `tlr-sentry` / `api-token`   |
 | Slack           | user token, `search:read`       | `SLACK_USER_TOKEN`    | `tlr-slack` / `user-token`   |
 | Google Calendar | OAuth client JSON (Desktop app) | (file, see below)     | (file, see below)            |
 
-Only Linear and Pylon have adapters today.
+Only Linear, Pylon, and Sentry have adapters today.
 The Incident.io, Google Calendar, and Slack rows are
 here because their credential-minting steps are the part worth writing down once, and
 the traps

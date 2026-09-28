@@ -42,6 +42,14 @@ class PylonConfig:
 
 
 @dataclass(slots=True)
+class SentryConfig:
+    """Which Sentry organization and projects tlr reads. The auth token comes from the secret store."""
+
+    org_slug: str = ''
+    project_slugs: list[str] = field(default_factory=list)
+
+
+@dataclass(slots=True)
 class TiersConfig:
     """Customer tier names, best first, and which Pylon account field carries one.
 
@@ -116,6 +124,7 @@ class TlrConfig:
 
     linear: LinearConfig = field(default_factory=LinearConfig)
     pylon: PylonConfig = field(default_factory=PylonConfig)
+    sentry: SentryConfig = field(default_factory=SentryConfig)
     tiers: TiersConfig = field(default_factory=TiersConfig)
     sla: SlaConfig = field(default_factory=SlaConfig)
     triage: TriageConfig = field(default_factory=TriageConfig)
@@ -127,6 +136,7 @@ class TlrConfig:
 _SECTIONS: Final[dict[str, type[Any]]] = {
     'linear': LinearConfig,
     'pylon': PylonConfig,
+    'sentry': SentryConfig,
     'tiers': TiersConfig,
     'sla': SlaConfig,
     'triage': TriageConfig,
