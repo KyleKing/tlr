@@ -986,6 +986,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#tlr.store.get_sentry_issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_sentry_issues
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#tlr.store.record_refresh" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1078,6 +1089,17 @@
     <span class="md-ellipsis">
       
         upsert_pylon_issues
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tlr.store.upsert_sentry_issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        upsert_sentry_issues
       
     </span>
   </a>
@@ -1188,6 +1210,34 @@
     
   
     Capacity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../domain/snapshot/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Snapshot
   
 
     
@@ -1534,6 +1584,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sources/sentry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sentry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1776,6 +1854,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#tlr.store.get_sentry_issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_sentry_issues
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#tlr.store.record_refresh" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1868,6 +1957,17 @@
     <span class="md-ellipsis">
       
         upsert_pylon_issues
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tlr.store.upsert_sentry_issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        upsert_sentry_issues
       
     </span>
   </a>
@@ -1976,16 +2076,16 @@ overwrite whatever source last wrote a field, though a locked field still refuse
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/store.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="641 "></span><span class="k">def</span><span class="w"> </span><span class="nf">append_allocation_events</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="linenos" data-linenos="642 "></span><span class="w">    </span><span class="sd">"""Append ledger events; never updates a prior row, since the ledger is append-only."""</span>
-<span class="linenos" data-linenos="643 "></span>    <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
-<span class="linenos" data-linenos="644 "></span>        <span class="k">return</span>
-<span class="linenos" data-linenos="645 "></span>    <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">UTC</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-<span class="linenos" data-linenos="646 "></span>    <span class="n">rows</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">to_dicts</span><span class="p">()</span>
-<span class="linenos" data-linenos="647 "></span>    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
-<span class="linenos" data-linenos="648 "></span>        <span class="n">row</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">'event_id'</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()))</span>
-<span class="linenos" data-linenos="649 "></span>        <span class="n">row</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">'recorded_at'</span><span class="p">,</span> <span class="n">now</span><span class="p">)</span>
-<span class="linenos" data-linenos="650 "></span>    <span class="n">_insert_rows</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'allocation_events'</span><span class="p">,</span> <span class="n">_ALLOCATION_EVENT_COLS</span><span class="p">,</span> <span class="n">rows</span><span class="p">)</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="709 "></span><span class="k">def</span><span class="w"> </span><span class="nf">append_allocation_events</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos" data-linenos="710 "></span><span class="w">    </span><span class="sd">"""Append ledger events; never updates a prior row, since the ledger is append-only."""</span>
+<span class="linenos" data-linenos="711 "></span>    <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
+<span class="linenos" data-linenos="712 "></span>        <span class="k">return</span>
+<span class="linenos" data-linenos="713 "></span>    <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">UTC</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="linenos" data-linenos="714 "></span>    <span class="n">rows</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">to_dicts</span><span class="p">()</span>
+<span class="linenos" data-linenos="715 "></span>    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
+<span class="linenos" data-linenos="716 "></span>        <span class="n">row</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">'event_id'</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()))</span>
+<span class="linenos" data-linenos="717 "></span>        <span class="n">row</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">'recorded_at'</span><span class="p">,</span> <span class="n">now</span><span class="p">)</span>
+<span class="linenos" data-linenos="718 "></span>    <span class="n">_insert_rows</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'allocation_events'</span><span class="p">,</span> <span class="n">_ALLOCATION_EVENT_COLS</span><span class="p">,</span> <span class="n">rows</span><span class="p">)</span>
 </code></pre></div>
             </details>
     </div>
@@ -2010,15 +2110,15 @@ overwrite whatever source last wrote a field, though a locked field still refuse
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/store.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="653 "></span><span class="k">def</span><span class="w"> </span><span class="nf">capture_milestone_scope</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="linenos" data-linenos="654 "></span><span class="w">    </span><span class="sd">"""Append a dated milestone-scope snapshot; the only local record of scope over time."""</span>
-<span class="linenos" data-linenos="655 "></span>    <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
-<span class="linenos" data-linenos="656 "></span>        <span class="k">return</span>
-<span class="linenos" data-linenos="657 "></span>    <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">UTC</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-<span class="linenos" data-linenos="658 "></span>    <span class="n">rows</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">to_dicts</span><span class="p">()</span>
-<span class="linenos" data-linenos="659 "></span>    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
-<span class="linenos" data-linenos="660 "></span>        <span class="n">row</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">'captured_at'</span><span class="p">,</span> <span class="n">now</span><span class="p">)</span>
-<span class="linenos" data-linenos="661 "></span>    <span class="n">_insert_rows</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'milestone_scope'</span><span class="p">,</span> <span class="n">_MILESTONE_SCOPE_COLS</span><span class="p">,</span> <span class="n">rows</span><span class="p">)</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="721 "></span><span class="k">def</span><span class="w"> </span><span class="nf">capture_milestone_scope</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos" data-linenos="722 "></span><span class="w">    </span><span class="sd">"""Append a dated milestone-scope snapshot; the only local record of scope over time."""</span>
+<span class="linenos" data-linenos="723 "></span>    <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
+<span class="linenos" data-linenos="724 "></span>        <span class="k">return</span>
+<span class="linenos" data-linenos="725 "></span>    <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">UTC</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="linenos" data-linenos="726 "></span>    <span class="n">rows</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">to_dicts</span><span class="p">()</span>
+<span class="linenos" data-linenos="727 "></span>    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
+<span class="linenos" data-linenos="728 "></span>        <span class="n">row</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">'captured_at'</span><span class="p">,</span> <span class="n">now</span><span class="p">)</span>
+<span class="linenos" data-linenos="729 "></span>    <span class="n">_insert_rows</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'milestone_scope'</span><span class="p">,</span> <span class="n">_MILESTONE_SCOPE_COLS</span><span class="p">,</span> <span class="n">rows</span><span class="p">)</span>
 </code></pre></div>
             </details>
     </div>
@@ -2043,12 +2143,12 @@ overwrite whatever source last wrote a field, though a locked field still refuse
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/store.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="383 "></span><span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span><span class="n">db_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">:</span>
-<span class="linenos" data-linenos="384 "></span><span class="w">    </span><span class="sd">"""Open (creating if absent) the DuckDB file and bring its schema up to `SCHEMA_VERSION`."""</span>
-<span class="linenos" data-linenos="385 "></span>    <span class="n">db_path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="linenos" data-linenos="386 "></span>    <span class="n">con</span> <span class="o">=</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">db_path</span><span class="p">))</span>
-<span class="linenos" data-linenos="387 "></span>    <span class="n">_migrate</span><span class="p">(</span><span class="n">con</span><span class="p">)</span>
-<span class="linenos" data-linenos="388 "></span>    <span class="k">return</span> <span class="n">con</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="439 "></span><span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span><span class="n">db_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">:</span>
+<span class="linenos" data-linenos="440 "></span><span class="w">    </span><span class="sd">"""Open (creating if absent) the DuckDB file and bring its schema up to `SCHEMA_VERSION`."""</span>
+<span class="linenos" data-linenos="441 "></span>    <span class="n">db_path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos" data-linenos="442 "></span>    <span class="n">con</span> <span class="o">=</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">db_path</span><span class="p">))</span>
+<span class="linenos" data-linenos="443 "></span>    <span class="n">_migrate</span><span class="p">(</span><span class="n">con</span><span class="p">)</span>
+<span class="linenos" data-linenos="444 "></span>    <span class="k">return</span> <span class="n">con</span>
 </code></pre></div>
             </details>
     </div>
@@ -2073,9 +2173,9 @@ overwrite whatever source last wrote a field, though a locked field still refuse
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/store.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="726 "></span><span class="k">def</span><span class="w"> </span><span class="nf">get_allocation_events</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="linenos" data-linenos="727 "></span><span class="w">    </span><span class="sd">"""Return the full allocation ledger."""</span>
-<span class="linenos" data-linenos="728 "></span>    <span class="k">return</span> <span class="n">_query_table</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'allocation_events'</span><span class="p">,</span> <span class="n">_ALLOCATION_EVENT_SCHEMA</span><span class="p">)</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="794 "></span><span class="k">def</span><span class="w"> </span><span class="nf">get_allocation_events</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="linenos" data-linenos="795 "></span><span class="w">    </span><span class="sd">"""Return the full allocation ledger."""</span>
+<span class="linenos" data-linenos="796 "></span>    <span class="k">return</span> <span class="n">_query_table</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'allocation_events'</span><span class="p">,</span> <span class="n">_ALLOCATION_EVENT_SCHEMA</span><span class="p">)</span>
 </code></pre></div>
             </details>
     </div>
@@ -2100,9 +2200,9 @@ overwrite whatever source last wrote a field, though a locked field still refuse
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/store.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="721 "></span><span class="k">def</span><span class="w"> </span><span class="nf">get_cycles</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="linenos" data-linenos="722 "></span><span class="w">    </span><span class="sd">"""Return every cycle row, keyed on (team_key, number)."""</span>
-<span class="linenos" data-linenos="723 "></span>    <span class="k">return</span> <span class="n">_query_table</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'cycles'</span><span class="p">,</span> <span class="n">_CYCLE_SCHEMA</span><span class="p">)</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="789 "></span><span class="k">def</span><span class="w"> </span><span class="nf">get_cycles</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="linenos" data-linenos="790 "></span><span class="w">    </span><span class="sd">"""Return every cycle row, keyed on (team_key, number)."""</span>
+<span class="linenos" data-linenos="791 "></span>    <span class="k">return</span> <span class="n">_query_table</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'cycles'</span><span class="p">,</span> <span class="n">_CYCLE_SCHEMA</span><span class="p">)</span>
 </code></pre></div>
             </details>
     </div>
@@ -2127,9 +2227,9 @@ overwrite whatever source last wrote a field, though a locked field still refuse
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/store.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="688 "></span><span class="k">def</span><span class="w"> </span><span class="nf">get_issue_labels</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="linenos" data-linenos="689 "></span><span class="w">    </span><span class="sd">"""Return every issue-label row."""</span>
-<span class="linenos" data-linenos="690 "></span>    <span class="k">return</span> <span class="n">_query_table</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'issue_labels'</span><span class="p">,</span> <span class="n">_ISSUE_LABEL_SCHEMA</span><span class="p">)</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="756 "></span><span class="k">def</span><span class="w"> </span><span class="nf">get_issue_labels</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="linenos" data-linenos="757 "></span><span class="w">    </span><span class="sd">"""Return every issue-label row."""</span>
+<span class="linenos" data-linenos="758 "></span>    <span class="k">return</span> <span class="n">_query_table</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'issue_labels'</span><span class="p">,</span> <span class="n">_ISSUE_LABEL_SCHEMA</span><span class="p">)</span>
 </code></pre></div>
             </details>
     </div>
@@ -2156,32 +2256,32 @@ mirrored row rather than assuming the store ever fetched the other side.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/store.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="693 "></span><span class="k">def</span><span class="w"> </span><span class="nf">get_issue_relations</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">symmetrize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="linenos" data-linenos="694 "></span><span class="w">    </span><span class="sd">"""Return relations as recorded, or with the inverse edge added on request.</span>
-<span class="linenos" data-linenos="695 "></span>
-<span class="linenos" data-linenos="696 "></span><span class="sd">    Linear reports each relation once on the owning issue, so `symmetrize=True` adds the</span>
-<span class="linenos" data-linenos="697 "></span><span class="sd">    mirrored row rather than assuming the store ever fetched the other side.</span>
-<span class="linenos" data-linenos="698 "></span><span class="sd">    """</span>
-<span class="linenos" data-linenos="699 "></span>    <span class="n">stored</span> <span class="o">=</span> <span class="n">_query_table</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'issue_relations'</span><span class="p">,</span> <span class="n">_ISSUE_RELATION_SCHEMA</span><span class="p">)</span>
-<span class="linenos" data-linenos="700 "></span>    <span class="k">if</span> <span class="ow">not</span> <span class="n">symmetrize</span> <span class="ow">or</span> <span class="n">stored</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
-<span class="linenos" data-linenos="701 "></span>        <span class="k">return</span> <span class="n">stored</span>
-<span class="linenos" data-linenos="702 "></span>
-<span class="linenos" data-linenos="703 "></span>    <span class="n">issues</span> <span class="o">=</span> <span class="n">_query_table</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'issues'</span><span class="p">,</span> <span class="p">{</span><span class="s1">'id'</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Utf8</span><span class="p">,</span> <span class="s1">'identifier'</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Utf8</span><span class="p">})</span>
-<span class="linenos" data-linenos="704 "></span>    <span class="n">owner_named</span> <span class="o">=</span> <span class="n">stored</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">issues</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="s1">'issue_id'</span><span class="p">,</span> <span class="n">right_on</span><span class="o">=</span><span class="s1">'id'</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">'left'</span><span class="p">)</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
-<span class="linenos" data-linenos="705 "></span>        <span class="p">{</span><span class="s1">'identifier'</span><span class="p">:</span> <span class="s1">'owner_identifier'</span><span class="p">},</span>
-<span class="linenos" data-linenos="706 "></span>    <span class="p">)</span>
-<span class="linenos" data-linenos="707 "></span>    <span class="n">related_resolved</span> <span class="o">=</span> <span class="n">owner_named</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">issues</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="s1">'related_identifier'</span><span class="p">,</span> <span class="n">right_on</span><span class="o">=</span><span class="s1">'identifier'</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">'left'</span><span class="p">)</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
-<span class="linenos" data-linenos="708 "></span>        <span class="p">{</span><span class="s1">'id'</span><span class="p">:</span> <span class="s1">'related_id'</span><span class="p">},</span>
-<span class="linenos" data-linenos="709 "></span>    <span class="p">)</span>
-<span class="linenos" data-linenos="710 "></span>    <span class="c1"># A related issue outside the fetched scope has no row in `issues`, so its inverse edge</span>
-<span class="linenos" data-linenos="711 "></span>    <span class="c1"># cannot be placed and is dropped rather than invented.</span>
-<span class="linenos" data-linenos="712 "></span>    <span class="n">inverse</span> <span class="o">=</span> <span class="n">related_resolved</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'related_id'</span><span class="p">)</span><span class="o">.</span><span class="n">is_not_null</span><span class="p">())</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
-<span class="linenos" data-linenos="713 "></span>        <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'related_id'</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s1">'issue_id'</span><span class="p">),</span>
-<span class="linenos" data-linenos="714 "></span>        <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'relation_type'</span><span class="p">),</span>
-<span class="linenos" data-linenos="715 "></span>        <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'owner_identifier'</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s1">'related_identifier'</span><span class="p">),</span>
-<span class="linenos" data-linenos="716 "></span>        <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'source'</span><span class="p">),</span>
-<span class="linenos" data-linenos="717 "></span>    <span class="p">)</span>
-<span class="linenos" data-linenos="718 "></span>    <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">stored</span><span class="p">,</span> <span class="n">inverse</span><span class="p">],</span> <span class="n">how</span><span class="o">=</span><span class="s1">'vertical'</span><span class="p">)</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">maintain_order</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="761 "></span><span class="k">def</span><span class="w"> </span><span class="nf">get_issue_relations</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">symmetrize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="linenos" data-linenos="762 "></span><span class="w">    </span><span class="sd">"""Return relations as recorded, or with the inverse edge added on request.</span>
+<span class="linenos" data-linenos="763 "></span>
+<span class="linenos" data-linenos="764 "></span><span class="sd">    Linear reports each relation once on the owning issue, so `symmetrize=True` adds the</span>
+<span class="linenos" data-linenos="765 "></span><span class="sd">    mirrored row rather than assuming the store ever fetched the other side.</span>
+<span class="linenos" data-linenos="766 "></span><span class="sd">    """</span>
+<span class="linenos" data-linenos="767 "></span>    <span class="n">stored</span> <span class="o">=</span> <span class="n">_query_table</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'issue_relations'</span><span class="p">,</span> <span class="n">_ISSUE_RELATION_SCHEMA</span><span class="p">)</span>
+<span class="linenos" data-linenos="768 "></span>    <span class="k">if</span> <span class="ow">not</span> <span class="n">symmetrize</span> <span class="ow">or</span> <span class="n">stored</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
+<span class="linenos" data-linenos="769 "></span>        <span class="k">return</span> <span class="n">stored</span>
+<span class="linenos" data-linenos="770 "></span>
+<span class="linenos" data-linenos="771 "></span>    <span class="n">issues</span> <span class="o">=</span> <span class="n">_query_table</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'issues'</span><span class="p">,</span> <span class="p">{</span><span class="s1">'id'</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Utf8</span><span class="p">,</span> <span class="s1">'identifier'</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Utf8</span><span class="p">})</span>
+<span class="linenos" data-linenos="772 "></span>    <span class="n">owner_named</span> <span class="o">=</span> <span class="n">stored</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">issues</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="s1">'issue_id'</span><span class="p">,</span> <span class="n">right_on</span><span class="o">=</span><span class="s1">'id'</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">'left'</span><span class="p">)</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
+<span class="linenos" data-linenos="773 "></span>        <span class="p">{</span><span class="s1">'identifier'</span><span class="p">:</span> <span class="s1">'owner_identifier'</span><span class="p">},</span>
+<span class="linenos" data-linenos="774 "></span>    <span class="p">)</span>
+<span class="linenos" data-linenos="775 "></span>    <span class="n">related_resolved</span> <span class="o">=</span> <span class="n">owner_named</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">issues</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="s1">'related_identifier'</span><span class="p">,</span> <span class="n">right_on</span><span class="o">=</span><span class="s1">'identifier'</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">'left'</span><span class="p">)</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
+<span class="linenos" data-linenos="776 "></span>        <span class="p">{</span><span class="s1">'id'</span><span class="p">:</span> <span class="s1">'related_id'</span><span class="p">},</span>
+<span class="linenos" data-linenos="777 "></span>    <span class="p">)</span>
+<span class="linenos" data-linenos="778 "></span>    <span class="c1"># A related issue outside the fetched scope has no row in `issues`, so its inverse edge</span>
+<span class="linenos" data-linenos="779 "></span>    <span class="c1"># cannot be placed and is dropped rather than invented.</span>
+<span class="linenos" data-linenos="780 "></span>    <span class="n">inverse</span> <span class="o">=</span> <span class="n">related_resolved</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'related_id'</span><span class="p">)</span><span class="o">.</span><span class="n">is_not_null</span><span class="p">())</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+<span class="linenos" data-linenos="781 "></span>        <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'related_id'</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s1">'issue_id'</span><span class="p">),</span>
+<span class="linenos" data-linenos="782 "></span>        <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'relation_type'</span><span class="p">),</span>
+<span class="linenos" data-linenos="783 "></span>        <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'owner_identifier'</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s1">'related_identifier'</span><span class="p">),</span>
+<span class="linenos" data-linenos="784 "></span>        <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'source'</span><span class="p">),</span>
+<span class="linenos" data-linenos="785 "></span>    <span class="p">)</span>
+<span class="linenos" data-linenos="786 "></span>    <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">stored</span><span class="p">,</span> <span class="n">inverse</span><span class="p">],</span> <span class="n">how</span><span class="o">=</span><span class="s1">'vertical'</span><span class="p">)</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">maintain_order</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
             </details>
     </div>
@@ -2206,9 +2306,9 @@ mirrored row rather than assuming the store ever fetched the other side.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/store.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="683 "></span><span class="k">def</span><span class="w"> </span><span class="nf">get_issues</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="linenos" data-linenos="684 "></span><span class="w">    </span><span class="sd">"""Return every issue row, provenance and lock columns included."""</span>
-<span class="linenos" data-linenos="685 "></span>    <span class="k">return</span> <span class="n">_query_table</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'issues'</span><span class="p">,</span> <span class="n">_ISSUE_SCHEMA</span><span class="p">)</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="751 "></span><span class="k">def</span><span class="w"> </span><span class="nf">get_issues</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="linenos" data-linenos="752 "></span><span class="w">    </span><span class="sd">"""Return every issue row, provenance and lock columns included."""</span>
+<span class="linenos" data-linenos="753 "></span>    <span class="k">return</span> <span class="n">_query_table</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'issues'</span><span class="p">,</span> <span class="n">_ISSUE_SCHEMA</span><span class="p">)</span>
 </code></pre></div>
             </details>
     </div>
@@ -2233,9 +2333,9 @@ mirrored row rather than assuming the store ever fetched the other side.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/store.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="746 "></span><span class="k">def</span><span class="w"> </span><span class="nf">get_milestone_scope</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="linenos" data-linenos="747 "></span><span class="w">    </span><span class="sd">"""Return every captured milestone-scope snapshot."""</span>
-<span class="linenos" data-linenos="748 "></span>    <span class="k">return</span> <span class="n">_query_table</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'milestone_scope'</span><span class="p">,</span> <span class="n">_MILESTONE_SCOPE_SCHEMA</span><span class="p">)</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="819 "></span><span class="k">def</span><span class="w"> </span><span class="nf">get_milestone_scope</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="linenos" data-linenos="820 "></span><span class="w">    </span><span class="sd">"""Return every captured milestone-scope snapshot."""</span>
+<span class="linenos" data-linenos="821 "></span>    <span class="k">return</span> <span class="n">_query_table</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'milestone_scope'</span><span class="p">,</span> <span class="n">_MILESTONE_SCOPE_SCHEMA</span><span class="p">)</span>
 </code></pre></div>
             </details>
     </div>
@@ -2260,9 +2360,9 @@ mirrored row rather than assuming the store ever fetched the other side.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/store.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="741 "></span><span class="k">def</span><span class="w"> </span><span class="nf">get_pylon_accounts</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="linenos" data-linenos="742 "></span><span class="w">    </span><span class="sd">"""Return every Pylon account row, including a tier that may have been set by hand."""</span>
-<span class="linenos" data-linenos="743 "></span>    <span class="k">return</span> <span class="n">_query_table</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'pylon_accounts'</span><span class="p">,</span> <span class="n">_PYLON_ACCOUNT_SCHEMA</span><span class="p">)</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="809 "></span><span class="k">def</span><span class="w"> </span><span class="nf">get_pylon_accounts</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="linenos" data-linenos="810 "></span><span class="w">    </span><span class="sd">"""Return every Pylon account row, including a tier that may have been set by hand."""</span>
+<span class="linenos" data-linenos="811 "></span>    <span class="k">return</span> <span class="n">_query_table</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'pylon_accounts'</span><span class="p">,</span> <span class="n">_PYLON_ACCOUNT_SCHEMA</span><span class="p">)</span>
 </code></pre></div>
             </details>
     </div>
@@ -2287,9 +2387,9 @@ mirrored row rather than assuming the store ever fetched the other side.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/store.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="736 "></span><span class="k">def</span><span class="w"> </span><span class="nf">get_pylon_issue_labels</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="linenos" data-linenos="737 "></span><span class="w">    </span><span class="sd">"""Return every Pylon tag and question-type row."""</span>
-<span class="linenos" data-linenos="738 "></span>    <span class="k">return</span> <span class="n">_query_table</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'pylon_issue_labels'</span><span class="p">,</span> <span class="n">_PYLON_LABEL_SCHEMA</span><span class="p">)</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="804 "></span><span class="k">def</span><span class="w"> </span><span class="nf">get_pylon_issue_labels</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="linenos" data-linenos="805 "></span><span class="w">    </span><span class="sd">"""Return every Pylon tag and question-type row."""</span>
+<span class="linenos" data-linenos="806 "></span>    <span class="k">return</span> <span class="n">_query_table</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'pylon_issue_labels'</span><span class="p">,</span> <span class="n">_PYLON_LABEL_SCHEMA</span><span class="p">)</span>
 </code></pre></div>
             </details>
     </div>
@@ -2314,9 +2414,9 @@ mirrored row rather than assuming the store ever fetched the other side.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/store.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="731 "></span><span class="k">def</span><span class="w"> </span><span class="nf">get_pylon_issues</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="linenos" data-linenos="732 "></span><span class="w">    </span><span class="sd">"""Return every Pylon issue row, including its link state to a Linear issue."""</span>
-<span class="linenos" data-linenos="733 "></span>    <span class="k">return</span> <span class="n">_query_table</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'pylon_issues'</span><span class="p">,</span> <span class="n">_PYLON_SCHEMA</span><span class="p">)</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="799 "></span><span class="k">def</span><span class="w"> </span><span class="nf">get_pylon_issues</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="linenos" data-linenos="800 "></span><span class="w">    </span><span class="sd">"""Return every Pylon issue row, including its link state to a Linear issue."""</span>
+<span class="linenos" data-linenos="801 "></span>    <span class="k">return</span> <span class="n">_query_table</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'pylon_issues'</span><span class="p">,</span> <span class="n">_PYLON_SCHEMA</span><span class="p">)</span>
 </code></pre></div>
             </details>
     </div>
@@ -2341,9 +2441,36 @@ mirrored row rather than assuming the store ever fetched the other side.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/store.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="751 "></span><span class="k">def</span><span class="w"> </span><span class="nf">get_refresh_status</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="linenos" data-linenos="752 "></span><span class="w">    </span><span class="sd">"""Return the latest refresh record per source."""</span>
-<span class="linenos" data-linenos="753 "></span>    <span class="k">return</span> <span class="n">_query_table</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'refresh_runs'</span><span class="p">,</span> <span class="n">_REFRESH_RUN_SCHEMA</span><span class="p">)</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="824 "></span><span class="k">def</span><span class="w"> </span><span class="nf">get_refresh_status</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="linenos" data-linenos="825 "></span><span class="w">    </span><span class="sd">"""Return the latest refresh record per source."""</span>
+<span class="linenos" data-linenos="826 "></span>    <span class="k">return</span> <span class="n">_query_table</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'refresh_runs'</span><span class="p">,</span> <span class="n">_REFRESH_RUN_SCHEMA</span><span class="p">)</span>
+</code></pre></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="tlr.store.get_sentry_issues" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">get_sentry_issues</span>
+
+
+<a href="#tlr.store.get_sentry_issues" class="headerlink" title="Permanent link">⚓︎</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_sentry_issues</span><span class="p">(</span><span class="n">con</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return every Sentry issue row.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>tlr/store.py</code></summary>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="814 "></span><span class="k">def</span><span class="w"> </span><span class="nf">get_sentry_issues</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="linenos" data-linenos="815 "></span><span class="w">    </span><span class="sd">"""Return every Sentry issue row."""</span>
+<span class="linenos" data-linenos="816 "></span>    <span class="k">return</span> <span class="n">_query_table</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'sentry_issues'</span><span class="p">,</span> <span class="n">_SENTRY_SCHEMA</span><span class="p">)</span>
 </code></pre></div>
             </details>
     </div>
@@ -2368,23 +2495,23 @@ mirrored row rather than assuming the store ever fetched the other side.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/store.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="664 "></span><span class="k">def</span><span class="w"> </span><span class="nf">record_refresh</span><span class="p">(</span>
-<span class="linenos" data-linenos="665 "></span>    <span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">,</span>
-<span class="linenos" data-linenos="666 "></span>    <span class="o">*</span><span class="p">,</span>
-<span class="linenos" data-linenos="667 "></span>    <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-<span class="linenos" data-linenos="668 "></span>    <span class="n">last_run_at</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span>
-<span class="linenos" data-linenos="669 "></span>    <span class="n">covered_from</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="linenos" data-linenos="670 "></span>    <span class="n">covered_to</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="linenos" data-linenos="671 "></span>    <span class="n">row_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="linenos" data-linenos="672 "></span>    <span class="n">note</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="linenos" data-linenos="673 "></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="linenos" data-linenos="674 "></span><span class="w">    </span><span class="sd">"""Record the latest refresh for `source`, replacing any prior record for it."""</span>
-<span class="linenos" data-linenos="675 "></span>    <span class="k">with</span> <span class="n">_transaction</span><span class="p">(</span><span class="n">con</span><span class="p">):</span>
-<span class="linenos" data-linenos="676 "></span>        <span class="n">con</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">'DELETE FROM refresh_runs WHERE source = ?'</span><span class="p">,</span> <span class="p">[</span><span class="n">source</span><span class="p">])</span>
-<span class="linenos" data-linenos="677 "></span>        <span class="n">con</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-<span class="linenos" data-linenos="678 "></span>            <span class="s1">'INSERT INTO refresh_runs VALUES (?, ?, ?, ?, ?, ?)'</span><span class="p">,</span>
-<span class="linenos" data-linenos="679 "></span>            <span class="p">[</span><span class="n">source</span><span class="p">,</span> <span class="n">last_run_at</span><span class="p">,</span> <span class="n">covered_from</span><span class="p">,</span> <span class="n">covered_to</span><span class="p">,</span> <span class="n">row_count</span><span class="p">,</span> <span class="n">note</span><span class="p">],</span>
-<span class="linenos" data-linenos="680 "></span>        <span class="p">)</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="732 "></span><span class="k">def</span><span class="w"> </span><span class="nf">record_refresh</span><span class="p">(</span>
+<span class="linenos" data-linenos="733 "></span>    <span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">,</span>
+<span class="linenos" data-linenos="734 "></span>    <span class="o">*</span><span class="p">,</span>
+<span class="linenos" data-linenos="735 "></span>    <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="linenos" data-linenos="736 "></span>    <span class="n">last_run_at</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span>
+<span class="linenos" data-linenos="737 "></span>    <span class="n">covered_from</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="linenos" data-linenos="738 "></span>    <span class="n">covered_to</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="linenos" data-linenos="739 "></span>    <span class="n">row_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="linenos" data-linenos="740 "></span>    <span class="n">note</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="linenos" data-linenos="741 "></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos" data-linenos="742 "></span><span class="w">    </span><span class="sd">"""Record the latest refresh for `source`, replacing any prior record for it."""</span>
+<span class="linenos" data-linenos="743 "></span>    <span class="k">with</span> <span class="n">_transaction</span><span class="p">(</span><span class="n">con</span><span class="p">):</span>
+<span class="linenos" data-linenos="744 "></span>        <span class="n">con</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">'DELETE FROM refresh_runs WHERE source = ?'</span><span class="p">,</span> <span class="p">[</span><span class="n">source</span><span class="p">])</span>
+<span class="linenos" data-linenos="745 "></span>        <span class="n">con</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+<span class="linenos" data-linenos="746 "></span>            <span class="s1">'INSERT INTO refresh_runs VALUES (?, ?, ?, ?, ?, ?)'</span><span class="p">,</span>
+<span class="linenos" data-linenos="747 "></span>            <span class="p">[</span><span class="n">source</span><span class="p">,</span> <span class="n">last_run_at</span><span class="p">,</span> <span class="n">covered_from</span><span class="p">,</span> <span class="n">covered_to</span><span class="p">,</span> <span class="n">row_count</span><span class="p">,</span> <span class="n">note</span><span class="p">],</span>
+<span class="linenos" data-linenos="748 "></span>        <span class="p">)</span>
 </code></pre></div>
             </details>
     </div>
@@ -2409,12 +2536,12 @@ mirrored row rather than assuming the store ever fetched the other side.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/store.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="588 "></span><span class="k">def</span><span class="w"> </span><span class="nf">set_locked_fields</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">table</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fields</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="linenos" data-linenos="589 "></span><span class="w">    </span><span class="sd">"""Replace the locked-field list for one `issues` or `pylon_issues` row, freezing it against refreshes."""</span>
-<span class="linenos" data-linenos="590 "></span>    <span class="k">if</span> <span class="n">table</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">'issues'</span><span class="p">,</span> <span class="s1">'pylon_accounts'</span><span class="p">,</span> <span class="s1">'pylon_issues'</span><span class="p">}:</span>
-<span class="linenos" data-linenos="591 "></span>        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">table</span><span class="si">}</span><span class="s1"> has no provenance to lock'</span>
-<span class="linenos" data-linenos="592 "></span>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-<span class="linenos" data-linenos="593 "></span>    <span class="n">con</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s1">'UPDATE </span><span class="si">{</span><span class="n">table</span><span class="si">}</span><span class="s1"> SET locked_fields = ? WHERE id = ?'</span><span class="p">,</span> <span class="p">[</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">fields</span><span class="p">),</span> <span class="n">key</span><span class="p">])</span>  <span class="c1"># noqa: S608</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="656 "></span><span class="k">def</span><span class="w"> </span><span class="nf">set_locked_fields</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">table</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fields</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos" data-linenos="657 "></span><span class="w">    </span><span class="sd">"""Replace the locked-field list for one `issues` or `pylon_issues` row, freezing it against refreshes."""</span>
+<span class="linenos" data-linenos="658 "></span>    <span class="k">if</span> <span class="n">table</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">'issues'</span><span class="p">,</span> <span class="s1">'pylon_accounts'</span><span class="p">,</span> <span class="s1">'pylon_issues'</span><span class="p">,</span> <span class="s1">'sentry_issues'</span><span class="p">}:</span>
+<span class="linenos" data-linenos="659 "></span>        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">table</span><span class="si">}</span><span class="s1"> has no provenance to lock'</span>
+<span class="linenos" data-linenos="660 "></span>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+<span class="linenos" data-linenos="661 "></span>    <span class="n">con</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s1">'UPDATE </span><span class="si">{</span><span class="n">table</span><span class="si">}</span><span class="s1"> SET locked_fields = ? WHERE id = ?'</span><span class="p">,</span> <span class="p">[</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">fields</span><span class="p">),</span> <span class="n">key</span><span class="p">])</span>  <span class="c1"># noqa: S608</span>
 </code></pre></div>
             </details>
     </div>
@@ -2439,15 +2566,15 @@ mirrored row rather than assuming the store ever fetched the other side.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/store.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="596 "></span><span class="k">def</span><span class="w"> </span><span class="nf">upsert_cycles</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="linenos" data-linenos="597 "></span><span class="w">    </span><span class="sd">"""Upsert cycles keyed on (team_key, number); Linear is the only source, so no provenance merge applies."""</span>
-<span class="linenos" data-linenos="598 "></span>    <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
-<span class="linenos" data-linenos="599 "></span>        <span class="k">return</span>
-<span class="linenos" data-linenos="600 "></span>    <span class="n">rows</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">_CYCLE_COLS</span><span class="p">))</span><span class="o">.</span><span class="n">to_dicts</span><span class="p">()</span>
-<span class="linenos" data-linenos="601 "></span>    <span class="n">keys</span> <span class="o">=</span> <span class="p">[(</span><span class="n">row</span><span class="p">[</span><span class="s1">'team_key'</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s1">'number'</span><span class="p">])</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">]</span>
-<span class="linenos" data-linenos="602 "></span>    <span class="k">with</span> <span class="n">_transaction</span><span class="p">(</span><span class="n">con</span><span class="p">):</span>
-<span class="linenos" data-linenos="603 "></span>        <span class="n">_delete_keys</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'cycles'</span><span class="p">,</span> <span class="p">(</span><span class="s1">'team_key'</span><span class="p">,</span> <span class="s1">'number'</span><span class="p">),</span> <span class="n">keys</span><span class="p">)</span>
-<span class="linenos" data-linenos="604 "></span>        <span class="n">_insert_rows</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'cycles'</span><span class="p">,</span> <span class="n">_CYCLE_COLS</span><span class="p">,</span> <span class="n">rows</span><span class="p">)</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="664 "></span><span class="k">def</span><span class="w"> </span><span class="nf">upsert_cycles</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos" data-linenos="665 "></span><span class="w">    </span><span class="sd">"""Upsert cycles keyed on (team_key, number); Linear is the only source, so no provenance merge applies."""</span>
+<span class="linenos" data-linenos="666 "></span>    <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
+<span class="linenos" data-linenos="667 "></span>        <span class="k">return</span>
+<span class="linenos" data-linenos="668 "></span>    <span class="n">rows</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">_CYCLE_COLS</span><span class="p">))</span><span class="o">.</span><span class="n">to_dicts</span><span class="p">()</span>
+<span class="linenos" data-linenos="669 "></span>    <span class="n">keys</span> <span class="o">=</span> <span class="p">[(</span><span class="n">row</span><span class="p">[</span><span class="s1">'team_key'</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s1">'number'</span><span class="p">])</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">]</span>
+<span class="linenos" data-linenos="670 "></span>    <span class="k">with</span> <span class="n">_transaction</span><span class="p">(</span><span class="n">con</span><span class="p">):</span>
+<span class="linenos" data-linenos="671 "></span>        <span class="n">_delete_keys</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'cycles'</span><span class="p">,</span> <span class="p">(</span><span class="s1">'team_key'</span><span class="p">,</span> <span class="s1">'number'</span><span class="p">),</span> <span class="n">keys</span><span class="p">)</span>
+<span class="linenos" data-linenos="672 "></span>        <span class="n">_insert_rows</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'cycles'</span><span class="p">,</span> <span class="n">_CYCLE_COLS</span><span class="p">,</span> <span class="n">rows</span><span class="p">)</span>
 </code></pre></div>
             </details>
     </div>
@@ -2472,21 +2599,21 @@ mirrored row rather than assuming the store ever fetched the other side.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/store.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="607 "></span><span class="k">def</span><span class="w"> </span><span class="nf">upsert_issue_labels</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="linenos" data-linenos="608 "></span><span class="w">    </span><span class="sd">"""Replace `source`'s labels for every issue named in `df` with exactly the rows given."""</span>
-<span class="linenos" data-linenos="609 "></span>    <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
-<span class="linenos" data-linenos="610 "></span>        <span class="k">return</span>
-<span class="linenos" data-linenos="611 "></span>    <span class="n">rows</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">'issue_id'</span><span class="p">,</span> <span class="s1">'label'</span><span class="p">)</span><span class="o">.</span><span class="n">to_dicts</span><span class="p">()</span>
-<span class="linenos" data-linenos="612 "></span>    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
-<span class="linenos" data-linenos="613 "></span>        <span class="n">row</span><span class="p">[</span><span class="s1">'source'</span><span class="p">]</span> <span class="o">=</span> <span class="n">source</span>
-<span class="linenos" data-linenos="614 "></span>    <span class="n">issue_ids</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">({</span><span class="n">row</span><span class="p">[</span><span class="s1">'issue_id'</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">})</span>
-<span class="linenos" data-linenos="615 "></span>    <span class="n">placeholders</span> <span class="o">=</span> <span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">'?'</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">issue_ids</span><span class="p">))</span>
-<span class="linenos" data-linenos="616 "></span>    <span class="k">with</span> <span class="n">_transaction</span><span class="p">(</span><span class="n">con</span><span class="p">):</span>
-<span class="linenos" data-linenos="617 "></span>        <span class="n">con</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-<span class="linenos" data-linenos="618 "></span>            <span class="sa">f</span><span class="s1">'DELETE FROM issue_labels WHERE source = ? AND issue_id IN (</span><span class="si">{</span><span class="n">placeholders</span><span class="si">}</span><span class="s1">)'</span><span class="p">,</span>  <span class="c1"># noqa: S608</span>
-<span class="linenos" data-linenos="619 "></span>            <span class="p">[</span><span class="n">source</span><span class="p">,</span> <span class="o">*</span><span class="n">issue_ids</span><span class="p">],</span>
-<span class="linenos" data-linenos="620 "></span>        <span class="p">)</span>
-<span class="linenos" data-linenos="621 "></span>        <span class="n">_insert_rows</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'issue_labels'</span><span class="p">,</span> <span class="n">_ISSUE_LABEL_COLS</span><span class="p">,</span> <span class="n">rows</span><span class="p">)</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="675 "></span><span class="k">def</span><span class="w"> </span><span class="nf">upsert_issue_labels</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos" data-linenos="676 "></span><span class="w">    </span><span class="sd">"""Replace `source`'s labels for every issue named in `df` with exactly the rows given."""</span>
+<span class="linenos" data-linenos="677 "></span>    <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
+<span class="linenos" data-linenos="678 "></span>        <span class="k">return</span>
+<span class="linenos" data-linenos="679 "></span>    <span class="n">rows</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">'issue_id'</span><span class="p">,</span> <span class="s1">'label'</span><span class="p">)</span><span class="o">.</span><span class="n">to_dicts</span><span class="p">()</span>
+<span class="linenos" data-linenos="680 "></span>    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
+<span class="linenos" data-linenos="681 "></span>        <span class="n">row</span><span class="p">[</span><span class="s1">'source'</span><span class="p">]</span> <span class="o">=</span> <span class="n">source</span>
+<span class="linenos" data-linenos="682 "></span>    <span class="n">issue_ids</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">({</span><span class="n">row</span><span class="p">[</span><span class="s1">'issue_id'</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">})</span>
+<span class="linenos" data-linenos="683 "></span>    <span class="n">placeholders</span> <span class="o">=</span> <span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">'?'</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">issue_ids</span><span class="p">))</span>
+<span class="linenos" data-linenos="684 "></span>    <span class="k">with</span> <span class="n">_transaction</span><span class="p">(</span><span class="n">con</span><span class="p">):</span>
+<span class="linenos" data-linenos="685 "></span>        <span class="n">con</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+<span class="linenos" data-linenos="686 "></span>            <span class="sa">f</span><span class="s1">'DELETE FROM issue_labels WHERE source = ? AND issue_id IN (</span><span class="si">{</span><span class="n">placeholders</span><span class="si">}</span><span class="s1">)'</span><span class="p">,</span>  <span class="c1"># noqa: S608</span>
+<span class="linenos" data-linenos="687 "></span>            <span class="p">[</span><span class="n">source</span><span class="p">,</span> <span class="o">*</span><span class="n">issue_ids</span><span class="p">],</span>
+<span class="linenos" data-linenos="688 "></span>        <span class="p">)</span>
+<span class="linenos" data-linenos="689 "></span>        <span class="n">_insert_rows</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'issue_labels'</span><span class="p">,</span> <span class="n">_ISSUE_LABEL_COLS</span><span class="p">,</span> <span class="n">rows</span><span class="p">)</span>
 </code></pre></div>
             </details>
     </div>
@@ -2511,21 +2638,21 @@ mirrored row rather than assuming the store ever fetched the other side.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/store.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="624 "></span><span class="k">def</span><span class="w"> </span><span class="nf">upsert_issue_relations</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="linenos" data-linenos="625 "></span><span class="w">    </span><span class="sd">"""Replace `source`'s relations for every issue named in `df`, recorded one-directionally as given."""</span>
-<span class="linenos" data-linenos="626 "></span>    <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
-<span class="linenos" data-linenos="627 "></span>        <span class="k">return</span>
-<span class="linenos" data-linenos="628 "></span>    <span class="n">rows</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">'issue_id'</span><span class="p">,</span> <span class="s1">'relation_type'</span><span class="p">,</span> <span class="s1">'related_identifier'</span><span class="p">)</span><span class="o">.</span><span class="n">to_dicts</span><span class="p">()</span>
-<span class="linenos" data-linenos="629 "></span>    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
-<span class="linenos" data-linenos="630 "></span>        <span class="n">row</span><span class="p">[</span><span class="s1">'source'</span><span class="p">]</span> <span class="o">=</span> <span class="n">source</span>
-<span class="linenos" data-linenos="631 "></span>    <span class="n">issue_ids</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">({</span><span class="n">row</span><span class="p">[</span><span class="s1">'issue_id'</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">})</span>
-<span class="linenos" data-linenos="632 "></span>    <span class="n">placeholders</span> <span class="o">=</span> <span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">'?'</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">issue_ids</span><span class="p">))</span>
-<span class="linenos" data-linenos="633 "></span>    <span class="k">with</span> <span class="n">_transaction</span><span class="p">(</span><span class="n">con</span><span class="p">):</span>
-<span class="linenos" data-linenos="634 "></span>        <span class="n">con</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-<span class="linenos" data-linenos="635 "></span>            <span class="sa">f</span><span class="s1">'DELETE FROM issue_relations WHERE source = ? AND issue_id IN (</span><span class="si">{</span><span class="n">placeholders</span><span class="si">}</span><span class="s1">)'</span><span class="p">,</span>  <span class="c1"># noqa: S608</span>
-<span class="linenos" data-linenos="636 "></span>            <span class="p">[</span><span class="n">source</span><span class="p">,</span> <span class="o">*</span><span class="n">issue_ids</span><span class="p">],</span>
-<span class="linenos" data-linenos="637 "></span>        <span class="p">)</span>
-<span class="linenos" data-linenos="638 "></span>        <span class="n">_insert_rows</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'issue_relations'</span><span class="p">,</span> <span class="n">_ISSUE_RELATION_COLS</span><span class="p">,</span> <span class="n">rows</span><span class="p">)</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="692 "></span><span class="k">def</span><span class="w"> </span><span class="nf">upsert_issue_relations</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos" data-linenos="693 "></span><span class="w">    </span><span class="sd">"""Replace `source`'s relations for every issue named in `df`, recorded one-directionally as given."""</span>
+<span class="linenos" data-linenos="694 "></span>    <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
+<span class="linenos" data-linenos="695 "></span>        <span class="k">return</span>
+<span class="linenos" data-linenos="696 "></span>    <span class="n">rows</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">'issue_id'</span><span class="p">,</span> <span class="s1">'relation_type'</span><span class="p">,</span> <span class="s1">'related_identifier'</span><span class="p">)</span><span class="o">.</span><span class="n">to_dicts</span><span class="p">()</span>
+<span class="linenos" data-linenos="697 "></span>    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
+<span class="linenos" data-linenos="698 "></span>        <span class="n">row</span><span class="p">[</span><span class="s1">'source'</span><span class="p">]</span> <span class="o">=</span> <span class="n">source</span>
+<span class="linenos" data-linenos="699 "></span>    <span class="n">issue_ids</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">({</span><span class="n">row</span><span class="p">[</span><span class="s1">'issue_id'</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">})</span>
+<span class="linenos" data-linenos="700 "></span>    <span class="n">placeholders</span> <span class="o">=</span> <span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">'?'</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">issue_ids</span><span class="p">))</span>
+<span class="linenos" data-linenos="701 "></span>    <span class="k">with</span> <span class="n">_transaction</span><span class="p">(</span><span class="n">con</span><span class="p">):</span>
+<span class="linenos" data-linenos="702 "></span>        <span class="n">con</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+<span class="linenos" data-linenos="703 "></span>            <span class="sa">f</span><span class="s1">'DELETE FROM issue_relations WHERE source = ? AND issue_id IN (</span><span class="si">{</span><span class="n">placeholders</span><span class="si">}</span><span class="s1">)'</span><span class="p">,</span>  <span class="c1"># noqa: S608</span>
+<span class="linenos" data-linenos="704 "></span>            <span class="p">[</span><span class="n">source</span><span class="p">,</span> <span class="o">*</span><span class="n">issue_ids</span><span class="p">],</span>
+<span class="linenos" data-linenos="705 "></span>        <span class="p">)</span>
+<span class="linenos" data-linenos="706 "></span>        <span class="n">_insert_rows</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'issue_relations'</span><span class="p">,</span> <span class="n">_ISSUE_RELATION_COLS</span><span class="p">,</span> <span class="n">rows</span><span class="p">)</span>
 </code></pre></div>
             </details>
     </div>
@@ -2550,16 +2677,16 @@ mirrored row rather than assuming the store ever fetched the other side.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/store.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="531 "></span><span class="k">def</span><span class="w"> </span><span class="nf">upsert_issues</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="linenos" data-linenos="532 "></span><span class="w">    </span><span class="sd">"""Merge Linear issue rows keyed on `id`, overwriting only fields `source` is allowed to touch."""</span>
-<span class="linenos" data-linenos="533 "></span>    <span class="n">_upsert_with_provenance</span><span class="p">(</span>
-<span class="linenos" data-linenos="534 "></span>        <span class="n">con</span><span class="p">,</span>
-<span class="linenos" data-linenos="535 "></span>        <span class="n">table</span><span class="o">=</span><span class="s1">'issues'</span><span class="p">,</span>
-<span class="linenos" data-linenos="536 "></span>        <span class="n">key_cols</span><span class="o">=</span><span class="n">_ISSUE_KEY_COLS</span><span class="p">,</span>
-<span class="linenos" data-linenos="537 "></span>        <span class="n">domain_cols</span><span class="o">=</span><span class="n">_ISSUE_DOMAIN_COLS</span><span class="p">,</span>
-<span class="linenos" data-linenos="538 "></span>        <span class="n">incoming</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
-<span class="linenos" data-linenos="539 "></span>        <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span>
-<span class="linenos" data-linenos="540 "></span>    <span class="p">)</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="587 "></span><span class="k">def</span><span class="w"> </span><span class="nf">upsert_issues</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos" data-linenos="588 "></span><span class="w">    </span><span class="sd">"""Merge Linear issue rows keyed on `id`, overwriting only fields `source` is allowed to touch."""</span>
+<span class="linenos" data-linenos="589 "></span>    <span class="n">_upsert_with_provenance</span><span class="p">(</span>
+<span class="linenos" data-linenos="590 "></span>        <span class="n">con</span><span class="p">,</span>
+<span class="linenos" data-linenos="591 "></span>        <span class="n">table</span><span class="o">=</span><span class="s1">'issues'</span><span class="p">,</span>
+<span class="linenos" data-linenos="592 "></span>        <span class="n">key_cols</span><span class="o">=</span><span class="n">_ISSUE_KEY_COLS</span><span class="p">,</span>
+<span class="linenos" data-linenos="593 "></span>        <span class="n">domain_cols</span><span class="o">=</span><span class="n">_ISSUE_DOMAIN_COLS</span><span class="p">,</span>
+<span class="linenos" data-linenos="594 "></span>        <span class="n">incoming</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
+<span class="linenos" data-linenos="595 "></span>        <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span>
+<span class="linenos" data-linenos="596 "></span>    <span class="p">)</span>
 </code></pre></div>
             </details>
     </div>
@@ -2586,20 +2713,20 @@ with <code>source='manual'</code> and must survive every later refresh.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/store.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="555 "></span><span class="k">def</span><span class="w"> </span><span class="nf">upsert_pylon_accounts</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'pylon'</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="linenos" data-linenos="556 "></span><span class="w">    </span><span class="sd">"""Merge Pylon account rows keyed on `id`, same provenance rule as `upsert_issues`.</span>
-<span class="linenos" data-linenos="557 "></span>
-<span class="linenos" data-linenos="558 "></span><span class="sd">    No Pylon workspace is required to expose a tier field, so `tier` is often written by hand</span>
-<span class="linenos" data-linenos="559 "></span><span class="sd">    with `source='manual'` and must survive every later refresh.</span>
-<span class="linenos" data-linenos="560 "></span><span class="sd">    """</span>
-<span class="linenos" data-linenos="561 "></span>    <span class="n">_upsert_with_provenance</span><span class="p">(</span>
-<span class="linenos" data-linenos="562 "></span>        <span class="n">con</span><span class="p">,</span>
-<span class="linenos" data-linenos="563 "></span>        <span class="n">table</span><span class="o">=</span><span class="s1">'pylon_accounts'</span><span class="p">,</span>
-<span class="linenos" data-linenos="564 "></span>        <span class="n">key_cols</span><span class="o">=</span><span class="n">_PYLON_ACCOUNT_KEY_COLS</span><span class="p">,</span>
-<span class="linenos" data-linenos="565 "></span>        <span class="n">domain_cols</span><span class="o">=</span><span class="n">_PYLON_ACCOUNT_DOMAIN_COLS</span><span class="p">,</span>
-<span class="linenos" data-linenos="566 "></span>        <span class="n">incoming</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
-<span class="linenos" data-linenos="567 "></span>        <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span>
-<span class="linenos" data-linenos="568 "></span>    <span class="p">)</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="611 "></span><span class="k">def</span><span class="w"> </span><span class="nf">upsert_pylon_accounts</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'pylon'</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos" data-linenos="612 "></span><span class="w">    </span><span class="sd">"""Merge Pylon account rows keyed on `id`, same provenance rule as `upsert_issues`.</span>
+<span class="linenos" data-linenos="613 "></span>
+<span class="linenos" data-linenos="614 "></span><span class="sd">    No Pylon workspace is required to expose a tier field, so `tier` is often written by hand</span>
+<span class="linenos" data-linenos="615 "></span><span class="sd">    with `source='manual'` and must survive every later refresh.</span>
+<span class="linenos" data-linenos="616 "></span><span class="sd">    """</span>
+<span class="linenos" data-linenos="617 "></span>    <span class="n">_upsert_with_provenance</span><span class="p">(</span>
+<span class="linenos" data-linenos="618 "></span>        <span class="n">con</span><span class="p">,</span>
+<span class="linenos" data-linenos="619 "></span>        <span class="n">table</span><span class="o">=</span><span class="s1">'pylon_accounts'</span><span class="p">,</span>
+<span class="linenos" data-linenos="620 "></span>        <span class="n">key_cols</span><span class="o">=</span><span class="n">_PYLON_ACCOUNT_KEY_COLS</span><span class="p">,</span>
+<span class="linenos" data-linenos="621 "></span>        <span class="n">domain_cols</span><span class="o">=</span><span class="n">_PYLON_ACCOUNT_DOMAIN_COLS</span><span class="p">,</span>
+<span class="linenos" data-linenos="622 "></span>        <span class="n">incoming</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
+<span class="linenos" data-linenos="623 "></span>        <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span>
+<span class="linenos" data-linenos="624 "></span>    <span class="p">)</span>
 </code></pre></div>
             </details>
     </div>
@@ -2624,21 +2751,21 @@ with <code>source='manual'</code> and must survive every later refresh.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/store.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="571 "></span><span class="k">def</span><span class="w"> </span><span class="nf">upsert_pylon_issue_labels</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'pylon'</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="linenos" data-linenos="572 "></span><span class="w">    </span><span class="sd">"""Replace `source`'s tags and question types for every Pylon issue named in `df`."""</span>
-<span class="linenos" data-linenos="573 "></span>    <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
-<span class="linenos" data-linenos="574 "></span>        <span class="k">return</span>
-<span class="linenos" data-linenos="575 "></span>    <span class="n">rows</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">'issue_id'</span><span class="p">,</span> <span class="s1">'kind'</span><span class="p">,</span> <span class="s1">'label'</span><span class="p">)</span><span class="o">.</span><span class="n">to_dicts</span><span class="p">()</span>
-<span class="linenos" data-linenos="576 "></span>    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
-<span class="linenos" data-linenos="577 "></span>        <span class="n">row</span><span class="p">[</span><span class="s1">'source'</span><span class="p">]</span> <span class="o">=</span> <span class="n">source</span>
-<span class="linenos" data-linenos="578 "></span>    <span class="n">issue_ids</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">({</span><span class="n">row</span><span class="p">[</span><span class="s1">'issue_id'</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">})</span>
-<span class="linenos" data-linenos="579 "></span>    <span class="n">placeholders</span> <span class="o">=</span> <span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">'?'</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">issue_ids</span><span class="p">))</span>
-<span class="linenos" data-linenos="580 "></span>    <span class="k">with</span> <span class="n">_transaction</span><span class="p">(</span><span class="n">con</span><span class="p">):</span>
-<span class="linenos" data-linenos="581 "></span>        <span class="n">con</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-<span class="linenos" data-linenos="582 "></span>            <span class="sa">f</span><span class="s1">'DELETE FROM pylon_issue_labels WHERE source = ? AND issue_id IN (</span><span class="si">{</span><span class="n">placeholders</span><span class="si">}</span><span class="s1">)'</span><span class="p">,</span>  <span class="c1"># noqa: S608</span>
-<span class="linenos" data-linenos="583 "></span>            <span class="p">[</span><span class="n">source</span><span class="p">,</span> <span class="o">*</span><span class="n">issue_ids</span><span class="p">],</span>
-<span class="linenos" data-linenos="584 "></span>        <span class="p">)</span>
-<span class="linenos" data-linenos="585 "></span>        <span class="n">_insert_rows</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'pylon_issue_labels'</span><span class="p">,</span> <span class="n">_PYLON_LABEL_COLS</span><span class="p">,</span> <span class="n">rows</span><span class="p">)</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="639 "></span><span class="k">def</span><span class="w"> </span><span class="nf">upsert_pylon_issue_labels</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'pylon'</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos" data-linenos="640 "></span><span class="w">    </span><span class="sd">"""Replace `source`'s tags and question types for every Pylon issue named in `df`."""</span>
+<span class="linenos" data-linenos="641 "></span>    <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
+<span class="linenos" data-linenos="642 "></span>        <span class="k">return</span>
+<span class="linenos" data-linenos="643 "></span>    <span class="n">rows</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">'issue_id'</span><span class="p">,</span> <span class="s1">'kind'</span><span class="p">,</span> <span class="s1">'label'</span><span class="p">)</span><span class="o">.</span><span class="n">to_dicts</span><span class="p">()</span>
+<span class="linenos" data-linenos="644 "></span>    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
+<span class="linenos" data-linenos="645 "></span>        <span class="n">row</span><span class="p">[</span><span class="s1">'source'</span><span class="p">]</span> <span class="o">=</span> <span class="n">source</span>
+<span class="linenos" data-linenos="646 "></span>    <span class="n">issue_ids</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">({</span><span class="n">row</span><span class="p">[</span><span class="s1">'issue_id'</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">})</span>
+<span class="linenos" data-linenos="647 "></span>    <span class="n">placeholders</span> <span class="o">=</span> <span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">'?'</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">issue_ids</span><span class="p">))</span>
+<span class="linenos" data-linenos="648 "></span>    <span class="k">with</span> <span class="n">_transaction</span><span class="p">(</span><span class="n">con</span><span class="p">):</span>
+<span class="linenos" data-linenos="649 "></span>        <span class="n">con</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+<span class="linenos" data-linenos="650 "></span>            <span class="sa">f</span><span class="s1">'DELETE FROM pylon_issue_labels WHERE source = ? AND issue_id IN (</span><span class="si">{</span><span class="n">placeholders</span><span class="si">}</span><span class="s1">)'</span><span class="p">,</span>  <span class="c1"># noqa: S608</span>
+<span class="linenos" data-linenos="651 "></span>            <span class="p">[</span><span class="n">source</span><span class="p">,</span> <span class="o">*</span><span class="n">issue_ids</span><span class="p">],</span>
+<span class="linenos" data-linenos="652 "></span>        <span class="p">)</span>
+<span class="linenos" data-linenos="653 "></span>        <span class="n">_insert_rows</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="s1">'pylon_issue_labels'</span><span class="p">,</span> <span class="n">_PYLON_LABEL_COLS</span><span class="p">,</span> <span class="n">rows</span><span class="p">)</span>
 </code></pre></div>
             </details>
     </div>
@@ -2663,16 +2790,50 @@ with <code>source='manual'</code> and must survive every later refresh.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/store.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="543 "></span><span class="k">def</span><span class="w"> </span><span class="nf">upsert_pylon_issues</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'pylon'</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="linenos" data-linenos="544 "></span><span class="w">    </span><span class="sd">"""Merge Pylon issue rows keyed on `id`, same provenance rule as `upsert_issues`."""</span>
-<span class="linenos" data-linenos="545 "></span>    <span class="n">_upsert_with_provenance</span><span class="p">(</span>
-<span class="linenos" data-linenos="546 "></span>        <span class="n">con</span><span class="p">,</span>
-<span class="linenos" data-linenos="547 "></span>        <span class="n">table</span><span class="o">=</span><span class="s1">'pylon_issues'</span><span class="p">,</span>
-<span class="linenos" data-linenos="548 "></span>        <span class="n">key_cols</span><span class="o">=</span><span class="n">_PYLON_KEY_COLS</span><span class="p">,</span>
-<span class="linenos" data-linenos="549 "></span>        <span class="n">domain_cols</span><span class="o">=</span><span class="n">_PYLON_DOMAIN_COLS</span><span class="p">,</span>
-<span class="linenos" data-linenos="550 "></span>        <span class="n">incoming</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
-<span class="linenos" data-linenos="551 "></span>        <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span>
-<span class="linenos" data-linenos="552 "></span>    <span class="p">)</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="599 "></span><span class="k">def</span><span class="w"> </span><span class="nf">upsert_pylon_issues</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'pylon'</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos" data-linenos="600 "></span><span class="w">    </span><span class="sd">"""Merge Pylon issue rows keyed on `id`, same provenance rule as `upsert_issues`."""</span>
+<span class="linenos" data-linenos="601 "></span>    <span class="n">_upsert_with_provenance</span><span class="p">(</span>
+<span class="linenos" data-linenos="602 "></span>        <span class="n">con</span><span class="p">,</span>
+<span class="linenos" data-linenos="603 "></span>        <span class="n">table</span><span class="o">=</span><span class="s1">'pylon_issues'</span><span class="p">,</span>
+<span class="linenos" data-linenos="604 "></span>        <span class="n">key_cols</span><span class="o">=</span><span class="n">_PYLON_KEY_COLS</span><span class="p">,</span>
+<span class="linenos" data-linenos="605 "></span>        <span class="n">domain_cols</span><span class="o">=</span><span class="n">_PYLON_DOMAIN_COLS</span><span class="p">,</span>
+<span class="linenos" data-linenos="606 "></span>        <span class="n">incoming</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
+<span class="linenos" data-linenos="607 "></span>        <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span>
+<span class="linenos" data-linenos="608 "></span>    <span class="p">)</span>
+</code></pre></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="tlr.store.upsert_sentry_issues" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">upsert_sentry_issues</span>
+
+
+<a href="#tlr.store.upsert_sentry_issues" class="headerlink" title="Permanent link">⚓︎</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">upsert_sentry_issues</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s1">'sentry'</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Merge Sentry issue rows keyed on <code>id</code>, same provenance rule as <code>upsert_issues</code>.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>tlr/store.py</code></summary>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="627 "></span><span class="k">def</span><span class="w"> </span><span class="nf">upsert_sentry_issues</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">DuckDBPyConnection</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'sentry'</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos" data-linenos="628 "></span><span class="w">    </span><span class="sd">"""Merge Sentry issue rows keyed on `id`, same provenance rule as `upsert_issues`."""</span>
+<span class="linenos" data-linenos="629 "></span>    <span class="n">_upsert_with_provenance</span><span class="p">(</span>
+<span class="linenos" data-linenos="630 "></span>        <span class="n">con</span><span class="p">,</span>
+<span class="linenos" data-linenos="631 "></span>        <span class="n">table</span><span class="o">=</span><span class="s1">'sentry_issues'</span><span class="p">,</span>
+<span class="linenos" data-linenos="632 "></span>        <span class="n">key_cols</span><span class="o">=</span><span class="n">_SENTRY_KEY_COLS</span><span class="p">,</span>
+<span class="linenos" data-linenos="633 "></span>        <span class="n">domain_cols</span><span class="o">=</span><span class="n">_SENTRY_DOMAIN_COLS</span><span class="p">,</span>
+<span class="linenos" data-linenos="634 "></span>        <span class="n">incoming</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
+<span class="linenos" data-linenos="635 "></span>        <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span>
+<span class="linenos" data-linenos="636 "></span>    <span class="p">)</span>
 </code></pre></div>
             </details>
     </div>

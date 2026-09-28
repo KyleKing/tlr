@@ -867,6 +867,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../domain/snapshot/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Snapshot
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../domain/triage/" class="md-nav__link">
         
   
@@ -1459,6 +1487,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sentry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sentry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1805,8 +1861,8 @@
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>tlr/sources/linear.py</code></summary>
-                <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="132 "></span><span class="k">class</span><span class="w"> </span><span class="nc">GraphQLError</span><span class="p">(</span><span class="ne">RuntimeError</span><span class="p">):</span>
-<span class="linenos" data-linenos="133 "></span><span class="w">    </span><span class="sd">"""Raised when a Linear GraphQL response carries an `errors` array."""</span>
+                <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="136 "></span><span class="k">class</span><span class="w"> </span><span class="nc">GraphQLError</span><span class="p">(</span><span class="ne">RuntimeError</span><span class="p">):</span>
+<span class="linenos" data-linenos="137 "></span><span class="w">    </span><span class="sd">"""Raised when a Linear GraphQL response carries an `errors` array."""</span>
 </code></pre></div>
               </details>
 
@@ -1844,13 +1900,13 @@
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>tlr/sources/linear.py</code></summary>
-                <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="319 "></span><span class="nd">@dataclass</span>
-<span class="linenos" data-linenos="320 "></span><span class="k">class</span><span class="w"> </span><span class="nc">IssuesResult</span><span class="p">:</span>
-<span class="linenos" data-linenos="321 "></span><span class="w">    </span><span class="sd">"""The three store-shaped frames one Issues query page carries."""</span>
-<span class="linenos" data-linenos="322 "></span>
-<span class="linenos" data-linenos="323 "></span>    <span class="n">issues</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span>
-<span class="linenos" data-linenos="324 "></span>    <span class="n">labels</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span>
-<span class="linenos" data-linenos="325 "></span>    <span class="n">relations</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span>
+                <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="325 "></span><span class="nd">@dataclass</span>
+<span class="linenos" data-linenos="326 "></span><span class="k">class</span><span class="w"> </span><span class="nc">IssuesResult</span><span class="p">:</span>
+<span class="linenos" data-linenos="327 "></span><span class="w">    </span><span class="sd">"""The three store-shaped frames one Issues query page carries."""</span>
+<span class="linenos" data-linenos="328 "></span>
+<span class="linenos" data-linenos="329 "></span>    <span class="n">issues</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span>
+<span class="linenos" data-linenos="330 "></span>    <span class="n">labels</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span>
+<span class="linenos" data-linenos="331 "></span>    <span class="n">relations</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span>
 </code></pre></div>
               </details>
 
@@ -1905,12 +1961,12 @@
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>tlr/sources/linear.py</code></summary>
-                <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="136 "></span><span class="nd">@dataclass</span>
-<span class="linenos" data-linenos="137 "></span><span class="k">class</span><span class="w"> </span><span class="nc">LinearClient</span><span class="p">:</span>
-<span class="linenos" data-linenos="138 "></span><span class="w">    </span><span class="sd">"""An `httpx.Client` and the raw (non-Bearer) Linear API key to send with it."""</span>
-<span class="linenos" data-linenos="139 "></span>
-<span class="linenos" data-linenos="140 "></span>    <span class="n">http</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Client</span>
-<span class="linenos" data-linenos="141 "></span>    <span class="n">api_key</span><span class="p">:</span> <span class="nb">str</span>
+                <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="140 "></span><span class="nd">@dataclass</span>
+<span class="linenos" data-linenos="141 "></span><span class="k">class</span><span class="w"> </span><span class="nc">LinearClient</span><span class="p">:</span>
+<span class="linenos" data-linenos="142 "></span><span class="w">    </span><span class="sd">"""An `httpx.Client` and the raw (non-Bearer) Linear API key to send with it."""</span>
+<span class="linenos" data-linenos="143 "></span>
+<span class="linenos" data-linenos="144 "></span>    <span class="n">http</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Client</span>
+<span class="linenos" data-linenos="145 "></span>    <span class="n">api_key</span><span class="p">:</span> <span class="nb">str</span>
 </code></pre></div>
               </details>
 
@@ -1954,29 +2010,29 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/sources/linear.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="328 "></span><span class="k">def</span><span class="w"> </span><span class="nf">fetch_issues</span><span class="p">(</span><span class="n">client</span><span class="p">:</span> <span class="n">LinearClient</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">issue_filter</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">sleep</span><span class="p">:</span> <span class="n">Sleeper</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IssuesResult</span><span class="p">:</span>
-<span class="linenos" data-linenos="329 "></span><span class="w">    </span><span class="sd">"""Fetch every issue matching `issue_filter`, following Relay pagination to exhaustion."""</span>
-<span class="linenos" data-linenos="330 "></span>    <span class="n">issue_pages</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="linenos" data-linenos="331 "></span>    <span class="n">label_pages</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="linenos" data-linenos="332 "></span>    <span class="n">relation_pages</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="linenos" data-linenos="333 "></span>    <span class="n">after</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="linenos" data-linenos="334 "></span>    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-<span class="linenos" data-linenos="335 "></span>        <span class="n">data</span> <span class="o">=</span> <span class="n">_post</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">_ISSUES_QUERY</span><span class="p">,</span> <span class="p">{</span><span class="s1">'filter'</span><span class="p">:</span> <span class="n">issue_filter</span><span class="p">,</span> <span class="s1">'after'</span><span class="p">:</span> <span class="n">after</span><span class="p">},</span> <span class="n">sleep</span><span class="o">=</span><span class="n">sleep</span><span class="p">)</span>
-<span class="linenos" data-linenos="336 "></span>        <span class="n">issue_pages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parse_issues</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
-<span class="linenos" data-linenos="337 "></span>        <span class="n">label_pages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parse_issue_labels</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
-<span class="linenos" data-linenos="338 "></span>        <span class="n">relation_pages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parse_issue_relations</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
-<span class="linenos" data-linenos="339 "></span>        <span class="n">page_info</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">'issues'</span><span class="p">][</span><span class="s1">'pageInfo'</span><span class="p">]</span>
-<span class="linenos" data-linenos="340 "></span>        <span class="k">if</span> <span class="ow">not</span> <span class="n">page_info</span><span class="p">[</span><span class="s1">'hasNextPage'</span><span class="p">]:</span>
-<span class="linenos" data-linenos="341 "></span>            <span class="k">break</span>
-<span class="linenos" data-linenos="342 "></span>        <span class="n">after</span> <span class="o">=</span> <span class="n">page_info</span><span class="p">[</span><span class="s1">'endCursor'</span><span class="p">]</span>
-<span class="linenos" data-linenos="343 "></span>        <span class="k">if</span> <span class="ow">not</span> <span class="n">after</span><span class="p">:</span>
-<span class="linenos" data-linenos="344 "></span>            <span class="n">msg</span> <span class="o">=</span> <span class="s1">'Linear pageInfo.hasNextPage is true but endCursor is empty'</span>
-<span class="linenos" data-linenos="345 "></span>            <span class="k">raise</span> <span class="n">GraphQLError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-<span class="linenos" data-linenos="346 "></span>    <span class="k">return</span> <span class="n">IssuesResult</span><span class="p">(</span>
-<span class="linenos" data-linenos="347 "></span>        <span class="n">issues</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">issue_pages</span><span class="p">)</span> <span class="k">if</span> <span class="n">issue_pages</span> <span class="k">else</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">_ISSUE_SCHEMA</span><span class="p">),</span>
-<span class="linenos" data-linenos="348 "></span>        <span class="n">labels</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">label_pages</span><span class="p">)</span> <span class="k">if</span> <span class="n">label_pages</span> <span class="k">else</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">_ISSUE_LABEL_SCHEMA</span><span class="p">),</span>
-<span class="linenos" data-linenos="349 "></span>        <span class="n">relations</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">relation_pages</span><span class="p">)</span> <span class="k">if</span> <span class="n">relation_pages</span> <span class="k">else</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">_ISSUE_RELATION_SCHEMA</span><span class="p">),</span>
-<span class="linenos" data-linenos="350 "></span>    <span class="p">)</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="334 "></span><span class="k">def</span><span class="w"> </span><span class="nf">fetch_issues</span><span class="p">(</span><span class="n">client</span><span class="p">:</span> <span class="n">LinearClient</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">issue_filter</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">sleep</span><span class="p">:</span> <span class="n">Sleeper</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IssuesResult</span><span class="p">:</span>
+<span class="linenos" data-linenos="335 "></span><span class="w">    </span><span class="sd">"""Fetch every issue matching `issue_filter`, following Relay pagination to exhaustion."""</span>
+<span class="linenos" data-linenos="336 "></span>    <span class="n">issue_pages</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="linenos" data-linenos="337 "></span>    <span class="n">label_pages</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="linenos" data-linenos="338 "></span>    <span class="n">relation_pages</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="linenos" data-linenos="339 "></span>    <span class="n">after</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="linenos" data-linenos="340 "></span>    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+<span class="linenos" data-linenos="341 "></span>        <span class="n">data</span> <span class="o">=</span> <span class="n">_post</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">_ISSUES_QUERY</span><span class="p">,</span> <span class="p">{</span><span class="s1">'filter'</span><span class="p">:</span> <span class="n">issue_filter</span><span class="p">,</span> <span class="s1">'after'</span><span class="p">:</span> <span class="n">after</span><span class="p">},</span> <span class="n">sleep</span><span class="o">=</span><span class="n">sleep</span><span class="p">)</span>
+<span class="linenos" data-linenos="342 "></span>        <span class="n">issue_pages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parse_issues</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+<span class="linenos" data-linenos="343 "></span>        <span class="n">label_pages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parse_issue_labels</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+<span class="linenos" data-linenos="344 "></span>        <span class="n">relation_pages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parse_issue_relations</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+<span class="linenos" data-linenos="345 "></span>        <span class="n">page_info</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">'issues'</span><span class="p">][</span><span class="s1">'pageInfo'</span><span class="p">]</span>
+<span class="linenos" data-linenos="346 "></span>        <span class="k">if</span> <span class="ow">not</span> <span class="n">page_info</span><span class="p">[</span><span class="s1">'hasNextPage'</span><span class="p">]:</span>
+<span class="linenos" data-linenos="347 "></span>            <span class="k">break</span>
+<span class="linenos" data-linenos="348 "></span>        <span class="n">after</span> <span class="o">=</span> <span class="n">page_info</span><span class="p">[</span><span class="s1">'endCursor'</span><span class="p">]</span>
+<span class="linenos" data-linenos="349 "></span>        <span class="k">if</span> <span class="ow">not</span> <span class="n">after</span><span class="p">:</span>
+<span class="linenos" data-linenos="350 "></span>            <span class="n">msg</span> <span class="o">=</span> <span class="s1">'Linear pageInfo.hasNextPage is true but endCursor is empty'</span>
+<span class="linenos" data-linenos="351 "></span>            <span class="k">raise</span> <span class="n">GraphQLError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+<span class="linenos" data-linenos="352 "></span>    <span class="k">return</span> <span class="n">IssuesResult</span><span class="p">(</span>
+<span class="linenos" data-linenos="353 "></span>        <span class="n">issues</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">issue_pages</span><span class="p">)</span> <span class="k">if</span> <span class="n">issue_pages</span> <span class="k">else</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">_ISSUE_SCHEMA</span><span class="p">),</span>
+<span class="linenos" data-linenos="354 "></span>        <span class="n">labels</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">label_pages</span><span class="p">)</span> <span class="k">if</span> <span class="n">label_pages</span> <span class="k">else</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">_ISSUE_LABEL_SCHEMA</span><span class="p">),</span>
+<span class="linenos" data-linenos="355 "></span>        <span class="n">relations</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">relation_pages</span><span class="p">)</span> <span class="k">if</span> <span class="n">relation_pages</span> <span class="k">else</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">_ISSUE_RELATION_SCHEMA</span><span class="p">),</span>
+<span class="linenos" data-linenos="356 "></span>    <span class="p">)</span>
 </code></pre></div>
             </details>
     </div>
@@ -2003,19 +2059,19 @@ ceiling and requests no <code>pageInfo</code>.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/sources/linear.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="359 "></span><span class="k">def</span><span class="w"> </span><span class="nf">fetch_projects</span><span class="p">(</span>
-<span class="linenos" data-linenos="360 "></span>    <span class="n">client</span><span class="p">:</span> <span class="n">LinearClient</span><span class="p">,</span>
-<span class="linenos" data-linenos="361 "></span>    <span class="o">*</span><span class="p">,</span>
-<span class="linenos" data-linenos="362 "></span>    <span class="n">project_filter</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
-<span class="linenos" data-linenos="363 "></span>    <span class="n">sleep</span><span class="p">:</span> <span class="n">Sleeper</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">,</span>
-<span class="linenos" data-linenos="364 "></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="linenos" data-linenos="365 "></span><span class="w">    </span><span class="sd">"""Fetch up to 10 projects matching `project_filter`, with their milestones and team keys.</span>
-<span class="linenos" data-linenos="366 "></span>
-<span class="linenos" data-linenos="367 "></span><span class="sd">    Not paginated: the Projects query fixes `first: 10` as the measured complexity</span>
-<span class="linenos" data-linenos="368 "></span><span class="sd">    ceiling and requests no `pageInfo`.</span>
-<span class="linenos" data-linenos="369 "></span><span class="sd">    """</span>
-<span class="linenos" data-linenos="370 "></span>    <span class="n">data</span> <span class="o">=</span> <span class="n">_post</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">_PROJECTS_QUERY</span><span class="p">,</span> <span class="p">{</span><span class="s1">'filter'</span><span class="p">:</span> <span class="n">project_filter</span><span class="p">},</span> <span class="n">sleep</span><span class="o">=</span><span class="n">sleep</span><span class="p">)</span>
-<span class="linenos" data-linenos="371 "></span>    <span class="k">return</span> <span class="n">parse_projects</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="365 "></span><span class="k">def</span><span class="w"> </span><span class="nf">fetch_projects</span><span class="p">(</span>
+<span class="linenos" data-linenos="366 "></span>    <span class="n">client</span><span class="p">:</span> <span class="n">LinearClient</span><span class="p">,</span>
+<span class="linenos" data-linenos="367 "></span>    <span class="o">*</span><span class="p">,</span>
+<span class="linenos" data-linenos="368 "></span>    <span class="n">project_filter</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+<span class="linenos" data-linenos="369 "></span>    <span class="n">sleep</span><span class="p">:</span> <span class="n">Sleeper</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">,</span>
+<span class="linenos" data-linenos="370 "></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="linenos" data-linenos="371 "></span><span class="w">    </span><span class="sd">"""Fetch up to 10 projects matching `project_filter`, with their milestones and team keys.</span>
+<span class="linenos" data-linenos="372 "></span>
+<span class="linenos" data-linenos="373 "></span><span class="sd">    Not paginated: the Projects query fixes `first: 10` as the measured complexity</span>
+<span class="linenos" data-linenos="374 "></span><span class="sd">    ceiling and requests no `pageInfo`.</span>
+<span class="linenos" data-linenos="375 "></span><span class="sd">    """</span>
+<span class="linenos" data-linenos="376 "></span>    <span class="n">data</span> <span class="o">=</span> <span class="n">_post</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">_PROJECTS_QUERY</span><span class="p">,</span> <span class="p">{</span><span class="s1">'filter'</span><span class="p">:</span> <span class="n">project_filter</span><span class="p">},</span> <span class="n">sleep</span><span class="o">=</span><span class="n">sleep</span><span class="p">)</span>
+<span class="linenos" data-linenos="377 "></span>    <span class="k">return</span> <span class="n">parse_projects</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 </code></pre></div>
             </details>
     </div>
@@ -2040,10 +2096,10 @@ ceiling and requests no <code>pageInfo</code>.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/sources/linear.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="353 "></span><span class="k">def</span><span class="w"> </span><span class="nf">fetch_team_cycles</span><span class="p">(</span><span class="n">client</span><span class="p">:</span> <span class="n">LinearClient</span><span class="p">,</span> <span class="n">team_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">sleep</span><span class="p">:</span> <span class="n">Sleeper</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="linenos" data-linenos="354 "></span><span class="w">    </span><span class="sd">"""Fetch the last 12 cycles for one team, oldest first per Linear's ordering."""</span>
-<span class="linenos" data-linenos="355 "></span>    <span class="n">data</span> <span class="o">=</span> <span class="n">_post</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">_TEAM_QUERY</span><span class="p">,</span> <span class="p">{</span><span class="s1">'key'</span><span class="p">:</span> <span class="n">team_key</span><span class="p">},</span> <span class="n">sleep</span><span class="o">=</span><span class="n">sleep</span><span class="p">)</span>
-<span class="linenos" data-linenos="356 "></span>    <span class="k">return</span> <span class="n">parse_cycles</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="359 "></span><span class="k">def</span><span class="w"> </span><span class="nf">fetch_team_cycles</span><span class="p">(</span><span class="n">client</span><span class="p">:</span> <span class="n">LinearClient</span><span class="p">,</span> <span class="n">team_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">sleep</span><span class="p">:</span> <span class="n">Sleeper</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="linenos" data-linenos="360 "></span><span class="w">    </span><span class="sd">"""Fetch the last 12 cycles for one team, oldest first per Linear's ordering."""</span>
+<span class="linenos" data-linenos="361 "></span>    <span class="n">data</span> <span class="o">=</span> <span class="n">_post</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">_TEAM_QUERY</span><span class="p">,</span> <span class="p">{</span><span class="s1">'key'</span><span class="p">:</span> <span class="n">team_key</span><span class="p">},</span> <span class="n">sleep</span><span class="o">=</span><span class="n">sleep</span><span class="p">)</span>
+<span class="linenos" data-linenos="362 "></span>    <span class="k">return</span> <span class="n">parse_cycles</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 </code></pre></div>
             </details>
     </div>
@@ -2068,12 +2124,12 @@ ceiling and requests no <code>pageInfo</code>.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/sources/linear.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="144 "></span><span class="k">def</span><span class="w"> </span><span class="nf">make_linear_client</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">http</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Client</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">api_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LinearClient</span><span class="p">:</span>
-<span class="linenos" data-linenos="145 "></span><span class="w">    </span><span class="sd">"""Build a `LinearClient`, defaulting each dependency to its production implementation."""</span>
-<span class="linenos" data-linenos="146 "></span>    <span class="k">return</span> <span class="n">LinearClient</span><span class="p">(</span>
-<span class="linenos" data-linenos="147 "></span>        <span class="n">http</span><span class="o">=</span><span class="n">http</span> <span class="k">if</span> <span class="n">http</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Client</span><span class="p">(),</span>
-<span class="linenos" data-linenos="148 "></span>        <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span> <span class="k">if</span> <span class="n">api_key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">read_secret</span><span class="p">(</span><span class="s1">'linear'</span><span class="p">),</span>
-<span class="linenos" data-linenos="149 "></span>    <span class="p">)</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="148 "></span><span class="k">def</span><span class="w"> </span><span class="nf">make_linear_client</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">http</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Client</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">api_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LinearClient</span><span class="p">:</span>
+<span class="linenos" data-linenos="149 "></span><span class="w">    </span><span class="sd">"""Build a `LinearClient`, defaulting each dependency to its production implementation."""</span>
+<span class="linenos" data-linenos="150 "></span>    <span class="k">return</span> <span class="n">LinearClient</span><span class="p">(</span>
+<span class="linenos" data-linenos="151 "></span>        <span class="n">http</span><span class="o">=</span><span class="n">http</span> <span class="k">if</span> <span class="n">http</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Client</span><span class="p">(),</span>
+<span class="linenos" data-linenos="152 "></span>        <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span> <span class="k">if</span> <span class="n">api_key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">read_secret</span><span class="p">(</span><span class="s1">'linear'</span><span class="p">),</span>
+<span class="linenos" data-linenos="153 "></span>    <span class="p">)</span>
 </code></pre></div>
             </details>
     </div>
@@ -2098,22 +2154,22 @@ ceiling and requests no <code>pageInfo</code>.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/sources/linear.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="262 "></span><span class="k">def</span><span class="w"> </span><span class="nf">parse_cycles</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="linenos" data-linenos="263 "></span><span class="w">    </span><span class="sd">"""Parse the Team query response into a cycles frame keyed on (team_key, number)."""</span>
-<span class="linenos" data-linenos="264 "></span>    <span class="n">teams</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">'teams'</span><span class="p">][</span><span class="s1">'nodes'</span><span class="p">]</span>
-<span class="linenos" data-linenos="265 "></span>    <span class="k">if</span> <span class="ow">not</span> <span class="n">teams</span><span class="p">:</span>
-<span class="linenos" data-linenos="266 "></span>        <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">_CYCLE_SCHEMA</span><span class="p">)</span>
-<span class="linenos" data-linenos="267 "></span>    <span class="n">team</span> <span class="o">=</span> <span class="n">teams</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="linenos" data-linenos="268 "></span>    <span class="n">rows</span> <span class="o">=</span> <span class="p">[</span>
-<span class="linenos" data-linenos="269 "></span>        <span class="p">{</span>
-<span class="linenos" data-linenos="270 "></span>            <span class="s1">'team_key'</span><span class="p">:</span> <span class="n">team</span><span class="p">[</span><span class="s1">'key'</span><span class="p">],</span>
-<span class="linenos" data-linenos="271 "></span>            <span class="s1">'number'</span><span class="p">:</span> <span class="n">cycle</span><span class="p">[</span><span class="s1">'number'</span><span class="p">],</span>
-<span class="linenos" data-linenos="272 "></span>            <span class="s1">'starts_at'</span><span class="p">:</span> <span class="n">_parse_datetime</span><span class="p">(</span><span class="n">cycle</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'startsAt'</span><span class="p">)),</span>
-<span class="linenos" data-linenos="273 "></span>            <span class="s1">'ends_at'</span><span class="p">:</span> <span class="n">_parse_datetime</span><span class="p">(</span><span class="n">cycle</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'endsAt'</span><span class="p">)),</span>
-<span class="linenos" data-linenos="274 "></span>        <span class="p">}</span>
-<span class="linenos" data-linenos="275 "></span>        <span class="k">for</span> <span class="n">cycle</span> <span class="ow">in</span> <span class="n">team</span><span class="p">[</span><span class="s1">'cycles'</span><span class="p">][</span><span class="s1">'nodes'</span><span class="p">]</span>
-<span class="linenos" data-linenos="276 "></span>    <span class="p">]</span>
-<span class="linenos" data-linenos="277 "></span>    <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">_CYCLE_SCHEMA</span><span class="p">)</span> <span class="k">if</span> <span class="n">rows</span> <span class="k">else</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">_CYCLE_SCHEMA</span><span class="p">)</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="268 "></span><span class="k">def</span><span class="w"> </span><span class="nf">parse_cycles</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="linenos" data-linenos="269 "></span><span class="w">    </span><span class="sd">"""Parse the Team query response into a cycles frame keyed on (team_key, number)."""</span>
+<span class="linenos" data-linenos="270 "></span>    <span class="n">teams</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">'teams'</span><span class="p">][</span><span class="s1">'nodes'</span><span class="p">]</span>
+<span class="linenos" data-linenos="271 "></span>    <span class="k">if</span> <span class="ow">not</span> <span class="n">teams</span><span class="p">:</span>
+<span class="linenos" data-linenos="272 "></span>        <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">_CYCLE_SCHEMA</span><span class="p">)</span>
+<span class="linenos" data-linenos="273 "></span>    <span class="n">team</span> <span class="o">=</span> <span class="n">teams</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="linenos" data-linenos="274 "></span>    <span class="n">rows</span> <span class="o">=</span> <span class="p">[</span>
+<span class="linenos" data-linenos="275 "></span>        <span class="p">{</span>
+<span class="linenos" data-linenos="276 "></span>            <span class="s1">'team_key'</span><span class="p">:</span> <span class="n">team</span><span class="p">[</span><span class="s1">'key'</span><span class="p">],</span>
+<span class="linenos" data-linenos="277 "></span>            <span class="s1">'number'</span><span class="p">:</span> <span class="n">cycle</span><span class="p">[</span><span class="s1">'number'</span><span class="p">],</span>
+<span class="linenos" data-linenos="278 "></span>            <span class="s1">'starts_at'</span><span class="p">:</span> <span class="n">_parse_datetime</span><span class="p">(</span><span class="n">cycle</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'startsAt'</span><span class="p">)),</span>
+<span class="linenos" data-linenos="279 "></span>            <span class="s1">'ends_at'</span><span class="p">:</span> <span class="n">_parse_datetime</span><span class="p">(</span><span class="n">cycle</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'endsAt'</span><span class="p">)),</span>
+<span class="linenos" data-linenos="280 "></span>        <span class="p">}</span>
+<span class="linenos" data-linenos="281 "></span>        <span class="k">for</span> <span class="n">cycle</span> <span class="ow">in</span> <span class="n">team</span><span class="p">[</span><span class="s1">'cycles'</span><span class="p">][</span><span class="s1">'nodes'</span><span class="p">]</span>
+<span class="linenos" data-linenos="282 "></span>    <span class="p">]</span>
+<span class="linenos" data-linenos="283 "></span>    <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">_CYCLE_SCHEMA</span><span class="p">)</span> <span class="k">if</span> <span class="n">rows</span> <span class="k">else</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">_CYCLE_SCHEMA</span><span class="p">)</span>
 </code></pre></div>
             </details>
     </div>
@@ -2138,14 +2194,14 @@ ceiling and requests no <code>pageInfo</code>.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/sources/linear.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="234 "></span><span class="k">def</span><span class="w"> </span><span class="nf">parse_issue_labels</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="linenos" data-linenos="235 "></span><span class="w">    </span><span class="sd">"""Parse one page of the Issues query response into (issue_id, label) rows."""</span>
-<span class="linenos" data-linenos="236 "></span>    <span class="n">rows</span> <span class="o">=</span> <span class="p">[</span>
-<span class="linenos" data-linenos="237 "></span>        <span class="p">{</span><span class="s1">'issue_id'</span><span class="p">:</span> <span class="n">node</span><span class="p">[</span><span class="s1">'id'</span><span class="p">],</span> <span class="s1">'label'</span><span class="p">:</span> <span class="n">label</span><span class="p">[</span><span class="s1">'name'</span><span class="p">]}</span>
-<span class="linenos" data-linenos="238 "></span>        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">'issues'</span><span class="p">][</span><span class="s1">'nodes'</span><span class="p">]</span>
-<span class="linenos" data-linenos="239 "></span>        <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">node</span><span class="p">[</span><span class="s1">'labels'</span><span class="p">][</span><span class="s1">'nodes'</span><span class="p">]</span>
-<span class="linenos" data-linenos="240 "></span>    <span class="p">]</span>
-<span class="linenos" data-linenos="241 "></span>    <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">_ISSUE_LABEL_SCHEMA</span><span class="p">)</span> <span class="k">if</span> <span class="n">rows</span> <span class="k">else</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">_ISSUE_LABEL_SCHEMA</span><span class="p">)</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="240 "></span><span class="k">def</span><span class="w"> </span><span class="nf">parse_issue_labels</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="linenos" data-linenos="241 "></span><span class="w">    </span><span class="sd">"""Parse one page of the Issues query response into (issue_id, label) rows."""</span>
+<span class="linenos" data-linenos="242 "></span>    <span class="n">rows</span> <span class="o">=</span> <span class="p">[</span>
+<span class="linenos" data-linenos="243 "></span>        <span class="p">{</span><span class="s1">'issue_id'</span><span class="p">:</span> <span class="n">node</span><span class="p">[</span><span class="s1">'id'</span><span class="p">],</span> <span class="s1">'label'</span><span class="p">:</span> <span class="n">label</span><span class="p">[</span><span class="s1">'name'</span><span class="p">]}</span>
+<span class="linenos" data-linenos="244 "></span>        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">'issues'</span><span class="p">][</span><span class="s1">'nodes'</span><span class="p">]</span>
+<span class="linenos" data-linenos="245 "></span>        <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">node</span><span class="p">[</span><span class="s1">'labels'</span><span class="p">][</span><span class="s1">'nodes'</span><span class="p">]</span>
+<span class="linenos" data-linenos="246 "></span>    <span class="p">]</span>
+<span class="linenos" data-linenos="247 "></span>    <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">_ISSUE_LABEL_SCHEMA</span><span class="p">)</span> <span class="k">if</span> <span class="n">rows</span> <span class="k">else</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">_ISSUE_LABEL_SCHEMA</span><span class="p">)</span>
 </code></pre></div>
             </details>
     </div>
@@ -2172,22 +2228,22 @@ fetched set is left to the store layer.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/sources/linear.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="244 "></span><span class="k">def</span><span class="w"> </span><span class="nf">parse_issue_relations</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="linenos" data-linenos="245 "></span><span class="w">    </span><span class="sd">"""Parse one page of the Issues query response into one-directional relation rows.</span>
-<span class="linenos" data-linenos="246 "></span>
-<span class="linenos" data-linenos="247 "></span><span class="sd">    Linear reports each relation once, on the owning issue; symmetrizing across the</span>
-<span class="linenos" data-linenos="248 "></span><span class="sd">    fetched set is left to the store layer.</span>
-<span class="linenos" data-linenos="249 "></span><span class="sd">    """</span>
-<span class="linenos" data-linenos="250 "></span>    <span class="n">rows</span> <span class="o">=</span> <span class="p">[</span>
-<span class="linenos" data-linenos="251 "></span>        <span class="p">{</span>
-<span class="linenos" data-linenos="252 "></span>            <span class="s1">'issue_id'</span><span class="p">:</span> <span class="n">node</span><span class="p">[</span><span class="s1">'id'</span><span class="p">],</span>
-<span class="linenos" data-linenos="253 "></span>            <span class="s1">'relation_type'</span><span class="p">:</span> <span class="n">relation</span><span class="p">[</span><span class="s1">'type'</span><span class="p">],</span>
-<span class="linenos" data-linenos="254 "></span>            <span class="s1">'related_identifier'</span><span class="p">:</span> <span class="n">relation</span><span class="p">[</span><span class="s1">'relatedIssue'</span><span class="p">][</span><span class="s1">'identifier'</span><span class="p">],</span>
-<span class="linenos" data-linenos="255 "></span>        <span class="p">}</span>
-<span class="linenos" data-linenos="256 "></span>        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">'issues'</span><span class="p">][</span><span class="s1">'nodes'</span><span class="p">]</span>
-<span class="linenos" data-linenos="257 "></span>        <span class="k">for</span> <span class="n">relation</span> <span class="ow">in</span> <span class="n">node</span><span class="p">[</span><span class="s1">'relations'</span><span class="p">][</span><span class="s1">'nodes'</span><span class="p">]</span>
-<span class="linenos" data-linenos="258 "></span>    <span class="p">]</span>
-<span class="linenos" data-linenos="259 "></span>    <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">_ISSUE_RELATION_SCHEMA</span><span class="p">)</span> <span class="k">if</span> <span class="n">rows</span> <span class="k">else</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">_ISSUE_RELATION_SCHEMA</span><span class="p">)</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="250 "></span><span class="k">def</span><span class="w"> </span><span class="nf">parse_issue_relations</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="linenos" data-linenos="251 "></span><span class="w">    </span><span class="sd">"""Parse one page of the Issues query response into one-directional relation rows.</span>
+<span class="linenos" data-linenos="252 "></span>
+<span class="linenos" data-linenos="253 "></span><span class="sd">    Linear reports each relation once, on the owning issue; symmetrizing across the</span>
+<span class="linenos" data-linenos="254 "></span><span class="sd">    fetched set is left to the store layer.</span>
+<span class="linenos" data-linenos="255 "></span><span class="sd">    """</span>
+<span class="linenos" data-linenos="256 "></span>    <span class="n">rows</span> <span class="o">=</span> <span class="p">[</span>
+<span class="linenos" data-linenos="257 "></span>        <span class="p">{</span>
+<span class="linenos" data-linenos="258 "></span>            <span class="s1">'issue_id'</span><span class="p">:</span> <span class="n">node</span><span class="p">[</span><span class="s1">'id'</span><span class="p">],</span>
+<span class="linenos" data-linenos="259 "></span>            <span class="s1">'relation_type'</span><span class="p">:</span> <span class="n">relation</span><span class="p">[</span><span class="s1">'type'</span><span class="p">],</span>
+<span class="linenos" data-linenos="260 "></span>            <span class="s1">'related_identifier'</span><span class="p">:</span> <span class="n">relation</span><span class="p">[</span><span class="s1">'relatedIssue'</span><span class="p">][</span><span class="s1">'identifier'</span><span class="p">],</span>
+<span class="linenos" data-linenos="261 "></span>        <span class="p">}</span>
+<span class="linenos" data-linenos="262 "></span>        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">'issues'</span><span class="p">][</span><span class="s1">'nodes'</span><span class="p">]</span>
+<span class="linenos" data-linenos="263 "></span>        <span class="k">for</span> <span class="n">relation</span> <span class="ow">in</span> <span class="n">node</span><span class="p">[</span><span class="s1">'relations'</span><span class="p">][</span><span class="s1">'nodes'</span><span class="p">]</span>
+<span class="linenos" data-linenos="264 "></span>    <span class="p">]</span>
+<span class="linenos" data-linenos="265 "></span>    <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">_ISSUE_RELATION_SCHEMA</span><span class="p">)</span> <span class="k">if</span> <span class="n">rows</span> <span class="k">else</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">_ISSUE_RELATION_SCHEMA</span><span class="p">)</span>
 </code></pre></div>
             </details>
     </div>
@@ -2212,40 +2268,42 @@ fetched set is left to the store layer.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/sources/linear.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="198 "></span><span class="k">def</span><span class="w"> </span><span class="nf">parse_issues</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="linenos" data-linenos="199 "></span><span class="w">    </span><span class="sd">"""Parse one page of the Issues query response into a store-shaped issues frame."""</span>
-<span class="linenos" data-linenos="200 "></span>    <span class="n">nodes</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">'issues'</span><span class="p">][</span><span class="s1">'nodes'</span><span class="p">]</span>
-<span class="linenos" data-linenos="201 "></span>    <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="linenos" data-linenos="202 "></span>    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
-<span class="linenos" data-linenos="203 "></span>        <span class="n">state</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'state'</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
-<span class="linenos" data-linenos="204 "></span>        <span class="n">team</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'team'</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
-<span class="linenos" data-linenos="205 "></span>        <span class="n">assignee</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'assignee'</span><span class="p">)</span>
-<span class="linenos" data-linenos="206 "></span>        <span class="n">cycle</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'cycle'</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
-<span class="linenos" data-linenos="207 "></span>        <span class="n">project</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'project'</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
-<span class="linenos" data-linenos="208 "></span>        <span class="n">milestone</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'projectMilestone'</span><span class="p">)</span>
-<span class="linenos" data-linenos="209 "></span>        <span class="n">parent</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'parent'</span><span class="p">)</span>
-<span class="linenos" data-linenos="210 "></span>        <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-<span class="linenos" data-linenos="211 "></span>            <span class="p">{</span>
-<span class="linenos" data-linenos="212 "></span>                <span class="s1">'id'</span><span class="p">:</span> <span class="n">node</span><span class="p">[</span><span class="s1">'id'</span><span class="p">],</span>
-<span class="linenos" data-linenos="213 "></span>                <span class="s1">'identifier'</span><span class="p">:</span> <span class="n">node</span><span class="p">[</span><span class="s1">'identifier'</span><span class="p">],</span>
-<span class="linenos" data-linenos="214 "></span>                <span class="s1">'title'</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'title'</span><span class="p">),</span>
-<span class="linenos" data-linenos="215 "></span>                <span class="s1">'description'</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'description'</span><span class="p">),</span>
-<span class="linenos" data-linenos="216 "></span>                <span class="s1">'url'</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'url'</span><span class="p">),</span>
-<span class="linenos" data-linenos="217 "></span>                <span class="s1">'archived_at'</span><span class="p">:</span> <span class="n">_parse_datetime</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'archivedAt'</span><span class="p">)),</span>
-<span class="linenos" data-linenos="218 "></span>                <span class="s1">'created_at'</span><span class="p">:</span> <span class="n">_parse_datetime</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'createdAt'</span><span class="p">)),</span>
-<span class="linenos" data-linenos="219 "></span>                <span class="s1">'estimate'</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'estimate'</span><span class="p">),</span>
-<span class="linenos" data-linenos="220 "></span>                <span class="s1">'priority'</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'priority'</span><span class="p">),</span>
-<span class="linenos" data-linenos="221 "></span>                <span class="s1">'state_name'</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'name'</span><span class="p">),</span>
-<span class="linenos" data-linenos="222 "></span>                <span class="s1">'state_type'</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'type'</span><span class="p">),</span>
-<span class="linenos" data-linenos="223 "></span>                <span class="s1">'team_key'</span><span class="p">:</span> <span class="n">team</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'key'</span><span class="p">),</span>
-<span class="linenos" data-linenos="224 "></span>                <span class="s1">'assignee_name'</span><span class="p">:</span> <span class="n">assignee</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'name'</span><span class="p">)</span> <span class="k">if</span> <span class="n">assignee</span> <span class="k">else</span> <span class="n">UNASSIGNED</span><span class="p">,</span>
-<span class="linenos" data-linenos="225 "></span>                <span class="s1">'cycle_number'</span><span class="p">:</span> <span class="n">cycle</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'number'</span><span class="p">),</span>
-<span class="linenos" data-linenos="226 "></span>                <span class="s1">'project_name'</span><span class="p">:</span> <span class="n">project</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'name'</span><span class="p">),</span>
-<span class="linenos" data-linenos="227 "></span>                <span class="s1">'project_milestone_id'</span><span class="p">:</span> <span class="n">milestone</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'id'</span><span class="p">)</span> <span class="k">if</span> <span class="n">milestone</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-<span class="linenos" data-linenos="228 "></span>                <span class="s1">'parent_identifier'</span><span class="p">:</span> <span class="n">parent</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'identifier'</span><span class="p">)</span> <span class="k">if</span> <span class="n">parent</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-<span class="linenos" data-linenos="229 "></span>            <span class="p">},</span>
-<span class="linenos" data-linenos="230 "></span>        <span class="p">)</span>
-<span class="linenos" data-linenos="231 "></span>    <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">_ISSUE_SCHEMA</span><span class="p">)</span> <span class="k">if</span> <span class="n">rows</span> <span class="k">else</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">_ISSUE_SCHEMA</span><span class="p">)</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="202 "></span><span class="k">def</span><span class="w"> </span><span class="nf">parse_issues</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="linenos" data-linenos="203 "></span><span class="w">    </span><span class="sd">"""Parse one page of the Issues query response into a store-shaped issues frame."""</span>
+<span class="linenos" data-linenos="204 "></span>    <span class="n">nodes</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">'issues'</span><span class="p">][</span><span class="s1">'nodes'</span><span class="p">]</span>
+<span class="linenos" data-linenos="205 "></span>    <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="linenos" data-linenos="206 "></span>    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
+<span class="linenos" data-linenos="207 "></span>        <span class="n">state</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'state'</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+<span class="linenos" data-linenos="208 "></span>        <span class="n">team</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'team'</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+<span class="linenos" data-linenos="209 "></span>        <span class="n">assignee</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'assignee'</span><span class="p">)</span>
+<span class="linenos" data-linenos="210 "></span>        <span class="n">cycle</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'cycle'</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+<span class="linenos" data-linenos="211 "></span>        <span class="n">project</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'project'</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+<span class="linenos" data-linenos="212 "></span>        <span class="n">milestone</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'projectMilestone'</span><span class="p">)</span>
+<span class="linenos" data-linenos="213 "></span>        <span class="n">parent</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'parent'</span><span class="p">)</span>
+<span class="linenos" data-linenos="214 "></span>        <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+<span class="linenos" data-linenos="215 "></span>            <span class="p">{</span>
+<span class="linenos" data-linenos="216 "></span>                <span class="s1">'id'</span><span class="p">:</span> <span class="n">node</span><span class="p">[</span><span class="s1">'id'</span><span class="p">],</span>
+<span class="linenos" data-linenos="217 "></span>                <span class="s1">'identifier'</span><span class="p">:</span> <span class="n">node</span><span class="p">[</span><span class="s1">'identifier'</span><span class="p">],</span>
+<span class="linenos" data-linenos="218 "></span>                <span class="s1">'title'</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'title'</span><span class="p">),</span>
+<span class="linenos" data-linenos="219 "></span>                <span class="s1">'description'</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'description'</span><span class="p">),</span>
+<span class="linenos" data-linenos="220 "></span>                <span class="s1">'url'</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'url'</span><span class="p">),</span>
+<span class="linenos" data-linenos="221 "></span>                <span class="s1">'archived_at'</span><span class="p">:</span> <span class="n">_parse_datetime</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'archivedAt'</span><span class="p">)),</span>
+<span class="linenos" data-linenos="222 "></span>                <span class="s1">'created_at'</span><span class="p">:</span> <span class="n">_parse_datetime</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'createdAt'</span><span class="p">)),</span>
+<span class="linenos" data-linenos="223 "></span>                <span class="s1">'completed_at'</span><span class="p">:</span> <span class="n">_parse_datetime</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'completedAt'</span><span class="p">)),</span>
+<span class="linenos" data-linenos="224 "></span>                <span class="s1">'canceled_at'</span><span class="p">:</span> <span class="n">_parse_datetime</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'canceledAt'</span><span class="p">)),</span>
+<span class="linenos" data-linenos="225 "></span>                <span class="s1">'estimate'</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'estimate'</span><span class="p">),</span>
+<span class="linenos" data-linenos="226 "></span>                <span class="s1">'priority'</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'priority'</span><span class="p">),</span>
+<span class="linenos" data-linenos="227 "></span>                <span class="s1">'state_name'</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'name'</span><span class="p">),</span>
+<span class="linenos" data-linenos="228 "></span>                <span class="s1">'state_type'</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'type'</span><span class="p">),</span>
+<span class="linenos" data-linenos="229 "></span>                <span class="s1">'team_key'</span><span class="p">:</span> <span class="n">team</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'key'</span><span class="p">),</span>
+<span class="linenos" data-linenos="230 "></span>                <span class="s1">'assignee_name'</span><span class="p">:</span> <span class="n">assignee</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'name'</span><span class="p">)</span> <span class="k">if</span> <span class="n">assignee</span> <span class="k">else</span> <span class="n">UNASSIGNED</span><span class="p">,</span>
+<span class="linenos" data-linenos="231 "></span>                <span class="s1">'cycle_number'</span><span class="p">:</span> <span class="n">cycle</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'number'</span><span class="p">),</span>
+<span class="linenos" data-linenos="232 "></span>                <span class="s1">'project_name'</span><span class="p">:</span> <span class="n">project</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'name'</span><span class="p">),</span>
+<span class="linenos" data-linenos="233 "></span>                <span class="s1">'project_milestone_id'</span><span class="p">:</span> <span class="n">milestone</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'id'</span><span class="p">)</span> <span class="k">if</span> <span class="n">milestone</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+<span class="linenos" data-linenos="234 "></span>                <span class="s1">'parent_identifier'</span><span class="p">:</span> <span class="n">parent</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'identifier'</span><span class="p">)</span> <span class="k">if</span> <span class="n">parent</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+<span class="linenos" data-linenos="235 "></span>            <span class="p">},</span>
+<span class="linenos" data-linenos="236 "></span>        <span class="p">)</span>
+<span class="linenos" data-linenos="237 "></span>    <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">_ISSUE_SCHEMA</span><span class="p">)</span> <span class="k">if</span> <span class="n">rows</span> <span class="k">else</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">_ISSUE_SCHEMA</span><span class="p">)</span>
 </code></pre></div>
             </details>
     </div>
@@ -2270,43 +2328,43 @@ fetched set is left to the store layer.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/sources/linear.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="280 "></span><span class="k">def</span><span class="w"> </span><span class="nf">parse_projects</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="linenos" data-linenos="281 "></span><span class="w">    </span><span class="sd">"""Parse the Projects query response into one row per project-milestone pair."""</span>
-<span class="linenos" data-linenos="282 "></span>    <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="linenos" data-linenos="283 "></span>    <span class="k">for</span> <span class="n">project</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">'projects'</span><span class="p">][</span><span class="s1">'nodes'</span><span class="p">]:</span>
-<span class="linenos" data-linenos="284 "></span>        <span class="n">team_keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">team</span><span class="p">[</span><span class="s1">'key'</span><span class="p">]</span> <span class="k">for</span> <span class="n">team</span> <span class="ow">in</span> <span class="n">project</span><span class="p">[</span><span class="s1">'teams'</span><span class="p">][</span><span class="s1">'nodes'</span><span class="p">]]</span>
-<span class="linenos" data-linenos="285 "></span>        <span class="n">milestones</span> <span class="o">=</span> <span class="n">project</span><span class="p">[</span><span class="s1">'projectMilestones'</span><span class="p">][</span><span class="s1">'nodes'</span><span class="p">]</span>
-<span class="linenos" data-linenos="286 "></span>        <span class="n">base</span> <span class="o">=</span> <span class="p">{</span>
-<span class="linenos" data-linenos="287 "></span>            <span class="s1">'project_id'</span><span class="p">:</span> <span class="n">project</span><span class="p">[</span><span class="s1">'id'</span><span class="p">],</span>
-<span class="linenos" data-linenos="288 "></span>            <span class="s1">'project_name'</span><span class="p">:</span> <span class="n">project</span><span class="p">[</span><span class="s1">'name'</span><span class="p">],</span>
-<span class="linenos" data-linenos="289 "></span>            <span class="s1">'project_url'</span><span class="p">:</span> <span class="n">project</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'url'</span><span class="p">),</span>
-<span class="linenos" data-linenos="290 "></span>            <span class="s1">'slug_id'</span><span class="p">:</span> <span class="n">project</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'slugId'</span><span class="p">),</span>
-<span class="linenos" data-linenos="291 "></span>            <span class="s1">'start_date'</span><span class="p">:</span> <span class="n">_parse_datetime</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'startDate'</span><span class="p">)),</span>
-<span class="linenos" data-linenos="292 "></span>            <span class="s1">'target_date'</span><span class="p">:</span> <span class="n">_parse_datetime</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'targetDate'</span><span class="p">)),</span>
-<span class="linenos" data-linenos="293 "></span>            <span class="s1">'team_keys'</span><span class="p">:</span> <span class="n">team_keys</span><span class="p">,</span>
-<span class="linenos" data-linenos="294 "></span>        <span class="p">}</span>
-<span class="linenos" data-linenos="295 "></span>        <span class="k">if</span> <span class="ow">not</span> <span class="n">milestones</span><span class="p">:</span>
-<span class="linenos" data-linenos="296 "></span>            <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-<span class="linenos" data-linenos="297 "></span>                <span class="p">{</span>
-<span class="linenos" data-linenos="298 "></span>                    <span class="o">**</span><span class="n">base</span><span class="p">,</span>
-<span class="linenos" data-linenos="299 "></span>                    <span class="s1">'milestone_id'</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-<span class="linenos" data-linenos="300 "></span>                    <span class="s1">'milestone_name'</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-<span class="linenos" data-linenos="301 "></span>                    <span class="s1">'milestone_target_date'</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-<span class="linenos" data-linenos="302 "></span>                    <span class="s1">'milestone_progress'</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-<span class="linenos" data-linenos="303 "></span>                <span class="p">},</span>
-<span class="linenos" data-linenos="304 "></span>            <span class="p">)</span>
-<span class="linenos" data-linenos="305 "></span>            <span class="k">continue</span>
-<span class="linenos" data-linenos="306 "></span>        <span class="n">rows</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
-<span class="linenos" data-linenos="307 "></span>            <span class="p">{</span>
-<span class="linenos" data-linenos="308 "></span>                <span class="o">**</span><span class="n">base</span><span class="p">,</span>
-<span class="linenos" data-linenos="309 "></span>                <span class="s1">'milestone_id'</span><span class="p">:</span> <span class="n">milestone</span><span class="p">[</span><span class="s1">'id'</span><span class="p">],</span>
-<span class="linenos" data-linenos="310 "></span>                <span class="s1">'milestone_name'</span><span class="p">:</span> <span class="n">milestone</span><span class="p">[</span><span class="s1">'name'</span><span class="p">],</span>
-<span class="linenos" data-linenos="311 "></span>                <span class="s1">'milestone_target_date'</span><span class="p">:</span> <span class="n">_parse_datetime</span><span class="p">(</span><span class="n">milestone</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'targetDate'</span><span class="p">)),</span>
-<span class="linenos" data-linenos="312 "></span>                <span class="s1">'milestone_progress'</span><span class="p">:</span> <span class="n">milestone</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'progress'</span><span class="p">),</span>
-<span class="linenos" data-linenos="313 "></span>            <span class="p">}</span>
-<span class="linenos" data-linenos="314 "></span>            <span class="k">for</span> <span class="n">milestone</span> <span class="ow">in</span> <span class="n">milestones</span>
-<span class="linenos" data-linenos="315 "></span>        <span class="p">)</span>
-<span class="linenos" data-linenos="316 "></span>    <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">_PROJECT_SCHEMA</span><span class="p">)</span> <span class="k">if</span> <span class="n">rows</span> <span class="k">else</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">_PROJECT_SCHEMA</span><span class="p">)</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="286 "></span><span class="k">def</span><span class="w"> </span><span class="nf">parse_projects</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="linenos" data-linenos="287 "></span><span class="w">    </span><span class="sd">"""Parse the Projects query response into one row per project-milestone pair."""</span>
+<span class="linenos" data-linenos="288 "></span>    <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="linenos" data-linenos="289 "></span>    <span class="k">for</span> <span class="n">project</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">'projects'</span><span class="p">][</span><span class="s1">'nodes'</span><span class="p">]:</span>
+<span class="linenos" data-linenos="290 "></span>        <span class="n">team_keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">team</span><span class="p">[</span><span class="s1">'key'</span><span class="p">]</span> <span class="k">for</span> <span class="n">team</span> <span class="ow">in</span> <span class="n">project</span><span class="p">[</span><span class="s1">'teams'</span><span class="p">][</span><span class="s1">'nodes'</span><span class="p">]]</span>
+<span class="linenos" data-linenos="291 "></span>        <span class="n">milestones</span> <span class="o">=</span> <span class="n">project</span><span class="p">[</span><span class="s1">'projectMilestones'</span><span class="p">][</span><span class="s1">'nodes'</span><span class="p">]</span>
+<span class="linenos" data-linenos="292 "></span>        <span class="n">base</span> <span class="o">=</span> <span class="p">{</span>
+<span class="linenos" data-linenos="293 "></span>            <span class="s1">'project_id'</span><span class="p">:</span> <span class="n">project</span><span class="p">[</span><span class="s1">'id'</span><span class="p">],</span>
+<span class="linenos" data-linenos="294 "></span>            <span class="s1">'project_name'</span><span class="p">:</span> <span class="n">project</span><span class="p">[</span><span class="s1">'name'</span><span class="p">],</span>
+<span class="linenos" data-linenos="295 "></span>            <span class="s1">'project_url'</span><span class="p">:</span> <span class="n">project</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'url'</span><span class="p">),</span>
+<span class="linenos" data-linenos="296 "></span>            <span class="s1">'slug_id'</span><span class="p">:</span> <span class="n">project</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'slugId'</span><span class="p">),</span>
+<span class="linenos" data-linenos="297 "></span>            <span class="s1">'start_date'</span><span class="p">:</span> <span class="n">_parse_datetime</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'startDate'</span><span class="p">)),</span>
+<span class="linenos" data-linenos="298 "></span>            <span class="s1">'target_date'</span><span class="p">:</span> <span class="n">_parse_datetime</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'targetDate'</span><span class="p">)),</span>
+<span class="linenos" data-linenos="299 "></span>            <span class="s1">'team_keys'</span><span class="p">:</span> <span class="n">team_keys</span><span class="p">,</span>
+<span class="linenos" data-linenos="300 "></span>        <span class="p">}</span>
+<span class="linenos" data-linenos="301 "></span>        <span class="k">if</span> <span class="ow">not</span> <span class="n">milestones</span><span class="p">:</span>
+<span class="linenos" data-linenos="302 "></span>            <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+<span class="linenos" data-linenos="303 "></span>                <span class="p">{</span>
+<span class="linenos" data-linenos="304 "></span>                    <span class="o">**</span><span class="n">base</span><span class="p">,</span>
+<span class="linenos" data-linenos="305 "></span>                    <span class="s1">'milestone_id'</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+<span class="linenos" data-linenos="306 "></span>                    <span class="s1">'milestone_name'</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+<span class="linenos" data-linenos="307 "></span>                    <span class="s1">'milestone_target_date'</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+<span class="linenos" data-linenos="308 "></span>                    <span class="s1">'milestone_progress'</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+<span class="linenos" data-linenos="309 "></span>                <span class="p">},</span>
+<span class="linenos" data-linenos="310 "></span>            <span class="p">)</span>
+<span class="linenos" data-linenos="311 "></span>            <span class="k">continue</span>
+<span class="linenos" data-linenos="312 "></span>        <span class="n">rows</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+<span class="linenos" data-linenos="313 "></span>            <span class="p">{</span>
+<span class="linenos" data-linenos="314 "></span>                <span class="o">**</span><span class="n">base</span><span class="p">,</span>
+<span class="linenos" data-linenos="315 "></span>                <span class="s1">'milestone_id'</span><span class="p">:</span> <span class="n">milestone</span><span class="p">[</span><span class="s1">'id'</span><span class="p">],</span>
+<span class="linenos" data-linenos="316 "></span>                <span class="s1">'milestone_name'</span><span class="p">:</span> <span class="n">milestone</span><span class="p">[</span><span class="s1">'name'</span><span class="p">],</span>
+<span class="linenos" data-linenos="317 "></span>                <span class="s1">'milestone_target_date'</span><span class="p">:</span> <span class="n">_parse_datetime</span><span class="p">(</span><span class="n">milestone</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'targetDate'</span><span class="p">)),</span>
+<span class="linenos" data-linenos="318 "></span>                <span class="s1">'milestone_progress'</span><span class="p">:</span> <span class="n">milestone</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'progress'</span><span class="p">),</span>
+<span class="linenos" data-linenos="319 "></span>            <span class="p">}</span>
+<span class="linenos" data-linenos="320 "></span>            <span class="k">for</span> <span class="n">milestone</span> <span class="ow">in</span> <span class="n">milestones</span>
+<span class="linenos" data-linenos="321 "></span>        <span class="p">)</span>
+<span class="linenos" data-linenos="322 "></span>    <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">_PROJECT_SCHEMA</span><span class="p">)</span> <span class="k">if</span> <span class="n">rows</span> <span class="k">else</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">_PROJECT_SCHEMA</span><span class="p">)</span>
 </code></pre></div>
             </details>
     </div>
@@ -2331,9 +2389,9 @@ fetched set is left to the store layer.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/sources/linear.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="157 "></span><span class="k">def</span><span class="w"> </span><span class="nf">project_issue_filter</span><span class="p">(</span><span class="n">project_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="linenos" data-linenos="158 "></span><span class="w">    </span><span class="sd">"""The `IssueFilter` for a project scope, matched by id."""</span>
-<span class="linenos" data-linenos="159 "></span>    <span class="k">return</span> <span class="p">{</span><span class="s1">'project'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'id'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'eq'</span><span class="p">:</span> <span class="n">project_id</span><span class="p">}}}</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="161 "></span><span class="k">def</span><span class="w"> </span><span class="nf">project_issue_filter</span><span class="p">(</span><span class="n">project_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="linenos" data-linenos="162 "></span><span class="w">    </span><span class="sd">"""The `IssueFilter` for a project scope, matched by id."""</span>
+<span class="linenos" data-linenos="163 "></span>    <span class="k">return</span> <span class="p">{</span><span class="s1">'project'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'id'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'eq'</span><span class="p">:</span> <span class="n">project_id</span><span class="p">}}}</span>
 </code></pre></div>
             </details>
     </div>
@@ -2358,9 +2416,9 @@ fetched set is left to the store layer.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/sources/linear.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="162 "></span><span class="k">def</span><span class="w"> </span><span class="nf">project_name_filter</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="linenos" data-linenos="163 "></span><span class="w">    </span><span class="sd">"""The `ProjectFilter` for a project name, via `containsIgnoreCase`."""</span>
-<span class="linenos" data-linenos="164 "></span>    <span class="k">return</span> <span class="p">{</span><span class="s1">'name'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'containsIgnoreCase'</span><span class="p">:</span> <span class="n">name</span><span class="p">}}</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="166 "></span><span class="k">def</span><span class="w"> </span><span class="nf">project_name_filter</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="linenos" data-linenos="167 "></span><span class="w">    </span><span class="sd">"""The `ProjectFilter` for a project name, via `containsIgnoreCase`."""</span>
+<span class="linenos" data-linenos="168 "></span>    <span class="k">return</span> <span class="p">{</span><span class="s1">'name'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'containsIgnoreCase'</span><span class="p">:</span> <span class="n">name</span><span class="p">}}</span>
 </code></pre></div>
             </details>
     </div>
@@ -2385,9 +2443,9 @@ fetched set is left to the store layer.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/sources/linear.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="167 "></span><span class="k">def</span><span class="w"> </span><span class="nf">project_slug_filter</span><span class="p">(</span><span class="n">slug_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="linenos" data-linenos="168 "></span><span class="w">    </span><span class="sd">"""The `ProjectFilter` fallback when a name filter finds nothing."""</span>
-<span class="linenos" data-linenos="169 "></span>    <span class="k">return</span> <span class="p">{</span><span class="s1">'slugId'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'eq'</span><span class="p">:</span> <span class="n">slug_id</span><span class="p">}}</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="171 "></span><span class="k">def</span><span class="w"> </span><span class="nf">project_slug_filter</span><span class="p">(</span><span class="n">slug_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="linenos" data-linenos="172 "></span><span class="w">    </span><span class="sd">"""The `ProjectFilter` fallback when a name filter finds nothing."""</span>
+<span class="linenos" data-linenos="173 "></span>    <span class="k">return</span> <span class="p">{</span><span class="s1">'slugId'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'eq'</span><span class="p">:</span> <span class="n">slug_id</span><span class="p">}}</span>
 </code></pre></div>
             </details>
     </div>
@@ -2412,9 +2470,9 @@ fetched set is left to the store layer.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/sources/linear.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="152 "></span><span class="k">def</span><span class="w"> </span><span class="nf">team_issue_filter</span><span class="p">(</span><span class="n">team_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="linenos" data-linenos="153 "></span><span class="w">    </span><span class="sd">"""The `IssueFilter` for a team scope, matched by key rather than id."""</span>
-<span class="linenos" data-linenos="154 "></span>    <span class="k">return</span> <span class="p">{</span><span class="s1">'team'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'key'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'eq'</span><span class="p">:</span> <span class="n">team_key</span><span class="p">}}}</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="156 "></span><span class="k">def</span><span class="w"> </span><span class="nf">team_issue_filter</span><span class="p">(</span><span class="n">team_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="linenos" data-linenos="157 "></span><span class="w">    </span><span class="sd">"""The `IssueFilter` for a team scope, matched by key rather than id."""</span>
+<span class="linenos" data-linenos="158 "></span>    <span class="k">return</span> <span class="p">{</span><span class="s1">'team'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'key'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'eq'</span><span class="p">:</span> <span class="n">team_key</span><span class="p">}}}</span>
 </code></pre></div>
             </details>
     </div>
