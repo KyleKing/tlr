@@ -53,6 +53,33 @@ org_slug = "example-org"
 # Project slugs to scope issue queries to. Empty means every project in the org.
 project_slugs = ["backend"]
 
+[alarms]
+# CloudWatch alarms, fetched live by shelling out to an NDJSON alarm exporter such as
+# tail-cw's `export alarms --history`. `command` is the argv prefix; tlr appends
+# `--profile <name> --history --start <iso> --end <iso>` and reads one JSON object per
+# alarm on stdout. Empty command or empty profiles disables the alarm sections.
+command = ["uv", "run", "--project", "~/Developer/kyleking/tail-cw", "tail-cw", "export", "alarms"]
+
+# Trailing name tokens that mark severity, e.g. `-critical` in `svc-api-5xx-critical`.
+severity_suffixes = ["critical", "warning"]
+
+# AWS region used to turn alarm names into CloudWatch console links in markdown output,
+# e.g. "us-east-1". Empty leaves alarm names as plain text.
+console_region = ""
+
+# Environment label -> the AWS profile its alarms are fetched under. The label becomes
+# the `env` column on every alarm row, which is how the prod/stage split is reported.
+[alarms.profiles]
+prod = "read-prod"
+stage = "read-stage"
+
+# Category name -> glob patterns matched against the alarm name (fnmatch). The first
+# category with a matching pattern wins; alarms matching nothing land in
+# "uncategorized".
+[alarms.categories]
+api = ["*-api-*"]
+worker = ["*-worker-*"]
+
 [tiers]
 # Customer tier names, highest priority first. Empty (the default) means the tier
 # ordering rule does nothing.

@@ -25,6 +25,13 @@ def frame_to_json(frame: pl.DataFrame) -> str:
     return stdlib_json.dumps(frame_to_rows(frame), indent=2, sort_keys=False)
 
 
-def sections_to_json(sections: list[tuple[str, pl.DataFrame]]) -> str:
-    """Render titled frames as one JSON object keyed by section title."""
-    return stdlib_json.dumps({title: frame_to_rows(frame) for title, frame in sections}, indent=2, sort_keys=False)
+def sections_to_json(sections: list[tuple[str, pl.DataFrame | str]]) -> str:
+    """Render titled frames as one JSON object keyed by section title; `str` bodies emit verbatim."""
+    return stdlib_json.dumps(
+        {
+            title: body if isinstance(body, str) else frame_to_rows(body)
+            for title, body in sections
+        },
+        indent=2,
+        sort_keys=False,
+    )

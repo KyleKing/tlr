@@ -101,6 +101,7 @@
 
 ### Fix
 
+- **snapshot**: exclude archived and closed-like issues from Linear open counts
 - **pylon**: send the cursor as a query param and read custom fields as objects
 - **config**: match Pylon's real field vocabulary
 - point the import check at the real entry point

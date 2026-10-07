@@ -379,6 +379,11 @@ def test_build_snapshot_sections_covers_every_documented_heading():
         pylon_priority_values=['urgent', 'high', 'medium', 'low'],
         sla=SlaConfig(target_days_by_priority={'high': 3}),
         sentry_configured=False,
+        refreshes=pl.DataFrame(
+            {'source': ['linear'], 'last_run_at': [NOW - timedelta(days=2)]},
+        ),
+        tracked_sources=('linear', 'pylon'),
+        now=NOW,
     )
 
     headings = [title for title, _ in sections]
@@ -399,3 +404,7 @@ def test_build_snapshot_sections_covers_every_documented_heading():
         'Notable: Pylon past SLA',
         'Notable: not computed',
     ]
+    snapshot_body = dict(sections)['Snapshot']
+    assert isinstance(snapshot_body, pl.DataFrame)
+    header_notes = snapshot_body['note'].to_list()
+    assert header_notes[-1] == 'Data freshness: linear refreshed 2026-09-22 12:00 (2d ago), pylon never refreshed.'

@@ -43,11 +43,27 @@ def build_parser() -> argparse.ArgumentParser:
     backlog = sub.add_parser('backlog', help='backlog age, close times, and resolved split')
     _add_format(backlog)
 
+    alarms = sub.add_parser(
+        'alarms',
+        help='CloudWatch alarm fires per environment, and their Linear tickets',
+        description=(
+            'Fetches alarms live through the exporter named by [alarms].command (tail-cw '
+            "'s `export alarms --history` is the reference shape), once per entry in "
+            '[alarms].profiles. CloudWatch keeps roughly a month of alarm history, so '
+            '--days much past 15 reads the previous period as a floor rather than true.'
+        ),
+    )
+    alarms.add_argument('--days', type=int, default=14, metavar='N', help='window for fire counts (default: 14)')
+    alarms.add_argument('--env', action='append', metavar='NAME', help='one configured environment (repeatable)')
+    alarms.add_argument('--top', type=int, default=15, metavar='N', help='leading-alarms rows (default: 15)')
+    _add_format(alarms)
+
     snapshot = sub.add_parser(
         'snapshot',
-        help='weekly/monthly picture of Linear, Pylon, and Sentry for a team check-in',
+        help='weekly/monthly picture of Linear, Pylon, Sentry, and CloudWatch alarms for a team check-in',
         description=(
-            'A weekly or monthly picture of Linear, Pylon, and (when configured) Sentry, for a '
+            'A weekly or monthly picture of Linear, Pylon, CloudWatch alarms, and (when '
+            'configured) Sentry, for a '
             'team check-in, compared against the period immediately before it.\n\n'
             "Reconstruction limits: Pylon's open-at-a-past-instant counts assume resolution_time "
             'is set once and never cleared, so a reopened-then-resolved ticket undercounts as '

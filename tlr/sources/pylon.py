@@ -43,9 +43,7 @@ _ISSUE_FRAME_SCHEMA: dict[str, Any] = {
     **{col: _PYLON_SCHEMA[col] for col in _PYLON_DOMAIN_COLS},
 }
 _LABEL_FRAME_SCHEMA: dict[str, Any] = {col: _PYLON_LABEL_SCHEMA[col] for col in ('issue_id', 'kind', 'label')}
-_ACCOUNT_FRAME_SCHEMA: dict[str, Any] = {
-    col: _PYLON_ACCOUNT_SCHEMA[col] for col in ('id', 'name', 'tier')
-}
+_ACCOUNT_FRAME_SCHEMA: dict[str, Any] = {col: _PYLON_ACCOUNT_SCHEMA[col] for col in ('id', 'name', 'tier')}
 
 
 @dataclass

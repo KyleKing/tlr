@@ -36,6 +36,9 @@ def test_load_config_sample_round_trips() -> None:
     assert config.linear.agent_accounts == ['watch-doggo@example.com']
     assert config.pylon.priority_values == ['urgent', 'high', 'medium', 'low']
     assert config.tiers.default_tier == 'free'
+    assert config.alarms.profiles == {'prod': 'read-prod', 'stage': 'read-stage'}
+    assert config.alarms.severity_suffixes == ['critical', 'warning']
+    assert not config.alarms.console_region
     assert config.sla.target_days_by_tier == {}
     assert config.triage.exclusions['feature_request'] == ['feature_request']
     assert config.thresholds.commitment_accuracy_low == pytest.approx(0.8)
@@ -67,6 +70,7 @@ def test_load_config_malformed_toml_raises(tmp_path: Path) -> None:
             '[capacity]\n[[capacity.roster]]\nname = "Alex"\nemail = "a@x.com"\npoints_per_cycle = "ten"\n',
             r'roster\[0\]',
         ),
+        ('[alarms]\nenv = "prod"\n', r'\[alarms\].env'),
         ('linear = 5\n', r'\[linear\]'),
         ('[linear]\nteam_key = ["ENG"]\n', r'\[linear\].team_key is not a recognized key'),
     ],

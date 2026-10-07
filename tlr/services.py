@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 import argparse
+import subprocess  # noqa: S404 the argv comes from config, never a shell string
 import sys
-from datetime import UTC, datetime
+from collections.abc import Sequence
+from dataclasses import replace
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import duckdb
@@ -13,6 +16,7 @@ import polars as pl
 from tlr import store
 from tlr.config import TlrConfig, get_default_config_path, load_config
 from tlr.domain import capacity as capacity_domain
+from tlr.domain.snapshot import PeriodWindow
 from tlr.render.json import frame_to_json, sections_to_json
 from tlr.render.markdown import frame_to_markdown, sections_to_markdown
 
@@ -33,8 +37,8 @@ def _render(frame: pl.DataFrame, output_format: str) -> str:
     return frame_to_markdown(frame) if output_format == 'md' else frame_to_json(frame)
 
 
-def _render_sections(sections: list[tuple[str, pl.DataFrame]], output_format: str) -> str:
-    return sections_to_markdown(sections) if output_format == 'md' else sections_to_json(sections)
+def _render_sections(sections: Sequence[tuple[str, pl.DataFrame | str]], output_format: str) -> str:
+    return sections_to_markdown(list(sections)) if output_format == 'md' else sections_to_json(list(sections))
 
 
 def _now() -> datetime:
@@ -269,6 +273,100 @@ def _sentry_configured() -> bool:
     return True
 
 
+def _alarms_configured(config: TlrConfig) -> bool:
+    return bool(config.alarms.command and config.alarms.profiles)
+
+
+def _alarm_note(text: str) -> list[tuple[str, pl.DataFrame | str]]:
+    return [('Alarms', pl.DataFrame({'note': [text]}))]
+
+
+def _alarm_sections(
+    config: TlrConfig,
+    window: PeriodWindow,
+    issues: pl.DataFrame,
+    *,
+    fetched_at: datetime,
+    top_n: int,
+    include_detail: bool,
+) -> list[tuple[str, pl.DataFrame | str]]:
+    from tlr.domain import alarms as alarms_domain  # noqa: PLC0415
+    from tlr.sources import alarms as alarms_source  # noqa: PLC0415
+
+    if not _alarms_configured(config):
+        return _alarm_note('Alarms: not configured')
+    try:
+        fetched = alarms_source.fetch_alarms(config.alarms, start=window.previous_start, end=window.end)
+    except subprocess.CalledProcessError as exc:
+        detail = (exc.stderr or '').strip().splitlines()
+        return _alarm_note(f'Alarms: fetch failed ({detail[-1] if detail else exc})')
+    except (OSError, subprocess.SubprocessError) as exc:
+        return _alarm_note(f'Alarms: fetch failed ({exc})')
+    return alarms_domain.build_alarm_sections(
+        fetched.alarms,
+        fetched.transitions,
+        issues,
+        window=window,
+        config=config.alarms,
+        fetched_at=fetched_at,
+        closed_like_state_names=config.linear.closed_like_state_names,
+        top_n=top_n,
+        include_detail=include_detail,
+    )
+
+
+def _alarms_command(args: argparse.Namespace, config: TlrConfig) -> int:
+    from tlr.domain import snapshot as snapshot_domain  # noqa: PLC0415
+
+    if not _alarms_configured(config):
+        _emit_error('no [alarms].command and [alarms].profiles configured; nothing to fetch')
+        return 1
+    if args.env:
+        unknown = sorted(set(args.env) - set(config.alarms.profiles))
+        if unknown:
+            _emit_error(f'unknown env(s) {unknown}; configured environments are {sorted(config.alarms.profiles)}')
+            return 1
+        config = replace(
+            config,
+            alarms=replace(
+                config.alarms,
+                profiles={key: value for key, value in config.alarms.profiles.items() if key in args.env},
+            ),
+        )
+
+    now = _now()
+    window = snapshot_domain.PeriodWindow(
+        start=now - timedelta(days=args.days),
+        end=now,
+        previous_start=now - timedelta(days=2 * args.days),
+        previous_end=now - timedelta(days=args.days),
+    )
+
+    con = _open_store(args, config)
+    try:
+        issues = store.get_issues(con)
+        refreshes = store.get_refresh_status(con)
+    finally:
+        con.close()
+
+    sections = [
+        (
+            'Data freshness',
+            pl.DataFrame({'note': [snapshot_domain.freshness_line(refreshes, sources=('linear',), now=now)]}),
+        ),
+        *_alarm_sections(
+            config,
+            window,
+            issues,
+            fetched_at=now,
+            top_n=args.top,
+            include_detail=True,
+        ),
+    ]
+    _emit(_render_sections(sections, args.format))
+    return 0
+
+
 def _snapshot_command(args: argparse.Namespace, config: TlrConfig) -> int:
     from tlr.domain import snapshot as snapshot_domain  # noqa: PLC0415
 
@@ -282,10 +380,11 @@ def _snapshot_command(args: argparse.Namespace, config: TlrConfig) -> int:
         pylon_issues = store.get_pylon_issues(con)
         pylon_issue_labels = store.get_pylon_issue_labels(con)
         sentry_issues = store.get_sentry_issues(con)
+        refreshes = store.get_refresh_status(con)
     finally:
         con.close()
 
-    sections = snapshot_domain.build_snapshot_sections(
+    sections: list[tuple[str, pl.DataFrame | str]] = snapshot_domain.build_snapshot_sections(
         issues,
         issue_labels,
         pylon_issues,
@@ -298,7 +397,23 @@ def _snapshot_command(args: argparse.Namespace, config: TlrConfig) -> int:
         period=args.period,
         closed_like_state_names=config.linear.closed_like_state_names,
         bot_label=config.linear.bot_label,
+        refreshes=refreshes,
+        tracked_sources=SOURCES,
+        now=_now(),
     )
+    alarm_sections = _alarm_sections(
+        config,
+        window,
+        issues,
+        fetched_at=_now(),
+        top_n=10,
+        include_detail=False,
+    )
+    insert_at = next(
+        (idx for idx, (title, _frame) in enumerate(sections) if title.startswith('Notable:')),
+        len(sections),
+    )
+    sections[insert_at:insert_at] = alarm_sections
     _emit(_render_sections(sections, args.format))
     return 0
 
@@ -335,6 +450,7 @@ def _import_snapshots_command(args: argparse.Namespace, config: TlrConfig) -> in
 
 
 _COMMANDS = {
+    'alarms': _alarms_command,
     'backlog': _backlog_command,
     'capacity': _capacity_command,
     'import-snapshots': _import_snapshots_command,

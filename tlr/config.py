@@ -54,6 +54,25 @@ class SentryConfig:
 
 
 @dataclass(slots=True)
+class AlarmsConfig:
+    """How to reach the CloudWatch alarm export and how to group what it returns.
+
+    `command` is the argv prefix of an NDJSON alarm exporter (tail-cw's
+    `export alarms --history` is the reference shape); each entry in `profiles` maps an
+    environment label onto the `--profile` it is fetched under. `categories` maps a
+    category name onto glob patterns matched against the alarm name, first match wins.
+    `console_region` turns alarm names into CloudWatch console links; empty leaves them
+    as plain text.
+    """
+
+    command: list[str] = field(default_factory=list)
+    profiles: dict[str, str] = field(default_factory=dict)
+    categories: dict[str, list[str]] = field(default_factory=dict)
+    severity_suffixes: list[str] = field(default_factory=lambda: ['critical', 'warning'])
+    console_region: str = ''
+
+
+@dataclass(slots=True)
 class TiersConfig:
     """Customer tier names, best first, and which Pylon account field carries one.
 
@@ -129,6 +148,7 @@ class TlrConfig:
     linear: LinearConfig = field(default_factory=LinearConfig)
     pylon: PylonConfig = field(default_factory=PylonConfig)
     sentry: SentryConfig = field(default_factory=SentryConfig)
+    alarms: AlarmsConfig = field(default_factory=AlarmsConfig)
     tiers: TiersConfig = field(default_factory=TiersConfig)
     sla: SlaConfig = field(default_factory=SlaConfig)
     triage: TriageConfig = field(default_factory=TriageConfig)
@@ -138,6 +158,7 @@ class TlrConfig:
 
 
 _SECTIONS: Final[dict[str, type[Any]]] = {
+    'alarms': AlarmsConfig,
     'linear': LinearConfig,
     'pylon': PylonConfig,
     'sentry': SentryConfig,

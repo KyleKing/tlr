@@ -31,7 +31,10 @@ def frame_to_markdown(frame: pl.DataFrame, *, empty: str = '_none_') -> str:
     return '\n'.join(lines)
 
 
-def sections_to_markdown(sections: list[tuple[str, pl.DataFrame]], *, level: int = 2) -> str:
-    """Render titled frames as consecutive markdown sections."""
+def sections_to_markdown(sections: list[tuple[str, pl.DataFrame | str]], *, level: int = 2) -> str:
+    """Render titled frames as consecutive markdown sections; a `str` body emits verbatim."""
     prefix = '#' * level
-    return '\n\n'.join(f'{prefix} {title}\n\n{frame_to_markdown(frame)}' for title, frame in sections)
+    return '\n\n'.join(
+        f'{prefix} {title}\n\n{body if isinstance(body, str) else frame_to_markdown(body)}'
+        for title, body in sections
+    )

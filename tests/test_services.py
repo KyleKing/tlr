@@ -13,6 +13,7 @@ import pytest
 from tlr import store
 from tlr.cli import build_parser
 from tlr.services import run
+from tlr.sources.alarms import ALARMS_SCHEMA, TRANSITIONS_SCHEMA, AlarmFetch
 
 _CYCLE = 5
 _ALEX_ALLOCATED = 8.0
@@ -265,6 +266,146 @@ def test_snapshot_reports_sentry_not_configured_and_a_pinned_period(
     assert sections['Sentry'] == [{'note': 'Sentry: not configured'}]
     assert 'Linear: open by priority' in sections
     assert 'Pylon: top tags' in sections
+    freshness = [row['note'] for row in sections['Snapshot'] if row['note'].startswith('Data freshness')]
+    assert freshness == ['Data freshness: linear never refreshed, pylon never refreshed, sentry never refreshed.']
+
+
+_ALARMS_TOML = """[alarms]
+command = ["export-alarms"]
+
+[alarms.profiles]
+prod = "read-prod"
+stage = "read-stage"
+"""
+
+
+def _fake_fetch(alarms_rows: list[dict[str, object]], transition_rows: list[dict[str, object]]) -> object:
+    def fetch(_config: object, *, start: datetime, end: datetime | None = None, **_kwargs: object) -> AlarmFetch:
+        return AlarmFetch(
+            alarms=pl.DataFrame(alarms_rows, schema=ALARMS_SCHEMA),
+            transitions=pl.DataFrame(transition_rows, schema=TRANSITIONS_SCHEMA),
+        )
+
+    return fetch
+
+
+def test_alarms_without_configuration_fails(
+    config_file: Path,
+    seeded_db: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    exit_code = _run(['--config', str(config_file), '--db', str(seeded_db), 'alarms'])
+
+    assert exit_code == 1
+    assert 'no [alarms]' in capsys.readouterr().err
+
+
+def test_alarms_reports_sections_and_linear_matches(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    seeded_db: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    config = tmp_path / 'alarms.toml'
+    config.write_text(_ALARMS_TOML, encoding='utf-8')
+    monkeypatch.setattr(
+        'tlr.sources.alarms.fetch_alarms',
+        _fake_fetch(
+            [
+                {
+                    'env': 'prod',
+                    'name': 'svc-prod-api-5xx-critical',
+                    'state': 'ALARM',
+                    'state_updated': datetime(2026, 10, 7, tzinfo=UTC).replace(tzinfo=None),
+                    'namespace': None,
+                    'metric_name': None,
+                },
+            ],
+            [
+                {
+                    'env': 'prod',
+                    'alarm_name': 'svc-prod-api-5xx-critical',
+                    'occurred_at': datetime(2026, 10, 7, tzinfo=UTC).replace(tzinfo=None),
+                    'from_state': 'OK',
+                    'to_state': 'ALARM',
+                },
+            ],
+        ),
+    )
+
+    exit_code = _run(['--config', str(config), '--db', str(seeded_db), 'alarms', '--days', '7'])
+
+    assert exit_code == 0
+    sections = json.loads(capsys.readouterr().out)
+    assert 'Alarms: fires by environment' in sections
+    assert 'Alarms: all tracked' in sections
+    assert sections['Alarms: fires per day — prod'].startswith('```mermaid')
+    assert sections['Data freshness'][0]['note'] == 'Data freshness: linear never refreshed.'
+    in_alarm = sections['Alarms: in ALARM now']
+    assert in_alarm[0]['name'] == 'svc-prod-api-5xx-critical'
+
+
+def test_alarms_rejects_an_unknown_env(tmp_path: Path, seeded_db: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    config = tmp_path / 'alarms.toml'
+    config.write_text(_ALARMS_TOML, encoding='utf-8')
+
+    exit_code = _run(['--config', str(config), '--db', str(seeded_db), 'alarms', '--env', 'qa'])
+
+    assert exit_code == 1
+    assert 'unknown env' in capsys.readouterr().err
+
+
+def test_snapshot_reports_alarms_not_configured(
+    seeded_db: Path,
+    config_file: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    exit_code = _run(['--config', str(config_file), '--db', str(seeded_db), 'snapshot'])
+
+    assert exit_code == 0
+    sections = json.loads(capsys.readouterr().out)
+    assert sections['Alarms'] == [{'note': 'Alarms: not configured'}]
+
+
+def test_snapshot_degrades_to_a_note_when_the_alarm_fetch_fails(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    seeded_db: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    config = tmp_path / 'alarms.toml'
+    config.write_text(_ALARMS_TOML, encoding='utf-8')
+
+    def failing_fetch(_config: object, **_kwargs: object) -> object:
+        raise FileNotFoundError('export-alarms')
+
+    monkeypatch.setattr('tlr.sources.alarms.fetch_alarms', failing_fetch)
+
+    exit_code = _run(['--config', str(config), '--db', str(seeded_db), 'snapshot'])
+
+    assert exit_code == 0
+    sections = json.loads(capsys.readouterr().out)
+    assert 'fetch failed' in sections['Alarms'][0]['note']
+    assert 'Linear: open by priority' in sections, 'a dead exporter must not take the rest of the snapshot down'
+
+
+def test_snapshot_includes_alarm_sections_before_the_notable_block(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    seeded_db: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    config = tmp_path / 'alarms.toml'
+    config.write_text(_ALARMS_TOML, encoding='utf-8')
+    monkeypatch.setattr('tlr.sources.alarms.fetch_alarms', _fake_fetch([], []))
+
+    exit_code = _run(['--config', str(config), '--db', str(seeded_db), 'snapshot', '--as-of', '2026-10-08'])
+
+    assert exit_code == 0
+    sections = json.loads(capsys.readouterr().out)
+    titles = list(sections)
+    assert 'Alarms: fires by environment' in titles
+    assert titles.index('Alarms: fires by environment') < titles.index('Notable: not computed')
 
 
 def test_import_snapshots_dry_run_writes_nothing(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:

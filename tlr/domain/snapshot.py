@@ -292,14 +292,42 @@ def linear_bot_filed_split(
     )
 
 
+def _age_text(age: timedelta) -> str:
+    if age.total_seconds() <= 0:
+        return '0m'
+    if age.days >= 1:
+        return f'{age.days}d'
+    hours = age.seconds // 3600
+    if hours >= 1:
+        return f'{hours}h'
+    return f'{age.seconds // 60}m'
+
+
+def freshness_line(refreshes: pl.DataFrame, *, sources: Sequence[str], now: datetime) -> str:
+    """One-line store freshness: 'Data freshness: linear refreshed … (2d ago), pylon never refreshed.'."""
+    latest = {row['source']: row['last_run_at'] for row in refreshes.to_dicts()}
+    parts: list[str] = []
+    for source in sources:
+        stamp = latest.get(source)
+        parts.append(
+            f'{source} refreshed {stamp:%Y-%m-%d %H:%M} ({_age_text(now - stamp)} ago)'
+            if stamp is not None
+            else f'{source} never refreshed',
+        )
+    return 'Data freshness: ' + ', '.join(parts) + '.'
+
+
 def snapshot_header(
     window: PeriodWindow,
     *,
     period: str,
     closed_like_state_names: Sequence[str],
     bot_label: str,
+    refreshes: pl.DataFrame,
+    tracked_sources: Sequence[str],
+    now: datetime,
 ) -> pl.DataFrame:
-    """Period bounds and the open/bot-filed definitions this snapshot uses, for the check-in's header."""
+    """Period bounds, the open/bot-filed definitions, and store freshness, for the check-in's header."""
     closed_like = ', '.join(closed_like_state_names) if closed_like_state_names else 'none configured'
     period_line = (
         f'{period.capitalize()}: {window.start.date()} to {window.end.date()} (exclusive), '
@@ -313,6 +341,8 @@ def snapshot_header(
         f'Bot-filed: open issues carrying the label {bot_label!r}.' if bot_label else 'Bot-filed: not configured.'
     )
     lines = [period_line, open_line, bot_line]
+    if tracked_sources:
+        lines.append(freshness_line(refreshes, sources=tracked_sources, now=now))
     return pl.DataFrame({'note': lines}, schema=_NOTE_SCHEMA)
 
 
@@ -434,8 +464,16 @@ def build_snapshot_sections(
     period: str = 'week',
     closed_like_state_names: Sequence[str] = (),
     bot_label: str = '',
-) -> list[tuple[str, pl.DataFrame]]:
-    """Assemble every snapshot section, ready for `tlr.render.markdown.sections_to_markdown`."""
+    refreshes: pl.DataFrame | None = None,
+    tracked_sources: Sequence[str] = (),
+    now: datetime | None = None,
+) -> list[tuple[str, pl.DataFrame | str]]:
+    """Assemble every snapshot section, ready for `tlr.render.markdown.sections_to_markdown`.
+
+    `refreshes` (the store's refresh_runs frame) with `tracked_sources` stamps the header
+    with each source's last refresh; `now` ages those stamps and may differ from
+    `window.end` when the caller pins `--as-of` to a past instant.
+    """
     sparse = labels_are_sparse(issues, issue_labels, window_start=window.start, window_end=window.end)
     label_heading = 'Linear: top labels created this period' + (' (labels are sparse this period)' if sparse else '')
 
@@ -472,7 +510,7 @@ def build_snapshot_sections(
     )
     pylon_resolution_time = close_time(pylon_issues, sla, window_start=window.start, window_end=window.end)
 
-    sections: list[tuple[str, pl.DataFrame]] = [
+    sections: list[tuple[str, pl.DataFrame | str]] = [
         (
             'Snapshot',
             snapshot_header(
@@ -480,6 +518,9 @@ def build_snapshot_sections(
                 period=period,
                 closed_like_state_names=closed_like_state_names,
                 bot_label=bot_label,
+                refreshes=refreshes if refreshes is not None else pl.DataFrame(),
+                tracked_sources=tracked_sources,
+                now=now if now is not None else window.end,
             ),
         ),
         ('Linear: open by priority', linear_priority),
