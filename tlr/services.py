@@ -133,15 +133,25 @@ def _refresh_command(args: argparse.Namespace, config: TlrConfig) -> int:
         return 0
     con = _open_store(args, config)
     refreshers = {'linear': _refresh_linear, 'pylon': _refresh_pylon, 'sentry': _refresh_sentry}
+    failures: list[str] = []
     try:
         for name in sources:
-            row_count = refreshers[name](con, config)
+            try:
+                row_count = refreshers[name](con, config)
+            except (LookupError, ValueError) as exc:
+                _emit_error(f'{name}: skipped ({exc})')
+                failures.append(name)
+                continue
+            except Exception as exc:
+                _emit_error(f'{name}: failed ({exc})')
+                failures.append(name)
+                continue
             now = datetime.now(UTC).replace(tzinfo=None)
             store.record_refresh(con, source=name, last_run_at=now, row_count=row_count)
             _emit(f'{name}: {row_count} row(s)')
     finally:
         con.close()
-    return 0
+    return 1 if failures else 0
 
 
 def _resolve_cycle(cycles: pl.DataFrame, requested: int | None) -> int | None:

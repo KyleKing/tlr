@@ -164,6 +164,27 @@ def test_refresh_rejects_an_unknown_source(config_file: Path, seeded_db: Path) -
         _run(['--config', str(config_file), '--db', str(seeded_db), 'refresh', '--source', 'jira'])
 
 
+def test_refresh_skips_unconfigured_sources_but_fails_the_run(
+    monkeypatch: pytest.MonkeyPatch,
+    config_file: Path,
+    seeded_db: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    def no_pylon_secret(name: str) -> str:
+        msg = f'no secret for {name!r}'
+        raise LookupError(msg)
+
+    monkeypatch.setattr('tlr.sources.pylon.read_secret', no_pylon_secret)
+
+    exit_code = _run(['--config', str(config_file), '--db', str(seeded_db), 'refresh'])
+
+    assert exit_code == 1
+    err = capsys.readouterr().err
+    assert 'linear: skipped' in err
+    assert 'pylon: skipped' in err
+    assert 'sentry: skipped' in err
+
+
 def _seed_pylon(db_path: Path) -> None:
     con = store.connect(db_path)
     store.upsert_pylon_issues(
