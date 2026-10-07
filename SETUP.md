@@ -166,6 +166,24 @@ Set
 
 Verify: `uv run tlr refresh --source pylon --dry-run`.
 
+## Sentry
+
+The adapter reads `GET /api/0/organizations/{org_slug}/issues/` with a bearer token; no
+CLI is involved — mint the token in the Sentry web UI.
+
+1. Sentry → Settings → Custom Integrations → **New Internal Integration**: name it `tlr`
+    and grant only the read permissions the issues endpoint needs — **Issue & Event:
+    Read** (add **Organization: Read** if the UI requires a base scope)
+1. Copy the token (shown once) and store it:
+    `security add-generic-password -s tlr-sentry -a api-token -w` (env var
+    `SENTRY_AUTH_TOKEN`)
+1. Set `[sentry].org_slug` in your config file — the slug is the segment after
+    `sentry.io/organizations/` in any org URL.
+    Optionally scope queries with
+    `[sentry].project_slugs`; empty means every project in the org
+
+Verify: `uv run tlr refresh --source sentry --dry-run`.
+
 ## Slack
 
 The same context source (see [DECISIONS.md](DECISIONS.md)) port, over messages.
