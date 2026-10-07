@@ -38,16 +38,31 @@ below cost real time to find.
 
 ## Storing a secret
 
-Keychain, one entry per service, account `api-key` (you are prompted for the value, so
-it never lands in
-shell history):
+Secrets live in the macOS login keychain, managed with Apple's `security` CLI.
+Every command addresses an entry by two strings, `-s <service>` (e.g. `tlr-linear`)
+and `-a <account>` (e.g. `api-key`), matching the service/account columns in the
+table above.
 
 ```sh
-security add-generic-password -s <service> -a api-key -w
+# Add (prompts for the value, so it never lands in shell history)
+security add-generic-password -s <service> -a <account> -w
+# Rotate: the same with -U overwrites an existing entry
+security add-generic-password -U -s <service> -a <account> -w
+
+# Print the entry's attributes to confirm it exists; never shows the secret
+security find-generic-password -s <service> -a <account>
+# Print just the secret, the exact lookup tlr itself runs
+security find-generic-password -s <service> -a <account> -w
+
+# Remove
+security delete-generic-password -s <service> -a <account>
 ```
 
-Read it back with the same `-s`/`-a` and `-w` to confirm.
-Delete and re-add to rotate.
+There is no list subcommand.
+To see everything tlr has stored, grep the metadata dump (secrets are never printed):
+`security dump-keychain | grep 'tlr-'`.
+The friendlier view is Keychain Access.app: the entries sit in the login keychain, so
+search `tlr-`, double-click an entry, and check **Show password** to read it.
 
 ### From 1Password
 
@@ -65,6 +80,22 @@ PYLON_API_TOKEN=$(op read "op://Private/Pylon API Token/password") uv run tlr tr
 An env var wins over the keychain on read.
 tlr has no secret-write path at all: it reads, and you mint
 and store credentials with the commands here.
+
+## The config file
+
+Workspace-specific settings live in one TOML file; `config.sample.toml` documents every
+table and key.
+`uv run tlr config path` prints the file tlr reads (`$TLR_CONFIG` when set, else the
+XDG config directory), `init` seeds it from the sample, `list` dumps the effective
+settings including defaults, and `get`/`set` read and write one field:
+
+```sh
+uv run tlr config set sentry.org_slug <org-slug>
+uv run tlr config set pylon.priority_values '["urgent", "high", "medium", "low"]'
+```
+
+`set` takes a TOML literal (`["a", "b"]`, `5`, `true`) or a bare string, and refuses an
+unrecognized key or a wrongly-typed value before the file is written.
 
 ## Linear
 
@@ -160,8 +191,8 @@ goes through
 `SlidingWindowLimiter` in `tlr/http.py` to respect.
 
 Which custom field records the tracker identifier is a workspace's own choice.
-Set
-`[pylon].linear_ticket_field` in your config file (`config.sample.toml` has the shape);
+Set it with
+`uv run tlr config set pylon.linear_ticket_field <field>`;
 `GET /custom-fields?object_type=issue` lists what a workspace has.
 
 Verify: `uv run tlr refresh --source pylon --dry-run`.
@@ -171,16 +202,21 @@ Verify: `uv run tlr refresh --source pylon --dry-run`.
 The adapter reads `GET /api/0/organizations/{org_slug}/issues/` with a bearer token; no
 CLI is involved — mint the token in the Sentry web UI.
 
-1. Sentry → Settings → Custom Integrations → **New Internal Integration**: name it `tlr`
-    and grant only the read permissions the issues endpoint needs — **Issue & Event:
-    Read** (add **Organization: Read** if the UI requires a base scope)
+1. Mint a user auth token.
+    With your org slug the creation form is a direct link:
+    `https://<org-slug>.sentry.io/settings/account/api/auth-tokens/new-token`
+    (otherwise User Settings → Auth Tokens → Create New Token).
+    Grant `event:read`, the scope the issues endpoint needs.
+    A user token's scopes cannot be edited later; mint a new token to change them
 1. Copy the token (shown once) and store it:
     `security add-generic-password -s tlr-sentry -a api-token -w` (env var
     `SENTRY_AUTH_TOKEN`)
-1. Set `[sentry].org_slug` in your config file — the slug is the segment after
+1. Point tlr at the org: `uv run tlr config set sentry.org_slug <org-slug>` — the slug
+    is both the `<org-slug>` subdomain in the link above and the segment after
     `sentry.io/organizations/` in any org URL.
-    Optionally scope queries with
-    `[sentry].project_slugs`; empty means every project in the org
+    Optionally scope queries to projects with
+    `uv run tlr config set sentry.project_slugs '["backend"]'`; empty means every
+    project in the org
 
 Verify: `uv run tlr refresh --source sentry --dry-run`.
 
@@ -190,12 +226,39 @@ The same context source (see [DECISIONS.md](DECISIONS.md)) port, over messages.
 Search needs a **user**
 token (`xoxp-`), not a bot token: `search.messages` refuses a bot token outright.
 
-1. [Slack → Your apps](https://api.slack.com/apps): create an app in the workspace, add the
-    `search:read` **user** token scope under OAuth & Permissions, install it, and copy the
-    User OAuth
-    Token
-1. Store it: `security add-generic-password -s tlr-slack -a user-token -w` (env var
+1. [Slack → Your apps](https://api.slack.com/apps): **Create New App** → **From a
+    manifest**, pick the workspace, and paste:
+
+    ```yaml
+    display_information:
+      name: tlr
+      description: Read-only message search
+    oauth_config:
+      scopes:
+        user:
+          - search:read
+    settings:
+      token_rotation_enabled: false
+    ```
+
+    Every other field is optional, and `scopes.user` (not `scopes.bot`) is what makes
+    the install produce a user token.
+    Keep token rotation off: tlr stores the token as a static secret and has no
+    refresh-token path, so a rotating token would expire under it
+
+1. Create the app and **Install to Workspace** — if the workspace restricts app
+    installs this routes to an admin for approval — then copy the User OAuth Token
+    (`xoxp-`) and store it:
+    `security add-generic-password -s tlr-slack -a user-token -w` (env var
     `SLACK_USER_TOKEN`)
+
+The only other way to search as yourself is the web client's own credentials: an
+`xoxc-` token plus the `d` cookie lifted from a logged-in browser session, the route
+export tools like slackdump take.
+It needs no app install and no admin approval, but it is
+undocumented, revocable at any time, and unscoped — the pair can do everything your
+account can do, not just search, so it sits outside the one-named-secret-per-service
+shape above.
 
 Scoping every search to a channel list belongs in the config file when the Slack adapter
 lands; several
@@ -239,9 +302,9 @@ calendar you read:
 1. [Create an OAuth client](https://console.cloud.google.com/auth/clients): application
     type
     **Desktop app**, then download the client JSON
-1. Save the JSON as `gcal-client.json` in the data directory `tlr config path` reports
-    (`$TLR_DATA_DIR`,
-    else the XDG data dir), alongside the cached `gcal-token.json`
+1. Save the JSON as `gcal-client.json` in the data directory (`$TLR_DATA_DIR`, else the
+    XDG data dir — the same directory `tlr config path` reports on macOS), alongside
+    the cached `gcal-token.json`
 
 The first run opens the browser once for consent and caches a refresh token.
 Free/busy converts into
