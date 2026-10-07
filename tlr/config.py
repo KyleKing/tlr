@@ -9,7 +9,8 @@ from __future__ import annotations
 import os
 import tomllib
 import types
-from dataclasses import dataclass, field, fields, replace
+from collections.abc import Mapping
+from dataclasses import asdict, dataclass, field, fields, replace
 from pathlib import Path
 from typing import Any, Final, get_args, get_origin, get_type_hints
 
@@ -290,6 +291,14 @@ def _load_capacity(raw: Any) -> CapacityConfig:
     return replace(_validated_section('capacity', rest, CapacityConfig), roster=roster)
 
 
+def _config_from_data(data: Mapping[str, Any]) -> TlrConfig:
+    return TlrConfig(
+        **{name: _validated_section(name, data.get(name), factory) for name, factory in _SECTIONS.items()},
+        capacity=_load_capacity(data.get('capacity')),
+        store=_validated_section('store', data.get('store'), StoreConfig),
+    )
+
+
 def load_config(path: Path | None = None) -> TlrConfig:
     """Load configuration from `path`, defaulting to `get_default_config_path`.
 
@@ -307,12 +316,28 @@ def load_config(path: Path | None = None) -> TlrConfig:
             msg = f'Invalid TOML in {config_path}: {exc}'
             raise ValueError(msg) from exc
 
-        config = TlrConfig(
-            **{name: _validated_section(name, data.get(name), factory) for name, factory in _SECTIONS.items()},
-            capacity=_load_capacity(data.get('capacity')),
-            store=_validated_section('store', data.get('store'), StoreConfig),
-        )
+        config = _config_from_data(data)
 
     stored = config.store.database_path
     resolved = get_data_dir() / DEFAULT_DB_FILENAME if stored is None else stored.expanduser()
     return replace(config, store=replace(config.store, database_path=resolved))
+
+
+def flatten_config(config: TlrConfig) -> dict[str, Any]:
+    """Flatten the loaded config to dotted `section.field` keys.
+
+    Dict-valued fields (e.g. `alarms.profiles`) recurse into `section.field.key` entries;
+    an empty dict stays a leaf. `Path` values become strings.
+    """
+    flat: dict[str, Any] = {}
+
+    def walk(prefix: str, value: Any) -> None:
+        if isinstance(value, dict) and value:
+            for sub_key, sub_value in value.items():
+                walk(f'{prefix}.{sub_key}', sub_value)
+            return
+        flat[prefix] = str(value) if isinstance(value, Path) else value
+
+    for section_name, section in asdict(config).items():
+        walk(section_name, section)
+    return flat

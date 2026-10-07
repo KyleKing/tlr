@@ -1618,6 +1618,7 @@ dependencies = [
     { name = "httpx" },
     { name = "platformdirs" },
     { name = "polars" },
+    { name = "tomlkit" },
 ]
 
 [package.dev-dependencies]
@@ -1636,6 +1637,7 @@ requires-dist = [
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "platformdirs", specifier = ">=4.11.7" },
     { name = "polars", specifier = ">=1.44.1" },
+    { name = "tomlkit", specifier = ">=0.15.1" },
 ]
 
 [package.metadata.requires-dev]

@@ -2,6 +2,7 @@
 
 ### Feat
 
+- **alarms**: report CloudWatch alarm volume, trends, and Linear coverage
 - **snapshot**: add weekly/monthly Linear, Pylon, and Sentry check-in snapshot
 - dispatch triage, backlog, and import-snapshots
 - report backlog age, close time, and resolved splits
@@ -101,6 +102,7 @@
 
 ### Fix
 
+- keep refreshing when a source is missing or fails
 - **snapshot**: exclude archived and closed-like issues from Linear open counts
 - **pylon**: send the cursor as a query param and read custom fields as objects
 - **config**: match Pylon's real field vocabulary

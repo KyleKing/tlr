@@ -146,6 +146,58 @@ def test_config_init_writes_the_committed_sample(tmp_path: Path) -> None:
     assert '[[capacity.roster]]' in target.read_text(encoding='utf-8')
 
 
+def test_config_set_get_and_list_round_trip(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    target = tmp_path / 'nested' / 'config.toml'
+    target.parent.mkdir(parents=True)
+    target.write_text('# a comment to keep\n[pylon]\nlinear_ticket_field = "lt"\n', encoding='utf-8')
+
+    assert _run(['--config', str(target), 'config', 'set', 'sentry.org_slug', 'my-org']) == 0
+    assert _run(['--config', str(target), 'config', 'set', 'linear.team_keys', '["DEV", "OPS"]']) == 0
+    assert _run(['--config', str(target), 'config', 'set', 'alarms.profiles.qa', 'read-qa']) == 0
+
+    written = target.read_text(encoding='utf-8')
+    assert '# a comment to keep' in written
+    assert 'linear_ticket_field = "lt"' in written
+    assert 'org_slug = "my-org"' in written
+    assert 'team_keys = ["DEV", "OPS"]' in written
+    assert 'qa = "read-qa"' in written
+
+    capsys.readouterr()
+    assert _run(['--config', str(target), 'config', 'get', 'sentry.org_slug']) == 0
+    assert _run(['--config', str(target), 'config', 'get', 'linear.team_keys']) == 0
+    assert _run(['--config', str(target), 'config', 'get', 'alarms.profiles']) == 0
+    out = capsys.readouterr().out.splitlines()
+    assert out == ['my-org', '["DEV", "OPS"]', '{"qa": "read-qa"}']
+
+    assert _run(['--config', str(target), 'config', 'list']) == 0
+    listing = capsys.readouterr().out
+    assert listing.startswith(f'# {target}\n')
+    assert 'sentry.org_slug = "my-org"' in listing
+    assert 'triage.ordering = ["priority", "tier", "age", "sla_distance"]' in listing
+
+
+def test_config_set_rejects_bad_input_without_writing(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    target = tmp_path / 'config.toml'
+    target.write_text('[thresholds]\nin_progress_days = 14\n', encoding='utf-8')
+
+    assert _run(['--config', str(target), 'config', 'set', 'jira.slug', 'x']) == 1
+    assert 'unknown section' in capsys.readouterr().err
+    assert _run(['--config', str(target), 'config', 'set', 'sentry.bogus', 'x']) == 1
+    assert 'not a recognized key' in capsys.readouterr().err
+    assert _run(['--config', str(target), 'config', 'set', 'thresholds.in_progress_days', 'soon']) == 1
+    assert 'must be' in capsys.readouterr().err
+
+    assert target.read_text(encoding='utf-8') == '[thresholds]\nin_progress_days = 14\n'
+
+
+def test_config_get_rejects_an_unknown_key(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    target = tmp_path / 'config.toml'
+    target.write_text('', encoding='utf-8')
+
+    assert _run(['--config', str(target), 'config', 'get', 'bogus.key']) == 1
+    assert 'unknown key' in capsys.readouterr().err
+
+
 def test_refresh_dry_run_touches_no_store(
     config_file: Path,
     tmp_path: Path,

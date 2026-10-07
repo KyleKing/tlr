@@ -3,18 +3,23 @@
 from __future__ import annotations
 
 import argparse
+import json
 import subprocess  # noqa: S404 the argv comes from config, never a shell string
 import sys
+import tomllib
 from collections.abc import Sequence
-from dataclasses import replace
+from dataclasses import fields, replace
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Any
 
 import duckdb
 import polars as pl
+import tomlkit
+import tomlkit.items
 
 from tlr import store
-from tlr.config import TlrConfig, get_default_config_path, load_config
+from tlr.config import TlrConfig, _config_from_data, flatten_config, get_default_config_path, load_config
 from tlr.domain import capacity as capacity_domain
 from tlr.domain.snapshot import PeriodWindow
 from tlr.render.json import frame_to_json, sections_to_json
@@ -53,22 +58,109 @@ def _open_store(args: argparse.Namespace, config: TlrConfig) -> duckdb.DuckDBPyC
     return store.connect(db_path)
 
 
-def _config_command(args: argparse.Namespace) -> int:
-    config_path = Path(args.config).expanduser() if args.config else get_default_config_path()
-    if args.action == 'path':
-        _emit(str(config_path))
-        return 0
-    if args.action == 'init':
-        if config_path.exists():
-            _emit_error(f'{config_path} already exists; edit it in place')
-            return 1
-        config_path.parent.mkdir(parents=True, exist_ok=True)
-        config_path.write_text(_SAMPLE_CONFIG.read_text(encoding='utf-8'), encoding='utf-8')
-        _emit(f'wrote {config_path}')
-        return 0
+_CONFIG_SECTIONS = frozenset(field.name for field in fields(TlrConfig))
+
+
+def _config_path(config_path: Path) -> int:
+    _emit(str(config_path))
+    return 0
+
+
+def _config_init(config_path: Path) -> int:
+    if config_path.exists():
+        _emit_error(f'{config_path} already exists; edit it in place')
+        return 1
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text(_SAMPLE_CONFIG.read_text(encoding='utf-8'), encoding='utf-8')
+    _emit(f'wrote {config_path}')
+    return 0
+
+
+def _config_show(config_path: Path) -> int:
     load_config(config_path)
     _emit(config_path.read_text(encoding='utf-8') if config_path.exists() else '# no config file; using defaults')
     return 0
+
+
+def _format_value(value: Any) -> str:
+    return json.dumps(value) if isinstance(value, dict | list | type(None)) else str(value)
+
+
+def _config_list(config_path: Path) -> int:
+    flat = flatten_config(load_config(config_path))
+    source = str(config_path) if config_path.exists() else 'no config file; using defaults'
+    _emit(f'# {source}')
+    for key, value in flat.items():
+        _emit(f'{key} = {json.dumps(value)}')
+    return 0
+
+
+def _config_get(config_path: Path, key: str | None) -> int:
+    if not key:
+        _emit_error('usage: tlr config get <section.field>')
+        return 1
+    flat = flatten_config(load_config(config_path))
+    if key in flat:
+        _emit(_format_value(flat[key]))
+        return 0
+    subtree = {sub[len(key) + 1 :]: value for sub, value in flat.items() if sub.startswith(f'{key}.')}
+    if subtree:
+        _emit(json.dumps(subtree))
+        return 0
+    _emit_error(f'unknown key {key!r}; `tlr config list` shows every key')
+    return 1
+
+
+def _parse_config_value(raw: str) -> Any:
+    try:
+        return tomllib.loads(f'x = {raw}')['x']
+    except tomllib.TOMLDecodeError:
+        return raw
+
+
+def _config_set(config_path: Path, key: str | None, raw_value: str | None) -> int:
+    if not key or raw_value is None or '.' not in key:
+        _emit_error('usage: tlr config set <section.field> <value>, e.g. tlr config set sentry.org_slug my-org')
+        return 1
+    segments = key.split('.')
+    if segments[0] not in _CONFIG_SECTIONS:
+        _emit_error(f'unknown section [{segments[0]}]; expected one of {sorted(_CONFIG_SECTIONS)}')
+        return 1
+    doc = tomlkit.parse(config_path.read_text(encoding='utf-8') if config_path.exists() else '')
+    target: Any = doc
+    for segment in segments[:-1]:
+        node = target.get(segment)
+        if node is None:
+            node = tomlkit.table()
+            target[segment] = node
+        elif not isinstance(node, tomlkit.items.AbstractTable):
+            _emit_error(f'cannot set {key}: {segment} in {config_path} holds a value, not a table')
+            return 1
+        target = node
+    target[segments[-1]] = _parse_config_value(raw_value)
+    new_text = tomlkit.dumps(doc)
+    try:
+        _config_from_data(tomllib.loads(new_text))
+    except ValueError as exc:
+        _emit_error(str(exc))
+        return 1
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text(new_text, encoding='utf-8')
+    _emit(f'set {key} in {config_path}')
+    return 0
+
+
+def _config_command(args: argparse.Namespace) -> int:
+    config_path = Path(args.config).expanduser() if args.config else get_default_config_path()
+    actions = {
+        'path': lambda: _config_path(config_path),
+        'init': lambda: _config_init(config_path),
+        'show': lambda: _config_show(config_path),
+        'list': lambda: _config_list(config_path),
+        'get': lambda: _config_get(config_path, args.key),
+        'set': lambda: _config_set(config_path, args.key, args.value),
+    }
+    return actions[args.action]()
 
 
 def _requested_sources(args: argparse.Namespace) -> list[str]:

@@ -74,8 +74,8 @@ uv publish
 | `tlr/__init__.py`                  | 4          | 0       | 0        | 100.0%   |
 | `tlr/__main__.py`                  | 17         | 5       | 0        | 66.7%    |
 | `tlr/_runtime_type_check_setup.py` | 13         | 0       | 37       | 100.0%   |
-| `tlr/cli.py`                       | 41         | 0       | 0        | 100.0%   |
-| `tlr/config.py`                    | 201        | 13      | 0        | 90.6%    |
+| `tlr/cli.py`                       | 43         | 0       | 0        | 100.0%   |
+| `tlr/config.py`                    | 215        | 13      | 0        | 91.3%    |
 | `tlr/domain/__init__.py`           | 0          | 0       | 0        | 100.0%   |
 | `tlr/domain/alarms.py`             | 161        | 1       | 0        | 98.2%    |
 | `tlr/domain/backlog.py`            | 56         | 1       | 0        | 96.8%    |
@@ -89,14 +89,14 @@ uv publish
 | `tlr/render/json.py`               | 15         | 0       | 0        | 100.0%   |
 | `tlr/render/markdown.py`           | 22         | 1       | 0        | 92.9%    |
 | `tlr/secrets.py`                   | 46         | 0       | 1        | 100.0%   |
-| `tlr/services.py`                  | 260        | 45      | 0        | 80.8%    |
+| `tlr/services.py`                  | 327        | 50      | 0        | 83.2%    |
 | `tlr/sources/__init__.py`          | 0          | 0       | 0        | 100.0%   |
 | `tlr/sources/alarms.py`            | 51         | 1       | 0        | 95.1%    |
 | `tlr/sources/linear.py`            | 115        | 0       | 0        | 100.0%   |
 | `tlr/sources/pylon.py`             | 139        | 2       | 0        | 96.3%    |
 | `tlr/sources/sentry.py`            | 64         | 0       | 0        | 100.0%   |
 | `tlr/store.py`                     | 248        | 12      | 0        | 92.4%    |
-| **Totals**                         | 1878       | 95      | 38       | 93.1%    |
+| **Totals**                         | 1961       | 100     | 38       | 93.1%    |
 
 Generated on: 2026-10-07
 <!-- {cte} -->

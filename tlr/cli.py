@@ -83,8 +83,19 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_format(snapshot)
 
-    config = sub.add_parser('config', help='show or create the config file')
-    config.add_argument('action', choices=('path', 'init', 'show'), help='what to do')
+    config = sub.add_parser('config', help='show or edit the config file')
+    config.add_argument(
+        'action',
+        choices=('path', 'init', 'show', 'list', 'get', 'set'),
+        help='path/init/show/list the file, get one field, set one field',
+    )
+    config.add_argument('key', nargs='?', metavar='KEY', help='dotted key for get/set (e.g. sentry.org_slug)')
+    config.add_argument(
+        'value',
+        nargs='?',
+        metavar='VALUE',
+        help='value for set; parsed as a TOML literal when possible, else stored as a string',
+    )
 
     imports = sub.add_parser('import-snapshots', help='one-time import of the Deno milestone-scope history')
     imports.add_argument('sqlite_path', metavar='PATH', help='path to the Deno tlr.sqlite file')
