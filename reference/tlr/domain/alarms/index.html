@@ -1,0 +1,2626 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="tlr project documentation">
+      
+      
+        <meta name="author" content="Kyle King">
+      
+      
+        <link rel="canonical" href="https://tlr.kyleking.me/reference/tlr/domain/alarms/">
+      
+      
+        <link rel="prev" href="../../store/">
+      
+      
+        <link rel="next" href="../backlog/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Alarms - tlr</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../_styles/mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="green">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#tlr.domain.alarms" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../.." title="tlr" class="md-header__button md-logo" aria-label="tlr" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            tlr
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Alarms
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="green"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/kyleking/tlr" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    kyleking/tlr
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../.." title="tlr" class="md-nav__button md-logo" aria-label="tlr" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    tlr
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/kyleking/tlr" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    kyleking/tlr
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    tlr
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../api-notes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../cassettes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cassettes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../store-schema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store schema
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Docs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../docs/CHANGELOG/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CHANGELOG
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../docs/DEVELOPER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../docs/STYLE_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Personal Style Guides
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_1" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6_1" id="__nav_6_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tlr
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_1_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tlr
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cli
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../http/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Http
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../secrets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Secrets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../services/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Services
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_1_7" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6_1_7" id="__nav_6_1_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Domain
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_6_1_7_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6_1_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Domain
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Alarms
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Alarms
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#tlr.domain.alarms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        alarms
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tlr.domain.alarms-attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attributes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Attributes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tlr.domain.alarms.FLAP_AVG_DWELL_MINUTES" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FLAP_AVG_DWELL_MINUTES
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tlr.domain.alarms.HISTORY_RETENTION_DAYS" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HISTORY_RETENTION_DAYS
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tlr.domain.alarms-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Classes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tlr.domain.alarms-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Functions:
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions:">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tlr.domain.alarms.alarm_period_table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        alarm_period_table
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tlr.domain.alarms.build_alarm_sections" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        build_alarm_sections
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tlr.domain.alarms.categorize_name" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        categorize_name
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tlr.domain.alarms.category_rollup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        category_rollup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tlr.domain.alarms.env_rollup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        env_rollup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tlr.domain.alarms.fire_counts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fire_counts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tlr.domain.alarms.fires_chart" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fires_chart
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tlr.domain.alarms.fires_per_day" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fires_per_day
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tlr.domain.alarms.time_in_alarm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        time_in_alarm
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tlr.domain.alarms.with_alarm_meta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        with_alarm_meta
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tlr.domain.alarms.with_linear_matches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        with_linear_matches
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../backlog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../capacity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Capacity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../snapshot/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Snapshot
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../triage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Triage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_1_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_1_8" id="__nav_6_1_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Imports
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_6_1_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_1_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Imports
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../imports/snapshots/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Snapshots
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_1_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_1_9" id="__nav_6_1_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Render
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_6_1_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_1_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Render
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../render/json/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Json
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../render/markdown/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Markdown
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_1_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_1_10" id="__nav_6_1_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sources
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_6_1_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_1_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Sources
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sources/alarms/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Alarms
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sources/linear/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Linear
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sources/pylon/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pylon
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sources/sentry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sentry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#tlr.domain.alarms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        alarms
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tlr.domain.alarms-attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attributes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Attributes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tlr.domain.alarms.FLAP_AVG_DWELL_MINUTES" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FLAP_AVG_DWELL_MINUTES
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tlr.domain.alarms.HISTORY_RETENTION_DAYS" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HISTORY_RETENTION_DAYS
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tlr.domain.alarms-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Classes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tlr.domain.alarms-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Functions:
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions:">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tlr.domain.alarms.alarm_period_table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        alarm_period_table
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tlr.domain.alarms.build_alarm_sections" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        build_alarm_sections
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tlr.domain.alarms.categorize_name" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        categorize_name
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tlr.domain.alarms.category_rollup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        category_rollup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tlr.domain.alarms.env_rollup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        env_rollup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tlr.domain.alarms.fire_counts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fire_counts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tlr.domain.alarms.fires_chart" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fires_chart
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tlr.domain.alarms.fires_per_day" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fires_per_day
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tlr.domain.alarms.time_in_alarm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        time_in_alarm
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tlr.domain.alarms.with_alarm_meta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        with_alarm_meta
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tlr.domain.alarms.with_linear_matches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        with_linear_matches
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Alarms</h1>
+
+<div class="doc doc-object doc-module">
+
+
+
+<a id="tlr.domain.alarms"></a>
+    <div class="doc doc-contents first">
+
+        <p>Alarm categorization, fire counting, and Linear mapping for the check-in.</p>
+<p>Every function is pure: frames and config values in, a frame out. <code>env</code> is not parsed
+out of alarm names; it is the profile label the fetch ran under, so the prod/stage
+split stays correct even for names that break the naming convention.</p>
+<p>A &ldquo;fire&rdquo; is a state transition <em>into</em> ALARM, so an alarm that flaps OK-&gt;ALARM-&gt;OK-&gt;ALARM
+counts twice, which is the number a meeting wants.</p>
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+<h2 id="tlr.domain.alarms-attributes">Attributes<a href="#tlr.domain.alarms-attributes" class="headerlink" title="Permanent link">⚓︎</a></h2>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="tlr.domain.alarms.FLAP_AVG_DWELL_MINUTES" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">FLAP_AVG_DWELL_MINUTES</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+<a href="#tlr.domain.alarms.FLAP_AVG_DWELL_MINUTES" class="headerlink" title="Permanent link">⚓︎</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">FLAP_AVG_DWELL_MINUTES</span> <span class="o">=</span> <span class="mi">60</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>An alarm is &lsquo;flapping&rsquo; when it fires at least FLAP_MIN_FIRES times yet spends under
+FLAP_AVG_DWELL_MINUTES in ALARM per fire on average: noise to fix in the alarm, not a
+sustained incident. Every other firing alarm is &lsquo;sustained&rsquo;.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="tlr.domain.alarms.HISTORY_RETENTION_DAYS" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">HISTORY_RETENTION_DAYS</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+<a href="#tlr.domain.alarms.HISTORY_RETENTION_DAYS" class="headerlink" title="Permanent link">⚓︎</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">HISTORY_RETENTION_DAYS</span> <span class="o">=</span> <span class="mi">30</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>CloudWatch keeps alarm history roughly a month (observed ~31 days on a 60-day
+request), so windows asking further back get a truncation note rather than silently
+reading as quiet periods.</p>
+
+    </div>
+
+</div>
+
+<h2 id="tlr.domain.alarms-classes">Classes<a href="#tlr.domain.alarms-classes" class="headerlink" title="Permanent link">⚓︎</a></h2>
+<h2 id="tlr.domain.alarms-functions">Functions:<a href="#tlr.domain.alarms-functions" class="headerlink" title="Permanent link">⚓︎</a></h2>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="tlr.domain.alarms.alarm_period_table" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">alarm_period_table</span>
+
+
+<a href="#tlr.domain.alarms.alarm_period_table" class="headerlink" title="Permanent link">⚓︎</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">alarm_period_table</span><span class="p">(</span><span class="n">meta</span><span class="p">,</span> <span class="n">transitions</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">window</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>One row per alarm: state and category, fires this period and last, dwell, and the delta.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>tlr/domain/alarms.py</code></summary>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="202 "></span><span class="k">def</span><span class="w"> </span><span class="nf">alarm_period_table</span><span class="p">(</span><span class="n">meta</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">transitions</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">window</span><span class="p">:</span> <span class="n">PeriodWindow</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="linenos" data-linenos="203 "></span><span class="w">    </span><span class="sd">"""One row per alarm: state and category, fires this period and last, dwell, and the delta."""</span>
+<span class="linenos" data-linenos="204 "></span>    <span class="k">if</span> <span class="n">meta</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
+<span class="linenos" data-linenos="205 "></span>        <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">_PERIOD_TABLE_SCHEMA</span><span class="p">)</span>
+<span class="linenos" data-linenos="206 "></span>    <span class="n">current</span> <span class="o">=</span> <span class="n">fire_counts</span><span class="p">(</span><span class="n">transitions</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">end</span><span class="p">)</span>
+<span class="linenos" data-linenos="207 "></span>    <span class="n">previous</span> <span class="o">=</span> <span class="n">fire_counts</span><span class="p">(</span><span class="n">transitions</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">previous_start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">previous_end</span><span class="p">)</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
+<span class="linenos" data-linenos="208 "></span>        <span class="p">{</span><span class="s1">'fires'</span><span class="p">:</span> <span class="s1">'previous'</span><span class="p">},</span>
+<span class="linenos" data-linenos="209 "></span>    <span class="p">)</span>
+<span class="linenos" data-linenos="210 "></span>    <span class="n">dwell</span> <span class="o">=</span> <span class="n">time_in_alarm</span><span class="p">(</span><span class="n">meta</span><span class="p">,</span> <span class="n">transitions</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">end</span><span class="p">)</span>
+<span class="linenos" data-linenos="211 "></span>    <span class="k">return</span> <span class="p">(</span>
+<span class="linenos" data-linenos="212 "></span>        <span class="n">meta</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">'env'</span><span class="p">,</span> <span class="s1">'name'</span><span class="p">,</span> <span class="s1">'category'</span><span class="p">,</span> <span class="s1">'severity'</span><span class="p">,</span> <span class="s1">'state'</span><span class="p">,</span> <span class="s1">'state_updated'</span><span class="p">)</span>
+<span class="linenos" data-linenos="213 "></span>        <span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">current</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s1">'env'</span><span class="p">,</span> <span class="s1">'name'</span><span class="p">],</span> <span class="n">how</span><span class="o">=</span><span class="s1">'left'</span><span class="p">)</span>
+<span class="linenos" data-linenos="214 "></span>        <span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">previous</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s1">'env'</span><span class="p">,</span> <span class="s1">'name'</span><span class="p">],</span> <span class="n">how</span><span class="o">=</span><span class="s1">'left'</span><span class="p">)</span>
+<span class="linenos" data-linenos="215 "></span>        <span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dwell</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s1">'env'</span><span class="p">,</span> <span class="s1">'name'</span><span class="p">],</span> <span class="n">how</span><span class="o">=</span><span class="s1">'left'</span><span class="p">)</span>
+<span class="linenos" data-linenos="216 "></span>        <span class="o">.</span><span class="n">with_columns</span><span class="p">(</span>
+<span class="linenos" data-linenos="217 "></span>            <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'fires'</span><span class="p">)</span><span class="o">.</span><span class="n">fill_null</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+<span class="linenos" data-linenos="218 "></span>            <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'previous'</span><span class="p">)</span><span class="o">.</span><span class="n">fill_null</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+<span class="linenos" data-linenos="219 "></span>            <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'mins_in_alarm'</span><span class="p">)</span><span class="o">.</span><span class="n">fill_null</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+<span class="linenos" data-linenos="220 "></span>        <span class="p">)</span>
+<span class="linenos" data-linenos="221 "></span>        <span class="o">.</span><span class="n">with_columns</span><span class="p">((</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'fires'</span><span class="p">)</span> <span class="o">-</span> <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'previous'</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s1">'delta'</span><span class="p">))</span>
+<span class="linenos" data-linenos="222 "></span>        <span class="o">.</span><span class="n">with_columns</span><span class="p">(</span><span class="n">_kind</span><span class="p">())</span>
+<span class="linenos" data-linenos="223 "></span>        <span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">_PERIOD_TABLE_SCHEMA</span><span class="p">))</span>
+<span class="linenos" data-linenos="224 "></span>    <span class="p">)</span>
+</code></pre></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="tlr.domain.alarms.build_alarm_sections" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">build_alarm_sections</span>
+
+
+<a href="#tlr.domain.alarms.build_alarm_sections" class="headerlink" title="Permanent link">⚓︎</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">build_alarm_sections</span><span class="p">(</span>
+    <span class="n">alarms</span><span class="p">,</span>
+    <span class="n">transitions</span><span class="p">,</span>
+    <span class="n">issues</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">window</span><span class="p">,</span>
+    <span class="n">config</span><span class="p">,</span>
+    <span class="n">fetched_at</span><span class="p">,</span>
+    <span class="n">closed_like_state_names</span><span class="o">=</span><span class="p">(),</span>
+    <span class="n">top_n</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">include_detail</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Assemble the alarm sections shared by <code>snapshot</code> and <code>tlr alarms</code>.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>tlr/domain/alarms.py</code></summary>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="414 "></span><span class="k">def</span><span class="w"> </span><span class="nf">build_alarm_sections</span><span class="p">(</span>
+<span class="linenos" data-linenos="415 "></span>    <span class="n">alarms</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+<span class="linenos" data-linenos="416 "></span>    <span class="n">transitions</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+<span class="linenos" data-linenos="417 "></span>    <span class="n">issues</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+<span class="linenos" data-linenos="418 "></span>    <span class="o">*</span><span class="p">,</span>
+<span class="linenos" data-linenos="419 "></span>    <span class="n">window</span><span class="p">:</span> <span class="n">PeriodWindow</span><span class="p">,</span>
+<span class="linenos" data-linenos="420 "></span>    <span class="n">config</span><span class="p">:</span> <span class="n">AlarmsConfig</span><span class="p">,</span>
+<span class="linenos" data-linenos="421 "></span>    <span class="n">fetched_at</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span>
+<span class="linenos" data-linenos="422 "></span>    <span class="n">closed_like_state_names</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+<span class="linenos" data-linenos="423 "></span>    <span class="n">top_n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+<span class="linenos" data-linenos="424 "></span>    <span class="n">include_detail</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="linenos" data-linenos="425 "></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]]:</span>
+<span class="linenos" data-linenos="426 "></span><span class="w">    </span><span class="sd">"""Assemble the alarm sections shared by `snapshot` and `tlr alarms`."""</span>
+<span class="linenos" data-linenos="427 "></span>    <span class="n">meta</span> <span class="o">=</span> <span class="n">with_alarm_meta</span><span class="p">(</span><span class="n">alarms</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+<span class="linenos" data-linenos="428 "></span>    <span class="n">table</span> <span class="o">=</span> <span class="n">alarm_period_table</span><span class="p">(</span><span class="n">meta</span><span class="p">,</span> <span class="n">transitions</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="n">window</span><span class="p">)</span>
+<span class="linenos" data-linenos="429 "></span>    <span class="n">linked</span> <span class="o">=</span> <span class="n">with_linear_matches</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">issues</span><span class="p">,</span> <span class="n">now</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">end</span><span class="p">,</span> <span class="n">closed_like_state_names</span><span class="o">=</span><span class="n">closed_like_state_names</span><span class="p">)</span>
+<span class="linenos" data-linenos="430 "></span>    <span class="n">displayed</span> <span class="o">=</span> <span class="n">_with_console_links</span><span class="p">(</span><span class="n">linked</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">console_region</span><span class="p">)</span>
+<span class="linenos" data-linenos="431 "></span>
+<span class="linenos" data-linenos="432 "></span>    <span class="n">new_period</span> <span class="o">=</span> <span class="p">(</span>
+<span class="linenos" data-linenos="433 "></span>        <span class="n">displayed</span><span class="o">.</span><span class="n">filter</span><span class="p">((</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'fires'</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'previous'</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))</span>
+<span class="linenos" data-linenos="434 "></span>        <span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s1">'fires'</span><span class="p">,</span> <span class="s1">'name'</span><span class="p">,</span> <span class="n">descending</span><span class="o">=</span><span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">])</span>
+<span class="linenos" data-linenos="435 "></span>        <span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">'env'</span><span class="p">,</span> <span class="s1">'name'</span><span class="p">,</span> <span class="s1">'category'</span><span class="p">,</span> <span class="s1">'kind'</span><span class="p">,</span> <span class="s1">'fires'</span><span class="p">,</span> <span class="s1">'state'</span><span class="p">,</span> <span class="s1">'linear_open'</span><span class="p">)</span>
+<span class="linenos" data-linenos="436 "></span>    <span class="p">)</span>
+<span class="linenos" data-linenos="437 "></span>    <span class="n">quieted</span> <span class="o">=</span> <span class="p">(</span>
+<span class="linenos" data-linenos="438 "></span>        <span class="n">displayed</span><span class="o">.</span><span class="n">filter</span><span class="p">((</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'previous'</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'fires'</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))</span>
+<span class="linenos" data-linenos="439 "></span>        <span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s1">'previous'</span><span class="p">,</span> <span class="s1">'name'</span><span class="p">,</span> <span class="n">descending</span><span class="o">=</span><span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">])</span>
+<span class="linenos" data-linenos="440 "></span>        <span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">'env'</span><span class="p">,</span> <span class="s1">'name'</span><span class="p">,</span> <span class="s1">'category'</span><span class="p">,</span> <span class="s1">'previous'</span><span class="p">,</span> <span class="s1">'state'</span><span class="p">,</span> <span class="s1">'linear_open'</span><span class="p">)</span>
+<span class="linenos" data-linenos="441 "></span>    <span class="p">)</span>
+<span class="linenos" data-linenos="442 "></span>    <span class="n">leading</span> <span class="o">=</span> <span class="p">(</span>
+<span class="linenos" data-linenos="443 "></span>        <span class="n">displayed</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'fires'</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+<span class="linenos" data-linenos="444 "></span>        <span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s1">'fires'</span><span class="p">,</span> <span class="s1">'name'</span><span class="p">,</span> <span class="n">descending</span><span class="o">=</span><span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">])</span>
+<span class="linenos" data-linenos="445 "></span>        <span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">top_n</span><span class="p">)</span>
+<span class="linenos" data-linenos="446 "></span>        <span class="o">.</span><span class="n">select</span><span class="p">(</span>
+<span class="linenos" data-linenos="447 "></span>            <span class="s1">'env'</span><span class="p">,</span> <span class="s1">'name'</span><span class="p">,</span> <span class="s1">'category'</span><span class="p">,</span> <span class="s1">'kind'</span><span class="p">,</span> <span class="s1">'fires'</span><span class="p">,</span> <span class="s1">'previous'</span><span class="p">,</span> <span class="s1">'delta'</span><span class="p">,</span> <span class="s1">'mins_in_alarm'</span><span class="p">,</span> <span class="s1">'state'</span><span class="p">,</span> <span class="s1">'linear_open'</span>
+<span class="linenos" data-linenos="448 "></span>        <span class="p">)</span>
+<span class="linenos" data-linenos="449 "></span>    <span class="p">)</span>
+<span class="linenos" data-linenos="450 "></span>    <span class="n">flapping</span> <span class="o">=</span> <span class="p">(</span>
+<span class="linenos" data-linenos="451 "></span>        <span class="n">displayed</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'kind'</span><span class="p">)</span> <span class="o">==</span> <span class="s1">'flapping'</span><span class="p">)</span>
+<span class="linenos" data-linenos="452 "></span>        <span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s1">'fires'</span><span class="p">,</span> <span class="s1">'name'</span><span class="p">,</span> <span class="n">descending</span><span class="o">=</span><span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">])</span>
+<span class="linenos" data-linenos="453 "></span>        <span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">'env'</span><span class="p">,</span> <span class="s1">'name'</span><span class="p">,</span> <span class="s1">'category'</span><span class="p">,</span> <span class="s1">'fires'</span><span class="p">,</span> <span class="s1">'mins_in_alarm'</span><span class="p">,</span> <span class="s1">'state'</span><span class="p">,</span> <span class="s1">'linear_open'</span><span class="p">)</span>
+<span class="linenos" data-linenos="454 "></span>    <span class="p">)</span>
+<span class="linenos" data-linenos="455 "></span>    <span class="n">in_alarm</span> <span class="o">=</span> <span class="p">(</span>
+<span class="linenos" data-linenos="456 "></span>        <span class="n">displayed</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'state'</span><span class="p">)</span> <span class="o">==</span> <span class="n">ALARM_STATE</span><span class="p">)</span>
+<span class="linenos" data-linenos="457 "></span>        <span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s1">'env'</span><span class="p">,</span> <span class="s1">'name'</span><span class="p">)</span>
+<span class="linenos" data-linenos="458 "></span>        <span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">'env'</span><span class="p">,</span> <span class="s1">'name'</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'state_updated'</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s1">'since'</span><span class="p">),</span> <span class="s1">'fires'</span><span class="p">,</span> <span class="s1">'mins_in_alarm'</span><span class="p">,</span> <span class="s1">'linear_open'</span><span class="p">)</span>
+<span class="linenos" data-linenos="459 "></span>    <span class="p">)</span>
+<span class="linenos" data-linenos="460 "></span>    <span class="n">unmapped</span> <span class="o">=</span> <span class="p">(</span>
+<span class="linenos" data-linenos="461 "></span>        <span class="n">displayed</span><span class="o">.</span><span class="n">filter</span><span class="p">((</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'fires'</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'linear_open'</span><span class="p">)</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="s1">''</span><span class="p">))</span>
+<span class="linenos" data-linenos="462 "></span>        <span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s1">'fires'</span><span class="p">,</span> <span class="s1">'name'</span><span class="p">,</span> <span class="n">descending</span><span class="o">=</span><span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">])</span>
+<span class="linenos" data-linenos="463 "></span>        <span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">'env'</span><span class="p">,</span> <span class="s1">'name'</span><span class="p">,</span> <span class="s1">'category'</span><span class="p">,</span> <span class="s1">'kind'</span><span class="p">,</span> <span class="s1">'fires'</span><span class="p">,</span> <span class="s1">'state'</span><span class="p">,</span> <span class="s1">'linear_closed'</span><span class="p">)</span>
+<span class="linenos" data-linenos="464 "></span>    <span class="p">)</span>
+<span class="linenos" data-linenos="465 "></span>
+<span class="linenos" data-linenos="466 "></span>    <span class="n">sections</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span>
+<span class="linenos" data-linenos="467 "></span>        <span class="p">(</span><span class="s1">'Alarms: fires by environment'</span><span class="p">,</span> <span class="n">env_rollup</span><span class="p">(</span><span class="n">linked</span><span class="p">)),</span>
+<span class="linenos" data-linenos="468 "></span>        <span class="p">(</span><span class="s1">'Alarms: fires by category'</span><span class="p">,</span> <span class="n">category_rollup</span><span class="p">(</span><span class="n">table</span><span class="p">)),</span>
+<span class="linenos" data-linenos="469 "></span>    <span class="p">]</span>
+<span class="linenos" data-linenos="470 "></span>    <span class="k">if</span> <span class="ow">not</span> <span class="n">meta</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
+<span class="linenos" data-linenos="471 "></span>        <span class="n">per_day</span> <span class="o">=</span> <span class="n">fires_per_day</span><span class="p">(</span><span class="n">transitions</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="n">window</span><span class="p">)</span>
+<span class="linenos" data-linenos="472 "></span>        <span class="n">sections</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+<span class="linenos" data-linenos="473 "></span>            <span class="p">(</span><span class="sa">f</span><span class="s1">'Alarms: fires per day — </span><span class="si">{</span><span class="n">env</span><span class="si">}</span><span class="s1">'</span><span class="p">,</span> <span class="n">chart</span><span class="p">)</span>
+<span class="linenos" data-linenos="474 "></span>            <span class="k">for</span> <span class="n">env</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">meta</span><span class="p">[</span><span class="s1">'env'</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">to_list</span><span class="p">())</span>
+<span class="linenos" data-linenos="475 "></span>            <span class="k">if</span> <span class="p">(</span><span class="n">chart</span> <span class="o">:=</span> <span class="n">fires_chart</span><span class="p">(</span><span class="n">per_day</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="n">window</span><span class="p">))</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+<span class="linenos" data-linenos="476 "></span>        <span class="p">)</span>
+<span class="linenos" data-linenos="477 "></span>    <span class="n">sections</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+<span class="linenos" data-linenos="478 "></span>        <span class="p">[</span>
+<span class="linenos" data-linenos="479 "></span>            <span class="p">(</span><span class="s1">'Alarms: new this period'</span><span class="p">,</span> <span class="n">new_period</span><span class="p">),</span>
+<span class="linenos" data-linenos="480 "></span>            <span class="p">(</span><span class="s1">'Alarms: quieted since last period'</span><span class="p">,</span> <span class="n">quieted</span><span class="p">),</span>
+<span class="linenos" data-linenos="481 "></span>            <span class="p">(</span><span class="s1">'Alarms: leading this period'</span><span class="p">,</span> <span class="n">leading</span><span class="p">),</span>
+<span class="linenos" data-linenos="482 "></span>            <span class="p">(</span><span class="s1">'Alarms: flapping'</span><span class="p">,</span> <span class="n">flapping</span><span class="p">),</span>
+<span class="linenos" data-linenos="483 "></span>            <span class="p">(</span><span class="s1">'Alarms: in ALARM now'</span><span class="p">,</span> <span class="n">in_alarm</span><span class="p">),</span>
+<span class="linenos" data-linenos="484 "></span>            <span class="p">(</span><span class="s1">'Alarms: fired with no open Linear ticket'</span><span class="p">,</span> <span class="n">unmapped</span><span class="p">),</span>
+<span class="linenos" data-linenos="485 "></span>        <span class="p">],</span>
+<span class="linenos" data-linenos="486 "></span>    <span class="p">)</span>
+<span class="linenos" data-linenos="487 "></span>    <span class="k">if</span> <span class="n">include_detail</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">displayed</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
+<span class="linenos" data-linenos="488 "></span>        <span class="n">detail</span> <span class="o">=</span> <span class="n">displayed</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s1">'env'</span><span class="p">,</span> <span class="s1">'fires'</span><span class="p">,</span> <span class="s1">'name'</span><span class="p">,</span> <span class="n">descending</span><span class="o">=</span><span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">])</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+<span class="linenos" data-linenos="489 "></span>            <span class="s1">'env'</span><span class="p">,</span>
+<span class="linenos" data-linenos="490 "></span>            <span class="s1">'name'</span><span class="p">,</span>
+<span class="linenos" data-linenos="491 "></span>            <span class="s1">'category'</span><span class="p">,</span>
+<span class="linenos" data-linenos="492 "></span>            <span class="s1">'severity'</span><span class="p">,</span>
+<span class="linenos" data-linenos="493 "></span>            <span class="s1">'kind'</span><span class="p">,</span>
+<span class="linenos" data-linenos="494 "></span>            <span class="s1">'state'</span><span class="p">,</span>
+<span class="linenos" data-linenos="495 "></span>            <span class="s1">'fires'</span><span class="p">,</span>
+<span class="linenos" data-linenos="496 "></span>            <span class="s1">'previous'</span><span class="p">,</span>
+<span class="linenos" data-linenos="497 "></span>            <span class="s1">'delta'</span><span class="p">,</span>
+<span class="linenos" data-linenos="498 "></span>            <span class="s1">'mins_in_alarm'</span><span class="p">,</span>
+<span class="linenos" data-linenos="499 "></span>            <span class="s1">'linear_open'</span><span class="p">,</span>
+<span class="linenos" data-linenos="500 "></span>            <span class="s1">'linear_closed'</span><span class="p">,</span>
+<span class="linenos" data-linenos="501 "></span>        <span class="p">)</span>
+<span class="linenos" data-linenos="502 "></span>        <span class="n">sections</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">'Alarms: all tracked'</span><span class="p">,</span> <span class="n">detail</span><span class="p">))</span>
+<span class="linenos" data-linenos="503 "></span>    <span class="n">note</span> <span class="o">=</span> <span class="n">_retention_note</span><span class="p">(</span><span class="n">window</span><span class="p">,</span> <span class="n">fetched_at</span><span class="o">=</span><span class="n">fetched_at</span><span class="p">)</span>
+<span class="linenos" data-linenos="504 "></span>    <span class="k">if</span> <span class="n">note</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos" data-linenos="505 "></span>        <span class="n">sections</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">'Alarms: history note'</span><span class="p">,</span> <span class="n">note</span><span class="p">))</span>
+<span class="linenos" data-linenos="506 "></span>    <span class="k">return</span> <span class="n">sections</span>
+</code></pre></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="tlr.domain.alarms.categorize_name" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">categorize_name</span>
+
+
+<a href="#tlr.domain.alarms.categorize_name" class="headerlink" title="Permanent link">⚓︎</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">categorize_name</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">categories</span><span class="p">,</span> <span class="n">severity_suffixes</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Resolve one alarm name to (category, severity).</p>
+<p>Category is the first configured category with a glob matching the name, else
+&lsquo;uncategorized&rsquo;. Severity is the configured suffix the name ends with (suffixes can
+be multi-token, e.g. <code>-low-urgency</code>).</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>tlr/domain/alarms.py</code></summary>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="55 "></span><span class="k">def</span><span class="w"> </span><span class="nf">categorize_name</span><span class="p">(</span>
+<span class="linenos" data-linenos="56 "></span>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="linenos" data-linenos="57 "></span>    <span class="o">*</span><span class="p">,</span>
+<span class="linenos" data-linenos="58 "></span>    <span class="n">categories</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span>
+<span class="linenos" data-linenos="59 "></span>    <span class="n">severity_suffixes</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+<span class="linenos" data-linenos="60 "></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="linenos" data-linenos="61 "></span><span class="w">    </span><span class="sd">"""Resolve one alarm name to (category, severity).</span>
+<span class="linenos" data-linenos="62 "></span>
+<span class="linenos" data-linenos="63 "></span><span class="sd">    Category is the first configured category with a glob matching the name, else</span>
+<span class="linenos" data-linenos="64 "></span><span class="sd">    'uncategorized'. Severity is the configured suffix the name ends with (suffixes can</span>
+<span class="linenos" data-linenos="65 "></span><span class="sd">    be multi-token, e.g. `-low-urgency`).</span>
+<span class="linenos" data-linenos="66 "></span><span class="sd">    """</span>
+<span class="linenos" data-linenos="67 "></span>    <span class="n">category</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
+<span class="linenos" data-linenos="68 "></span>        <span class="p">(</span>
+<span class="linenos" data-linenos="69 "></span>            <span class="n">candidate</span>
+<span class="linenos" data-linenos="70 "></span>            <span class="k">for</span> <span class="n">candidate</span><span class="p">,</span> <span class="n">patterns</span> <span class="ow">in</span> <span class="n">categories</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+<span class="linenos" data-linenos="71 "></span>            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">fnmatchcase</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">pattern</span><span class="p">)</span> <span class="k">for</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="n">patterns</span><span class="p">)</span>
+<span class="linenos" data-linenos="72 "></span>        <span class="p">),</span>
+<span class="linenos" data-linenos="73 "></span>        <span class="n">UNCATEGORIZED</span><span class="p">,</span>
+<span class="linenos" data-linenos="74 "></span>    <span class="p">)</span>
+<span class="linenos" data-linenos="75 "></span>    <span class="n">severity</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
+<span class="linenos" data-linenos="76 "></span>        <span class="p">(</span><span class="n">suffix</span> <span class="k">for</span> <span class="n">suffix</span> <span class="ow">in</span> <span class="n">severity_suffixes</span> <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="n">suffix</span> <span class="ow">or</span> <span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="sa">f</span><span class="s1">'-</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s1">'</span><span class="p">)),</span>
+<span class="linenos" data-linenos="77 "></span>        <span class="s1">''</span><span class="p">,</span>
+<span class="linenos" data-linenos="78 "></span>    <span class="p">)</span>
+<span class="linenos" data-linenos="79 "></span>    <span class="k">return</span> <span class="n">category</span><span class="p">,</span> <span class="n">severity</span>
+</code></pre></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="tlr.domain.alarms.category_rollup" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">category_rollup</span>
+
+
+<a href="#tlr.domain.alarms.category_rollup" class="headerlink" title="Permanent link">⚓︎</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">category_rollup</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Fires per (env, category) for groups that fired in either period.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>tlr/domain/alarms.py</code></summary>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="264 "></span><span class="k">def</span><span class="w"> </span><span class="nf">category_rollup</span><span class="p">(</span><span class="n">table</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="linenos" data-linenos="265 "></span><span class="w">    </span><span class="sd">"""Fires per (env, category) for groups that fired in either period."""</span>
+<span class="linenos" data-linenos="266 "></span>    <span class="n">schema</span> <span class="o">=</span> <span class="p">{</span>
+<span class="linenos" data-linenos="267 "></span>        <span class="s1">'env'</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Utf8</span><span class="p">,</span>
+<span class="linenos" data-linenos="268 "></span>        <span class="s1">'category'</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Utf8</span><span class="p">,</span>
+<span class="linenos" data-linenos="269 "></span>        <span class="s1">'alarms_fired'</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Int64</span><span class="p">,</span>
+<span class="linenos" data-linenos="270 "></span>        <span class="s1">'fires'</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Int64</span><span class="p">,</span>
+<span class="linenos" data-linenos="271 "></span>        <span class="s1">'previous'</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Int64</span><span class="p">,</span>
+<span class="linenos" data-linenos="272 "></span>        <span class="s1">'delta'</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Int64</span><span class="p">,</span>
+<span class="linenos" data-linenos="273 "></span>    <span class="p">}</span>
+<span class="linenos" data-linenos="274 "></span>    <span class="k">if</span> <span class="n">table</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
+<span class="linenos" data-linenos="275 "></span>        <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">)</span>
+<span class="linenos" data-linenos="276 "></span>    <span class="n">fired</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">filter</span><span class="p">((</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'fires'</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'previous'</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">))</span>
+<span class="linenos" data-linenos="277 "></span>    <span class="k">if</span> <span class="n">fired</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
+<span class="linenos" data-linenos="278 "></span>        <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">)</span>
+<span class="linenos" data-linenos="279 "></span>    <span class="k">return</span> <span class="p">(</span>
+<span class="linenos" data-linenos="280 "></span>        <span class="n">fired</span><span class="o">.</span><span class="n">group_by</span><span class="p">(</span><span class="s1">'env'</span><span class="p">,</span> <span class="s1">'category'</span><span class="p">)</span>
+<span class="linenos" data-linenos="281 "></span>        <span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+<span class="linenos" data-linenos="282 "></span>            <span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'fires'</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s1">'alarms_fired'</span><span class="p">),</span>
+<span class="linenos" data-linenos="283 "></span>            <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'fires'</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span>
+<span class="linenos" data-linenos="284 "></span>            <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'previous'</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span>
+<span class="linenos" data-linenos="285 "></span>            <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'delta'</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span>
+<span class="linenos" data-linenos="286 "></span>        <span class="p">)</span>
+<span class="linenos" data-linenos="287 "></span>        <span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s1">'fires'</span><span class="p">,</span> <span class="s1">'env'</span><span class="p">,</span> <span class="s1">'category'</span><span class="p">,</span> <span class="n">descending</span><span class="o">=</span><span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">])</span>
+<span class="linenos" data-linenos="288 "></span>    <span class="p">)</span>
+</code></pre></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="tlr.domain.alarms.env_rollup" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">env_rollup</span>
+
+
+<a href="#tlr.domain.alarms.env_rollup" class="headerlink" title="Permanent link">⚓︎</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">env_rollup</span><span class="p">(</span><span class="n">linked</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Per environment: fires and the delta, what changed, and ticket coverage.</p>
+<p>Takes the Linear-linked period table so <code>fired_no_ticket</code> can count alarms that
+fired this period without an open Linear issue.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>tlr/domain/alarms.py</code></summary>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="227 "></span><span class="k">def</span><span class="w"> </span><span class="nf">env_rollup</span><span class="p">(</span><span class="n">linked</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="linenos" data-linenos="228 "></span><span class="w">    </span><span class="sd">"""Per environment: fires and the delta, what changed, and ticket coverage.</span>
+<span class="linenos" data-linenos="229 "></span>
+<span class="linenos" data-linenos="230 "></span><span class="sd">    Takes the Linear-linked period table so `fired_no_ticket` can count alarms that</span>
+<span class="linenos" data-linenos="231 "></span><span class="sd">    fired this period without an open Linear issue.</span>
+<span class="linenos" data-linenos="232 "></span><span class="sd">    """</span>
+<span class="linenos" data-linenos="233 "></span>    <span class="n">schema</span> <span class="o">=</span> <span class="p">{</span>
+<span class="linenos" data-linenos="234 "></span>        <span class="s1">'env'</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Utf8</span><span class="p">,</span>
+<span class="linenos" data-linenos="235 "></span>        <span class="s1">'tracked'</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Int64</span><span class="p">,</span>
+<span class="linenos" data-linenos="236 "></span>        <span class="s1">'in_alarm_now'</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Int64</span><span class="p">,</span>
+<span class="linenos" data-linenos="237 "></span>        <span class="s1">'alarms_fired'</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Int64</span><span class="p">,</span>
+<span class="linenos" data-linenos="238 "></span>        <span class="s1">'new'</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Int64</span><span class="p">,</span>
+<span class="linenos" data-linenos="239 "></span>        <span class="s1">'quieted'</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Int64</span><span class="p">,</span>
+<span class="linenos" data-linenos="240 "></span>        <span class="s1">'fired_no_ticket'</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Int64</span><span class="p">,</span>
+<span class="linenos" data-linenos="241 "></span>        <span class="s1">'fires'</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Int64</span><span class="p">,</span>
+<span class="linenos" data-linenos="242 "></span>        <span class="s1">'previous'</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Int64</span><span class="p">,</span>
+<span class="linenos" data-linenos="243 "></span>        <span class="s1">'delta'</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Int64</span><span class="p">,</span>
+<span class="linenos" data-linenos="244 "></span>    <span class="p">}</span>
+<span class="linenos" data-linenos="245 "></span>    <span class="k">if</span> <span class="n">linked</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
+<span class="linenos" data-linenos="246 "></span>        <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">)</span>
+<span class="linenos" data-linenos="247 "></span>    <span class="k">return</span> <span class="p">(</span>
+<span class="linenos" data-linenos="248 "></span>        <span class="n">linked</span><span class="o">.</span><span class="n">group_by</span><span class="p">(</span><span class="s1">'env'</span><span class="p">)</span>
+<span class="linenos" data-linenos="249 "></span>        <span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+<span class="linenos" data-linenos="250 "></span>            <span class="n">pl</span><span class="o">.</span><span class="n">len</span><span class="p">()</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s1">'tracked'</span><span class="p">),</span>
+<span class="linenos" data-linenos="251 "></span>            <span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'state'</span><span class="p">)</span> <span class="o">==</span> <span class="n">ALARM_STATE</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s1">'in_alarm_now'</span><span class="p">),</span>
+<span class="linenos" data-linenos="252 "></span>            <span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'fires'</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s1">'alarms_fired'</span><span class="p">),</span>
+<span class="linenos" data-linenos="253 "></span>            <span class="p">((</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'fires'</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'previous'</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s1">'new'</span><span class="p">),</span>
+<span class="linenos" data-linenos="254 "></span>            <span class="p">((</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'previous'</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'fires'</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s1">'quieted'</span><span class="p">),</span>
+<span class="linenos" data-linenos="255 "></span>            <span class="p">((</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'fires'</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'linear_open'</span><span class="p">)</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="s1">''</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s1">'fired_no_ticket'</span><span class="p">),</span>
+<span class="linenos" data-linenos="256 "></span>            <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'fires'</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span>
+<span class="linenos" data-linenos="257 "></span>            <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'previous'</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span>
+<span class="linenos" data-linenos="258 "></span>            <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'delta'</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span>
+<span class="linenos" data-linenos="259 "></span>        <span class="p">)</span>
+<span class="linenos" data-linenos="260 "></span>        <span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s1">'env'</span><span class="p">)</span>
+<span class="linenos" data-linenos="261 "></span>    <span class="p">)</span>
+</code></pre></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="tlr.domain.alarms.fire_counts" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">fire_counts</span>
+
+
+<a href="#tlr.domain.alarms.fire_counts" class="headerlink" title="Permanent link">⚓︎</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">fire_counts</span><span class="p">(</span><span class="n">transitions</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Transitions into ALARM within <code>[start, end)</code>, counted per (env, alarm).</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>tlr/domain/alarms.py</code></summary>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="100 "></span><span class="k">def</span><span class="w"> </span><span class="nf">fire_counts</span><span class="p">(</span><span class="n">transitions</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="linenos" data-linenos="101 "></span><span class="w">    </span><span class="sd">"""Transitions into ALARM within `[start, end)`, counted per (env, alarm)."""</span>
+<span class="linenos" data-linenos="102 "></span>    <span class="k">if</span> <span class="n">transitions</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
+<span class="linenos" data-linenos="103 "></span>        <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">_FIRES_SCHEMA</span><span class="p">)</span>
+<span class="linenos" data-linenos="104 "></span>    <span class="n">in_window</span> <span class="o">=</span> <span class="n">transitions</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+<span class="linenos" data-linenos="105 "></span>        <span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'to_state'</span><span class="p">)</span> <span class="o">==</span> <span class="n">ALARM_STATE</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'occurred_at'</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">start</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'occurred_at'</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">end</span><span class="p">),</span>
+<span class="linenos" data-linenos="106 "></span>    <span class="p">)</span>
+<span class="linenos" data-linenos="107 "></span>    <span class="k">if</span> <span class="n">in_window</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
+<span class="linenos" data-linenos="108 "></span>        <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">_FIRES_SCHEMA</span><span class="p">)</span>
+<span class="linenos" data-linenos="109 "></span>    <span class="k">return</span> <span class="p">(</span>
+<span class="linenos" data-linenos="110 "></span>        <span class="n">in_window</span><span class="o">.</span><span class="n">group_by</span><span class="p">(</span><span class="s1">'env'</span><span class="p">,</span> <span class="s1">'alarm_name'</span><span class="p">)</span>
+<span class="linenos" data-linenos="111 "></span>        <span class="o">.</span><span class="n">len</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'fires'</span><span class="p">)</span>
+<span class="linenos" data-linenos="112 "></span>        <span class="o">.</span><span class="n">rename</span><span class="p">({</span><span class="s1">'alarm_name'</span><span class="p">:</span> <span class="s1">'name'</span><span class="p">})</span>
+<span class="linenos" data-linenos="113 "></span>        <span class="o">.</span><span class="n">cast</span><span class="p">({</span><span class="s1">'fires'</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Int64</span><span class="p">})</span>
+<span class="linenos" data-linenos="114 "></span>        <span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">_FIRES_SCHEMA</span><span class="p">))</span>
+<span class="linenos" data-linenos="115 "></span>    <span class="p">)</span>
+</code></pre></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="tlr.domain.alarms.fires_chart" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">fires_chart</span>
+
+
+<a href="#tlr.domain.alarms.fires_chart" class="headerlink" title="Permanent link">⚓︎</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">fires_chart</span><span class="p">(</span><span class="n">per_day</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">window</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>A mermaid xychart of daily fires for one env; None when the env never fired.</p>
+<p>One chart per env rather than one chart with two series, because xychart-beta has no
+series labels — a second unlabeled bar array would be unreadable.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>tlr/domain/alarms.py</code></summary>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="366 "></span><span class="k">def</span><span class="w"> </span><span class="nf">fires_chart</span><span class="p">(</span><span class="n">per_day</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">window</span><span class="p">:</span> <span class="n">PeriodWindow</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos" data-linenos="367 "></span><span class="w">    </span><span class="sd">"""A mermaid xychart of daily fires for one env; None when the env never fired.</span>
+<span class="linenos" data-linenos="368 "></span>
+<span class="linenos" data-linenos="369 "></span><span class="sd">    One chart per env rather than one chart with two series, because xychart-beta has no</span>
+<span class="linenos" data-linenos="370 "></span><span class="sd">    series labels — a second unlabeled bar array would be unreadable.</span>
+<span class="linenos" data-linenos="371 "></span><span class="sd">    """</span>
+<span class="linenos" data-linenos="372 "></span>    <span class="n">rows</span> <span class="o">=</span> <span class="n">per_day</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'env'</span><span class="p">)</span> <span class="o">==</span> <span class="n">env</span><span class="p">)</span>
+<span class="linenos" data-linenos="373 "></span>    <span class="k">if</span> <span class="n">rows</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
+<span class="linenos" data-linenos="374 "></span>        <span class="k">return</span> <span class="kc">None</span>
+<span class="linenos" data-linenos="375 "></span>    <span class="n">last_day</span> <span class="o">=</span> <span class="p">(</span><span class="n">window</span><span class="o">.</span><span class="n">end</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">microseconds</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">date</span><span class="p">()</span>
+<span class="linenos" data-linenos="376 "></span>    <span class="n">days</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">date</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="linenos" data-linenos="377 "></span>    <span class="n">day</span> <span class="o">=</span> <span class="n">window</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">date</span><span class="p">()</span>
+<span class="linenos" data-linenos="378 "></span>    <span class="k">while</span> <span class="n">day</span> <span class="o">&lt;=</span> <span class="n">last_day</span><span class="p">:</span>
+<span class="linenos" data-linenos="379 "></span>        <span class="n">days</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">day</span><span class="p">)</span>
+<span class="linenos" data-linenos="380 "></span>        <span class="n">day</span> <span class="o">+=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="linenos" data-linenos="381 "></span>    <span class="n">counts</span> <span class="o">=</span> <span class="p">{</span><span class="n">row</span><span class="p">[</span><span class="s1">'day'</span><span class="p">]:</span> <span class="n">row</span><span class="p">[</span><span class="s1">'fires'</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="o">.</span><span class="n">iter_rows</span><span class="p">(</span><span class="n">named</span><span class="o">=</span><span class="kc">True</span><span class="p">)}</span>
+<span class="linenos" data-linenos="382 "></span>    <span class="n">series</span> <span class="o">=</span> <span class="p">[</span><span class="n">counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">day</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">day</span> <span class="ow">in</span> <span class="n">days</span><span class="p">]</span>
+<span class="linenos" data-linenos="383 "></span>    <span class="n">labels</span> <span class="o">=</span> <span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s1">'"</span><span class="si">{</span><span class="n">day</span><span class="si">:</span><span class="s1">%m-%d</span><span class="si">}</span><span class="s1">"'</span> <span class="k">for</span> <span class="n">day</span> <span class="ow">in</span> <span class="n">days</span><span class="p">)</span>
+<span class="linenos" data-linenos="384 "></span>    <span class="n">values</span> <span class="o">=</span> <span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">series</span><span class="p">)</span>
+<span class="linenos" data-linenos="385 "></span>    <span class="k">return</span> <span class="p">(</span>
+<span class="linenos" data-linenos="386 "></span>        <span class="s1">'```mermaid</span><span class="se">\n</span><span class="s1">'</span>
+<span class="linenos" data-linenos="387 "></span>        <span class="s1">'xychart-beta</span><span class="se">\n</span><span class="s1">'</span>
+<span class="linenos" data-linenos="388 "></span>        <span class="sa">f</span><span class="s1">'    title "alarm fires per day — </span><span class="si">{</span><span class="n">env</span><span class="si">}</span><span class="s1">"</span><span class="se">\n</span><span class="s1">'</span>
+<span class="linenos" data-linenos="389 "></span>        <span class="sa">f</span><span class="s1">'    x-axis [</span><span class="si">{</span><span class="n">labels</span><span class="si">}</span><span class="s1">]</span><span class="se">\n</span><span class="s1">'</span>
+<span class="linenos" data-linenos="390 "></span>        <span class="sa">f</span><span class="s1">'    y-axis "fires" 0 --&gt; </span><span class="si">{</span><span class="nb">max</span><span class="p">(</span><span class="o">*</span><span class="n">series</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s1">'</span>
+<span class="linenos" data-linenos="391 "></span>        <span class="sa">f</span><span class="s1">'    bar [</span><span class="si">{</span><span class="n">values</span><span class="si">}</span><span class="s1">]</span><span class="se">\n</span><span class="s1">'</span>
+<span class="linenos" data-linenos="392 "></span>        <span class="s1">'```'</span>
+<span class="linenos" data-linenos="393 "></span>    <span class="p">)</span>
+</code></pre></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="tlr.domain.alarms.fires_per_day" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">fires_per_day</span>
+
+
+<a href="#tlr.domain.alarms.fires_per_day" class="headerlink" title="Permanent link">⚓︎</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">fires_per_day</span><span class="p">(</span><span class="n">transitions</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">window</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>ALARM transitions in the current window, bucketed per calendar day per env.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>tlr/domain/alarms.py</code></summary>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="346 "></span><span class="k">def</span><span class="w"> </span><span class="nf">fires_per_day</span><span class="p">(</span><span class="n">transitions</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">window</span><span class="p">:</span> <span class="n">PeriodWindow</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="linenos" data-linenos="347 "></span><span class="w">    </span><span class="sd">"""ALARM transitions in the current window, bucketed per calendar day per env."""</span>
+<span class="linenos" data-linenos="348 "></span>    <span class="n">schema</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'day'</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Date</span><span class="p">,</span> <span class="s1">'env'</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Utf8</span><span class="p">,</span> <span class="s1">'fires'</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Int64</span><span class="p">}</span>
+<span class="linenos" data-linenos="349 "></span>    <span class="n">in_window</span> <span class="o">=</span> <span class="n">transitions</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+<span class="linenos" data-linenos="350 "></span>        <span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'to_state'</span><span class="p">)</span> <span class="o">==</span> <span class="n">ALARM_STATE</span><span class="p">)</span>
+<span class="linenos" data-linenos="351 "></span>        <span class="o">&amp;</span> <span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'occurred_at'</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">window</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
+<span class="linenos" data-linenos="352 "></span>        <span class="o">&amp;</span> <span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'occurred_at'</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">window</span><span class="o">.</span><span class="n">end</span><span class="p">),</span>
+<span class="linenos" data-linenos="353 "></span>    <span class="p">)</span>
+<span class="linenos" data-linenos="354 "></span>    <span class="k">if</span> <span class="n">in_window</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
+<span class="linenos" data-linenos="355 "></span>        <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">)</span>
+<span class="linenos" data-linenos="356 "></span>    <span class="k">return</span> <span class="p">(</span>
+<span class="linenos" data-linenos="357 "></span>        <span class="n">in_window</span><span class="o">.</span><span class="n">with_columns</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'occurred_at'</span><span class="p">)</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">date</span><span class="p">()</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s1">'day'</span><span class="p">))</span>
+<span class="linenos" data-linenos="358 "></span>        <span class="o">.</span><span class="n">group_by</span><span class="p">(</span><span class="s1">'day'</span><span class="p">,</span> <span class="s1">'env'</span><span class="p">)</span>
+<span class="linenos" data-linenos="359 "></span>        <span class="o">.</span><span class="n">len</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'fires'</span><span class="p">)</span>
+<span class="linenos" data-linenos="360 "></span>        <span class="o">.</span><span class="n">cast</span><span class="p">({</span><span class="s1">'fires'</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Int64</span><span class="p">})</span>
+<span class="linenos" data-linenos="361 "></span>        <span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s1">'day'</span><span class="p">,</span> <span class="s1">'env'</span><span class="p">)</span>
+<span class="linenos" data-linenos="362 "></span>        <span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">schema</span><span class="p">))</span>
+<span class="linenos" data-linenos="363 "></span>    <span class="p">)</span>
+</code></pre></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="tlr.domain.alarms.time_in_alarm" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">time_in_alarm</span>
+
+
+<a href="#tlr.domain.alarms.time_in_alarm" class="headerlink" title="Permanent link">⚓︎</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">time_in_alarm</span><span class="p">(</span><span class="n">meta</span><span class="p">,</span> <span class="n">transitions</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Minutes spent in ALARM within <code>[start, end)</code> per alarm, keyed on (env, name).</p>
+<p>The state at <code>start</code> is the last transition before the window when one exists, else
+the alarm&rsquo;s own <code>state</code>/<code>state_updated</code> (CloudWatch&rsquo;s truth for the current state).
+An alarm with no transition rows at all falls back to <code>state_updated</code> alone, so an
+alarm that has been in ALARM longer than history retention still reports dwell.
+Transitions whose summary parsed to no <code>to_state</code> are skipped.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>tlr/domain/alarms.py</code></summary>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="148 "></span><span class="k">def</span><span class="w"> </span><span class="nf">time_in_alarm</span><span class="p">(</span><span class="n">meta</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">transitions</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="linenos" data-linenos="149 "></span><span class="w">    </span><span class="sd">"""Minutes spent in ALARM within `[start, end)` per alarm, keyed on (env, name).</span>
+<span class="linenos" data-linenos="150 "></span>
+<span class="linenos" data-linenos="151 "></span><span class="sd">    The state at `start` is the last transition before the window when one exists, else</span>
+<span class="linenos" data-linenos="152 "></span><span class="sd">    the alarm's own `state`/`state_updated` (CloudWatch's truth for the current state).</span>
+<span class="linenos" data-linenos="153 "></span><span class="sd">    An alarm with no transition rows at all falls back to `state_updated` alone, so an</span>
+<span class="linenos" data-linenos="154 "></span><span class="sd">    alarm that has been in ALARM longer than history retention still reports dwell.</span>
+<span class="linenos" data-linenos="155 "></span><span class="sd">    Transitions whose summary parsed to no `to_state` are skipped.</span>
+<span class="linenos" data-linenos="156 "></span><span class="sd">    """</span>
+<span class="linenos" data-linenos="157 "></span>    <span class="n">schema</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'env'</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Utf8</span><span class="p">,</span> <span class="s1">'name'</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Utf8</span><span class="p">,</span> <span class="s1">'mins_in_alarm'</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Int64</span><span class="p">}</span>
+<span class="linenos" data-linenos="158 "></span>    <span class="k">if</span> <span class="n">meta</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
+<span class="linenos" data-linenos="159 "></span>        <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">)</span>
+<span class="linenos" data-linenos="160 "></span>
+<span class="linenos" data-linenos="161 "></span>    <span class="n">by_alarm</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="linenos" data-linenos="162 "></span>    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">transitions</span><span class="o">.</span><span class="n">iter_rows</span><span class="p">(</span><span class="n">named</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="linenos" data-linenos="163 "></span>        <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s1">'to_state'</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">row</span><span class="p">[</span><span class="s1">'occurred_at'</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos" data-linenos="164 "></span>            <span class="n">by_alarm</span><span class="o">.</span><span class="n">setdefault</span><span class="p">((</span><span class="n">row</span><span class="p">[</span><span class="s1">'env'</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s1">'alarm_name'</span><span class="p">]),</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+<span class="linenos" data-linenos="165 "></span>    <span class="k">for</span> <span class="n">rows</span> <span class="ow">in</span> <span class="n">by_alarm</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+<span class="linenos" data-linenos="166 "></span>        <span class="n">rows</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">itemgetter</span><span class="p">(</span><span class="s1">'occurred_at'</span><span class="p">))</span>
+<span class="linenos" data-linenos="167 "></span>
+<span class="linenos" data-linenos="168 "></span>    <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+<span class="linenos" data-linenos="169 "></span>        <span class="p">[</span>
+<span class="linenos" data-linenos="170 "></span>            <span class="p">{</span>
+<span class="linenos" data-linenos="171 "></span>                <span class="s1">'env'</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s1">'env'</span><span class="p">],</span>
+<span class="linenos" data-linenos="172 "></span>                <span class="s1">'name'</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s1">'name'</span><span class="p">],</span>
+<span class="linenos" data-linenos="173 "></span>                <span class="s1">'mins_in_alarm'</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span>
+<span class="linenos" data-linenos="174 "></span>                    <span class="n">_dwell_seconds</span><span class="p">(</span>
+<span class="linenos" data-linenos="175 "></span>                        <span class="n">by_alarm</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="n">row</span><span class="p">[</span><span class="s1">'env'</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s1">'name'</span><span class="p">]),</span> <span class="p">[]),</span>
+<span class="linenos" data-linenos="176 "></span>                        <span class="n">state</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="s1">'state'</span><span class="p">],</span>
+<span class="linenos" data-linenos="177 "></span>                        <span class="n">state_updated</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="s1">'state_updated'</span><span class="p">],</span>
+<span class="linenos" data-linenos="178 "></span>                        <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
+<span class="linenos" data-linenos="179 "></span>                        <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
+<span class="linenos" data-linenos="180 "></span>                    <span class="p">)</span>
+<span class="linenos" data-linenos="181 "></span>                    <span class="o">//</span> <span class="mi">60</span><span class="p">,</span>
+<span class="linenos" data-linenos="182 "></span>                <span class="p">),</span>
+<span class="linenos" data-linenos="183 "></span>            <span class="p">}</span>
+<span class="linenos" data-linenos="184 "></span>            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">meta</span><span class="o">.</span><span class="n">iter_rows</span><span class="p">(</span><span class="n">named</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos" data-linenos="185 "></span>        <span class="p">],</span>
+<span class="linenos" data-linenos="186 "></span>        <span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">,</span>
+<span class="linenos" data-linenos="187 "></span>    <span class="p">)</span>
+</code></pre></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="tlr.domain.alarms.with_alarm_meta" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">with_alarm_meta</span>
+
+
+<a href="#tlr.domain.alarms.with_alarm_meta" class="headerlink" title="Permanent link">⚓︎</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">with_alarm_meta</span><span class="p">(</span><span class="n">alarms</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Add <code>category</code> and <code>severity</code> columns derived from the alarm name.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>tlr/domain/alarms.py</code></summary>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="82 "></span><span class="k">def</span><span class="w"> </span><span class="nf">with_alarm_meta</span><span class="p">(</span><span class="n">alarms</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">AlarmsConfig</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="linenos" data-linenos="83 "></span><span class="w">    </span><span class="sd">"""Add `category` and `severity` columns derived from the alarm name."""</span>
+<span class="linenos" data-linenos="84 "></span>    <span class="k">if</span> <span class="n">alarms</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
+<span class="linenos" data-linenos="85 "></span>        <span class="k">return</span> <span class="n">alarms</span><span class="o">.</span><span class="n">with_columns</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">lit</span><span class="p">(</span><span class="s1">''</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s1">'category'</span><span class="p">),</span> <span class="n">pl</span><span class="o">.</span><span class="n">lit</span><span class="p">(</span><span class="s1">''</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s1">'severity'</span><span class="p">))</span>
+<span class="linenos" data-linenos="86 "></span>    <span class="n">pairs</span> <span class="o">=</span> <span class="p">[</span>
+<span class="linenos" data-linenos="87 "></span>        <span class="n">categorize_name</span><span class="p">(</span>
+<span class="linenos" data-linenos="88 "></span>            <span class="n">name</span><span class="p">,</span>
+<span class="linenos" data-linenos="89 "></span>            <span class="n">categories</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">categories</span><span class="p">,</span>
+<span class="linenos" data-linenos="90 "></span>            <span class="n">severity_suffixes</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">severity_suffixes</span><span class="p">,</span>
+<span class="linenos" data-linenos="91 "></span>        <span class="p">)</span>
+<span class="linenos" data-linenos="92 "></span>        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">alarms</span><span class="p">[</span><span class="s1">'name'</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+<span class="linenos" data-linenos="93 "></span>    <span class="p">]</span>
+<span class="linenos" data-linenos="94 "></span>    <span class="k">return</span> <span class="n">alarms</span><span class="o">.</span><span class="n">with_columns</span><span class="p">(</span>
+<span class="linenos" data-linenos="95 "></span>        <span class="n">pl</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="s1">'category'</span><span class="p">,</span> <span class="p">[</span><span class="n">category</span> <span class="k">for</span> <span class="n">category</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">]),</span>
+<span class="linenos" data-linenos="96 "></span>        <span class="n">pl</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="s1">'severity'</span><span class="p">,</span> <span class="p">[</span><span class="n">severity</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">severity</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">]),</span>
+<span class="linenos" data-linenos="97 "></span>    <span class="p">)</span>
+</code></pre></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="tlr.domain.alarms.with_linear_matches" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">with_linear_matches</span>
+
+
+<a href="#tlr.domain.alarms.with_linear_matches" class="headerlink" title="Permanent link">⚓︎</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">with_linear_matches</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">issues</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">now</span><span class="p">,</span> <span class="n">closed_like_state_names</span><span class="o">=</span><span class="p">())</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Add Linear match columns: <code>linear_open</code> identifiers and a <code>linear_closed</code> count.</p>
+<p>A match is an issue whose title contains the alarm name (the watch-bot convention is
+<code>&lt;alarm-name&gt;: &lt;summary&gt;</code>); each open identifier carries its state in parentheses so
+a reader can tell triaged work from untouched backlog. <code>linear_closed</code> counts matches
+no longer open.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>tlr/domain/alarms.py</code></summary>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="291 "></span><span class="k">def</span><span class="w"> </span><span class="nf">with_linear_matches</span><span class="p">(</span>
+<span class="linenos" data-linenos="292 "></span>    <span class="n">table</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+<span class="linenos" data-linenos="293 "></span>    <span class="n">issues</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+<span class="linenos" data-linenos="294 "></span>    <span class="o">*</span><span class="p">,</span>
+<span class="linenos" data-linenos="295 "></span>    <span class="n">now</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span>
+<span class="linenos" data-linenos="296 "></span>    <span class="n">closed_like_state_names</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+<span class="linenos" data-linenos="297 "></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="linenos" data-linenos="298 "></span><span class="w">    </span><span class="sd">"""Add Linear match columns: `linear_open` identifiers and a `linear_closed` count.</span>
+<span class="linenos" data-linenos="299 "></span>
+<span class="linenos" data-linenos="300 "></span><span class="sd">    A match is an issue whose title contains the alarm name (the watch-bot convention is</span>
+<span class="linenos" data-linenos="301 "></span><span class="sd">    `&lt;alarm-name&gt;: &lt;summary&gt;`); each open identifier carries its state in parentheses so</span>
+<span class="linenos" data-linenos="302 "></span><span class="sd">    a reader can tell triaged work from untouched backlog. `linear_closed` counts matches</span>
+<span class="linenos" data-linenos="303 "></span><span class="sd">    no longer open.</span>
+<span class="linenos" data-linenos="304 "></span><span class="sd">    """</span>
+<span class="linenos" data-linenos="305 "></span>    <span class="k">if</span> <span class="n">table</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
+<span class="linenos" data-linenos="306 "></span>        <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">with_columns</span><span class="p">(</span>
+<span class="linenos" data-linenos="307 "></span>            <span class="n">pl</span><span class="o">.</span><span class="n">lit</span><span class="p">(</span><span class="s1">''</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s1">'linear_open'</span><span class="p">),</span>
+<span class="linenos" data-linenos="308 "></span>            <span class="n">pl</span><span class="o">.</span><span class="n">lit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">Int64</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s1">'linear_closed'</span><span class="p">),</span>
+<span class="linenos" data-linenos="309 "></span>        <span class="p">)</span>
+<span class="linenos" data-linenos="310 "></span>    <span class="n">open_ids</span> <span class="o">=</span> <span class="p">(</span>
+<span class="linenos" data-linenos="311 "></span>        <span class="nb">set</span><span class="p">(</span><span class="n">_linear_open_at</span><span class="p">(</span><span class="n">issues</span><span class="p">,</span> <span class="n">now</span><span class="p">,</span> <span class="n">closed_like_state_names</span><span class="p">)[</span><span class="s1">'id'</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">())</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">issues</span><span class="o">.</span><span class="n">is_empty</span><span class="p">()</span> <span class="k">else</span> <span class="nb">set</span><span class="p">()</span>
+<span class="linenos" data-linenos="312 "></span>    <span class="p">)</span>
+<span class="linenos" data-linenos="313 "></span>    <span class="n">open_labels</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="linenos" data-linenos="314 "></span>    <span class="n">closed_counts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="linenos" data-linenos="315 "></span>    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">table</span><span class="p">[</span><span class="s1">'name'</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">():</span>
+<span class="linenos" data-linenos="316 "></span>        <span class="n">matched</span> <span class="o">=</span> <span class="p">(</span>
+<span class="linenos" data-linenos="317 "></span>            <span class="n">issues</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'title'</span><span class="p">)</span><span class="o">.</span><span class="n">fill_null</span><span class="p">(</span><span class="s1">''</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">literal</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="linenos" data-linenos="318 "></span>            <span class="k">if</span> <span class="ow">not</span> <span class="n">issues</span><span class="o">.</span><span class="n">is_empty</span><span class="p">()</span>
+<span class="linenos" data-linenos="319 "></span>            <span class="k">else</span> <span class="n">issues</span>
+<span class="linenos" data-linenos="320 "></span>        <span class="p">)</span>
+<span class="linenos" data-linenos="321 "></span>        <span class="n">open_rows</span> <span class="o">=</span> <span class="n">matched</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'id'</span><span class="p">)</span><span class="o">.</span><span class="n">is_in</span><span class="p">(</span><span class="n">open_ids</span><span class="p">))</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s1">'identifier'</span><span class="p">)</span>
+<span class="linenos" data-linenos="322 "></span>        <span class="n">labels</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="linenos" data-linenos="323 "></span>        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">open_rows</span><span class="o">.</span><span class="n">iter_rows</span><span class="p">(</span><span class="n">named</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="linenos" data-linenos="324 "></span>            <span class="n">label</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"[</span><span class="si">{</span><span class="n">row</span><span class="p">[</span><span class="s1">'identifier'</span><span class="p">]</span><span class="si">}</span><span class="s2">](</span><span class="si">{</span><span class="n">row</span><span class="p">[</span><span class="s1">'url'</span><span class="p">]</span><span class="si">}</span><span class="s2">)"</span> <span class="k">if</span> <span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'url'</span><span class="p">)</span> <span class="k">else</span> <span class="n">row</span><span class="p">[</span><span class="s1">'identifier'</span><span class="p">]</span>
+<span class="linenos" data-linenos="325 "></span>            <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s1">'state_name'</span><span class="p">]:</span>
+<span class="linenos" data-linenos="326 "></span>                <span class="n">label</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">" (</span><span class="si">{</span><span class="n">row</span><span class="p">[</span><span class="s1">'state_name'</span><span class="p">]</span><span class="si">}</span><span class="s2">)"</span>
+<span class="linenos" data-linenos="327 "></span>            <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+<span class="linenos" data-linenos="328 "></span>        <span class="n">open_labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">labels</span><span class="p">))</span>
+<span class="linenos" data-linenos="329 "></span>        <span class="n">closed_counts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">matched</span><span class="o">.</span><span class="n">height</span> <span class="o">-</span> <span class="n">open_rows</span><span class="o">.</span><span class="n">height</span><span class="p">)</span>
+<span class="linenos" data-linenos="330 "></span>    <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">with_columns</span><span class="p">(</span>
+<span class="linenos" data-linenos="331 "></span>        <span class="n">pl</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="s1">'linear_open'</span><span class="p">,</span> <span class="n">open_labels</span><span class="p">),</span>
+<span class="linenos" data-linenos="332 "></span>        <span class="n">pl</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="s1">'linear_closed'</span><span class="p">,</span> <span class="n">closed_counts</span><span class="p">),</span>
+<span class="linenos" data-linenos="333 "></span>    <span class="p">)</span>
+</code></pre></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": ["toc.autohide"], "search": "../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/tablesort/5.6.0/tablesort.min.js"></script>
+      
+        <script src="../../../../_javascript/tables.js"></script>
+      
+    
+  </body>
+</html>

@@ -703,6 +703,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#tlr.config.AlarmsConfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AlarmsConfig
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#tlr.config.CapacityConfig" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1166,6 +1177,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../domain/alarms/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Alarms
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../domain/backlog/" class="md-nav__link">
         
   
@@ -1527,6 +1566,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../sources/alarms/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Alarms
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../sources/linear/" class="md-nav__link">
         
   
@@ -1673,6 +1740,17 @@
   
     <nav class="md-nav" aria-label="Classes">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tlr.config.AlarmsConfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AlarmsConfig
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#tlr.config.CapacityConfig" class="md-nav__link">
@@ -2019,6 +2097,83 @@
 
 
 
+<h3 id="tlr.config.AlarmsConfig" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">AlarmsConfig</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#tlr.config.AlarmsConfig" class="headerlink" title="Permanent link">⚓︎</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>How to reach the CloudWatch alarm export and how to group what it returns.</p>
+<p><code>command</code> is the argv prefix of an NDJSON alarm exporter (tail-cw&rsquo;s
+<code>export alarms --history</code> is the reference shape); each entry in <code>profiles</code> maps an
+environment label onto the <code>--profile</code> it is fetched under. <code>categories</code> maps a
+category name onto glob patterns matched against the alarm name, first match wins.
+<code>console_region</code> turns alarm names into CloudWatch console links; empty leaves them
+as plain text.</p>
+
+
+
+
+
+
+
+
+              <details class="mkdocstrings-source">
+                <summary>Source code in <code>tlr/config.py</code></summary>
+                <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="56 "></span><span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos" data-linenos="57 "></span><span class="k">class</span><span class="w"> </span><span class="nc">AlarmsConfig</span><span class="p">:</span>
+<span class="linenos" data-linenos="58 "></span><span class="w">    </span><span class="sd">"""How to reach the CloudWatch alarm export and how to group what it returns.</span>
+<span class="linenos" data-linenos="59 "></span>
+<span class="linenos" data-linenos="60 "></span><span class="sd">    `command` is the argv prefix of an NDJSON alarm exporter (tail-cw's</span>
+<span class="linenos" data-linenos="61 "></span><span class="sd">    `export alarms --history` is the reference shape); each entry in `profiles` maps an</span>
+<span class="linenos" data-linenos="62 "></span><span class="sd">    environment label onto the `--profile` it is fetched under. `categories` maps a</span>
+<span class="linenos" data-linenos="63 "></span><span class="sd">    category name onto glob patterns matched against the alarm name, first match wins.</span>
+<span class="linenos" data-linenos="64 "></span><span class="sd">    `console_region` turns alarm names into CloudWatch console links; empty leaves them</span>
+<span class="linenos" data-linenos="65 "></span><span class="sd">    as plain text.</span>
+<span class="linenos" data-linenos="66 "></span><span class="sd">    """</span>
+<span class="linenos" data-linenos="67 "></span>
+<span class="linenos" data-linenos="68 "></span>    <span class="n">command</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+<span class="linenos" data-linenos="69 "></span>    <span class="n">profiles</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+<span class="linenos" data-linenos="70 "></span>    <span class="n">categories</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+<span class="linenos" data-linenos="71 "></span>    <span class="n">severity_suffixes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="p">[</span><span class="s1">'critical'</span><span class="p">,</span> <span class="s1">'warning'</span><span class="p">])</span>
+<span class="linenos" data-linenos="72 "></span>    <span class="n">console_region</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">''</span>
+</code></pre></div>
+              </details>
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
 <h3 id="tlr.config.CapacityConfig" class="doc doc-heading">
             <span class="doc doc-object-name doc-class-name">CapacityConfig</span>
 
@@ -2045,16 +2200,16 @@
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>tlr/config.py</code></summary>
-                <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="106 "></span><span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="linenos" data-linenos="107 "></span><span class="k">class</span><span class="w"> </span><span class="nc">CapacityConfig</span><span class="p">:</span>
-<span class="linenos" data-linenos="108 "></span><span class="w">    </span><span class="sd">"""The roster, on-call and calendar ids, and the meeting-hours rule."""</span>
-<span class="linenos" data-linenos="109 "></span>
-<span class="linenos" data-linenos="110 "></span>    <span class="n">roster</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Person</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
-<span class="linenos" data-linenos="111 "></span>    <span class="n">on_call_schedule_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
-<span class="linenos" data-linenos="112 "></span>    <span class="n">calendar_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
-<span class="linenos" data-linenos="113 "></span>    <span class="n">meeting_hours_rule</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'accepted_from_others'</span>
-<span class="linenos" data-linenos="114 "></span>    <span class="n">working_days_per_cycle</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10.0</span>
-<span class="linenos" data-linenos="115 "></span>    <span class="n">working_hours_per_day</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">8.0</span>
+                <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="125 "></span><span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos" data-linenos="126 "></span><span class="k">class</span><span class="w"> </span><span class="nc">CapacityConfig</span><span class="p">:</span>
+<span class="linenos" data-linenos="127 "></span><span class="w">    </span><span class="sd">"""The roster, on-call and calendar ids, and the meeting-hours rule."""</span>
+<span class="linenos" data-linenos="128 "></span>
+<span class="linenos" data-linenos="129 "></span>    <span class="n">roster</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Person</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+<span class="linenos" data-linenos="130 "></span>    <span class="n">on_call_schedule_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+<span class="linenos" data-linenos="131 "></span>    <span class="n">calendar_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+<span class="linenos" data-linenos="132 "></span>    <span class="n">meeting_hours_rule</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'accepted_from_others'</span>
+<span class="linenos" data-linenos="133 "></span>    <span class="n">working_days_per_cycle</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10.0</span>
+<span class="linenos" data-linenos="134 "></span>    <span class="n">working_hours_per_day</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">8.0</span>
 </code></pre></div>
               </details>
 
@@ -2226,13 +2381,13 @@
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>tlr/config.py</code></summary>
-                <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos=" 97 "></span><span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="linenos" data-linenos=" 98 "></span><span class="k">class</span><span class="w"> </span><span class="nc">Person</span><span class="p">:</span>
-<span class="linenos" data-linenos=" 99 "></span><span class="w">    </span><span class="sd">"""One roster entry: a name, an email, and points per cycle."""</span>
-<span class="linenos" data-linenos="100 "></span>
-<span class="linenos" data-linenos="101 "></span>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
-<span class="linenos" data-linenos="102 "></span>    <span class="n">email</span><span class="p">:</span> <span class="nb">str</span>
-<span class="linenos" data-linenos="103 "></span>    <span class="n">points_per_cycle</span><span class="p">:</span> <span class="nb">float</span>
+                <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="116 "></span><span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos" data-linenos="117 "></span><span class="k">class</span><span class="w"> </span><span class="nc">Person</span><span class="p">:</span>
+<span class="linenos" data-linenos="118 "></span><span class="w">    </span><span class="sd">"""One roster entry: a name, an email, and points per cycle."""</span>
+<span class="linenos" data-linenos="119 "></span>
+<span class="linenos" data-linenos="120 "></span>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+<span class="linenos" data-linenos="121 "></span>    <span class="n">email</span><span class="p">:</span> <span class="nb">str</span>
+<span class="linenos" data-linenos="122 "></span>    <span class="n">points_per_cycle</span><span class="p">:</span> <span class="nb">float</span>
 </code></pre></div>
               </details>
 
@@ -2435,12 +2590,12 @@
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>tlr/config.py</code></summary>
-                <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="69 "></span><span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="linenos" data-linenos="70 "></span><span class="k">class</span><span class="w"> </span><span class="nc">SlaConfig</span><span class="p">:</span>
-<span class="linenos" data-linenos="71 "></span><span class="w">    </span><span class="sd">"""Target close time per priority, and optionally per tier."""</span>
-<span class="linenos" data-linenos="72 "></span>
-<span class="linenos" data-linenos="73 "></span>    <span class="n">target_days_by_priority</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
-<span class="linenos" data-linenos="74 "></span>    <span class="n">target_days_by_tier</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+                <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="88 "></span><span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos" data-linenos="89 "></span><span class="k">class</span><span class="w"> </span><span class="nc">SlaConfig</span><span class="p">:</span>
+<span class="linenos" data-linenos="90 "></span><span class="w">    </span><span class="sd">"""Target close time per priority, and optionally per tier."""</span>
+<span class="linenos" data-linenos="91 "></span>
+<span class="linenos" data-linenos="92 "></span>    <span class="n">target_days_by_priority</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+<span class="linenos" data-linenos="93 "></span>    <span class="n">target_days_by_tier</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
 </code></pre></div>
               </details>
 
@@ -2495,11 +2650,11 @@
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>tlr/config.py</code></summary>
-                <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="118 "></span><span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="linenos" data-linenos="119 "></span><span class="k">class</span><span class="w"> </span><span class="nc">StoreConfig</span><span class="p">:</span>
-<span class="linenos" data-linenos="120 "></span><span class="w">    </span><span class="sd">"""Where the DuckDB file lives. `None` resolves under `get_data_dir` at load time."""</span>
-<span class="linenos" data-linenos="121 "></span>
-<span class="linenos" data-linenos="122 "></span>    <span class="n">database_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+                <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="137 "></span><span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos" data-linenos="138 "></span><span class="k">class</span><span class="w"> </span><span class="nc">StoreConfig</span><span class="p">:</span>
+<span class="linenos" data-linenos="139 "></span><span class="w">    </span><span class="sd">"""Where the DuckDB file lives. `None` resolves under `get_data_dir` at load time."""</span>
+<span class="linenos" data-linenos="140 "></span>
+<span class="linenos" data-linenos="141 "></span>    <span class="n">database_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 </code></pre></div>
               </details>
 
@@ -2554,14 +2709,14 @@
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>tlr/config.py</code></summary>
-                <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="87 "></span><span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="linenos" data-linenos="88 "></span><span class="k">class</span><span class="w"> </span><span class="nc">ThresholdsConfig</span><span class="p">:</span>
-<span class="linenos" data-linenos="89 "></span><span class="w">    </span><span class="sd">"""Backlog age buckets and the commitment accuracy band."""</span>
-<span class="linenos" data-linenos="90 "></span>
-<span class="linenos" data-linenos="91 "></span>    <span class="n">backlog_age_days</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="p">[</span><span class="mi">30</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">90</span><span class="p">])</span>
-<span class="linenos" data-linenos="92 "></span>    <span class="n">in_progress_days</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">14</span>
-<span class="linenos" data-linenos="93 "></span>    <span class="n">commitment_accuracy_low</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.8</span>
-<span class="linenos" data-linenos="94 "></span>    <span class="n">commitment_accuracy_high</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.9</span>
+                <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="106 "></span><span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos" data-linenos="107 "></span><span class="k">class</span><span class="w"> </span><span class="nc">ThresholdsConfig</span><span class="p">:</span>
+<span class="linenos" data-linenos="108 "></span><span class="w">    </span><span class="sd">"""Backlog age buckets and the commitment accuracy band."""</span>
+<span class="linenos" data-linenos="109 "></span>
+<span class="linenos" data-linenos="110 "></span>    <span class="n">backlog_age_days</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="p">[</span><span class="mi">30</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">90</span><span class="p">])</span>
+<span class="linenos" data-linenos="111 "></span>    <span class="n">in_progress_days</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">14</span>
+<span class="linenos" data-linenos="112 "></span>    <span class="n">commitment_accuracy_low</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.8</span>
+<span class="linenos" data-linenos="113 "></span>    <span class="n">commitment_accuracy_high</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.9</span>
 </code></pre></div>
               </details>
 
@@ -2618,17 +2773,17 @@ leaves every account on <code>default_tier</code>, which makes the tier ordering
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>tlr/config.py</code></summary>
-                <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="56 "></span><span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="linenos" data-linenos="57 "></span><span class="k">class</span><span class="w"> </span><span class="nc">TiersConfig</span><span class="p">:</span>
-<span class="linenos" data-linenos="58 "></span><span class="w">    </span><span class="sd">"""Customer tier names, best first, and which Pylon account field carries one.</span>
-<span class="linenos" data-linenos="59 "></span>
-<span class="linenos" data-linenos="60 "></span><span class="sd">    No Pylon workspace is required to have a tier field. An empty `account_tier_field`</span>
-<span class="linenos" data-linenos="61 "></span><span class="sd">    leaves every account on `default_tier`, which makes the tier ordering step a no-op.</span>
-<span class="linenos" data-linenos="62 "></span><span class="sd">    """</span>
-<span class="linenos" data-linenos="63 "></span>
-<span class="linenos" data-linenos="64 "></span>    <span class="n">names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
-<span class="linenos" data-linenos="65 "></span>    <span class="n">account_tier_field</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">''</span>
-<span class="linenos" data-linenos="66 "></span>    <span class="n">default_tier</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">''</span>
+                <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="75 "></span><span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos" data-linenos="76 "></span><span class="k">class</span><span class="w"> </span><span class="nc">TiersConfig</span><span class="p">:</span>
+<span class="linenos" data-linenos="77 "></span><span class="w">    </span><span class="sd">"""Customer tier names, best first, and which Pylon account field carries one.</span>
+<span class="linenos" data-linenos="78 "></span>
+<span class="linenos" data-linenos="79 "></span><span class="sd">    No Pylon workspace is required to have a tier field. An empty `account_tier_field`</span>
+<span class="linenos" data-linenos="80 "></span><span class="sd">    leaves every account on `default_tier`, which makes the tier ordering step a no-op.</span>
+<span class="linenos" data-linenos="81 "></span><span class="sd">    """</span>
+<span class="linenos" data-linenos="82 "></span>
+<span class="linenos" data-linenos="83 "></span>    <span class="n">names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+<span class="linenos" data-linenos="84 "></span>    <span class="n">account_tier_field</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">''</span>
+<span class="linenos" data-linenos="85 "></span>    <span class="n">default_tier</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">''</span>
 </code></pre></div>
               </details>
 
@@ -2683,19 +2838,20 @@ leaves every account on <code>default_tier</code>, which makes the tier ordering
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>tlr/config.py</code></summary>
-                <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="125 "></span><span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="linenos" data-linenos="126 "></span><span class="k">class</span><span class="w"> </span><span class="nc">TlrConfig</span><span class="p">:</span>
-<span class="linenos" data-linenos="127 "></span><span class="w">    </span><span class="sd">"""Container for every configuration section, one per TOML table."""</span>
-<span class="linenos" data-linenos="128 "></span>
-<span class="linenos" data-linenos="129 "></span>    <span class="n">linear</span><span class="p">:</span> <span class="n">LinearConfig</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">LinearConfig</span><span class="p">)</span>
-<span class="linenos" data-linenos="130 "></span>    <span class="n">pylon</span><span class="p">:</span> <span class="n">PylonConfig</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">PylonConfig</span><span class="p">)</span>
-<span class="linenos" data-linenos="131 "></span>    <span class="n">sentry</span><span class="p">:</span> <span class="n">SentryConfig</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">SentryConfig</span><span class="p">)</span>
-<span class="linenos" data-linenos="132 "></span>    <span class="n">tiers</span><span class="p">:</span> <span class="n">TiersConfig</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">TiersConfig</span><span class="p">)</span>
-<span class="linenos" data-linenos="133 "></span>    <span class="n">sla</span><span class="p">:</span> <span class="n">SlaConfig</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">SlaConfig</span><span class="p">)</span>
-<span class="linenos" data-linenos="134 "></span>    <span class="n">triage</span><span class="p">:</span> <span class="n">TriageConfig</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">TriageConfig</span><span class="p">)</span>
-<span class="linenos" data-linenos="135 "></span>    <span class="n">thresholds</span><span class="p">:</span> <span class="n">ThresholdsConfig</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">ThresholdsConfig</span><span class="p">)</span>
-<span class="linenos" data-linenos="136 "></span>    <span class="n">capacity</span><span class="p">:</span> <span class="n">CapacityConfig</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">CapacityConfig</span><span class="p">)</span>
-<span class="linenos" data-linenos="137 "></span>    <span class="n">store</span><span class="p">:</span> <span class="n">StoreConfig</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">StoreConfig</span><span class="p">)</span>
+                <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="144 "></span><span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos" data-linenos="145 "></span><span class="k">class</span><span class="w"> </span><span class="nc">TlrConfig</span><span class="p">:</span>
+<span class="linenos" data-linenos="146 "></span><span class="w">    </span><span class="sd">"""Container for every configuration section, one per TOML table."""</span>
+<span class="linenos" data-linenos="147 "></span>
+<span class="linenos" data-linenos="148 "></span>    <span class="n">linear</span><span class="p">:</span> <span class="n">LinearConfig</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">LinearConfig</span><span class="p">)</span>
+<span class="linenos" data-linenos="149 "></span>    <span class="n">pylon</span><span class="p">:</span> <span class="n">PylonConfig</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">PylonConfig</span><span class="p">)</span>
+<span class="linenos" data-linenos="150 "></span>    <span class="n">sentry</span><span class="p">:</span> <span class="n">SentryConfig</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">SentryConfig</span><span class="p">)</span>
+<span class="linenos" data-linenos="151 "></span>    <span class="n">alarms</span><span class="p">:</span> <span class="n">AlarmsConfig</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">AlarmsConfig</span><span class="p">)</span>
+<span class="linenos" data-linenos="152 "></span>    <span class="n">tiers</span><span class="p">:</span> <span class="n">TiersConfig</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">TiersConfig</span><span class="p">)</span>
+<span class="linenos" data-linenos="153 "></span>    <span class="n">sla</span><span class="p">:</span> <span class="n">SlaConfig</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">SlaConfig</span><span class="p">)</span>
+<span class="linenos" data-linenos="154 "></span>    <span class="n">triage</span><span class="p">:</span> <span class="n">TriageConfig</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">TriageConfig</span><span class="p">)</span>
+<span class="linenos" data-linenos="155 "></span>    <span class="n">thresholds</span><span class="p">:</span> <span class="n">ThresholdsConfig</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">ThresholdsConfig</span><span class="p">)</span>
+<span class="linenos" data-linenos="156 "></span>    <span class="n">capacity</span><span class="p">:</span> <span class="n">CapacityConfig</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">CapacityConfig</span><span class="p">)</span>
+<span class="linenos" data-linenos="157 "></span>    <span class="n">store</span><span class="p">:</span> <span class="n">StoreConfig</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">StoreConfig</span><span class="p">)</span>
 </code></pre></div>
               </details>
 
@@ -2750,14 +2906,14 @@ leaves every account on <code>default_tier</code>, which makes the tier ordering
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>tlr/config.py</code></summary>
-                <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="77 "></span><span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="linenos" data-linenos="78 "></span><span class="k">class</span><span class="w"> </span><span class="nc">TriageConfig</span><span class="p">:</span>
-<span class="linenos" data-linenos="79 "></span><span class="w">    </span><span class="sd">"""Ordering rules applied in sequence, and the heading each held-out row is listed under."""</span>
-<span class="linenos" data-linenos="80 "></span>
-<span class="linenos" data-linenos="81 "></span>    <span class="n">ordering</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="p">[</span><span class="s1">'priority'</span><span class="p">,</span> <span class="s1">'tier'</span><span class="p">,</span> <span class="s1">'age'</span><span class="p">,</span> <span class="s1">'sla_distance'</span><span class="p">])</span>
-<span class="linenos" data-linenos="82 "></span>    <span class="n">exclusions</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
-<span class="linenos" data-linenos="83 "></span><span class="w">    </span><span class="sd">"""Heading to the Pylon tags and question types that move a row under it."""</span>
-<span class="linenos" data-linenos="84 "></span>    <span class="n">agent_assignee_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+                <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos=" 96 "></span><span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos" data-linenos=" 97 "></span><span class="k">class</span><span class="w"> </span><span class="nc">TriageConfig</span><span class="p">:</span>
+<span class="linenos" data-linenos=" 98 "></span><span class="w">    </span><span class="sd">"""Ordering rules applied in sequence, and the heading each held-out row is listed under."""</span>
+<span class="linenos" data-linenos=" 99 "></span>
+<span class="linenos" data-linenos="100 "></span>    <span class="n">ordering</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="p">[</span><span class="s1">'priority'</span><span class="p">,</span> <span class="s1">'tier'</span><span class="p">,</span> <span class="s1">'age'</span><span class="p">,</span> <span class="s1">'sla_distance'</span><span class="p">])</span>
+<span class="linenos" data-linenos="101 "></span>    <span class="n">exclusions</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+<span class="linenos" data-linenos="102 "></span><span class="w">    </span><span class="sd">"""Heading to the Pylon tags and question types that move a row under it."""</span>
+<span class="linenos" data-linenos="103 "></span>    <span class="n">agent_assignee_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
 </code></pre></div>
               </details>
 
@@ -2826,11 +2982,11 @@ leaves every account on <code>default_tier</code>, which makes the tier ordering
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/config.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="159 "></span><span class="k">def</span><span class="w"> </span><span class="nf">get_data_dir</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="linenos" data-linenos="160 "></span><span class="w">    </span><span class="sd">"""Return `$TLR_DATA_DIR`, else the XDG data directory."""</span>
-<span class="linenos" data-linenos="161 "></span>    <span class="k">if</span> <span class="n">env_path</span> <span class="o">:=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'TLR_DATA_DIR'</span><span class="p">):</span>
-<span class="linenos" data-linenos="162 "></span>        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">env_path</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
-<span class="linenos" data-linenos="163 "></span>    <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">user_data_dir</span><span class="p">(</span><span class="s1">'tlr'</span><span class="p">))</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="180 "></span><span class="k">def</span><span class="w"> </span><span class="nf">get_data_dir</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="linenos" data-linenos="181 "></span><span class="w">    </span><span class="sd">"""Return `$TLR_DATA_DIR`, else the XDG data directory."""</span>
+<span class="linenos" data-linenos="182 "></span>    <span class="k">if</span> <span class="n">env_path</span> <span class="o">:=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'TLR_DATA_DIR'</span><span class="p">):</span>
+<span class="linenos" data-linenos="183 "></span>        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">env_path</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
+<span class="linenos" data-linenos="184 "></span>    <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">user_data_dir</span><span class="p">(</span><span class="s1">'tlr'</span><span class="p">))</span>
 </code></pre></div>
             </details>
     </div>
@@ -2855,11 +3011,11 @@ leaves every account on <code>default_tier</code>, which makes the tier ordering
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/config.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="152 "></span><span class="k">def</span><span class="w"> </span><span class="nf">get_default_config_path</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="linenos" data-linenos="153 "></span><span class="w">    </span><span class="sd">"""Return `$TLR_CONFIG`, else `config.toml` under the XDG config directory."""</span>
-<span class="linenos" data-linenos="154 "></span>    <span class="k">if</span> <span class="n">env_path</span> <span class="o">:=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'TLR_CONFIG'</span><span class="p">):</span>
-<span class="linenos" data-linenos="155 "></span>        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">env_path</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
-<span class="linenos" data-linenos="156 "></span>    <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">user_config_dir</span><span class="p">(</span><span class="s1">'tlr'</span><span class="p">))</span> <span class="o">/</span> <span class="n">DEFAULT_CONFIG_FILENAME</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="173 "></span><span class="k">def</span><span class="w"> </span><span class="nf">get_default_config_path</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="linenos" data-linenos="174 "></span><span class="w">    </span><span class="sd">"""Return `$TLR_CONFIG`, else `config.toml` under the XDG config directory."""</span>
+<span class="linenos" data-linenos="175 "></span>    <span class="k">if</span> <span class="n">env_path</span> <span class="o">:=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'TLR_CONFIG'</span><span class="p">):</span>
+<span class="linenos" data-linenos="176 "></span>        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">env_path</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
+<span class="linenos" data-linenos="177 "></span>    <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">user_config_dir</span><span class="p">(</span><span class="s1">'tlr'</span><span class="p">))</span> <span class="o">/</span> <span class="n">DEFAULT_CONFIG_FILENAME</span>
 </code></pre></div>
             </details>
     </div>
@@ -2886,32 +3042,32 @@ key whose value has the wrong shape raises <code>ValueError</code> naming the ta
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/config.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="272 "></span><span class="k">def</span><span class="w"> </span><span class="nf">load_config</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TlrConfig</span><span class="p">:</span>
-<span class="linenos" data-linenos="273 "></span><span class="w">    </span><span class="sd">"""Load configuration from `path`, defaulting to `get_default_config_path`.</span>
-<span class="linenos" data-linenos="274 "></span>
-<span class="linenos" data-linenos="275 "></span><span class="sd">    An absent file yields the dataclass defaults. Malformed TOML, an unknown key, or a</span>
-<span class="linenos" data-linenos="276 "></span><span class="sd">    key whose value has the wrong shape raises `ValueError` naming the table and key.</span>
-<span class="linenos" data-linenos="277 "></span><span class="sd">    """</span>
-<span class="linenos" data-linenos="278 "></span>    <span class="n">config_path</span> <span class="o">=</span> <span class="n">path</span> <span class="ow">or</span> <span class="n">get_default_config_path</span><span class="p">()</span>
-<span class="linenos" data-linenos="279 "></span>    <span class="k">if</span> <span class="ow">not</span> <span class="n">config_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-<span class="linenos" data-linenos="280 "></span>        <span class="n">config</span> <span class="o">=</span> <span class="n">TlrConfig</span><span class="p">()</span>
-<span class="linenos" data-linenos="281 "></span>    <span class="k">else</span><span class="p">:</span>
-<span class="linenos" data-linenos="282 "></span>        <span class="k">try</span><span class="p">:</span>
-<span class="linenos" data-linenos="283 "></span>            <span class="k">with</span> <span class="n">config_path</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">'rb'</span><span class="p">)</span> <span class="k">as</span> <span class="n">handle</span><span class="p">:</span>
-<span class="linenos" data-linenos="284 "></span>                <span class="n">data</span> <span class="o">=</span> <span class="n">tomllib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>
-<span class="linenos" data-linenos="285 "></span>        <span class="k">except</span> <span class="n">tomllib</span><span class="o">.</span><span class="n">TOMLDecodeError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-<span class="linenos" data-linenos="286 "></span>            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">'Invalid TOML in </span><span class="si">{</span><span class="n">config_path</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s1">'</span>
-<span class="linenos" data-linenos="287 "></span>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
-<span class="linenos" data-linenos="288 "></span>
-<span class="linenos" data-linenos="289 "></span>        <span class="n">config</span> <span class="o">=</span> <span class="n">TlrConfig</span><span class="p">(</span>
-<span class="linenos" data-linenos="290 "></span>            <span class="o">**</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">_validated_section</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="n">factory</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">factory</span> <span class="ow">in</span> <span class="n">_SECTIONS</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
-<span class="linenos" data-linenos="291 "></span>            <span class="n">capacity</span><span class="o">=</span><span class="n">_load_capacity</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'capacity'</span><span class="p">)),</span>
-<span class="linenos" data-linenos="292 "></span>            <span class="n">store</span><span class="o">=</span><span class="n">_validated_section</span><span class="p">(</span><span class="s1">'store'</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'store'</span><span class="p">),</span> <span class="n">StoreConfig</span><span class="p">),</span>
-<span class="linenos" data-linenos="293 "></span>        <span class="p">)</span>
-<span class="linenos" data-linenos="294 "></span>
-<span class="linenos" data-linenos="295 "></span>    <span class="n">stored</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">store</span><span class="o">.</span><span class="n">database_path</span>
-<span class="linenos" data-linenos="296 "></span>    <span class="n">resolved</span> <span class="o">=</span> <span class="n">get_data_dir</span><span class="p">()</span> <span class="o">/</span> <span class="n">DEFAULT_DB_FILENAME</span> <span class="k">if</span> <span class="n">stored</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">stored</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
-<span class="linenos" data-linenos="297 "></span>    <span class="k">return</span> <span class="n">replace</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">store</span><span class="o">=</span><span class="n">replace</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">store</span><span class="p">,</span> <span class="n">database_path</span><span class="o">=</span><span class="n">resolved</span><span class="p">))</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="293 "></span><span class="k">def</span><span class="w"> </span><span class="nf">load_config</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TlrConfig</span><span class="p">:</span>
+<span class="linenos" data-linenos="294 "></span><span class="w">    </span><span class="sd">"""Load configuration from `path`, defaulting to `get_default_config_path`.</span>
+<span class="linenos" data-linenos="295 "></span>
+<span class="linenos" data-linenos="296 "></span><span class="sd">    An absent file yields the dataclass defaults. Malformed TOML, an unknown key, or a</span>
+<span class="linenos" data-linenos="297 "></span><span class="sd">    key whose value has the wrong shape raises `ValueError` naming the table and key.</span>
+<span class="linenos" data-linenos="298 "></span><span class="sd">    """</span>
+<span class="linenos" data-linenos="299 "></span>    <span class="n">config_path</span> <span class="o">=</span> <span class="n">path</span> <span class="ow">or</span> <span class="n">get_default_config_path</span><span class="p">()</span>
+<span class="linenos" data-linenos="300 "></span>    <span class="k">if</span> <span class="ow">not</span> <span class="n">config_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+<span class="linenos" data-linenos="301 "></span>        <span class="n">config</span> <span class="o">=</span> <span class="n">TlrConfig</span><span class="p">()</span>
+<span class="linenos" data-linenos="302 "></span>    <span class="k">else</span><span class="p">:</span>
+<span class="linenos" data-linenos="303 "></span>        <span class="k">try</span><span class="p">:</span>
+<span class="linenos" data-linenos="304 "></span>            <span class="k">with</span> <span class="n">config_path</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">'rb'</span><span class="p">)</span> <span class="k">as</span> <span class="n">handle</span><span class="p">:</span>
+<span class="linenos" data-linenos="305 "></span>                <span class="n">data</span> <span class="o">=</span> <span class="n">tomllib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>
+<span class="linenos" data-linenos="306 "></span>        <span class="k">except</span> <span class="n">tomllib</span><span class="o">.</span><span class="n">TOMLDecodeError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+<span class="linenos" data-linenos="307 "></span>            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">'Invalid TOML in </span><span class="si">{</span><span class="n">config_path</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s1">'</span>
+<span class="linenos" data-linenos="308 "></span>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+<span class="linenos" data-linenos="309 "></span>
+<span class="linenos" data-linenos="310 "></span>        <span class="n">config</span> <span class="o">=</span> <span class="n">TlrConfig</span><span class="p">(</span>
+<span class="linenos" data-linenos="311 "></span>            <span class="o">**</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">_validated_section</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="n">factory</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">factory</span> <span class="ow">in</span> <span class="n">_SECTIONS</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
+<span class="linenos" data-linenos="312 "></span>            <span class="n">capacity</span><span class="o">=</span><span class="n">_load_capacity</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'capacity'</span><span class="p">)),</span>
+<span class="linenos" data-linenos="313 "></span>            <span class="n">store</span><span class="o">=</span><span class="n">_validated_section</span><span class="p">(</span><span class="s1">'store'</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'store'</span><span class="p">),</span> <span class="n">StoreConfig</span><span class="p">),</span>
+<span class="linenos" data-linenos="314 "></span>        <span class="p">)</span>
+<span class="linenos" data-linenos="315 "></span>
+<span class="linenos" data-linenos="316 "></span>    <span class="n">stored</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">store</span><span class="o">.</span><span class="n">database_path</span>
+<span class="linenos" data-linenos="317 "></span>    <span class="n">resolved</span> <span class="o">=</span> <span class="n">get_data_dir</span><span class="p">()</span> <span class="o">/</span> <span class="n">DEFAULT_DB_FILENAME</span> <span class="k">if</span> <span class="n">stored</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">stored</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
+<span class="linenos" data-linenos="318 "></span>    <span class="k">return</span> <span class="n">replace</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">store</span><span class="o">=</span><span class="n">replace</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">store</span><span class="p">,</span> <span class="n">database_path</span><span class="o">=</span><span class="n">resolved</span><span class="p">))</span>
 </code></pre></div>
             </details>
     </div>

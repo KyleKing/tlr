@@ -813,6 +813,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../alarms/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Alarms
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../backlog/" class="md-nav__link">
         
   
@@ -980,6 +1008,17 @@
     <span class="md-ellipsis">
       
         build_snapshot_sections
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tlr.domain.snapshot.freshness_line" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        freshness_line
       
     </span>
   </a>
@@ -1449,6 +1488,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../sources/alarms/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Alarms
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../sources/linear/" class="md-nav__link">
         
   
@@ -1629,6 +1696,17 @@
     <span class="md-ellipsis">
       
         build_snapshot_sections
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tlr.domain.snapshot.freshness_line" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        freshness_line
       
     </span>
   </a>
@@ -1957,120 +2035,173 @@ network, no store connection, no config file read, no secret access.</p>
     <span class="n">period</span><span class="o">=</span><span class="s1">'week'</span><span class="p">,</span>
     <span class="n">closed_like_state_names</span><span class="o">=</span><span class="p">(),</span>
     <span class="n">bot_label</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
+    <span class="n">refreshes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">tracked_sources</span><span class="o">=</span><span class="p">(),</span>
+    <span class="n">now</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
         <p>Assemble every snapshot section, ready for <code>tlr.render.markdown.sections_to_markdown</code>.</p>
+<p><code>refreshes</code> (the store&rsquo;s refresh_runs frame) with <code>tracked_sources</code> stamps the header
+with each source&rsquo;s last refresh; <code>now</code> ages those stamps and may differ from
+<code>window.end</code> when the caller pins <code>--as-of</code> to a past instant.</p>
 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/domain/snapshot.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="421 "></span><span class="k">def</span><span class="w"> </span><span class="nf">build_snapshot_sections</span><span class="p">(</span>
-<span class="linenos" data-linenos="422 "></span>    <span class="n">issues</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
-<span class="linenos" data-linenos="423 "></span>    <span class="n">issue_labels</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
-<span class="linenos" data-linenos="424 "></span>    <span class="n">pylon_issues</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
-<span class="linenos" data-linenos="425 "></span>    <span class="n">pylon_issue_labels</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
-<span class="linenos" data-linenos="426 "></span>    <span class="n">sentry_issues</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
-<span class="linenos" data-linenos="427 "></span>    <span class="o">*</span><span class="p">,</span>
-<span class="linenos" data-linenos="428 "></span>    <span class="n">window</span><span class="p">:</span> <span class="n">PeriodWindow</span><span class="p">,</span>
-<span class="linenos" data-linenos="429 "></span>    <span class="n">pylon_priority_values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-<span class="linenos" data-linenos="430 "></span>    <span class="n">sla</span><span class="p">:</span> <span class="n">SlaConfig</span><span class="p">,</span>
-<span class="linenos" data-linenos="431 "></span>    <span class="n">sentry_configured</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
-<span class="linenos" data-linenos="432 "></span>    <span class="n">oldest_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
-<span class="linenos" data-linenos="433 "></span>    <span class="n">top_n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
-<span class="linenos" data-linenos="434 "></span>    <span class="n">period</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'week'</span><span class="p">,</span>
-<span class="linenos" data-linenos="435 "></span>    <span class="n">closed_like_state_names</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
-<span class="linenos" data-linenos="436 "></span>    <span class="n">bot_label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">''</span><span class="p">,</span>
-<span class="linenos" data-linenos="437 "></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]]:</span>
-<span class="linenos" data-linenos="438 "></span><span class="w">    </span><span class="sd">"""Assemble every snapshot section, ready for `tlr.render.markdown.sections_to_markdown`."""</span>
-<span class="linenos" data-linenos="439 "></span>    <span class="n">sparse</span> <span class="o">=</span> <span class="n">labels_are_sparse</span><span class="p">(</span><span class="n">issues</span><span class="p">,</span> <span class="n">issue_labels</span><span class="p">,</span> <span class="n">window_start</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">window_end</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">end</span><span class="p">)</span>
-<span class="linenos" data-linenos="440 "></span>    <span class="n">label_heading</span> <span class="o">=</span> <span class="s1">'Linear: top labels created this period'</span> <span class="o">+</span> <span class="p">(</span><span class="s1">' (labels are sparse this period)'</span> <span class="k">if</span> <span class="n">sparse</span> <span class="k">else</span> <span class="s1">''</span><span class="p">)</span>
-<span class="linenos" data-linenos="441 "></span>
-<span class="linenos" data-linenos="442 "></span>    <span class="n">linear_priority</span> <span class="o">=</span> <span class="n">linear_priority_breakdown</span><span class="p">(</span>
-<span class="linenos" data-linenos="443 "></span>        <span class="n">issues</span><span class="p">,</span>
-<span class="linenos" data-linenos="444 "></span>        <span class="n">now</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">end</span><span class="p">,</span>
-<span class="linenos" data-linenos="445 "></span>        <span class="n">previous_at</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">previous_end</span><span class="p">,</span>
-<span class="linenos" data-linenos="446 "></span>        <span class="n">closed_like_state_names</span><span class="o">=</span><span class="n">closed_like_state_names</span><span class="p">,</span>
-<span class="linenos" data-linenos="447 "></span>    <span class="p">)</span>
-<span class="linenos" data-linenos="448 "></span>    <span class="n">linear_created_closed_counts</span> <span class="o">=</span> <span class="n">linear_created_closed</span><span class="p">(</span><span class="n">issues</span><span class="p">,</span> <span class="n">window_start</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">window_end</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">end</span><span class="p">)</span>
-<span class="linenos" data-linenos="449 "></span>    <span class="n">linear_oldest</span> <span class="o">=</span> <span class="n">linear_oldest_open</span><span class="p">(</span>
-<span class="linenos" data-linenos="450 "></span>        <span class="n">issues</span><span class="p">,</span>
-<span class="linenos" data-linenos="451 "></span>        <span class="n">now</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">end</span><span class="p">,</span>
-<span class="linenos" data-linenos="452 "></span>        <span class="n">limit</span><span class="o">=</span><span class="n">oldest_limit</span><span class="p">,</span>
-<span class="linenos" data-linenos="453 "></span>        <span class="n">closed_like_state_names</span><span class="o">=</span><span class="n">closed_like_state_names</span><span class="p">,</span>
-<span class="linenos" data-linenos="454 "></span>    <span class="p">)</span>
-<span class="linenos" data-linenos="455 "></span>    <span class="n">linear_labels</span> <span class="o">=</span> <span class="n">linear_label_distribution</span><span class="p">(</span>
-<span class="linenos" data-linenos="456 "></span>        <span class="n">issues</span><span class="p">,</span>
-<span class="linenos" data-linenos="457 "></span>        <span class="n">issue_labels</span><span class="p">,</span>
-<span class="linenos" data-linenos="458 "></span>        <span class="n">window_start</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">start</span><span class="p">,</span>
-<span class="linenos" data-linenos="459 "></span>        <span class="n">window_end</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">end</span><span class="p">,</span>
-<span class="linenos" data-linenos="460 "></span>        <span class="n">top_n</span><span class="o">=</span><span class="n">top_n</span><span class="p">,</span>
-<span class="linenos" data-linenos="461 "></span>    <span class="p">)</span>
-<span class="linenos" data-linenos="462 "></span>    <span class="n">pylon_priority</span> <span class="o">=</span> <span class="n">pylon_priority_breakdown</span><span class="p">(</span>
-<span class="linenos" data-linenos="463 "></span>        <span class="n">pylon_issues</span><span class="p">,</span>
-<span class="linenos" data-linenos="464 "></span>        <span class="n">pylon_priority_values</span><span class="p">,</span>
-<span class="linenos" data-linenos="465 "></span>        <span class="n">now</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">end</span><span class="p">,</span>
-<span class="linenos" data-linenos="466 "></span>        <span class="n">previous_at</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">previous_end</span><span class="p">,</span>
-<span class="linenos" data-linenos="467 "></span>    <span class="p">)</span>
-<span class="linenos" data-linenos="468 "></span>    <span class="n">pylon_created_resolved_counts</span> <span class="o">=</span> <span class="n">pylon_created_resolved</span><span class="p">(</span>
-<span class="linenos" data-linenos="469 "></span>        <span class="n">pylon_issues</span><span class="p">,</span>
-<span class="linenos" data-linenos="470 "></span>        <span class="n">window_start</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">start</span><span class="p">,</span>
-<span class="linenos" data-linenos="471 "></span>        <span class="n">window_end</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">end</span><span class="p">,</span>
-<span class="linenos" data-linenos="472 "></span>    <span class="p">)</span>
-<span class="linenos" data-linenos="473 "></span>    <span class="n">pylon_resolution_time</span> <span class="o">=</span> <span class="n">close_time</span><span class="p">(</span><span class="n">pylon_issues</span><span class="p">,</span> <span class="n">sla</span><span class="p">,</span> <span class="n">window_start</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">window_end</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">end</span><span class="p">)</span>
-<span class="linenos" data-linenos="474 "></span>
-<span class="linenos" data-linenos="475 "></span>    <span class="n">sections</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span>
-<span class="linenos" data-linenos="476 "></span>        <span class="p">(</span>
-<span class="linenos" data-linenos="477 "></span>            <span class="s1">'Snapshot'</span><span class="p">,</span>
-<span class="linenos" data-linenos="478 "></span>            <span class="n">snapshot_header</span><span class="p">(</span>
-<span class="linenos" data-linenos="479 "></span>                <span class="n">window</span><span class="p">,</span>
-<span class="linenos" data-linenos="480 "></span>                <span class="n">period</span><span class="o">=</span><span class="n">period</span><span class="p">,</span>
-<span class="linenos" data-linenos="481 "></span>                <span class="n">closed_like_state_names</span><span class="o">=</span><span class="n">closed_like_state_names</span><span class="p">,</span>
-<span class="linenos" data-linenos="482 "></span>                <span class="n">bot_label</span><span class="o">=</span><span class="n">bot_label</span><span class="p">,</span>
-<span class="linenos" data-linenos="483 "></span>            <span class="p">),</span>
-<span class="linenos" data-linenos="484 "></span>        <span class="p">),</span>
-<span class="linenos" data-linenos="485 "></span>        <span class="p">(</span><span class="s1">'Linear: open by priority'</span><span class="p">,</span> <span class="n">linear_priority</span><span class="p">),</span>
-<span class="linenos" data-linenos="486 "></span>        <span class="p">(</span>
-<span class="linenos" data-linenos="487 "></span>            <span class="s1">'Linear: bot-filed vs human, open now'</span><span class="p">,</span>
-<span class="linenos" data-linenos="488 "></span>            <span class="n">linear_bot_filed_split</span><span class="p">(</span>
-<span class="linenos" data-linenos="489 "></span>                <span class="n">issues</span><span class="p">,</span>
-<span class="linenos" data-linenos="490 "></span>                <span class="n">issue_labels</span><span class="p">,</span>
-<span class="linenos" data-linenos="491 "></span>                <span class="n">bot_label</span><span class="o">=</span><span class="n">bot_label</span><span class="p">,</span>
-<span class="linenos" data-linenos="492 "></span>                <span class="n">now</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">end</span><span class="p">,</span>
-<span class="linenos" data-linenos="493 "></span>                <span class="n">closed_like_state_names</span><span class="o">=</span><span class="n">closed_like_state_names</span><span class="p">,</span>
-<span class="linenos" data-linenos="494 "></span>            <span class="p">),</span>
-<span class="linenos" data-linenos="495 "></span>        <span class="p">),</span>
-<span class="linenos" data-linenos="496 "></span>        <span class="p">(</span><span class="s1">'Linear: created/closed this period'</span><span class="p">,</span> <span class="n">linear_created_closed_counts</span><span class="p">),</span>
-<span class="linenos" data-linenos="497 "></span>        <span class="p">(</span>
-<span class="linenos" data-linenos="498 "></span>            <span class="s1">'Linear: untracked'</span><span class="p">,</span>
-<span class="linenos" data-linenos="499 "></span>            <span class="n">linear_untracked</span><span class="p">(</span><span class="n">issues</span><span class="p">,</span> <span class="n">now</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">end</span><span class="p">,</span> <span class="n">closed_like_state_names</span><span class="o">=</span><span class="n">closed_like_state_names</span><span class="p">),</span>
-<span class="linenos" data-linenos="500 "></span>        <span class="p">),</span>
-<span class="linenos" data-linenos="501 "></span>        <span class="p">(</span><span class="s1">'Linear: oldest open by priority'</span><span class="p">,</span> <span class="n">linear_oldest</span><span class="p">),</span>
-<span class="linenos" data-linenos="502 "></span>        <span class="p">(</span><span class="n">label_heading</span><span class="p">,</span> <span class="n">linear_labels</span><span class="p">),</span>
-<span class="linenos" data-linenos="503 "></span>        <span class="p">(</span><span class="s1">'Pylon: open by priority'</span><span class="p">,</span> <span class="n">pylon_priority</span><span class="p">),</span>
-<span class="linenos" data-linenos="504 "></span>        <span class="p">(</span><span class="s1">'Pylon: created/resolved this period'</span><span class="p">,</span> <span class="n">pylon_created_resolved_counts</span><span class="p">),</span>
-<span class="linenos" data-linenos="505 "></span>        <span class="p">(</span><span class="s1">'Pylon: resolution time this period'</span><span class="p">,</span> <span class="n">pylon_resolution_time</span><span class="p">),</span>
-<span class="linenos" data-linenos="506 "></span>        <span class="p">(</span><span class="s1">'Pylon: oldest open'</span><span class="p">,</span> <span class="n">pylon_oldest_open</span><span class="p">(</span><span class="n">pylon_issues</span><span class="p">,</span> <span class="n">now</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">end</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="n">oldest_limit</span><span class="p">)),</span>
-<span class="linenos" data-linenos="507 "></span>        <span class="p">(</span><span class="s1">'Pylon: top tags'</span><span class="p">,</span> <span class="n">pylon_top_tags</span><span class="p">(</span><span class="n">pylon_issue_labels</span><span class="p">,</span> <span class="n">top_n</span><span class="o">=</span><span class="n">top_n</span><span class="p">)),</span>
-<span class="linenos" data-linenos="508 "></span>    <span class="p">]</span>
-<span class="linenos" data-linenos="509 "></span>    <span class="n">sections</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
-<span class="linenos" data-linenos="510 "></span>        <span class="n">sentry_section</span><span class="p">(</span>
-<span class="linenos" data-linenos="511 "></span>            <span class="n">sentry_issues</span><span class="p">,</span>
-<span class="linenos" data-linenos="512 "></span>            <span class="n">configured</span><span class="o">=</span><span class="n">sentry_configured</span><span class="p">,</span>
-<span class="linenos" data-linenos="513 "></span>            <span class="n">window_start</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">start</span><span class="p">,</span>
-<span class="linenos" data-linenos="514 "></span>            <span class="n">window_end</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">end</span><span class="p">,</span>
-<span class="linenos" data-linenos="515 "></span>            <span class="n">top_n</span><span class="o">=</span><span class="n">top_n</span><span class="p">,</span>
-<span class="linenos" data-linenos="516 "></span>        <span class="p">),</span>
-<span class="linenos" data-linenos="517 "></span>    <span class="p">)</span>
-<span class="linenos" data-linenos="518 "></span>    <span class="n">sections</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
-<span class="linenos" data-linenos="519 "></span>        <span class="p">[</span>
-<span class="linenos" data-linenos="520 "></span>            <span class="p">(</span><span class="s1">'Notable: Pylon past SLA'</span><span class="p">,</span> <span class="n">pylon_over_sla</span><span class="p">(</span><span class="n">pylon_issues</span><span class="p">,</span> <span class="n">sla</span><span class="p">,</span> <span class="n">now</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">end</span><span class="p">)),</span>
-<span class="linenos" data-linenos="521 "></span>            <span class="p">(</span><span class="s1">'Notable: not computed'</span><span class="p">,</span> <span class="n">NOT_COMPUTED_NOTE</span><span class="p">),</span>
-<span class="linenos" data-linenos="522 "></span>        <span class="p">],</span>
-<span class="linenos" data-linenos="523 "></span>    <span class="p">)</span>
-<span class="linenos" data-linenos="524 "></span>    <span class="k">return</span> <span class="n">sections</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="451 "></span><span class="k">def</span><span class="w"> </span><span class="nf">build_snapshot_sections</span><span class="p">(</span>
+<span class="linenos" data-linenos="452 "></span>    <span class="n">issues</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+<span class="linenos" data-linenos="453 "></span>    <span class="n">issue_labels</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+<span class="linenos" data-linenos="454 "></span>    <span class="n">pylon_issues</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+<span class="linenos" data-linenos="455 "></span>    <span class="n">pylon_issue_labels</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+<span class="linenos" data-linenos="456 "></span>    <span class="n">sentry_issues</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+<span class="linenos" data-linenos="457 "></span>    <span class="o">*</span><span class="p">,</span>
+<span class="linenos" data-linenos="458 "></span>    <span class="n">window</span><span class="p">:</span> <span class="n">PeriodWindow</span><span class="p">,</span>
+<span class="linenos" data-linenos="459 "></span>    <span class="n">pylon_priority_values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+<span class="linenos" data-linenos="460 "></span>    <span class="n">sla</span><span class="p">:</span> <span class="n">SlaConfig</span><span class="p">,</span>
+<span class="linenos" data-linenos="461 "></span>    <span class="n">sentry_configured</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+<span class="linenos" data-linenos="462 "></span>    <span class="n">oldest_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+<span class="linenos" data-linenos="463 "></span>    <span class="n">top_n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+<span class="linenos" data-linenos="464 "></span>    <span class="n">period</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'week'</span><span class="p">,</span>
+<span class="linenos" data-linenos="465 "></span>    <span class="n">closed_like_state_names</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+<span class="linenos" data-linenos="466 "></span>    <span class="n">bot_label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">''</span><span class="p">,</span>
+<span class="linenos" data-linenos="467 "></span>    <span class="n">refreshes</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="linenos" data-linenos="468 "></span>    <span class="n">tracked_sources</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+<span class="linenos" data-linenos="469 "></span>    <span class="n">now</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="linenos" data-linenos="470 "></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]]:</span>
+<span class="linenos" data-linenos="471 "></span><span class="w">    </span><span class="sd">"""Assemble every snapshot section, ready for `tlr.render.markdown.sections_to_markdown`.</span>
+<span class="linenos" data-linenos="472 "></span>
+<span class="linenos" data-linenos="473 "></span><span class="sd">    `refreshes` (the store's refresh_runs frame) with `tracked_sources` stamps the header</span>
+<span class="linenos" data-linenos="474 "></span><span class="sd">    with each source's last refresh; `now` ages those stamps and may differ from</span>
+<span class="linenos" data-linenos="475 "></span><span class="sd">    `window.end` when the caller pins `--as-of` to a past instant.</span>
+<span class="linenos" data-linenos="476 "></span><span class="sd">    """</span>
+<span class="linenos" data-linenos="477 "></span>    <span class="n">sparse</span> <span class="o">=</span> <span class="n">labels_are_sparse</span><span class="p">(</span><span class="n">issues</span><span class="p">,</span> <span class="n">issue_labels</span><span class="p">,</span> <span class="n">window_start</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">window_end</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">end</span><span class="p">)</span>
+<span class="linenos" data-linenos="478 "></span>    <span class="n">label_heading</span> <span class="o">=</span> <span class="s1">'Linear: top labels created this period'</span> <span class="o">+</span> <span class="p">(</span><span class="s1">' (labels are sparse this period)'</span> <span class="k">if</span> <span class="n">sparse</span> <span class="k">else</span> <span class="s1">''</span><span class="p">)</span>
+<span class="linenos" data-linenos="479 "></span>
+<span class="linenos" data-linenos="480 "></span>    <span class="n">linear_priority</span> <span class="o">=</span> <span class="n">linear_priority_breakdown</span><span class="p">(</span>
+<span class="linenos" data-linenos="481 "></span>        <span class="n">issues</span><span class="p">,</span>
+<span class="linenos" data-linenos="482 "></span>        <span class="n">now</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">end</span><span class="p">,</span>
+<span class="linenos" data-linenos="483 "></span>        <span class="n">previous_at</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">previous_end</span><span class="p">,</span>
+<span class="linenos" data-linenos="484 "></span>        <span class="n">closed_like_state_names</span><span class="o">=</span><span class="n">closed_like_state_names</span><span class="p">,</span>
+<span class="linenos" data-linenos="485 "></span>    <span class="p">)</span>
+<span class="linenos" data-linenos="486 "></span>    <span class="n">linear_created_closed_counts</span> <span class="o">=</span> <span class="n">linear_created_closed</span><span class="p">(</span><span class="n">issues</span><span class="p">,</span> <span class="n">window_start</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">window_end</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">end</span><span class="p">)</span>
+<span class="linenos" data-linenos="487 "></span>    <span class="n">linear_oldest</span> <span class="o">=</span> <span class="n">linear_oldest_open</span><span class="p">(</span>
+<span class="linenos" data-linenos="488 "></span>        <span class="n">issues</span><span class="p">,</span>
+<span class="linenos" data-linenos="489 "></span>        <span class="n">now</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">end</span><span class="p">,</span>
+<span class="linenos" data-linenos="490 "></span>        <span class="n">limit</span><span class="o">=</span><span class="n">oldest_limit</span><span class="p">,</span>
+<span class="linenos" data-linenos="491 "></span>        <span class="n">closed_like_state_names</span><span class="o">=</span><span class="n">closed_like_state_names</span><span class="p">,</span>
+<span class="linenos" data-linenos="492 "></span>    <span class="p">)</span>
+<span class="linenos" data-linenos="493 "></span>    <span class="n">linear_labels</span> <span class="o">=</span> <span class="n">linear_label_distribution</span><span class="p">(</span>
+<span class="linenos" data-linenos="494 "></span>        <span class="n">issues</span><span class="p">,</span>
+<span class="linenos" data-linenos="495 "></span>        <span class="n">issue_labels</span><span class="p">,</span>
+<span class="linenos" data-linenos="496 "></span>        <span class="n">window_start</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">start</span><span class="p">,</span>
+<span class="linenos" data-linenos="497 "></span>        <span class="n">window_end</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">end</span><span class="p">,</span>
+<span class="linenos" data-linenos="498 "></span>        <span class="n">top_n</span><span class="o">=</span><span class="n">top_n</span><span class="p">,</span>
+<span class="linenos" data-linenos="499 "></span>    <span class="p">)</span>
+<span class="linenos" data-linenos="500 "></span>    <span class="n">pylon_priority</span> <span class="o">=</span> <span class="n">pylon_priority_breakdown</span><span class="p">(</span>
+<span class="linenos" data-linenos="501 "></span>        <span class="n">pylon_issues</span><span class="p">,</span>
+<span class="linenos" data-linenos="502 "></span>        <span class="n">pylon_priority_values</span><span class="p">,</span>
+<span class="linenos" data-linenos="503 "></span>        <span class="n">now</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">end</span><span class="p">,</span>
+<span class="linenos" data-linenos="504 "></span>        <span class="n">previous_at</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">previous_end</span><span class="p">,</span>
+<span class="linenos" data-linenos="505 "></span>    <span class="p">)</span>
+<span class="linenos" data-linenos="506 "></span>    <span class="n">pylon_created_resolved_counts</span> <span class="o">=</span> <span class="n">pylon_created_resolved</span><span class="p">(</span>
+<span class="linenos" data-linenos="507 "></span>        <span class="n">pylon_issues</span><span class="p">,</span>
+<span class="linenos" data-linenos="508 "></span>        <span class="n">window_start</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">start</span><span class="p">,</span>
+<span class="linenos" data-linenos="509 "></span>        <span class="n">window_end</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">end</span><span class="p">,</span>
+<span class="linenos" data-linenos="510 "></span>    <span class="p">)</span>
+<span class="linenos" data-linenos="511 "></span>    <span class="n">pylon_resolution_time</span> <span class="o">=</span> <span class="n">close_time</span><span class="p">(</span><span class="n">pylon_issues</span><span class="p">,</span> <span class="n">sla</span><span class="p">,</span> <span class="n">window_start</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">window_end</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">end</span><span class="p">)</span>
+<span class="linenos" data-linenos="512 "></span>
+<span class="linenos" data-linenos="513 "></span>    <span class="n">sections</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span>
+<span class="linenos" data-linenos="514 "></span>        <span class="p">(</span>
+<span class="linenos" data-linenos="515 "></span>            <span class="s1">'Snapshot'</span><span class="p">,</span>
+<span class="linenos" data-linenos="516 "></span>            <span class="n">snapshot_header</span><span class="p">(</span>
+<span class="linenos" data-linenos="517 "></span>                <span class="n">window</span><span class="p">,</span>
+<span class="linenos" data-linenos="518 "></span>                <span class="n">period</span><span class="o">=</span><span class="n">period</span><span class="p">,</span>
+<span class="linenos" data-linenos="519 "></span>                <span class="n">closed_like_state_names</span><span class="o">=</span><span class="n">closed_like_state_names</span><span class="p">,</span>
+<span class="linenos" data-linenos="520 "></span>                <span class="n">bot_label</span><span class="o">=</span><span class="n">bot_label</span><span class="p">,</span>
+<span class="linenos" data-linenos="521 "></span>                <span class="n">refreshes</span><span class="o">=</span><span class="n">refreshes</span> <span class="k">if</span> <span class="n">refreshes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(),</span>
+<span class="linenos" data-linenos="522 "></span>                <span class="n">tracked_sources</span><span class="o">=</span><span class="n">tracked_sources</span><span class="p">,</span>
+<span class="linenos" data-linenos="523 "></span>                <span class="n">now</span><span class="o">=</span><span class="n">now</span> <span class="k">if</span> <span class="n">now</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">window</span><span class="o">.</span><span class="n">end</span><span class="p">,</span>
+<span class="linenos" data-linenos="524 "></span>            <span class="p">),</span>
+<span class="linenos" data-linenos="525 "></span>        <span class="p">),</span>
+<span class="linenos" data-linenos="526 "></span>        <span class="p">(</span><span class="s1">'Linear: open by priority'</span><span class="p">,</span> <span class="n">linear_priority</span><span class="p">),</span>
+<span class="linenos" data-linenos="527 "></span>        <span class="p">(</span>
+<span class="linenos" data-linenos="528 "></span>            <span class="s1">'Linear: bot-filed vs human, open now'</span><span class="p">,</span>
+<span class="linenos" data-linenos="529 "></span>            <span class="n">linear_bot_filed_split</span><span class="p">(</span>
+<span class="linenos" data-linenos="530 "></span>                <span class="n">issues</span><span class="p">,</span>
+<span class="linenos" data-linenos="531 "></span>                <span class="n">issue_labels</span><span class="p">,</span>
+<span class="linenos" data-linenos="532 "></span>                <span class="n">bot_label</span><span class="o">=</span><span class="n">bot_label</span><span class="p">,</span>
+<span class="linenos" data-linenos="533 "></span>                <span class="n">now</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">end</span><span class="p">,</span>
+<span class="linenos" data-linenos="534 "></span>                <span class="n">closed_like_state_names</span><span class="o">=</span><span class="n">closed_like_state_names</span><span class="p">,</span>
+<span class="linenos" data-linenos="535 "></span>            <span class="p">),</span>
+<span class="linenos" data-linenos="536 "></span>        <span class="p">),</span>
+<span class="linenos" data-linenos="537 "></span>        <span class="p">(</span><span class="s1">'Linear: created/closed this period'</span><span class="p">,</span> <span class="n">linear_created_closed_counts</span><span class="p">),</span>
+<span class="linenos" data-linenos="538 "></span>        <span class="p">(</span>
+<span class="linenos" data-linenos="539 "></span>            <span class="s1">'Linear: untracked'</span><span class="p">,</span>
+<span class="linenos" data-linenos="540 "></span>            <span class="n">linear_untracked</span><span class="p">(</span><span class="n">issues</span><span class="p">,</span> <span class="n">now</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">end</span><span class="p">,</span> <span class="n">closed_like_state_names</span><span class="o">=</span><span class="n">closed_like_state_names</span><span class="p">),</span>
+<span class="linenos" data-linenos="541 "></span>        <span class="p">),</span>
+<span class="linenos" data-linenos="542 "></span>        <span class="p">(</span><span class="s1">'Linear: oldest open by priority'</span><span class="p">,</span> <span class="n">linear_oldest</span><span class="p">),</span>
+<span class="linenos" data-linenos="543 "></span>        <span class="p">(</span><span class="n">label_heading</span><span class="p">,</span> <span class="n">linear_labels</span><span class="p">),</span>
+<span class="linenos" data-linenos="544 "></span>        <span class="p">(</span><span class="s1">'Pylon: open by priority'</span><span class="p">,</span> <span class="n">pylon_priority</span><span class="p">),</span>
+<span class="linenos" data-linenos="545 "></span>        <span class="p">(</span><span class="s1">'Pylon: created/resolved this period'</span><span class="p">,</span> <span class="n">pylon_created_resolved_counts</span><span class="p">),</span>
+<span class="linenos" data-linenos="546 "></span>        <span class="p">(</span><span class="s1">'Pylon: resolution time this period'</span><span class="p">,</span> <span class="n">pylon_resolution_time</span><span class="p">),</span>
+<span class="linenos" data-linenos="547 "></span>        <span class="p">(</span><span class="s1">'Pylon: oldest open'</span><span class="p">,</span> <span class="n">pylon_oldest_open</span><span class="p">(</span><span class="n">pylon_issues</span><span class="p">,</span> <span class="n">now</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">end</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="n">oldest_limit</span><span class="p">)),</span>
+<span class="linenos" data-linenos="548 "></span>        <span class="p">(</span><span class="s1">'Pylon: top tags'</span><span class="p">,</span> <span class="n">pylon_top_tags</span><span class="p">(</span><span class="n">pylon_issue_labels</span><span class="p">,</span> <span class="n">top_n</span><span class="o">=</span><span class="n">top_n</span><span class="p">)),</span>
+<span class="linenos" data-linenos="549 "></span>    <span class="p">]</span>
+<span class="linenos" data-linenos="550 "></span>    <span class="n">sections</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+<span class="linenos" data-linenos="551 "></span>        <span class="n">sentry_section</span><span class="p">(</span>
+<span class="linenos" data-linenos="552 "></span>            <span class="n">sentry_issues</span><span class="p">,</span>
+<span class="linenos" data-linenos="553 "></span>            <span class="n">configured</span><span class="o">=</span><span class="n">sentry_configured</span><span class="p">,</span>
+<span class="linenos" data-linenos="554 "></span>            <span class="n">window_start</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">start</span><span class="p">,</span>
+<span class="linenos" data-linenos="555 "></span>            <span class="n">window_end</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">end</span><span class="p">,</span>
+<span class="linenos" data-linenos="556 "></span>            <span class="n">top_n</span><span class="o">=</span><span class="n">top_n</span><span class="p">,</span>
+<span class="linenos" data-linenos="557 "></span>        <span class="p">),</span>
+<span class="linenos" data-linenos="558 "></span>    <span class="p">)</span>
+<span class="linenos" data-linenos="559 "></span>    <span class="n">sections</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+<span class="linenos" data-linenos="560 "></span>        <span class="p">[</span>
+<span class="linenos" data-linenos="561 "></span>            <span class="p">(</span><span class="s1">'Notable: Pylon past SLA'</span><span class="p">,</span> <span class="n">pylon_over_sla</span><span class="p">(</span><span class="n">pylon_issues</span><span class="p">,</span> <span class="n">sla</span><span class="p">,</span> <span class="n">now</span><span class="o">=</span><span class="n">window</span><span class="o">.</span><span class="n">end</span><span class="p">)),</span>
+<span class="linenos" data-linenos="562 "></span>            <span class="p">(</span><span class="s1">'Notable: not computed'</span><span class="p">,</span> <span class="n">NOT_COMPUTED_NOTE</span><span class="p">),</span>
+<span class="linenos" data-linenos="563 "></span>        <span class="p">],</span>
+<span class="linenos" data-linenos="564 "></span>    <span class="p">)</span>
+<span class="linenos" data-linenos="565 "></span>    <span class="k">return</span> <span class="n">sections</span>
+</code></pre></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="tlr.domain.snapshot.freshness_line" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">freshness_line</span>
+
+
+<a href="#tlr.domain.snapshot.freshness_line" class="headerlink" title="Permanent link">⚓︎</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">freshness_line</span><span class="p">(</span><span class="n">refreshes</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">now</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>One-line store freshness: &lsquo;Data freshness: linear refreshed … (2d ago), pylon never refreshed.&rsquo;.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>tlr/domain/snapshot.py</code></summary>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="306 "></span><span class="k">def</span><span class="w"> </span><span class="nf">freshness_line</span><span class="p">(</span><span class="n">refreshes</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">sources</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">now</span><span class="p">:</span> <span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="linenos" data-linenos="307 "></span><span class="w">    </span><span class="sd">"""One-line store freshness: 'Data freshness: linear refreshed … (2d ago), pylon never refreshed.'."""</span>
+<span class="linenos" data-linenos="308 "></span>    <span class="n">latest</span> <span class="o">=</span> <span class="p">{</span><span class="n">row</span><span class="p">[</span><span class="s1">'source'</span><span class="p">]:</span> <span class="n">row</span><span class="p">[</span><span class="s1">'last_run_at'</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">refreshes</span><span class="o">.</span><span class="n">to_dicts</span><span class="p">()}</span>
+<span class="linenos" data-linenos="309 "></span>    <span class="n">parts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="linenos" data-linenos="310 "></span>    <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">sources</span><span class="p">:</span>
+<span class="linenos" data-linenos="311 "></span>        <span class="n">stamp</span> <span class="o">=</span> <span class="n">latest</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+<span class="linenos" data-linenos="312 "></span>        <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+<span class="linenos" data-linenos="313 "></span>            <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s1"> refreshed </span><span class="si">{</span><span class="n">stamp</span><span class="si">:</span><span class="s1">%Y-%m-%d %H:%M</span><span class="si">}</span><span class="s1"> (</span><span class="si">{</span><span class="n">_age_text</span><span class="p">(</span><span class="n">now</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">stamp</span><span class="p">)</span><span class="si">}</span><span class="s1"> ago)'</span>
+<span class="linenos" data-linenos="314 "></span>            <span class="k">if</span> <span class="n">stamp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+<span class="linenos" data-linenos="315 "></span>            <span class="k">else</span> <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s1"> never refreshed'</span><span class="p">,</span>
+<span class="linenos" data-linenos="316 "></span>        <span class="p">)</span>
+<span class="linenos" data-linenos="317 "></span>    <span class="k">return</span> <span class="s1">'Data freshness: '</span> <span class="o">+</span> <span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">+</span> <span class="s1">'.'</span>
 </code></pre></div>
             </details>
     </div>
@@ -2428,15 +2559,15 @@ midnight-aligned regardless of the time of day carried by <code>as_of</code>.</p
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/domain/snapshot.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="333 "></span><span class="k">def</span><span class="w"> </span><span class="nf">pylon_created_resolved</span><span class="p">(</span><span class="n">pylon_issues</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">window_start</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">window_end</span><span class="p">:</span> <span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="linenos" data-linenos="334 "></span><span class="w">    </span><span class="sd">"""Count Pylon issues created, and resolved, in `[window_start, window_end)`."""</span>
-<span class="linenos" data-linenos="335 "></span>    <span class="n">created</span> <span class="o">=</span> <span class="n">pylon_issues</span><span class="o">.</span><span class="n">filter</span><span class="p">((</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'created_at'</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">window_start</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'created_at'</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">window_end</span><span class="p">))</span><span class="o">.</span><span class="n">height</span>
-<span class="linenos" data-linenos="336 "></span>    <span class="n">resolved</span> <span class="o">=</span> <span class="n">pylon_issues</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
-<span class="linenos" data-linenos="337 "></span>        <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'resolution_time'</span><span class="p">)</span><span class="o">.</span><span class="n">is_not_null</span><span class="p">()</span>
-<span class="linenos" data-linenos="338 "></span>        <span class="o">&amp;</span> <span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'resolution_time'</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">window_start</span><span class="p">)</span>
-<span class="linenos" data-linenos="339 "></span>        <span class="o">&amp;</span> <span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'resolution_time'</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">window_end</span><span class="p">),</span>
-<span class="linenos" data-linenos="340 "></span>    <span class="p">)</span><span class="o">.</span><span class="n">height</span>
-<span class="linenos" data-linenos="341 "></span>    <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([{</span><span class="s1">'created'</span><span class="p">:</span> <span class="n">created</span><span class="p">,</span> <span class="s1">'resolved'</span><span class="p">:</span> <span class="n">resolved</span><span class="p">}],</span> <span class="n">schema</span><span class="o">=</span><span class="n">_CREATED_RESOLVED_SCHEMA</span><span class="p">)</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="363 "></span><span class="k">def</span><span class="w"> </span><span class="nf">pylon_created_resolved</span><span class="p">(</span><span class="n">pylon_issues</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">window_start</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">window_end</span><span class="p">:</span> <span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="linenos" data-linenos="364 "></span><span class="w">    </span><span class="sd">"""Count Pylon issues created, and resolved, in `[window_start, window_end)`."""</span>
+<span class="linenos" data-linenos="365 "></span>    <span class="n">created</span> <span class="o">=</span> <span class="n">pylon_issues</span><span class="o">.</span><span class="n">filter</span><span class="p">((</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'created_at'</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">window_start</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'created_at'</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">window_end</span><span class="p">))</span><span class="o">.</span><span class="n">height</span>
+<span class="linenos" data-linenos="366 "></span>    <span class="n">resolved</span> <span class="o">=</span> <span class="n">pylon_issues</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+<span class="linenos" data-linenos="367 "></span>        <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'resolution_time'</span><span class="p">)</span><span class="o">.</span><span class="n">is_not_null</span><span class="p">()</span>
+<span class="linenos" data-linenos="368 "></span>        <span class="o">&amp;</span> <span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'resolution_time'</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">window_start</span><span class="p">)</span>
+<span class="linenos" data-linenos="369 "></span>        <span class="o">&amp;</span> <span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'resolution_time'</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">window_end</span><span class="p">),</span>
+<span class="linenos" data-linenos="370 "></span>    <span class="p">)</span><span class="o">.</span><span class="n">height</span>
+<span class="linenos" data-linenos="371 "></span>    <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([{</span><span class="s1">'created'</span><span class="p">:</span> <span class="n">created</span><span class="p">,</span> <span class="s1">'resolved'</span><span class="p">:</span> <span class="n">resolved</span><span class="p">}],</span> <span class="n">schema</span><span class="o">=</span><span class="n">_CREATED_RESOLVED_SCHEMA</span><span class="p">)</span>
 </code></pre></div>
             </details>
     </div>
@@ -2461,13 +2592,13 @@ midnight-aligned regardless of the time of day carried by <code>as_of</code>.</p
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/domain/snapshot.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="344 "></span><span class="k">def</span><span class="w"> </span><span class="nf">pylon_oldest_open</span><span class="p">(</span><span class="n">pylon_issues</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">now</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="linenos" data-linenos="345 "></span><span class="w">    </span><span class="sd">"""The `limit` oldest currently-open Pylon issues, oldest first."""</span>
-<span class="linenos" data-linenos="346 "></span>    <span class="n">open_now</span> <span class="o">=</span> <span class="n">_pylon_open_at</span><span class="p">(</span><span class="n">pylon_issues</span><span class="p">,</span> <span class="n">now</span><span class="p">)</span><span class="o">.</span><span class="n">with_columns</span><span class="p">(</span>
-<span class="linenos" data-linenos="347 "></span>        <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'priority'</span><span class="p">)</span><span class="o">.</span><span class="n">fill_null</span><span class="p">(</span><span class="s1">'none'</span><span class="p">),</span>
-<span class="linenos" data-linenos="348 "></span>        <span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">lit</span><span class="p">(</span><span class="n">now</span><span class="p">)</span> <span class="o">-</span> <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'created_at'</span><span class="p">))</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">total_days</span><span class="p">()</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">Int64</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s1">'age_days'</span><span class="p">),</span>
-<span class="linenos" data-linenos="349 "></span>    <span class="p">)</span>
-<span class="linenos" data-linenos="350 "></span>    <span class="k">return</span> <span class="n">open_now</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s1">'age_days'</span><span class="p">,</span> <span class="n">descending</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">limit</span><span class="p">)</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">_OLDEST_PYLON_SCHEMA</span><span class="p">))</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="374 "></span><span class="k">def</span><span class="w"> </span><span class="nf">pylon_oldest_open</span><span class="p">(</span><span class="n">pylon_issues</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">now</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="linenos" data-linenos="375 "></span><span class="w">    </span><span class="sd">"""The `limit` oldest currently-open Pylon issues, oldest first."""</span>
+<span class="linenos" data-linenos="376 "></span>    <span class="n">open_now</span> <span class="o">=</span> <span class="n">_pylon_open_at</span><span class="p">(</span><span class="n">pylon_issues</span><span class="p">,</span> <span class="n">now</span><span class="p">)</span><span class="o">.</span><span class="n">with_columns</span><span class="p">(</span>
+<span class="linenos" data-linenos="377 "></span>        <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'priority'</span><span class="p">)</span><span class="o">.</span><span class="n">fill_null</span><span class="p">(</span><span class="s1">'none'</span><span class="p">),</span>
+<span class="linenos" data-linenos="378 "></span>        <span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">lit</span><span class="p">(</span><span class="n">now</span><span class="p">)</span> <span class="o">-</span> <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'created_at'</span><span class="p">))</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">total_days</span><span class="p">()</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">Int64</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s1">'age_days'</span><span class="p">),</span>
+<span class="linenos" data-linenos="379 "></span>    <span class="p">)</span>
+<span class="linenos" data-linenos="380 "></span>    <span class="k">return</span> <span class="n">open_now</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s1">'age_days'</span><span class="p">,</span> <span class="n">descending</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">limit</span><span class="p">)</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">_OLDEST_PYLON_SCHEMA</span><span class="p">))</span>
 </code></pre></div>
             </details>
     </div>
@@ -2492,18 +2623,18 @@ midnight-aligned regardless of the time of day carried by <code>as_of</code>.</p
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/domain/snapshot.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="370 "></span><span class="k">def</span><span class="w"> </span><span class="nf">pylon_over_sla</span><span class="p">(</span><span class="n">pylon_issues</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">sla</span><span class="p">:</span> <span class="n">SlaConfig</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">now</span><span class="p">:</span> <span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="linenos" data-linenos="371 "></span><span class="w">    </span><span class="sd">"""Open Pylon issues whose age exceeds their priority's configured SLA target, oldest overage first."""</span>
-<span class="linenos" data-linenos="372 "></span>    <span class="n">open_now</span> <span class="o">=</span> <span class="n">_pylon_open_at</span><span class="p">(</span><span class="n">pylon_issues</span><span class="p">,</span> <span class="n">now</span><span class="p">)</span><span class="o">.</span><span class="n">with_columns</span><span class="p">(</span>
-<span class="linenos" data-linenos="373 "></span>        <span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">lit</span><span class="p">(</span><span class="n">now</span><span class="p">)</span> <span class="o">-</span> <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'created_at'</span><span class="p">))</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">total_days</span><span class="p">()</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">Int64</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s1">'age_days'</span><span class="p">),</span>
-<span class="linenos" data-linenos="374 "></span>    <span class="p">)</span>
-<span class="linenos" data-linenos="375 "></span>    <span class="k">if</span> <span class="n">open_now</span><span class="o">.</span><span class="n">is_empty</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">sla</span><span class="o">.</span><span class="n">target_days_by_priority</span><span class="p">:</span>
-<span class="linenos" data-linenos="376 "></span>        <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">_OVER_SLA_SCHEMA</span><span class="p">)</span>
-<span class="linenos" data-linenos="377 "></span>    <span class="n">target</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'priority'</span><span class="p">)</span><span class="o">.</span><span class="n">replace_strict</span><span class="p">(</span><span class="n">sla</span><span class="o">.</span><span class="n">target_days_by_priority</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_dtype</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">Int64</span><span class="p">)</span>
-<span class="linenos" data-linenos="378 "></span>    <span class="n">over</span> <span class="o">=</span> <span class="n">open_now</span><span class="o">.</span><span class="n">with_columns</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s1">'sla_target_days'</span><span class="p">))</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
-<span class="linenos" data-linenos="379 "></span>        <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'sla_target_days'</span><span class="p">)</span><span class="o">.</span><span class="n">is_not_null</span><span class="p">()</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'age_days'</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'sla_target_days'</span><span class="p">)),</span>
-<span class="linenos" data-linenos="380 "></span>    <span class="p">)</span>
-<span class="linenos" data-linenos="381 "></span>    <span class="k">return</span> <span class="n">over</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s1">'age_days'</span><span class="p">,</span> <span class="n">descending</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">_OVER_SLA_SCHEMA</span><span class="p">))</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="400 "></span><span class="k">def</span><span class="w"> </span><span class="nf">pylon_over_sla</span><span class="p">(</span><span class="n">pylon_issues</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">sla</span><span class="p">:</span> <span class="n">SlaConfig</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">now</span><span class="p">:</span> <span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="linenos" data-linenos="401 "></span><span class="w">    </span><span class="sd">"""Open Pylon issues whose age exceeds their priority's configured SLA target, oldest overage first."""</span>
+<span class="linenos" data-linenos="402 "></span>    <span class="n">open_now</span> <span class="o">=</span> <span class="n">_pylon_open_at</span><span class="p">(</span><span class="n">pylon_issues</span><span class="p">,</span> <span class="n">now</span><span class="p">)</span><span class="o">.</span><span class="n">with_columns</span><span class="p">(</span>
+<span class="linenos" data-linenos="403 "></span>        <span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">lit</span><span class="p">(</span><span class="n">now</span><span class="p">)</span> <span class="o">-</span> <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'created_at'</span><span class="p">))</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">total_days</span><span class="p">()</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">Int64</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s1">'age_days'</span><span class="p">),</span>
+<span class="linenos" data-linenos="404 "></span>    <span class="p">)</span>
+<span class="linenos" data-linenos="405 "></span>    <span class="k">if</span> <span class="n">open_now</span><span class="o">.</span><span class="n">is_empty</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">sla</span><span class="o">.</span><span class="n">target_days_by_priority</span><span class="p">:</span>
+<span class="linenos" data-linenos="406 "></span>        <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">_OVER_SLA_SCHEMA</span><span class="p">)</span>
+<span class="linenos" data-linenos="407 "></span>    <span class="n">target</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'priority'</span><span class="p">)</span><span class="o">.</span><span class="n">replace_strict</span><span class="p">(</span><span class="n">sla</span><span class="o">.</span><span class="n">target_days_by_priority</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_dtype</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">Int64</span><span class="p">)</span>
+<span class="linenos" data-linenos="408 "></span>    <span class="n">over</span> <span class="o">=</span> <span class="n">open_now</span><span class="o">.</span><span class="n">with_columns</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s1">'sla_target_days'</span><span class="p">))</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+<span class="linenos" data-linenos="409 "></span>        <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'sla_target_days'</span><span class="p">)</span><span class="o">.</span><span class="n">is_not_null</span><span class="p">()</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'age_days'</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'sla_target_days'</span><span class="p">)),</span>
+<span class="linenos" data-linenos="410 "></span>    <span class="p">)</span>
+<span class="linenos" data-linenos="411 "></span>    <span class="k">return</span> <span class="n">over</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s1">'age_days'</span><span class="p">,</span> <span class="n">descending</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">_OVER_SLA_SCHEMA</span><span class="p">))</span>
 </code></pre></div>
             </details>
     </div>
@@ -2528,18 +2659,18 @@ midnight-aligned regardless of the time of day carried by <code>as_of</code>.</p
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/domain/snapshot.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="319 "></span><span class="k">def</span><span class="w"> </span><span class="nf">pylon_priority_breakdown</span><span class="p">(</span>
-<span class="linenos" data-linenos="320 "></span>    <span class="n">pylon_issues</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
-<span class="linenos" data-linenos="321 "></span>    <span class="n">priority_values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-<span class="linenos" data-linenos="322 "></span>    <span class="o">*</span><span class="p">,</span>
-<span class="linenos" data-linenos="323 "></span>    <span class="n">now</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span>
-<span class="linenos" data-linenos="324 "></span>    <span class="n">previous_at</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span>
-<span class="linenos" data-linenos="325 "></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="linenos" data-linenos="326 "></span><span class="w">    </span><span class="sd">"""Open Pylon issues by priority as of `now`, with the delta against the same count as of `previous_at`."""</span>
-<span class="linenos" data-linenos="327 "></span>    <span class="n">order</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">priority_values</span><span class="p">,</span> <span class="s1">'none'</span><span class="p">]</span>
-<span class="linenos" data-linenos="328 "></span>    <span class="n">current</span> <span class="o">=</span> <span class="n">_pylon_open_at</span><span class="p">(</span><span class="n">pylon_issues</span><span class="p">,</span> <span class="n">now</span><span class="p">)</span><span class="o">.</span><span class="n">with_columns</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'priority'</span><span class="p">)</span><span class="o">.</span><span class="n">fill_null</span><span class="p">(</span><span class="s1">'none'</span><span class="p">))</span>
-<span class="linenos" data-linenos="329 "></span>    <span class="n">previous</span> <span class="o">=</span> <span class="n">_pylon_open_at</span><span class="p">(</span><span class="n">pylon_issues</span><span class="p">,</span> <span class="n">previous_at</span><span class="p">)</span><span class="o">.</span><span class="n">with_columns</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'priority'</span><span class="p">)</span><span class="o">.</span><span class="n">fill_null</span><span class="p">(</span><span class="s1">'none'</span><span class="p">))</span>
-<span class="linenos" data-linenos="330 "></span>    <span class="k">return</span> <span class="n">_priority_breakdown</span><span class="p">(</span><span class="n">current</span><span class="p">,</span> <span class="n">previous</span><span class="p">,</span> <span class="s1">'priority'</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="349 "></span><span class="k">def</span><span class="w"> </span><span class="nf">pylon_priority_breakdown</span><span class="p">(</span>
+<span class="linenos" data-linenos="350 "></span>    <span class="n">pylon_issues</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+<span class="linenos" data-linenos="351 "></span>    <span class="n">priority_values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+<span class="linenos" data-linenos="352 "></span>    <span class="o">*</span><span class="p">,</span>
+<span class="linenos" data-linenos="353 "></span>    <span class="n">now</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span>
+<span class="linenos" data-linenos="354 "></span>    <span class="n">previous_at</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span>
+<span class="linenos" data-linenos="355 "></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="linenos" data-linenos="356 "></span><span class="w">    </span><span class="sd">"""Open Pylon issues by priority as of `now`, with the delta against the same count as of `previous_at`."""</span>
+<span class="linenos" data-linenos="357 "></span>    <span class="n">order</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">priority_values</span><span class="p">,</span> <span class="s1">'none'</span><span class="p">]</span>
+<span class="linenos" data-linenos="358 "></span>    <span class="n">current</span> <span class="o">=</span> <span class="n">_pylon_open_at</span><span class="p">(</span><span class="n">pylon_issues</span><span class="p">,</span> <span class="n">now</span><span class="p">)</span><span class="o">.</span><span class="n">with_columns</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'priority'</span><span class="p">)</span><span class="o">.</span><span class="n">fill_null</span><span class="p">(</span><span class="s1">'none'</span><span class="p">))</span>
+<span class="linenos" data-linenos="359 "></span>    <span class="n">previous</span> <span class="o">=</span> <span class="n">_pylon_open_at</span><span class="p">(</span><span class="n">pylon_issues</span><span class="p">,</span> <span class="n">previous_at</span><span class="p">)</span><span class="o">.</span><span class="n">with_columns</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'priority'</span><span class="p">)</span><span class="o">.</span><span class="n">fill_null</span><span class="p">(</span><span class="s1">'none'</span><span class="p">))</span>
+<span class="linenos" data-linenos="360 "></span>    <span class="k">return</span> <span class="n">_priority_breakdown</span><span class="p">(</span><span class="n">current</span><span class="p">,</span> <span class="n">previous</span><span class="p">,</span> <span class="s1">'priority'</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
 </code></pre></div>
             </details>
     </div>
@@ -2564,21 +2695,21 @@ midnight-aligned regardless of the time of day carried by <code>as_of</code>.</p
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/domain/snapshot.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="353 "></span><span class="k">def</span><span class="w"> </span><span class="nf">pylon_top_tags</span><span class="p">(</span><span class="n">pylon_issue_labels</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">top_n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="linenos" data-linenos="354 "></span><span class="w">    </span><span class="sd">"""Top `top_n` Pylon tags across every currently stored issue, most common first."""</span>
-<span class="linenos" data-linenos="355 "></span>    <span class="k">if</span> <span class="n">pylon_issue_labels</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
-<span class="linenos" data-linenos="356 "></span>        <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">_LABEL_SCHEMA</span><span class="p">)</span>
-<span class="linenos" data-linenos="357 "></span>    <span class="n">tags</span> <span class="o">=</span> <span class="n">pylon_issue_labels</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'kind'</span><span class="p">)</span> <span class="o">==</span> <span class="n">PYLON_LABEL_KIND_TAG</span><span class="p">)</span>
-<span class="linenos" data-linenos="358 "></span>    <span class="k">if</span> <span class="n">tags</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
-<span class="linenos" data-linenos="359 "></span>        <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">_LABEL_SCHEMA</span><span class="p">)</span>
-<span class="linenos" data-linenos="360 "></span>    <span class="k">return</span> <span class="p">(</span>
-<span class="linenos" data-linenos="361 "></span>        <span class="n">tags</span><span class="o">.</span><span class="n">group_by</span><span class="p">(</span><span class="s1">'label'</span><span class="p">)</span>
-<span class="linenos" data-linenos="362 "></span>        <span class="o">.</span><span class="n">len</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'count'</span><span class="p">)</span>
-<span class="linenos" data-linenos="363 "></span>        <span class="o">.</span><span class="n">cast</span><span class="p">({</span><span class="s1">'count'</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Int64</span><span class="p">})</span>
-<span class="linenos" data-linenos="364 "></span>        <span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s1">'count'</span><span class="p">,</span> <span class="n">descending</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="linenos" data-linenos="365 "></span>        <span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">top_n</span><span class="p">)</span>
-<span class="linenos" data-linenos="366 "></span>        <span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">_LABEL_SCHEMA</span><span class="p">))</span>
-<span class="linenos" data-linenos="367 "></span>    <span class="p">)</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="383 "></span><span class="k">def</span><span class="w"> </span><span class="nf">pylon_top_tags</span><span class="p">(</span><span class="n">pylon_issue_labels</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">top_n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="linenos" data-linenos="384 "></span><span class="w">    </span><span class="sd">"""Top `top_n` Pylon tags across every currently stored issue, most common first."""</span>
+<span class="linenos" data-linenos="385 "></span>    <span class="k">if</span> <span class="n">pylon_issue_labels</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
+<span class="linenos" data-linenos="386 "></span>        <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">_LABEL_SCHEMA</span><span class="p">)</span>
+<span class="linenos" data-linenos="387 "></span>    <span class="n">tags</span> <span class="o">=</span> <span class="n">pylon_issue_labels</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'kind'</span><span class="p">)</span> <span class="o">==</span> <span class="n">PYLON_LABEL_KIND_TAG</span><span class="p">)</span>
+<span class="linenos" data-linenos="388 "></span>    <span class="k">if</span> <span class="n">tags</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
+<span class="linenos" data-linenos="389 "></span>        <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">_LABEL_SCHEMA</span><span class="p">)</span>
+<span class="linenos" data-linenos="390 "></span>    <span class="k">return</span> <span class="p">(</span>
+<span class="linenos" data-linenos="391 "></span>        <span class="n">tags</span><span class="o">.</span><span class="n">group_by</span><span class="p">(</span><span class="s1">'label'</span><span class="p">)</span>
+<span class="linenos" data-linenos="392 "></span>        <span class="o">.</span><span class="n">len</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'count'</span><span class="p">)</span>
+<span class="linenos" data-linenos="393 "></span>        <span class="o">.</span><span class="n">cast</span><span class="p">({</span><span class="s1">'count'</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Int64</span><span class="p">})</span>
+<span class="linenos" data-linenos="394 "></span>        <span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s1">'count'</span><span class="p">,</span> <span class="n">descending</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos" data-linenos="395 "></span>        <span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">top_n</span><span class="p">)</span>
+<span class="linenos" data-linenos="396 "></span>        <span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">_LABEL_SCHEMA</span><span class="p">))</span>
+<span class="linenos" data-linenos="397 "></span>    <span class="p">)</span>
 </code></pre></div>
             </details>
     </div>
@@ -2606,41 +2737,41 @@ skipped and said so in the output rather than guessed at.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/domain/snapshot.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="384 "></span><span class="k">def</span><span class="w"> </span><span class="nf">sentry_section</span><span class="p">(</span>
-<span class="linenos" data-linenos="385 "></span>    <span class="n">sentry_issues</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
-<span class="linenos" data-linenos="386 "></span>    <span class="o">*</span><span class="p">,</span>
-<span class="linenos" data-linenos="387 "></span>    <span class="n">configured</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
-<span class="linenos" data-linenos="388 "></span>    <span class="n">window_start</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span>
-<span class="linenos" data-linenos="389 "></span>    <span class="n">window_end</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span>
-<span class="linenos" data-linenos="390 "></span>    <span class="n">top_n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
-<span class="linenos" data-linenos="391 "></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]]:</span>
-<span class="linenos" data-linenos="392 "></span><span class="w">    </span><span class="sd">"""Sentry's slice of the snapshot: new unresolved issues this period, and the top ones by event count.</span>
-<span class="linenos" data-linenos="393 "></span>
-<span class="linenos" data-linenos="394 "></span><span class="sd">    Sentry's issue-list endpoint carries no Linear-link field (that needs `expand=integrationIssues`</span>
-<span class="linenos" data-linenos="395 "></span><span class="sd">    or the issue-detail endpoint, neither of which tlr fetches), so the linked-vs-not split is</span>
-<span class="linenos" data-linenos="396 "></span><span class="sd">    skipped and said so in the output rather than guessed at.</span>
-<span class="linenos" data-linenos="397 "></span><span class="sd">    """</span>
-<span class="linenos" data-linenos="398 "></span>    <span class="k">if</span> <span class="ow">not</span> <span class="n">configured</span><span class="p">:</span>
-<span class="linenos" data-linenos="399 "></span>        <span class="k">return</span> <span class="p">[(</span><span class="s1">'Sentry'</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">'note'</span><span class="p">:</span> <span class="p">[</span><span class="s1">'Sentry: not configured'</span><span class="p">]},</span> <span class="n">schema</span><span class="o">=</span><span class="n">_NOTE_SCHEMA</span><span class="p">))]</span>
-<span class="linenos" data-linenos="400 "></span>    <span class="n">new_in_period</span> <span class="o">=</span> <span class="n">sentry_issues</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
-<span class="linenos" data-linenos="401 "></span>        <span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'first_seen'</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">window_start</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'first_seen'</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">window_end</span><span class="p">),</span>
-<span class="linenos" data-linenos="402 "></span>    <span class="p">)</span><span class="o">.</span><span class="n">height</span>
-<span class="linenos" data-linenos="403 "></span>    <span class="n">top</span> <span class="o">=</span> <span class="p">(</span>
-<span class="linenos" data-linenos="404 "></span>        <span class="n">sentry_issues</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s1">'times_seen'</span><span class="p">,</span> <span class="n">descending</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="linenos" data-linenos="405 "></span>        <span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">top_n</span><span class="p">)</span>
-<span class="linenos" data-linenos="406 "></span>        <span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">'project_slug'</span><span class="p">,</span> <span class="s1">'title'</span><span class="p">,</span> <span class="s1">'times_seen'</span><span class="p">,</span> <span class="s1">'first_seen'</span><span class="p">,</span> <span class="s1">'permalink'</span><span class="p">)</span>
-<span class="linenos" data-linenos="407 "></span>    <span class="p">)</span>
-<span class="linenos" data-linenos="408 "></span>    <span class="n">summary</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
-<span class="linenos" data-linenos="409 "></span>        <span class="p">[{</span><span class="s1">'new_unresolved_this_period'</span><span class="p">:</span> <span class="n">new_in_period</span><span class="p">,</span> <span class="s1">'total_unresolved_tracked'</span><span class="p">:</span> <span class="n">sentry_issues</span><span class="o">.</span><span class="n">height</span><span class="p">}],</span>
-<span class="linenos" data-linenos="410 "></span>    <span class="p">)</span>
-<span class="linenos" data-linenos="411 "></span>    <span class="k">return</span> <span class="p">[</span>
-<span class="linenos" data-linenos="412 "></span>        <span class="p">(</span><span class="s1">'Sentry: summary'</span><span class="p">,</span> <span class="n">summary</span><span class="p">),</span>
-<span class="linenos" data-linenos="413 "></span>        <span class="p">(</span><span class="s1">'Sentry: top by event count'</span><span class="p">,</span> <span class="n">top</span><span class="p">),</span>
-<span class="linenos" data-linenos="414 "></span>        <span class="p">(</span>
-<span class="linenos" data-linenos="415 "></span>            <span class="s1">'Sentry: linked to Linear'</span><span class="p">,</span>
-<span class="linenos" data-linenos="416 "></span>            <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">'note'</span><span class="p">:</span> <span class="p">[</span><span class="s1">'not available from the issue-list endpoint; skipped'</span><span class="p">]},</span> <span class="n">schema</span><span class="o">=</span><span class="n">_NOTE_SCHEMA</span><span class="p">),</span>
-<span class="linenos" data-linenos="417 "></span>        <span class="p">),</span>
-<span class="linenos" data-linenos="418 "></span>    <span class="p">]</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="414 "></span><span class="k">def</span><span class="w"> </span><span class="nf">sentry_section</span><span class="p">(</span>
+<span class="linenos" data-linenos="415 "></span>    <span class="n">sentry_issues</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+<span class="linenos" data-linenos="416 "></span>    <span class="o">*</span><span class="p">,</span>
+<span class="linenos" data-linenos="417 "></span>    <span class="n">configured</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+<span class="linenos" data-linenos="418 "></span>    <span class="n">window_start</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span>
+<span class="linenos" data-linenos="419 "></span>    <span class="n">window_end</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span>
+<span class="linenos" data-linenos="420 "></span>    <span class="n">top_n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+<span class="linenos" data-linenos="421 "></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]]:</span>
+<span class="linenos" data-linenos="422 "></span><span class="w">    </span><span class="sd">"""Sentry's slice of the snapshot: new unresolved issues this period, and the top ones by event count.</span>
+<span class="linenos" data-linenos="423 "></span>
+<span class="linenos" data-linenos="424 "></span><span class="sd">    Sentry's issue-list endpoint carries no Linear-link field (that needs `expand=integrationIssues`</span>
+<span class="linenos" data-linenos="425 "></span><span class="sd">    or the issue-detail endpoint, neither of which tlr fetches), so the linked-vs-not split is</span>
+<span class="linenos" data-linenos="426 "></span><span class="sd">    skipped and said so in the output rather than guessed at.</span>
+<span class="linenos" data-linenos="427 "></span><span class="sd">    """</span>
+<span class="linenos" data-linenos="428 "></span>    <span class="k">if</span> <span class="ow">not</span> <span class="n">configured</span><span class="p">:</span>
+<span class="linenos" data-linenos="429 "></span>        <span class="k">return</span> <span class="p">[(</span><span class="s1">'Sentry'</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">'note'</span><span class="p">:</span> <span class="p">[</span><span class="s1">'Sentry: not configured'</span><span class="p">]},</span> <span class="n">schema</span><span class="o">=</span><span class="n">_NOTE_SCHEMA</span><span class="p">))]</span>
+<span class="linenos" data-linenos="430 "></span>    <span class="n">new_in_period</span> <span class="o">=</span> <span class="n">sentry_issues</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+<span class="linenos" data-linenos="431 "></span>        <span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'first_seen'</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">window_start</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'first_seen'</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">window_end</span><span class="p">),</span>
+<span class="linenos" data-linenos="432 "></span>    <span class="p">)</span><span class="o">.</span><span class="n">height</span>
+<span class="linenos" data-linenos="433 "></span>    <span class="n">top</span> <span class="o">=</span> <span class="p">(</span>
+<span class="linenos" data-linenos="434 "></span>        <span class="n">sentry_issues</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s1">'times_seen'</span><span class="p">,</span> <span class="n">descending</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos" data-linenos="435 "></span>        <span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">top_n</span><span class="p">)</span>
+<span class="linenos" data-linenos="436 "></span>        <span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">'project_slug'</span><span class="p">,</span> <span class="s1">'title'</span><span class="p">,</span> <span class="s1">'times_seen'</span><span class="p">,</span> <span class="s1">'first_seen'</span><span class="p">,</span> <span class="s1">'permalink'</span><span class="p">)</span>
+<span class="linenos" data-linenos="437 "></span>    <span class="p">)</span>
+<span class="linenos" data-linenos="438 "></span>    <span class="n">summary</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+<span class="linenos" data-linenos="439 "></span>        <span class="p">[{</span><span class="s1">'new_unresolved_this_period'</span><span class="p">:</span> <span class="n">new_in_period</span><span class="p">,</span> <span class="s1">'total_unresolved_tracked'</span><span class="p">:</span> <span class="n">sentry_issues</span><span class="o">.</span><span class="n">height</span><span class="p">}],</span>
+<span class="linenos" data-linenos="440 "></span>    <span class="p">)</span>
+<span class="linenos" data-linenos="441 "></span>    <span class="k">return</span> <span class="p">[</span>
+<span class="linenos" data-linenos="442 "></span>        <span class="p">(</span><span class="s1">'Sentry: summary'</span><span class="p">,</span> <span class="n">summary</span><span class="p">),</span>
+<span class="linenos" data-linenos="443 "></span>        <span class="p">(</span><span class="s1">'Sentry: top by event count'</span><span class="p">,</span> <span class="n">top</span><span class="p">),</span>
+<span class="linenos" data-linenos="444 "></span>        <span class="p">(</span>
+<span class="linenos" data-linenos="445 "></span>            <span class="s1">'Sentry: linked to Linear'</span><span class="p">,</span>
+<span class="linenos" data-linenos="446 "></span>            <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">'note'</span><span class="p">:</span> <span class="p">[</span><span class="s1">'not available from the issue-list endpoint; skipped'</span><span class="p">]},</span> <span class="n">schema</span><span class="o">=</span><span class="n">_NOTE_SCHEMA</span><span class="p">),</span>
+<span class="linenos" data-linenos="447 "></span>        <span class="p">),</span>
+<span class="linenos" data-linenos="448 "></span>    <span class="p">]</span>
 </code></pre></div>
             </details>
     </div>
@@ -2655,38 +2786,43 @@ skipped and said so in the output rather than guessed at.</p>
 
 
 <a href="#tlr.domain.snapshot.snapshot_header" class="headerlink" title="Permanent link">⚓︎</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">snapshot_header</span><span class="p">(</span><span class="n">window</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">period</span><span class="p">,</span> <span class="n">closed_like_state_names</span><span class="p">,</span> <span class="n">bot_label</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">snapshot_header</span><span class="p">(</span><span class="n">window</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">period</span><span class="p">,</span> <span class="n">closed_like_state_names</span><span class="p">,</span> <span class="n">bot_label</span><span class="p">,</span> <span class="n">refreshes</span><span class="p">,</span> <span class="n">tracked_sources</span><span class="p">,</span> <span class="n">now</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Period bounds and the open/bot-filed definitions this snapshot uses, for the check-in&rsquo;s header.</p>
+        <p>Period bounds, the open/bot-filed definitions, and store freshness, for the check-in&rsquo;s header.</p>
 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/domain/snapshot.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="295 "></span><span class="k">def</span><span class="w"> </span><span class="nf">snapshot_header</span><span class="p">(</span>
-<span class="linenos" data-linenos="296 "></span>    <span class="n">window</span><span class="p">:</span> <span class="n">PeriodWindow</span><span class="p">,</span>
-<span class="linenos" data-linenos="297 "></span>    <span class="o">*</span><span class="p">,</span>
-<span class="linenos" data-linenos="298 "></span>    <span class="n">period</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-<span class="linenos" data-linenos="299 "></span>    <span class="n">closed_like_state_names</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-<span class="linenos" data-linenos="300 "></span>    <span class="n">bot_label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-<span class="linenos" data-linenos="301 "></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="linenos" data-linenos="302 "></span><span class="w">    </span><span class="sd">"""Period bounds and the open/bot-filed definitions this snapshot uses, for the check-in's header."""</span>
-<span class="linenos" data-linenos="303 "></span>    <span class="n">closed_like</span> <span class="o">=</span> <span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">closed_like_state_names</span><span class="p">)</span> <span class="k">if</span> <span class="n">closed_like_state_names</span> <span class="k">else</span> <span class="s1">'none configured'</span>
-<span class="linenos" data-linenos="304 "></span>    <span class="n">period_line</span> <span class="o">=</span> <span class="p">(</span>
-<span class="linenos" data-linenos="305 "></span>        <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">period</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">window</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">date</span><span class="p">()</span><span class="si">}</span><span class="s1"> to </span><span class="si">{</span><span class="n">window</span><span class="o">.</span><span class="n">end</span><span class="o">.</span><span class="n">date</span><span class="p">()</span><span class="si">}</span><span class="s1"> (exclusive), '</span>
-<span class="linenos" data-linenos="306 "></span>        <span class="sa">f</span><span class="s1">'compared against </span><span class="si">{</span><span class="n">window</span><span class="o">.</span><span class="n">previous_start</span><span class="o">.</span><span class="n">date</span><span class="p">()</span><span class="si">}</span><span class="s1"> to </span><span class="si">{</span><span class="n">window</span><span class="o">.</span><span class="n">previous_end</span><span class="o">.</span><span class="n">date</span><span class="p">()</span><span class="si">}</span><span class="s1">.'</span>
-<span class="linenos" data-linenos="307 "></span>    <span class="p">)</span>
-<span class="linenos" data-linenos="308 "></span>    <span class="n">open_line</span> <span class="o">=</span> <span class="p">(</span>
-<span class="linenos" data-linenos="309 "></span>        <span class="s1">'Open: created by this instant, not archived, not completed/canceled, and not in a '</span>
-<span class="linenos" data-linenos="310 "></span>        <span class="sa">f</span><span class="s1">'closed-like state (</span><span class="si">{</span><span class="n">closed_like</span><span class="si">}</span><span class="s1">).'</span>
-<span class="linenos" data-linenos="311 "></span>    <span class="p">)</span>
-<span class="linenos" data-linenos="312 "></span>    <span class="n">bot_line</span> <span class="o">=</span> <span class="p">(</span>
-<span class="linenos" data-linenos="313 "></span>        <span class="sa">f</span><span class="s1">'Bot-filed: open issues carrying the label </span><span class="si">{</span><span class="n">bot_label</span><span class="si">!r}</span><span class="s1">.'</span> <span class="k">if</span> <span class="n">bot_label</span> <span class="k">else</span> <span class="s1">'Bot-filed: not configured.'</span>
-<span class="linenos" data-linenos="314 "></span>    <span class="p">)</span>
-<span class="linenos" data-linenos="315 "></span>    <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">period_line</span><span class="p">,</span> <span class="n">open_line</span><span class="p">,</span> <span class="n">bot_line</span><span class="p">]</span>
-<span class="linenos" data-linenos="316 "></span>    <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">'note'</span><span class="p">:</span> <span class="n">lines</span><span class="p">},</span> <span class="n">schema</span><span class="o">=</span><span class="n">_NOTE_SCHEMA</span><span class="p">)</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="320 "></span><span class="k">def</span><span class="w"> </span><span class="nf">snapshot_header</span><span class="p">(</span>
+<span class="linenos" data-linenos="321 "></span>    <span class="n">window</span><span class="p">:</span> <span class="n">PeriodWindow</span><span class="p">,</span>
+<span class="linenos" data-linenos="322 "></span>    <span class="o">*</span><span class="p">,</span>
+<span class="linenos" data-linenos="323 "></span>    <span class="n">period</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="linenos" data-linenos="324 "></span>    <span class="n">closed_like_state_names</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+<span class="linenos" data-linenos="325 "></span>    <span class="n">bot_label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="linenos" data-linenos="326 "></span>    <span class="n">refreshes</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+<span class="linenos" data-linenos="327 "></span>    <span class="n">tracked_sources</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+<span class="linenos" data-linenos="328 "></span>    <span class="n">now</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span>
+<span class="linenos" data-linenos="329 "></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="linenos" data-linenos="330 "></span><span class="w">    </span><span class="sd">"""Period bounds, the open/bot-filed definitions, and store freshness, for the check-in's header."""</span>
+<span class="linenos" data-linenos="331 "></span>    <span class="n">closed_like</span> <span class="o">=</span> <span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">closed_like_state_names</span><span class="p">)</span> <span class="k">if</span> <span class="n">closed_like_state_names</span> <span class="k">else</span> <span class="s1">'none configured'</span>
+<span class="linenos" data-linenos="332 "></span>    <span class="n">period_line</span> <span class="o">=</span> <span class="p">(</span>
+<span class="linenos" data-linenos="333 "></span>        <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">period</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">window</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">date</span><span class="p">()</span><span class="si">}</span><span class="s1"> to </span><span class="si">{</span><span class="n">window</span><span class="o">.</span><span class="n">end</span><span class="o">.</span><span class="n">date</span><span class="p">()</span><span class="si">}</span><span class="s1"> (exclusive), '</span>
+<span class="linenos" data-linenos="334 "></span>        <span class="sa">f</span><span class="s1">'compared against </span><span class="si">{</span><span class="n">window</span><span class="o">.</span><span class="n">previous_start</span><span class="o">.</span><span class="n">date</span><span class="p">()</span><span class="si">}</span><span class="s1"> to </span><span class="si">{</span><span class="n">window</span><span class="o">.</span><span class="n">previous_end</span><span class="o">.</span><span class="n">date</span><span class="p">()</span><span class="si">}</span><span class="s1">.'</span>
+<span class="linenos" data-linenos="335 "></span>    <span class="p">)</span>
+<span class="linenos" data-linenos="336 "></span>    <span class="n">open_line</span> <span class="o">=</span> <span class="p">(</span>
+<span class="linenos" data-linenos="337 "></span>        <span class="s1">'Open: created by this instant, not archived, not completed/canceled, and not in a '</span>
+<span class="linenos" data-linenos="338 "></span>        <span class="sa">f</span><span class="s1">'closed-like state (</span><span class="si">{</span><span class="n">closed_like</span><span class="si">}</span><span class="s1">).'</span>
+<span class="linenos" data-linenos="339 "></span>    <span class="p">)</span>
+<span class="linenos" data-linenos="340 "></span>    <span class="n">bot_line</span> <span class="o">=</span> <span class="p">(</span>
+<span class="linenos" data-linenos="341 "></span>        <span class="sa">f</span><span class="s1">'Bot-filed: open issues carrying the label </span><span class="si">{</span><span class="n">bot_label</span><span class="si">!r}</span><span class="s1">.'</span> <span class="k">if</span> <span class="n">bot_label</span> <span class="k">else</span> <span class="s1">'Bot-filed: not configured.'</span>
+<span class="linenos" data-linenos="342 "></span>    <span class="p">)</span>
+<span class="linenos" data-linenos="343 "></span>    <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">period_line</span><span class="p">,</span> <span class="n">open_line</span><span class="p">,</span> <span class="n">bot_line</span><span class="p">]</span>
+<span class="linenos" data-linenos="344 "></span>    <span class="k">if</span> <span class="n">tracked_sources</span><span class="p">:</span>
+<span class="linenos" data-linenos="345 "></span>        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">freshness_line</span><span class="p">(</span><span class="n">refreshes</span><span class="p">,</span> <span class="n">sources</span><span class="o">=</span><span class="n">tracked_sources</span><span class="p">,</span> <span class="n">now</span><span class="o">=</span><span class="n">now</span><span class="p">))</span>
+<span class="linenos" data-linenos="346 "></span>    <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">'note'</span><span class="p">:</span> <span class="n">lines</span><span class="p">},</span> <span class="n">schema</span><span class="o">=</span><span class="n">_NOTE_SCHEMA</span><span class="p">)</span>
 </code></pre></div>
             </details>
     </div>

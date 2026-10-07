@@ -18,7 +18,7 @@
         <link rel="prev" href="../json/">
       
       
-        <link rel="next" href="../../sources/linear/">
+        <link rel="next" href="../../sources/alarms/">
       
       
         
@@ -811,6 +811,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../domain/alarms/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Alarms
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../domain/backlog/" class="md-nav__link">
         
   
@@ -1267,6 +1295,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../sources/alarms/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Alarms
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../sources/linear/" class="md-nav__link">
         
   
@@ -1544,15 +1600,18 @@
 
     <div class="doc doc-contents ">
 
-        <p>Render titled frames as consecutive markdown sections.</p>
+        <p>Render titled frames as consecutive markdown sections; a <code>str</code> body emits verbatim.</p>
 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/render/markdown.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="34 "></span><span class="k">def</span><span class="w"> </span><span class="nf">sections_to_markdown</span><span class="p">(</span><span class="n">sections</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]],</span> <span class="o">*</span><span class="p">,</span> <span class="n">level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="linenos" data-linenos="35 "></span><span class="w">    </span><span class="sd">"""Render titled frames as consecutive markdown sections."""</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="34 "></span><span class="k">def</span><span class="w"> </span><span class="nf">sections_to_markdown</span><span class="p">(</span><span class="n">sections</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]],</span> <span class="o">*</span><span class="p">,</span> <span class="n">level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="linenos" data-linenos="35 "></span><span class="w">    </span><span class="sd">"""Render titled frames as consecutive markdown sections; a `str` body emits verbatim."""</span>
 <span class="linenos" data-linenos="36 "></span>    <span class="n">prefix</span> <span class="o">=</span> <span class="s1">'#'</span> <span class="o">*</span> <span class="n">level</span>
-<span class="linenos" data-linenos="37 "></span>    <span class="k">return</span> <span class="s1">'</span><span class="se">\n\n</span><span class="s1">'</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="se">\n\n</span><span class="si">{</span><span class="n">frame_to_markdown</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span><span class="si">}</span><span class="s1">'</span> <span class="k">for</span> <span class="n">title</span><span class="p">,</span> <span class="n">frame</span> <span class="ow">in</span> <span class="n">sections</span><span class="p">)</span>
+<span class="linenos" data-linenos="37 "></span>    <span class="k">return</span> <span class="s1">'</span><span class="se">\n\n</span><span class="s1">'</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+<span class="linenos" data-linenos="38 "></span>        <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="se">\n\n</span><span class="si">{</span><span class="n">body</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">body</span><span class="p">,</span><span class="w"> </span><span class="nb">str</span><span class="p">)</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="n">frame_to_markdown</span><span class="p">(</span><span class="n">body</span><span class="p">)</span><span class="si">}</span><span class="s1">'</span>
+<span class="linenos" data-linenos="39 "></span>        <span class="k">for</span> <span class="n">title</span><span class="p">,</span> <span class="n">body</span> <span class="ow">in</span> <span class="n">sections</span>
+<span class="linenos" data-linenos="40 "></span>    <span class="p">)</span>
 </code></pre></div>
             </details>
     </div>
