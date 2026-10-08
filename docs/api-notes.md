@@ -437,10 +437,12 @@ Every list and search response wraps its payload the same way:
 }
 ```
 
-The cursor goes back as a **query parameter** (`?cursor=<value>`), not as a field in the
-request body, and `has_next_page` says whether to ask again.
-Sending the cursor in the body
-returns page one every time, with no error to notice.
+Where the cursor goes back depends on the method.
+`GET` list endpoints take it as a **query parameter** (`?cursor=<value>`).
+`POST /issues/search` takes it as a **`cursor` field in the request body**, and silently
+ignores the query-parameter form: every page returns page one's rows, with no error to
+notice.
+`has_next_page` says whether to ask again either way.
 
 ### Rate limiting
 
@@ -453,13 +455,15 @@ If a `GET` starts returning 429 the
 shared retry policy already honors `Retry-After`, so the failure degrades into slowness
 rather than an error, and that is the signal to widen the limiter.
 
+The budgets are separate, confirmed by `x-rate-limit-remaining` on live responses:
+`GET /accounts` reported 299 (a ~300 ceiling) while `POST /issues/search` reported 119
+(a ~120 ceiling) and stayed at 119 across four rapid calls, so the header's window is
+longer than a minute or lags.
+GETs do not consume the search budget; what consumes the
+search budget beyond each POST is unknown.
+
 ### Still unverified
 
-- Whether `GET` endpoints share the search quota, as above
-- Whether `POST /issues/search` accepts the cursor as a query parameter the same way the
-    documented `GET` list endpoints do.
-    The envelope is shared, so it should, and a search that
-    never advances past page one is how a wrong answer would show up
 - The AI-agent filter attributes (`issue_ai_agent_has_resolved`, `issue_ai_agent_id`, and
     about a dozen more) appear in the filter vocabulary but did not appear on the record I
     read,

@@ -75,7 +75,7 @@ def _client(handler: Callable[[httpx.Request], httpx.Response]) -> pylon.PylonCl
     return pylon.PylonClient(http_client=http_client, token='test-token', limiter=limiter)  # noqa: S106
 
 
-def test_fetch_issue_by_linear_ticket_paginates_with_cursor_as_query_param() -> None:
+def test_fetch_issue_by_linear_ticket_paginates_with_cursor_in_body() -> None:
     config = PylonConfig()
     pages = [
         _page([_issue_record(id='issue-1')], cursor='page-2', has_next_page=True),
@@ -94,8 +94,19 @@ def test_fetch_issue_by_linear_ticket_paginates_with_cursor_as_query_param() -> 
     assert len(requests) == _EXPECTED_PAGE_COUNT
     assert 'cursor' not in requests[0].url.params
     assert 'cursor' not in json.loads(requests[0].content)
-    assert requests[1].url.params['cursor'] == 'page-2'
-    assert 'cursor' not in json.loads(requests[1].content)
+    assert 'cursor' not in requests[1].url.params
+    assert json.loads(requests[1].content)['cursor'] == 'page-2'
+
+
+def test_paginate_fails_loud_when_has_next_page_but_no_cursor() -> None:
+    pages = [_page([_issue_record(id='issue-1')], cursor=None, has_next_page=True)]
+
+    def _handle(_request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json=pages[0])
+
+    client = _client(_handle)
+    with pytest.raises(ValueError, match='has_next_page but returned no cursor'):
+        pylon.fetch_issue_by_linear_ticket(client, PylonConfig(), 'DEV-1234')
 
 
 def test_fetch_issues_paginates_get_issues_with_time_range_params() -> None:

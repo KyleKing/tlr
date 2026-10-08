@@ -104,14 +104,21 @@ def _paginate(
     cursor: str | None = None
     while True:
         query = dict(params or {})
+        body_payload = dict(json_body or {})
         if cursor is not None:
-            query['cursor'] = cursor
-        body = _send(client, method, endpoint, json_body=json_body, params=query or None)
+            if method == 'POST':
+                body_payload['cursor'] = cursor
+            else:
+                query['cursor'] = cursor
+        body = _send(client, method, endpoint, json_body=body_payload or None, params=query or None)
         yield body
         pagination = body.get('pagination') or {}
         if not pagination.get('has_next_page'):
             return
         cursor = pagination.get('cursor')
+        if not cursor:
+            msg = f'{method} {endpoint} reported has_next_page but returned no cursor'
+            raise ValueError(msg)
 
 
 def build_linear_ticket_filter(config: PylonConfig, identifier: str) -> dict[str, Any]:
