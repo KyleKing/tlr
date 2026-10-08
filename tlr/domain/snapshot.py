@@ -397,8 +397,14 @@ def pylon_top_tags(pylon_issue_labels: pl.DataFrame, *, top_n: int = 10) -> pl.D
     )
 
 
-def pylon_over_sla(pylon_issues: pl.DataFrame, sla: SlaConfig, *, now: datetime) -> pl.DataFrame:
-    """Open Pylon issues whose age exceeds their priority's configured SLA target, oldest overage first."""
+def pylon_over_sla(
+    pylon_issues: pl.DataFrame,
+    sla: SlaConfig,
+    *,
+    now: datetime,
+    top_n: int = 25,
+) -> pl.DataFrame:
+    """The `top_n` open Pylon issues past their priority's SLA target, oldest overage first."""
     open_now = _pylon_open_at(pylon_issues, now).with_columns(
         (pl.lit(now) - pl.col('created_at')).dt.total_days().cast(pl.Int64).alias('age_days'),
     )
@@ -408,7 +414,7 @@ def pylon_over_sla(pylon_issues: pl.DataFrame, sla: SlaConfig, *, now: datetime)
     over = open_now.with_columns(target.alias('sla_target_days')).filter(
         pl.col('sla_target_days').is_not_null() & (pl.col('age_days') > pl.col('sla_target_days')),
     )
-    return over.sort('age_days', descending=True).select(list(_OVER_SLA_SCHEMA))
+    return over.sort('age_days', descending=True).head(top_n).select(list(_OVER_SLA_SCHEMA))
 
 
 def sentry_section(
