@@ -30,10 +30,6 @@ _QUEUE_SCHEMA: dict[str, Any] = {
     'tier': pl.Utf8,
     'linear_identifier': pl.Utf8,
     'linear_state': pl.Utf8,
-    'link_status': pl.Utf8,
-    'waiting_on_customer': pl.Boolean,
-    'agent_owned': pl.Boolean,
-    'sla_target_days': pl.Int64,
     'sla_days_remaining': pl.Int64,
     'link': pl.Utf8,
 }
@@ -142,10 +138,6 @@ def _build_working_frame(
         pl.col('tier'),
         pl.col('linear_identifier'),
         pl.col('linear_state'),
-        pl.col('link_status'),
-        pl.col('waiting_on_customer'),
-        pl.col('agent_owned'),
-        pl.col('sla_target_days'),
         pl.col('sla_days_remaining'),
         pl.col('link'),
     )

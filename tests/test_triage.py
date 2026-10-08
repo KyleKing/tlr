@@ -238,7 +238,6 @@ def test_sla_days_remaining_negative_when_overdue():
     result = _build(pylon_issues, sla=sla)
 
     row = result.queue.row(0, named=True)
-    assert row['sla_target_days'] == _SLA_TARGET_DAYS
     assert row['sla_days_remaining'] < 0
 
 

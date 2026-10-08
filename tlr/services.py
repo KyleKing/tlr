@@ -302,10 +302,6 @@ _TRIAGE_DISPLAY_NAMES = {
     'tier': 'Tier',
     'linear_identifier': 'Linear',
     'linear_state': 'Linear state',
-    'link_status': 'Link',
-    'waiting_on_customer': 'Waiting on customer',
-    'agent_owned': 'Agent',
-    'sla_target_days': 'SLA target (days)',
     'sla_days_remaining': 'SLA left (days)',
     'link': 'URL',
 }
@@ -332,7 +328,15 @@ def _triage_command(args: argparse.Namespace, config: TlrConfig) -> int:
         con.close()
 
     def _display(frame: pl.DataFrame) -> pl.DataFrame:
-        return frame.head(args.limit).rename(_TRIAGE_DISPLAY_NAMES)
+        shown = frame.head(args.limit)
+        if args.format == 'md':
+            shown = shown.with_columns(
+                pl.when(pl.col('link').is_not_null())
+                .then(pl.format('[{}]({})', pl.col('pylon_number'), pl.col('link')))
+                .otherwise(pl.col('pylon_number').cast(pl.Utf8))
+                .alias('pylon_number'),
+            ).drop('link')
+        return shown.rename({k: v for k, v in _TRIAGE_DISPLAY_NAMES.items() if k in shown.columns})
 
     sections = [('Triage queue', _display(result.queue))]
     if args.include_excluded:
