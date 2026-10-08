@@ -28,6 +28,7 @@ from .cassette_scrub import (
 class _FakeRequest:
     headers: dict[str, str]
     body: str
+    uri: str = 'https://api.linear.app/graphql'
 
 
 def _cassette_text(

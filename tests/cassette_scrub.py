@@ -7,6 +7,9 @@ Every header and JSON key reachable in a cassette must be classified below as on
 - structural: kept verbatim (`STRUCTURAL_HEADERS`, `STRUCTURAL_JSON_KEYS`)
 - redacted: replaced with a stable, shape-preserving placeholder (`_REDACTED_KEY_CLASS` /
   `REDACTED_PLACEHOLDERS`)
+- keyed-map: a dict whose keys are workspace data (e.g. `custom_fields`, keyed by field
+  slug), in `KEYED_MAP_JSON_KEYS`. The keys pass through as-is; the values classify
+  normally, so the sensitive content still scrubs out
 - unknown: rejected by `main()`, which is the pre-commit gate
 
 A key reached but not classified is a bug in this file, not a cassette to patch by hand.
@@ -20,6 +23,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 import yaml
 
@@ -85,13 +89,22 @@ STRUCTURAL_HEADERS = frozenset(
         'via',
         'x-cache',
         'x-cache-hits',
+        'x-complexity',
         'x-content-type-options',
         'x-download-options',
         'x-frame-options',
         'x-github-request-id',
         'x-permitted-cross-domain-policies',
+        'x-pylon-request-id',
+        'x-rate-limit-remaining',
+        'x-ratelimit-complexity-limit',
+        'x-ratelimit-complexity-remaining',
+        'x-ratelimit-complexity-reset',
         'x-ratelimit-limit',
         'x-ratelimit-remaining',
+        'x-ratelimit-requests-limit',
+        'x-ratelimit-requests-remaining',
+        'x-ratelimit-requests-reset',
         'x-ratelimit-reset',
         'x-request-id',
         'x-runtime',
@@ -104,26 +117,48 @@ STRUCTURAL_HEADERS = frozenset(
 # workspace-specific content (enums, counters, booleans, positions).
 STRUCTURAL_JSON_KEYS = frozenset(
     {
+        'account',
         'active',
         'after',
         'and',
         'app',
         'assignee',
+        'author_unverified',
+        'business_hours_first_response_seconds',
+        'business_hours_resolution_seconds',
+        'business_hours_seconds',
         'busy',
         'calendars',
-        'custom_fields',
+        'category',
+        'channels',
+        'chat_widget_info',
+        'crm_settings',
+        'customer_portal_visible',
         'cycle',
         'cycles',
         'data',
+        'details',
         'endCursor',
         'estimate',
+        'external_ids',
+        'external_issues',
         'field',
         'filter',
         'final',
+        'first_resolution',
+        'first_response',
+        'first_response_seconds',
         'fromCycle',
         'guest',
         'hasNextPage',
+        'has_next_page',
         'history',
+        'is_archived',
+        'is_default_status',
+        'is_disabled',
+        'is_internal',
+        'is_issue_group',
+        'is_primary',
         'issue',
         'issueEstimationAllowZero',
         'issueEstimationExtended',
@@ -134,10 +169,12 @@ STRUCTURAL_JSON_KEYS = frozenset(
         'members',
         'nodes',
         'number',
+        'number_of_touches',
         'ok',
         'operationName',
         'operator',
         'organization',
+        'owner',
         'pageInfo',
         'pagination',
         'pagination_meta',
@@ -148,17 +185,23 @@ STRUCTURAL_JSON_KEYS = frozenset(
         'project',
         'projectMilestone',
         'projectMilestones',
+        'projects',
         'query',
         'relatedIssue',
         'relations',
         'requester',
+        'resolution',
+        'resolution_seconds',
         'schedule_entries',
-        'state',
+        'seconds',
+        'slack',
+        'source',
         'states',
         'status',
         'subfilters',
         'success',
         'team',
+        'team_slas',
         'teams',
         'toCycle',
         'type',
@@ -167,36 +210,82 @@ STRUCTURAL_JSON_KEYS = frozenset(
     }
 )
 
+# Dicts keyed by workspace data rather than a fixed field vocabulary: Pylon's
+# `custom_fields` is keyed by the workspace's own field slugs, so no classification list
+# can name its keys. Keys under these pass through (they are names, not values) while each
+# value is classified by its own keys.
+KEYED_MAP_JSON_KEYS = frozenset(
+    {
+        'business_hours_time_in_status_seconds',
+        'custom_fields',
+        'time_in_status_seconds',
+    }
+)
+
 # JSON field names replaced with a stable, shape-preserving placeholder. The key is the field
 # name; the value names which placeholder class from REDACTED_PLACEHOLDERS applies.
 _REDACTED_KEY_CLASS: dict[str, str] = {
     'archivedAt': 'timestamp',
+    'associated_account_ids': 'uuid',
+    'attachment_urls': 'url',
     'body_html': 'text',
+    'channel_id': 'text',
+    'channel_name': 'text',
+    'channel_url': 'url',
     'created_at': 'timestamp',
+    'cursor': 'text',
     'createdAt': 'timestamp',
     'description': 'text',
     'displayName': 'text',
+    'domain': 'text',
+    'domains': 'text',
     'email': 'email',
     'end_at': 'timestamp',
     'endsAt': 'timestamp',
+    'external_id': 'text',
+    'first_resolution_time': 'timestamp',
+    'first_response_breach_time': 'timestamp',
+    'first_response_time': 'timestamp',
     'id': 'uuid',
     'identifier': 'identifier',
+    'interpreted_value': 'text',
+    'interpreted_values': 'text',
     'key': 'code',
+    'label': 'text',
+    'latest_customer_activity_time': 'timestamp',
+    'latest_message_time': 'timestamp',
     'link': 'url',
+    'logo_url': 'url',
+    'message_ts': 'text',
     'name': 'text',
+    'page_url': 'url',
+    'parent_account_id': 'uuid',
+    'primary_domain': 'text',
     'request_id': 'uuid',
+    'resolution_breach_time': 'timestamp',
+    'resolution_time': 'timestamp',
     'search_text': 'text',
+    'slug': 'slug',
     'slugId': 'slug',
     'start_at': 'timestamp',
     'startDate': 'timestamp',
     'startsAt': 'timestamp',
+    'state': 'slug',
+    'subaccount_ids': 'uuid',
+    'tags': 'text',
     'targetDate': 'timestamp',
+    'team_id': 'uuid',
+    'time': 'timestamp',
     'timeMax': 'timestamp',
     'timeMin': 'timestamp',
     'title': 'text',
+    'updated_at': 'timestamp',
     'url': 'url',
     'urlKey': 'slug',
     'value': 'text',
+    'values': 'text',
+    'workspace_email': 'email',
+    'workspace_id': 'uuid',
 }
 
 _CREDENTIAL_PATTERNS = (
@@ -219,9 +308,11 @@ def classify_header(name: str) -> str:
 
 
 def classify_json_key(key: str) -> str:
-    """Classify a JSON key as 'structural', 'unknown', or a REDACTED_PLACEHOLDERS class name."""
+    """Classify a JSON key as 'structural', 'keyed-map', 'unknown', or a placeholder class name."""
     if key in _REDACTED_KEY_CLASS:
         return _REDACTED_KEY_CLASS[key]
+    if key in KEYED_MAP_JSON_KEYS:
+        return 'keyed-map'
     if key in STRUCTURAL_JSON_KEYS:
         return 'structural'
     return 'unknown'
@@ -233,6 +324,8 @@ def scrub_json(value: Any, *, key_cls: str | None = None) -> Any:
     Unknown keys are passed through untouched: this hook is not the enforcement point, `main()` is.
     """
     if isinstance(value, dict):
+        if key_cls == 'keyed-map':
+            return {k: scrub_json(v, key_cls='text') for k, v in value.items()}
         return {k: scrub_json(v, key_cls=classify_json_key(k)) for k, v in value.items()}
     if isinstance(value, list):
         return [scrub_json(item, key_cls=key_cls) for item in value]
@@ -247,7 +340,11 @@ def _scrub_header_mapping(headers: dict[str, Any]) -> None:
             del headers[name]
 
 
-def _scrub_json_text(text: str) -> str | None:
+def _scrub_json_text(body: str | bytes) -> str | bytes | None:
+    try:
+        text = body.decode('utf-8') if isinstance(body, bytes) else body
+    except UnicodeDecodeError:
+        return None
     try:
         parsed = json.loads(text)
     except (ValueError, TypeError):
@@ -255,13 +352,23 @@ def _scrub_json_text(text: str) -> str | None:
     return json.dumps(scrub_json(parsed))
 
 
+def _scrub_cursor_param(uri: str) -> str:
+    """Replace a `cursor` query value with the text placeholder so a redacted body cursor still matches on replay."""
+    parts = urlsplit(uri)
+    pairs = parse_qsl(parts.query, keep_blank_values=True)
+    if not any(name == 'cursor' for name, _ in pairs):
+        return uri
+    query = urlencode([(name, REDACTED_TEXT if name == 'cursor' else value) for name, value in pairs])
+    return urlunsplit(parts._replace(query=query))
+
+
 def scrub_request(request: Any) -> Any:
-    """Vcr `before_record_request` hook: drop auth-like headers, scrub the JSON body in place."""
+    """Vcr `before_record_request` hook: drop auth-like headers, scrub the JSON body and cursor param."""
     _scrub_header_mapping(request.headers)
+    request.uri = _scrub_cursor_param(request.uri)
     body = request.body
     if body:
-        text = body.decode('utf-8') if isinstance(body, bytes) else body
-        scrubbed = _scrub_json_text(text)
+        scrubbed = _scrub_json_text(body)
         if scrubbed is not None:
             request.body = scrubbed
     return request
@@ -274,10 +381,10 @@ def scrub_response(response: dict[str, Any]) -> dict[str, Any]:
     if isinstance(body, dict):
         string = body.get('string')
         if string:
-            text = string.decode('utf-8') if isinstance(string, bytes) else string
-            scrubbed = _scrub_json_text(text)
+            scrubbed = _scrub_json_text(string)
             if scrubbed is not None:
-                body['string'] = scrubbed.encode('utf-8') if isinstance(string, bytes) else scrubbed
+                # httpx replays join iter_bytes; a str body breaks playback, so keep bytes.
+                body['string'] = scrubbed if isinstance(scrubbed, bytes) else scrubbed.encode('utf-8')
     return response
 
 
@@ -303,14 +410,18 @@ def _walk_json(value: Any, path: str, key_cls: str | None, violations: list[Viol
     if isinstance(value, dict):
         for k, v in value.items():
             child_path = f'{path}.{k}' if path else k
+            if key_cls == 'keyed-map':
+                _check_leaf_patterns(k, child_path, violations, file_label)
+                _walk_json(v, child_path, 'text', violations, file_label)
+                continue
             cls = classify_json_key(k)
             if cls == 'unknown':
                 violations.append(
                     Violation(
                         file_label,
                         child_path,
-                        f"unclassified key '{k}'; add it to STRUCTURAL_JSON_KEYS or "
-                        '_REDACTED_KEY_CLASS in tests/cassette_scrub.py',
+                        f"unclassified key '{k}'; add it to STRUCTURAL_JSON_KEYS, "
+                        'KEYED_MAP_JSON_KEYS, or _REDACTED_KEY_CLASS in tests/cassette_scrub.py',
                     ),
                 )
             _walk_json(v, child_path, cls, violations, file_label)
@@ -355,7 +466,11 @@ def _check_body(body: Any, violations: list[Violation], file_label: str, directi
     string = body.get('string') if isinstance(body, dict) else body
     if not string:
         return
-    text = string.decode('utf-8') if isinstance(string, bytes) else string
+    try:
+        text = string.decode('utf-8') if isinstance(string, bytes) else string
+    except UnicodeDecodeError:
+        violations.append(Violation(file_label, f'{direction} body', 'body is not utf-8 text and cannot be verified'))
+        return
     try:
         parsed = json.loads(text)
     except (ValueError, TypeError):

@@ -1,0 +1,403 @@
+interactions:
+- request:
+    body: '{"query": "\nquery Projects($filter: ProjectFilter) {\n  projects(filter:
+      $filter, first: 10) {\n    nodes {\n      id\n      name\n      url\n      slugId\n      startDate\n      targetDate\n      projectMilestones(first:
+      50) { nodes { id name targetDate progress } }\n      teams(first: 10) {\n        nodes
+      {\n          id\n          key\n          name\n          issueEstimationType\n          issueEstimationAllowZero\n          issueEstimationExtended\n          cycles(last:
+      12) { nodes { number startsAt endsAt } }\n          states(first: 50) { nodes
+      { id name type position } }\n        }\n      }\n    }\n  }\n}\n", "variables":
+      {"filter": {}}}'
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-length:
+      - '652'
+      content-type:
+      - application/json
+      host:
+      - api.linear.app
+      user-agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: https://api.linear.app/graphql
+  response:
+    body:
+      string: '{"data": {"projects": {"nodes": [{"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "url": "https://example.invalid/redacted", "slugId":
+        "redacted-slug", "startDate": null, "targetDate": null, "projectMilestones":
+        {"nodes": []}, "teams": {"nodes": [{"id": "00000000-0000-0000-0000-000000000000",
+        "key": "ORG", "name": "[REDACTED]", "issueEstimationType": "exponential",
+        "issueEstimationAllowZero": true, "issueEstimationExtended": false, "cycles":
+        {"nodes": [{"number": 55, "startsAt": "2000-01-01T00:00:00.000Z", "endsAt":
+        "2000-01-01T00:00:00.000Z"}, {"number": 56, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 57, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 58, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 59, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 60, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 61, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 62, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 63, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 64, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 65, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}]}, "states": {"nodes": [{"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "completed", "position": 7204.6}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "completed", "position": -1065.11}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 6205.51}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 4184.37}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 3102.54}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "backlog", "position": -961.81}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "started", "position": 3906.57}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "triage", "position": 0}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "started", "position": 2980.82}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "unstarted", "position": 1}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "completed", "position": 3}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "started", "position": 2}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 4}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "duplicate", "position": 5282.08}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "backlog", "position": 0}]}}]}}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "url": "https://example.invalid/redacted", "slugId":
+        "redacted-slug", "startDate": "2000-01-01T00:00:00.000Z", "targetDate": null,
+        "projectMilestones": {"nodes": [{"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "targetDate": null, "progress": 0}]}, "teams": {"nodes":
+        [{"id": "00000000-0000-0000-0000-000000000000", "key": "ORG", "name": "[REDACTED]",
+        "issueEstimationType": "exponential", "issueEstimationAllowZero": true, "issueEstimationExtended":
+        false, "cycles": {"nodes": [{"number": 33, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 34, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 35, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 36, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 37, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 38, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 39, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 40, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 41, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 42, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 43, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}]}, "states": {"nodes": [{"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "completed", "position": 7204.6}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "completed", "position": -1065.11}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 6205.51}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 3102.54}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "backlog", "position": -961.81}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "started", "position": 2980.82}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 4184.37}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "started", "position": 3906.57}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "backlog", "position": 0}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 4}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "duplicate", "position": 5282.08}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "unstarted", "position": 1}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "started", "position": 2}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "completed", "position": 3}]}}]}}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "url": "https://example.invalid/redacted", "slugId":
+        "redacted-slug", "startDate": "2000-01-01T00:00:00.000Z", "targetDate": null,
+        "projectMilestones": {"nodes": [{"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "targetDate": null, "progress": 0}]}, "teams": {"nodes":
+        [{"id": "00000000-0000-0000-0000-000000000000", "key": "ORG", "name": "[REDACTED]",
+        "issueEstimationType": "exponential", "issueEstimationAllowZero": true, "issueEstimationExtended":
+        false, "cycles": {"nodes": [{"number": 33, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 34, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 35, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 36, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 37, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 38, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 39, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 40, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 41, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 42, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 43, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}]}, "states": {"nodes": [{"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "completed", "position": 7204.6}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "completed", "position": -1065.11}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 6205.51}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 3102.54}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "backlog", "position": -961.81}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "started", "position": 2980.82}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 4184.37}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "started", "position": 3906.57}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "backlog", "position": 0}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 4}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "duplicate", "position": 5282.08}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "unstarted", "position": 1}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "started", "position": 2}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "completed", "position": 3}]}}]}}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "url": "https://example.invalid/redacted", "slugId":
+        "redacted-slug", "startDate": "2000-01-01T00:00:00.000Z", "targetDate": null,
+        "projectMilestones": {"nodes": [{"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "targetDate": null, "progress": 0}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "targetDate": null, "progress": 0}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "targetDate": null, "progress": 0}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "targetDate": "2000-01-01T00:00:00.000Z", "progress":
+        75}]}, "teams": {"nodes": [{"id": "00000000-0000-0000-0000-000000000000",
+        "key": "ORG", "name": "[REDACTED]", "issueEstimationType": "exponential",
+        "issueEstimationAllowZero": true, "issueEstimationExtended": false, "cycles":
+        {"nodes": [{"number": 55, "startsAt": "2000-01-01T00:00:00.000Z", "endsAt":
+        "2000-01-01T00:00:00.000Z"}, {"number": 56, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 57, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 58, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 59, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 60, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 61, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 62, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 63, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 64, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 65, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}]}, "states": {"nodes": [{"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "completed", "position": 7204.6}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "completed", "position": -1065.11}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 6205.51}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 4184.37}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 3102.54}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "backlog", "position": -961.81}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "started", "position": 3906.57}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "triage", "position": 0}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "started", "position": 2980.82}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "unstarted", "position": 1}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "completed", "position": 3}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "started", "position": 2}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 4}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "duplicate", "position": 5282.08}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "backlog", "position": 0}]}}]}}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "url": "https://example.invalid/redacted", "slugId":
+        "redacted-slug", "startDate": "2000-01-01T00:00:00.000Z", "targetDate": null,
+        "projectMilestones": {"nodes": []}, "teams": {"nodes": [{"id": "00000000-0000-0000-0000-000000000000",
+        "key": "ORG", "name": "[REDACTED]", "issueEstimationType": "exponential",
+        "issueEstimationAllowZero": true, "issueEstimationExtended": false, "cycles":
+        {"nodes": [{"number": 33, "startsAt": "2000-01-01T00:00:00.000Z", "endsAt":
+        "2000-01-01T00:00:00.000Z"}, {"number": 34, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 35, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 36, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 37, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 38, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 39, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 40, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 41, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 42, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 43, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}]}, "states": {"nodes": [{"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "completed", "position": 7204.6}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "completed", "position": -1065.11}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 6205.51}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 3102.54}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "backlog", "position": -961.81}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "started", "position": 2980.82}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 4184.37}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "started", "position": 3906.57}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "backlog", "position": 0}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 4}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "duplicate", "position": 5282.08}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "unstarted", "position": 1}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "started", "position": 2}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "completed", "position": 3}]}}]}}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "url": "https://example.invalid/redacted", "slugId":
+        "redacted-slug", "startDate": null, "targetDate": null, "projectMilestones":
+        {"nodes": []}, "teams": {"nodes": [{"id": "00000000-0000-0000-0000-000000000000",
+        "key": "ORG", "name": "[REDACTED]", "issueEstimationType": "exponential",
+        "issueEstimationAllowZero": true, "issueEstimationExtended": false, "cycles":
+        {"nodes": [{"number": 33, "startsAt": "2000-01-01T00:00:00.000Z", "endsAt":
+        "2000-01-01T00:00:00.000Z"}, {"number": 34, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 35, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 36, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 37, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 38, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 39, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 40, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 41, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 42, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 43, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}]}, "states": {"nodes": [{"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "completed", "position": 7204.6}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "completed", "position": -1065.11}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 6205.51}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 3102.54}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "backlog", "position": -961.81}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "started", "position": 2980.82}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 4184.37}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "started", "position": 3906.57}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "backlog", "position": 0}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 4}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "duplicate", "position": 5282.08}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "unstarted", "position": 1}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "started", "position": 2}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "completed", "position": 3}]}}]}}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "url": "https://example.invalid/redacted", "slugId":
+        "redacted-slug", "startDate": null, "targetDate": null, "projectMilestones":
+        {"nodes": [{"id": "00000000-0000-0000-0000-000000000000", "name": "[REDACTED]",
+        "targetDate": null, "progress": 0}]}, "teams": {"nodes": [{"id": "00000000-0000-0000-0000-000000000000",
+        "key": "ORG", "name": "[REDACTED]", "issueEstimationType": "exponential",
+        "issueEstimationAllowZero": true, "issueEstimationExtended": false, "cycles":
+        {"nodes": [{"number": 33, "startsAt": "2000-01-01T00:00:00.000Z", "endsAt":
+        "2000-01-01T00:00:00.000Z"}, {"number": 34, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 35, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 36, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 37, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 38, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 39, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 40, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 41, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 42, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 43, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}]}, "states": {"nodes": [{"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "completed", "position": 7204.6}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "completed", "position": -1065.11}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 6205.51}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 3102.54}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "backlog", "position": -961.81}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "started", "position": 2980.82}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 4184.37}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "started", "position": 3906.57}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "backlog", "position": 0}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 4}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "duplicate", "position": 5282.08}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "unstarted", "position": 1}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "started", "position": 2}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "completed", "position": 3}]}}]}}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "url": "https://example.invalid/redacted", "slugId":
+        "redacted-slug", "startDate": "2000-01-01T00:00:00.000Z", "targetDate": null,
+        "projectMilestones": {"nodes": [{"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "targetDate": null, "progress": 0}]}, "teams": {"nodes":
+        [{"id": "00000000-0000-0000-0000-000000000000", "key": "ORG", "name": "[REDACTED]",
+        "issueEstimationType": "exponential", "issueEstimationAllowZero": true, "issueEstimationExtended":
+        false, "cycles": {"nodes": [{"number": 33, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 34, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 35, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 36, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 37, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 38, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 39, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 40, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 41, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 42, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 43, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}]}, "states": {"nodes": [{"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "completed", "position": 7204.6}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "completed", "position": -1065.11}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 6205.51}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 3102.54}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "backlog", "position": -961.81}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "started", "position": 2980.82}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 4184.37}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "started", "position": 3906.57}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "backlog", "position": 0}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 4}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "duplicate", "position": 5282.08}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "unstarted", "position": 1}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "started", "position": 2}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "completed", "position": 3}]}}]}}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "url": "https://example.invalid/redacted", "slugId":
+        "redacted-slug", "startDate": "2000-01-01T00:00:00.000Z", "targetDate": "2000-01-01T00:00:00.000Z",
+        "projectMilestones": {"nodes": [{"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "targetDate": "2000-01-01T00:00:00.000Z", "progress":
+        40}, {"id": "00000000-0000-0000-0000-000000000000", "name": "[REDACTED]",
+        "targetDate": "2000-01-01T00:00:00.000Z", "progress": 0}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "targetDate": "2000-01-01T00:00:00.000Z", "progress":
+        0}]}, "teams": {"nodes": [{"id": "00000000-0000-0000-0000-000000000000", "key":
+        "ORG", "name": "[REDACTED]", "issueEstimationType": "exponential", "issueEstimationAllowZero":
+        true, "issueEstimationExtended": false, "cycles": {"nodes": [{"number": 55,
+        "startsAt": "2000-01-01T00:00:00.000Z", "endsAt": "2000-01-01T00:00:00.000Z"},
+        {"number": 56, "startsAt": "2000-01-01T00:00:00.000Z", "endsAt": "2000-01-01T00:00:00.000Z"},
+        {"number": 57, "startsAt": "2000-01-01T00:00:00.000Z", "endsAt": "2000-01-01T00:00:00.000Z"},
+        {"number": 58, "startsAt": "2000-01-01T00:00:00.000Z", "endsAt": "2000-01-01T00:00:00.000Z"},
+        {"number": 59, "startsAt": "2000-01-01T00:00:00.000Z", "endsAt": "2000-01-01T00:00:00.000Z"},
+        {"number": 60, "startsAt": "2000-01-01T00:00:00.000Z", "endsAt": "2000-01-01T00:00:00.000Z"},
+        {"number": 61, "startsAt": "2000-01-01T00:00:00.000Z", "endsAt": "2000-01-01T00:00:00.000Z"},
+        {"number": 62, "startsAt": "2000-01-01T00:00:00.000Z", "endsAt": "2000-01-01T00:00:00.000Z"},
+        {"number": 63, "startsAt": "2000-01-01T00:00:00.000Z", "endsAt": "2000-01-01T00:00:00.000Z"},
+        {"number": 64, "startsAt": "2000-01-01T00:00:00.000Z", "endsAt": "2000-01-01T00:00:00.000Z"},
+        {"number": 65, "startsAt": "2000-01-01T00:00:00.000Z", "endsAt": "2000-01-01T00:00:00.000Z"}]},
+        "states": {"nodes": [{"id": "00000000-0000-0000-0000-000000000000", "name":
+        "[REDACTED]", "type": "completed", "position": 7204.6}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "completed", "position": -1065.11}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 6205.51}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 4184.37}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 3102.54}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "backlog", "position": -961.81}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "started", "position": 3906.57}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "triage", "position": 0}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "started", "position": 2980.82}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "unstarted", "position": 1}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "completed", "position": 3}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "started", "position": 2}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 4}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "duplicate", "position": 5282.08}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "backlog", "position": 0}]}}]}}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "url": "https://example.invalid/redacted", "slugId":
+        "redacted-slug", "startDate": null, "targetDate": null, "projectMilestones":
+        {"nodes": []}, "teams": {"nodes": [{"id": "00000000-0000-0000-0000-000000000000",
+        "key": "ORG", "name": "[REDACTED]", "issueEstimationType": "exponential",
+        "issueEstimationAllowZero": true, "issueEstimationExtended": false, "cycles":
+        {"nodes": [{"number": 33, "startsAt": "2000-01-01T00:00:00.000Z", "endsAt":
+        "2000-01-01T00:00:00.000Z"}, {"number": 34, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 35, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 36, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 37, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 38, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 39, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 40, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 41, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 42, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 43, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}]}, "states": {"nodes": [{"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "completed", "position": 7204.6}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "completed", "position": -1065.11}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 6205.51}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 3102.54}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "backlog", "position": -961.81}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "started", "position": 2980.82}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 4184.37}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "started", "position": 3906.57}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "backlog", "position": 0}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 4}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "duplicate", "position": 5282.08}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "unstarted", "position": 1}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "started", "position": 2}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "completed", "position": 3}]}}]}}]}}}'
+    headers:
+      alt-svc:
+      - h3=":443"; ma=86400
+      cache-control:
+      - private, no-cache, no-store, must-revalidate
+      cf-cache-status:
+      - DYNAMIC
+      cf-ray:
+      - a4718ec7fe9d4766-DFW
+      connection:
+      - keep-alive
+      content-length:
+      - '30065'
+      content-type:
+      - application/json; charset=utf-8
+      date:
+      - Thu, 08 Oct 2026 02:01:27 GMT
+      etag:
+      - W/"7571-9W2gnBHY5uWvcQQ6rclfD0cFJ7I"
+      server:
+      - cloudflare
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept-Encoding
+      via:
+      - 1.1 google
+      x-complexity:
+      - '9904'
+      x-ratelimit-complexity-limit:
+      - '3000000'
+      x-ratelimit-complexity-remaining:
+      - '2990096'
+      x-ratelimit-complexity-reset:
+      - '1791428487111'
+      x-ratelimit-requests-limit:
+      - '2500'
+      x-ratelimit-requests-remaining:
+      - '2498'
+      x-ratelimit-requests-reset:
+      - '1791428487111'
+      x-request-id:
+      - a4718ec82bb84696-DFW
+    status:
+      code: 200
+      message: OK
+version: 1

@@ -103,6 +103,10 @@
 
 ### Fix
 
+- **pylon**: send the search cursor in the request body
+- **snapshot**: cap the past-SLA table at 25 rows
+- **pylon**: refresh from GET /issues and resolve links from external_issues
+- **refresh**: report response parse errors as failed, not skipped
 - keep refreshing when a source is missing or fails
 - **snapshot**: exclude archived and closed-like issues from Linear open counts
 - **pylon**: send the cursor as a query param and read custom fields as objects

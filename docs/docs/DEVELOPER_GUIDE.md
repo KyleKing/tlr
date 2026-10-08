@@ -93,10 +93,10 @@ uv publish
 | `tlr/sources/__init__.py`          | 0          | 0       | 0        | 100.0%   |
 | `tlr/sources/alarms.py`            | 51         | 1       | 0        | 95.1%    |
 | `tlr/sources/linear.py`            | 115        | 0       | 0        | 100.0%   |
-| `tlr/sources/pylon.py`             | 160        | 3       | 0        | 95.3%    |
+| `tlr/sources/pylon.py`             | 166        | 3       | 0        | 96.0%    |
 | `tlr/sources/sentry.py`            | 64         | 0       | 0        | 100.0%   |
 | `tlr/store.py`                     | 248        | 12      | 0        | 92.4%    |
-| **Totals**                         | 1986       | 99      | 38       | 93.2%    |
+| **Totals**                         | 1992       | 99      | 38       | 93.3%    |
 
 Generated on: 2026-10-07
 <!-- {cte} -->

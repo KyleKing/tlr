@@ -1,0 +1,865 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.usepylon.com
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://api.usepylon.com/accounts
+  response:
+    body:
+      string: '{"data": [{"id": "00000000-0000-0000-0000-000000000000", "name": "[REDACTED]",
+        "logo_url": "https://example.invalid/redacted", "owner": null, "domain": "[REDACTED]",
+        "domains": ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer",
+        "channels": [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": null, "custom_fields": {}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "account.hubspot.total_revenue": {"value": "[REDACTED]"}},
+        "latest_customer_activity_time": "2000-01-01T00:00:00.000Z", "external_ids":
+        null, "crm_settings": {"details": [{"source": "hubspot", "id": "00000000-0000-0000-0000-000000000000"}]},
+        "is_disabled": false, "parent_account_id": null, "subaccount_ids": []}, {"id":
+        "00000000-0000-0000-0000-000000000000", "name": "[REDACTED]", "logo_url":
+        "https://example.invalid/redacted", "owner": null, "domain": "[REDACTED]",
+        "domains": ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer",
+        "channels": [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": null, "custom_fields": {"account.hubspot.total_revenue": {"value":
+        "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "account.hubspot.total_revenue": {"value": "[REDACTED]"}},
+        "latest_customer_activity_time": "2000-01-01T00:00:00.000Z", "external_ids":
+        null, "crm_settings": {"details": [{"source": "hubspot", "id": "00000000-0000-0000-0000-000000000000"}]},
+        "is_disabled": false, "parent_account_id": null, "subaccount_ids": []}, {"id":
+        "00000000-0000-0000-0000-000000000000", "name": "[REDACTED]", "logo_url":
+        "https://example.invalid/redacted", "owner": {"id": "00000000-0000-0000-0000-000000000000"},
+        "domain": "[REDACTED]", "domains": ["[REDACTED]"], "primary_domain": "[REDACTED]",
+        "type": "customer", "channels": [], "created_at": "2000-01-01T00:00:00.000Z",
+        "updated_at": "2000-01-01T00:00:00.000Z", "tags": ["[REDACTED]"], "custom_fields":
+        {"account.hubspot.total_revenue": {"value": "[REDACTED]"}}, "latest_customer_activity_time":
+        "2000-01-01T00:00:00.000Z", "external_ids": null, "crm_settings": {"details":
+        [{"source": "hubspot", "id": "00000000-0000-0000-0000-000000000000"}]}, "is_disabled":
+        false, "parent_account_id": null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        null, "domain": "[REDACTED]", "domains": ["[REDACTED]"], "primary_domain":
+        "[REDACTED]", "type": "customer", "channels": [], "created_at": "2000-01-01T00:00:00.000Z",
+        "updated_at": "2000-01-01T00:00:00.000Z", "tags": null, "custom_fields": {},
+        "latest_customer_activity_time": "2000-01-01T00:00:00.000Z", "external_ids":
+        null, "is_disabled": false, "parent_account_id": null, "subaccount_ids": []},
+        {"id": "00000000-0000-0000-0000-000000000000", "name": "[REDACTED]", "logo_url":
+        "https://example.invalid/redacted", "owner": null, "domain": "[REDACTED]",
+        "domains": ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer",
+        "channels": [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": null, "custom_fields": {"account.hubspot.annualrevenue": {"value":
+        "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "account.hubspot.total_revenue": {"value": "[REDACTED]"},
+        "calendar.last_meeting_date": {"value": "[REDACTED]"}, "lifecycle": {"value":
+        "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "account.hubspot.total_revenue": {"value": "[REDACTED]"},
+        "calendar.last_meeting_date": {"value": "[REDACTED]"}, "lifecycle": {"value":
+        "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": null, "custom_fields": {"account.hubspot.annualrevenue": {"value":
+        "[REDACTED]"}, "account.hubspot.total_revenue": {"value": "[REDACTED]"}, "calendar.last_meeting_date":
+        {"value": "[REDACTED]"}, "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time":
+        "2000-01-01T00:00:00.000Z", "external_ids": null, "crm_settings": {"details":
+        [{"source": "hubspot", "id": "00000000-0000-0000-0000-000000000000"}]}, "is_disabled":
+        false, "parent_account_id": null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "partner", "channels":
+        [{"channel_id": "[REDACTED]", "channel_name": "[REDACTED]", "channel_url":
+        "https://example.invalid/redacted", "source": "slack", "is_primary": true,
+        "is_internal": false}], "created_at": "2000-01-01T00:00:00.000Z", "updated_at":
+        "2000-01-01T00:00:00.000Z", "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "account.hubspot.total_revenue": {"value": "[REDACTED]"},
+        "calendar.last_meeting_date": {"value": "[REDACTED]"}, "calendar.next_meeting_date":
+        {"value": "[REDACTED]"}, "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time":
+        "2000-01-01T00:00:00.000Z", "external_ids": null, "crm_settings": {"details":
+        [{"source": "hubspot", "id": "00000000-0000-0000-0000-000000000000"}]}, "is_disabled":
+        false, "parent_account_id": null, "subaccount_ids": [], "associated_account_ids":
+        []}, {"id": "00000000-0000-0000-0000-000000000000", "name": "[REDACTED]",
+        "logo_url": "https://example.invalid/redacted", "owner": {"id": "00000000-0000-0000-0000-000000000000"},
+        "domain": "[REDACTED]", "domains": ["[REDACTED]"], "primary_domain": "[REDACTED]",
+        "type": "customer", "channels": [], "created_at": "2000-01-01T00:00:00.000Z",
+        "updated_at": "2000-01-01T00:00:00.000Z", "tags": ["[REDACTED]"], "custom_fields":
+        {"account.hubspot.total_revenue": {"value": "[REDACTED]"}, "lifecycle": {"value":
+        "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.total_revenue":
+        {"value": "[REDACTED]"}, "calendar.last_meeting_date": {"value": "[REDACTED]"},
+        "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "calendar.last_meeting_date": {"value": "[REDACTED]"},
+        "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "calendar.last_meeting_date": {"value": "[REDACTED]"},
+        "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.total_revenue":
+        {"value": "[REDACTED]"}, "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time":
+        "2000-01-01T00:00:00.000Z", "external_ids": null, "crm_settings": {"details":
+        [{"source": "hubspot", "id": "00000000-0000-0000-0000-000000000000"}]}, "is_disabled":
+        false, "parent_account_id": null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.total_revenue":
+        {"value": "[REDACTED]"}, "calendar.last_meeting_date": {"value": "[REDACTED]"},
+        "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "account.hubspot.total_revenue": {"value": "[REDACTED]"},
+        "calendar.last_meeting_date": {"value": "[REDACTED]"}, "calendar.next_meeting_date":
+        {"value": "[REDACTED]"}, "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time":
+        "2000-01-01T00:00:00.000Z", "external_ids": null, "crm_settings": {"details":
+        [{"source": "hubspot", "id": "00000000-0000-0000-0000-000000000000"}]}, "is_disabled":
+        false, "parent_account_id": null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.total_revenue":
+        {"value": "[REDACTED]"}, "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time":
+        "2000-01-01T00:00:00.000Z", "external_ids": null, "crm_settings": {"details":
+        [{"source": "hubspot", "id": "00000000-0000-0000-0000-000000000000"}]}, "is_disabled":
+        false, "parent_account_id": null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]", "[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer",
+        "channels": [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "account.hubspot.total_revenue": {"value": "[REDACTED]"},
+        "calendar.last_meeting_date": {"value": "[REDACTED]"}, "lifecycle": {"value":
+        "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time":
+        "2000-01-01T00:00:00.000Z", "external_ids": null, "crm_settings": {"details":
+        [{"source": "hubspot", "id": "00000000-0000-0000-0000-000000000000"}]}, "is_disabled":
+        false, "parent_account_id": null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        null, "domain": "[REDACTED]", "domains": ["[REDACTED]"], "primary_domain":
+        "[REDACTED]", "type": "customer", "channels": [], "created_at": "2000-01-01T00:00:00.000Z",
+        "updated_at": "2000-01-01T00:00:00.000Z", "tags": ["[REDACTED]"], "custom_fields":
+        {"account.hubspot.annualrevenue": {"value": "[REDACTED]"}, "lifecycle": {"value":
+        "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]", "[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer",
+        "channels": [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time":
+        "2000-01-01T00:00:00.000Z", "external_ids": null, "crm_settings": {"details":
+        [{"source": "hubspot", "id": "00000000-0000-0000-0000-000000000000"}]}, "is_disabled":
+        false, "parent_account_id": null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"calendar.last_meeting_date": {"value":
+        "[REDACTED]"}, "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time":
+        "2000-01-01T00:00:00.000Z", "external_ids": null, "crm_settings": {"details":
+        [{"source": "hubspot", "id": "00000000-0000-0000-0000-000000000000"}]}, "is_disabled":
+        false, "parent_account_id": null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "account.hubspot.total_revenue": {"value": "[REDACTED]"},
+        "calendar.last_meeting_date": {"value": "[REDACTED]"}, "lifecycle": {"value":
+        "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "calendar.last_meeting_date": {"value": "[REDACTED]"},
+        "calendar.next_meeting_date": {"value": "[REDACTED]"}, "lifecycle": {"value":
+        "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "account.hubspot.total_revenue": {"value": "[REDACTED]"},
+        "calendar.last_meeting_date": {"value": "[REDACTED]"}, "lifecycle": {"value":
+        "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "account.hubspot.total_revenue": {"value": "[REDACTED]"},
+        "calendar.last_meeting_date": {"value": "[REDACTED]"}, "calendar.next_meeting_date":
+        {"value": "[REDACTED]"}, "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time":
+        "2000-01-01T00:00:00.000Z", "external_ids": null, "crm_settings": {"details":
+        [{"source": "hubspot", "id": "00000000-0000-0000-0000-000000000000"}]}, "is_disabled":
+        false, "parent_account_id": null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        null, "domain": "[REDACTED]", "domains": ["[REDACTED]"], "primary_domain":
+        "[REDACTED]", "type": "customer", "channels": [], "created_at": "2000-01-01T00:00:00.000Z",
+        "updated_at": "2000-01-01T00:00:00.000Z", "tags": null, "custom_fields": {},
+        "latest_customer_activity_time": "2000-01-01T00:00:00.000Z", "external_ids":
+        null, "crm_settings": {"details": [{"source": "hubspot", "id": "00000000-0000-0000-0000-000000000000"}]},
+        "is_disabled": false, "parent_account_id": null, "subaccount_ids": []}, {"id":
+        "00000000-0000-0000-0000-000000000000", "name": "[REDACTED]", "logo_url":
+        "https://example.invalid/redacted", "owner": {"id": "00000000-0000-0000-0000-000000000000"},
+        "domain": "[REDACTED]", "domains": ["[REDACTED]"], "primary_domain": "[REDACTED]",
+        "type": "customer", "channels": [], "created_at": "2000-01-01T00:00:00.000Z",
+        "updated_at": "2000-01-01T00:00:00.000Z", "tags": ["[REDACTED]"], "custom_fields":
+        {"lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "account.hubspot.total_revenue": {"value": "[REDACTED]"},
+        "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"lifecycle": {"value": "[REDACTED]"}},
+        "latest_customer_activity_time": "2000-01-01T00:00:00.000Z", "external_ids":
+        null, "is_disabled": false, "parent_account_id": null, "subaccount_ids": []},
+        {"id": "00000000-0000-0000-0000-000000000000", "name": "[REDACTED]", "logo_url":
+        "https://example.invalid/redacted", "owner": null, "domain": "[REDACTED]",
+        "domains": ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer",
+        "channels": [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time":
+        "2000-01-01T00:00:00.000Z", "external_ids": null, "crm_settings": {"details":
+        [{"source": "hubspot", "id": "00000000-0000-0000-0000-000000000000"}]}, "is_disabled":
+        false, "parent_account_id": null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "account.hubspot.total_revenue": {"value": "[REDACTED]"},
+        "calendar.last_meeting_date": {"value": "[REDACTED]"}, "lifecycle": {"value":
+        "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]", "[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer",
+        "channels": [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"calendar.last_meeting_date": {"value":
+        "[REDACTED]"}, "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time":
+        "2000-01-01T00:00:00.000Z", "external_ids": null, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        null, "domain": "[REDACTED]", "domains": ["[REDACTED]"], "primary_domain":
+        "[REDACTED]", "type": "customer", "channels": [], "created_at": "2000-01-01T00:00:00.000Z",
+        "updated_at": "2000-01-01T00:00:00.000Z", "tags": ["[REDACTED]"], "custom_fields":
+        {"lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        null, "domain": "[REDACTED]", "domains": ["[REDACTED]", "[REDACTED]"], "primary_domain":
+        "[REDACTED]", "type": "customer", "channels": [], "created_at": "2000-01-01T00:00:00.000Z",
+        "updated_at": "2000-01-01T00:00:00.000Z", "tags": ["[REDACTED]"], "custom_fields":
+        {"lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "is_disabled": false, "parent_account_id": null, "subaccount_ids":
+        []}, {"id": "00000000-0000-0000-0000-000000000000", "name": "[REDACTED]",
+        "logo_url": "https://example.invalid/redacted", "owner": {"id": "00000000-0000-0000-0000-000000000000"},
+        "domain": "[REDACTED]", "domains": ["[REDACTED]"], "primary_domain": "[REDACTED]",
+        "type": "customer", "channels": [], "created_at": "2000-01-01T00:00:00.000Z",
+        "updated_at": "2000-01-01T00:00:00.000Z", "tags": ["[REDACTED]"], "custom_fields":
+        {"account.hubspot.total_revenue": {"value": "[REDACTED]"}, "calendar.last_meeting_date":
+        {"value": "[REDACTED]"}, "calendar.next_meeting_date": {"value": "[REDACTED]"},
+        "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        null, "domain": "[REDACTED]", "domains": ["[REDACTED]"], "primary_domain":
+        "[REDACTED]", "type": "customer", "channels": [], "created_at": "2000-01-01T00:00:00.000Z",
+        "updated_at": "2000-01-01T00:00:00.000Z", "tags": null, "custom_fields": {},
+        "latest_customer_activity_time": "2000-01-01T00:00:00.000Z", "external_ids":
+        null, "crm_settings": {"details": [{"source": "hubspot", "id": "00000000-0000-0000-0000-000000000000"}]},
+        "is_disabled": false, "parent_account_id": null, "subaccount_ids": []}, {"id":
+        "00000000-0000-0000-0000-000000000000", "name": "[REDACTED]", "logo_url":
+        "https://example.invalid/redacted", "owner": {"id": "00000000-0000-0000-0000-000000000000"},
+        "domain": "[REDACTED]", "domains": ["[REDACTED]"], "primary_domain": "[REDACTED]",
+        "type": "customer", "channels": [], "created_at": "2000-01-01T00:00:00.000Z",
+        "updated_at": "2000-01-01T00:00:00.000Z", "tags": ["[REDACTED]"], "custom_fields":
+        {"lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        null, "domain": "[REDACTED]", "domains": ["[REDACTED]"], "primary_domain":
+        "[REDACTED]", "type": "customer", "channels": [], "created_at": "2000-01-01T00:00:00.000Z",
+        "updated_at": "2000-01-01T00:00:00.000Z", "tags": ["[REDACTED]"], "custom_fields":
+        {"account.hubspot.annualrevenue": {"value": "[REDACTED]"}, "lifecycle": {"value":
+        "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        null, "domain": "[REDACTED]", "domains": ["[REDACTED]"], "primary_domain":
+        "[REDACTED]", "type": "customer", "channels": [], "created_at": "2000-01-01T00:00:00.000Z",
+        "updated_at": "2000-01-01T00:00:00.000Z", "tags": null, "custom_fields": {},
+        "latest_customer_activity_time": "2000-01-01T00:00:00.000Z", "external_ids":
+        null, "crm_settings": {"details": [{"source": "hubspot", "id": "00000000-0000-0000-0000-000000000000"}]},
+        "is_disabled": false, "parent_account_id": null, "subaccount_ids": []}, {"id":
+        "00000000-0000-0000-0000-000000000000", "name": "[REDACTED]", "logo_url":
+        "https://example.invalid/redacted", "owner": {"id": "00000000-0000-0000-0000-000000000000"},
+        "domain": "[REDACTED]", "domains": ["[REDACTED]"], "primary_domain": "[REDACTED]",
+        "type": "customer", "channels": [], "created_at": "2000-01-01T00:00:00.000Z",
+        "updated_at": "2000-01-01T00:00:00.000Z", "tags": ["[REDACTED]"], "custom_fields":
+        {"account.hubspot.total_revenue": {"value": "[REDACTED]"}, "calendar.last_meeting_date":
+        {"value": "[REDACTED]"}, "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time":
+        "2000-01-01T00:00:00.000Z", "external_ids": null, "crm_settings": {"details":
+        [{"source": "hubspot", "id": "00000000-0000-0000-0000-000000000000"}]}, "is_disabled":
+        false, "parent_account_id": null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.total_revenue":
+        {"value": "[REDACTED]"}, "calendar.last_meeting_date": {"value": "[REDACTED]"},
+        "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        null, "domain": "[REDACTED]", "domains": ["[REDACTED]"], "primary_domain":
+        "[REDACTED]", "type": "customer", "channels": [], "created_at": "2000-01-01T00:00:00.000Z",
+        "updated_at": "2000-01-01T00:00:00.000Z", "tags": ["[REDACTED]"], "custom_fields":
+        {"account.hubspot.annualrevenue": {"value": "[REDACTED]"}, "lifecycle": {"value":
+        "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        null, "domain": "[REDACTED]", "domains": ["[REDACTED]"], "primary_domain":
+        "[REDACTED]", "type": "customer", "channels": [], "created_at": "2000-01-01T00:00:00.000Z",
+        "updated_at": "2000-01-01T00:00:00.000Z", "tags": ["[REDACTED]"], "custom_fields":
+        {"lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "is_disabled": false, "parent_account_id": null, "subaccount_ids":
+        []}, {"id": "00000000-0000-0000-0000-000000000000", "name": "[REDACTED]",
+        "logo_url": "https://example.invalid/redacted", "owner": {"id": "00000000-0000-0000-0000-000000000000"},
+        "domain": "[REDACTED]", "domains": ["[REDACTED]"], "primary_domain": "[REDACTED]",
+        "type": "customer", "channels": [], "created_at": "2000-01-01T00:00:00.000Z",
+        "updated_at": "2000-01-01T00:00:00.000Z", "tags": ["[REDACTED]"], "custom_fields":
+        {"account.hubspot.annualrevenue": {"value": "[REDACTED]"}, "account.hubspot.total_revenue":
+        {"value": "[REDACTED]"}, "calendar.last_meeting_date": {"value": "[REDACTED]"},
+        "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"calendar.last_meeting_date": {"value":
+        "[REDACTED]"}, "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time":
+        "2000-01-01T00:00:00.000Z", "external_ids": null, "crm_settings": {"details":
+        [{"source": "hubspot", "id": "00000000-0000-0000-0000-000000000000"}]}, "is_disabled":
+        false, "parent_account_id": null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "account.hubspot.total_revenue": {"value": "[REDACTED]"},
+        "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        null, "domain": "[REDACTED]", "domains": ["[REDACTED]"], "primary_domain":
+        "[REDACTED]", "type": "customer", "channels": [], "created_at": "2000-01-01T00:00:00.000Z",
+        "updated_at": "2000-01-01T00:00:00.000Z", "tags": ["[REDACTED]"], "custom_fields":
+        {"lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "account.hubspot.total_revenue": {"value": "[REDACTED]"},
+        "calendar.last_meeting_date": {"value": "[REDACTED]"}, "lifecycle": {"value":
+        "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.total_revenue":
+        {"value": "[REDACTED]"}, "calendar.last_meeting_date": {"value": "[REDACTED]"},
+        "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"lifecycle": {"value": "[REDACTED]"}},
+        "latest_customer_activity_time": "2000-01-01T00:00:00.000Z", "external_ids":
+        null, "is_disabled": false, "parent_account_id": null, "subaccount_ids": []},
+        {"id": "00000000-0000-0000-0000-000000000000", "name": "[REDACTED]", "logo_url":
+        "https://example.invalid/redacted", "owner": {"id": "00000000-0000-0000-0000-000000000000"},
+        "domain": "[REDACTED]", "domains": ["[REDACTED]"], "primary_domain": "[REDACTED]",
+        "type": "customer", "channels": [{"channel_id": "[REDACTED]", "channel_name":
+        "[REDACTED]", "channel_url": "https://example.invalid/redacted", "source":
+        "slack", "is_primary": false, "is_internal": false}, {"channel_id": "[REDACTED]",
+        "channel_name": "[REDACTED]", "channel_url": "https://example.invalid/redacted",
+        "source": "slack", "is_primary": true, "is_internal": false}], "created_at":
+        "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z", "tags":
+        ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue": {"value":
+        "[REDACTED]"}, "account.hubspot.total_revenue": {"value": "[REDACTED]"}, "calendar.last_meeting_date":
+        {"value": "[REDACTED]"}, "calendar.next_meeting_date": {"value": "[REDACTED]"},
+        "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "account.hubspot.total_revenue": {"value": "[REDACTED]"},
+        "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        null, "domain": "[REDACTED]", "domains": ["[REDACTED]"], "primary_domain":
+        "[REDACTED]", "type": "customer", "channels": [], "created_at": "2000-01-01T00:00:00.000Z",
+        "updated_at": "2000-01-01T00:00:00.000Z", "tags": ["[REDACTED]"], "custom_fields":
+        {"lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [{"channel_id": "[REDACTED]", "channel_name": "[REDACTED]", "channel_url":
+        "https://example.invalid/redacted", "source": "slack", "is_primary": true,
+        "is_internal": false}], "created_at": "2000-01-01T00:00:00.000Z", "updated_at":
+        "2000-01-01T00:00:00.000Z", "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "account.hubspot.total_revenue": {"value": "[REDACTED]"},
+        "calendar.last_meeting_date": {"value": "[REDACTED]"}, "calendar.next_meeting_date":
+        {"value": "[REDACTED]"}, "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time":
+        "2000-01-01T00:00:00.000Z", "external_ids": null, "crm_settings": {"details":
+        [{"source": "hubspot", "id": "00000000-0000-0000-0000-000000000000"}]}, "is_disabled":
+        false, "parent_account_id": null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.total_revenue":
+        {"value": "[REDACTED]"}, "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time":
+        "2000-01-01T00:00:00.000Z", "external_ids": null, "crm_settings": {"details":
+        [{"source": "hubspot", "id": "00000000-0000-0000-0000-000000000000"}]}, "is_disabled":
+        false, "parent_account_id": null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "account.hubspot.total_revenue": {"value": "[REDACTED]"},
+        "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [{"channel_id": "[REDACTED]", "channel_name": "[REDACTED]", "channel_url":
+        "https://example.invalid/redacted", "source": "slack", "is_primary": true,
+        "is_internal": false}], "created_at": "2000-01-01T00:00:00.000Z", "updated_at":
+        "2000-01-01T00:00:00.000Z", "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "account.hubspot.total_revenue": {"value": "[REDACTED]"},
+        "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [{"channel_id": "[REDACTED]", "channel_name": "[REDACTED]", "channel_url":
+        "https://example.invalid/redacted", "source": "slack", "is_primary": true,
+        "is_internal": false}], "created_at": "2000-01-01T00:00:00.000Z", "updated_at":
+        "2000-01-01T00:00:00.000Z", "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.total_revenue":
+        {"value": "[REDACTED]"}, "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time":
+        "2000-01-01T00:00:00.000Z", "external_ids": null, "crm_settings": {"details":
+        [{"source": "hubspot", "id": "00000000-0000-0000-0000-000000000000"}]}, "is_disabled":
+        false, "parent_account_id": null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "account.hubspot.total_revenue": {"value": "[REDACTED]"},
+        "calendar.last_meeting_date": {"value": "[REDACTED]"}, "lifecycle": {"value":
+        "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        null, "domain": "[REDACTED]", "domains": ["[REDACTED]"], "primary_domain":
+        "[REDACTED]", "type": "customer", "channels": [], "created_at": "2000-01-01T00:00:00.000Z",
+        "updated_at": "2000-01-01T00:00:00.000Z", "tags": ["[REDACTED]"], "custom_fields":
+        {"account.hubspot.annualrevenue": {"value": "[REDACTED]"}, "lifecycle": {"value":
+        "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": null, "custom_fields": {"account.hubspot.annualrevenue": {"value":
+        "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.total_revenue":
+        {"value": "[REDACTED]"}, "calendar.last_meeting_date": {"value": "[REDACTED]"},
+        "calendar.next_meeting_date": {"value": "[REDACTED]"}, "lifecycle": {"value":
+        "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "account.hubspot.total_revenue": {"value": "[REDACTED]"},
+        "calendar.last_meeting_date": {"value": "[REDACTED]"}, "lifecycle": {"value":
+        "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        null, "domain": "[REDACTED]", "domains": ["[REDACTED]", "[REDACTED]"], "primary_domain":
+        "[REDACTED]", "type": "customer", "channels": [], "created_at": "2000-01-01T00:00:00.000Z",
+        "updated_at": "2000-01-01T00:00:00.000Z", "tags": ["[REDACTED]"], "custom_fields":
+        {"calendar.last_meeting_date": {"value": "[REDACTED]"}, "lifecycle": {"value":
+        "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.total_revenue":
+        {"value": "[REDACTED]"}, "calendar.last_meeting_date": {"value": "[REDACTED]"},
+        "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]", "[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer",
+        "channels": [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "account.hubspot.total_revenue": {"value": "[REDACTED]"},
+        "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"calendar.last_meeting_date": {"value":
+        "[REDACTED]"}, "calendar.next_meeting_date": {"value": "[REDACTED]"}, "lifecycle":
+        {"value": "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.total_revenue":
+        {"value": "[REDACTED]"}, "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time":
+        "2000-01-01T00:00:00.000Z", "external_ids": null, "crm_settings": {"details":
+        [{"source": "hubspot", "id": "00000000-0000-0000-0000-000000000000"}]}, "is_disabled":
+        false, "parent_account_id": null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "account.hubspot.total_revenue": {"value": "[REDACTED]"},
+        "calendar.last_meeting_date": {"value": "[REDACTED]"}, "calendar.next_meeting_date":
+        {"value": "[REDACTED]"}, "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time":
+        "2000-01-01T00:00:00.000Z", "external_ids": null, "crm_settings": {"details":
+        [{"source": "hubspot", "id": "00000000-0000-0000-0000-000000000000"}]}, "is_disabled":
+        false, "parent_account_id": null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "account.hubspot.total_revenue": {"value": "[REDACTED]"},
+        "calendar.last_meeting_date": {"value": "[REDACTED]"}, "lifecycle": {"value":
+        "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [{"channel_id": "[REDACTED]", "channel_name": "[REDACTED]", "channel_url":
+        "https://example.invalid/redacted", "source": "slack", "is_primary": true,
+        "is_internal": false}], "created_at": "2000-01-01T00:00:00.000Z", "updated_at":
+        "2000-01-01T00:00:00.000Z", "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "account.hubspot.total_revenue": {"value": "[REDACTED]"},
+        "calendar.last_meeting_date": {"value": "[REDACTED]"}, "lifecycle": {"value":
+        "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "account.hubspot.total_revenue": {"value": "[REDACTED]"},
+        "calendar.last_meeting_date": {"value": "[REDACTED]"}, "calendar.next_meeting_date":
+        {"value": "[REDACTED]"}, "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time":
+        "2000-01-01T00:00:00.000Z", "external_ids": null, "crm_settings": {"details":
+        [{"source": "hubspot", "id": "00000000-0000-0000-0000-000000000000"}]}, "is_disabled":
+        false, "parent_account_id": null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        null, "domain": "[REDACTED]", "domains": ["[REDACTED]"], "primary_domain":
+        "[REDACTED]", "type": "customer", "channels": [], "created_at": "2000-01-01T00:00:00.000Z",
+        "updated_at": "2000-01-01T00:00:00.000Z", "tags": ["[REDACTED]"], "custom_fields":
+        {"lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "is_disabled": false, "parent_account_id": null, "subaccount_ids":
+        []}, {"id": "00000000-0000-0000-0000-000000000000", "name": "[REDACTED]",
+        "logo_url": "https://example.invalid/redacted", "owner": {"id": "00000000-0000-0000-0000-000000000000"},
+        "domain": "[REDACTED]", "domains": ["[REDACTED]"], "primary_domain": "[REDACTED]",
+        "type": "customer", "channels": [], "created_at": "2000-01-01T00:00:00.000Z",
+        "updated_at": "2000-01-01T00:00:00.000Z", "tags": ["[REDACTED]"], "custom_fields":
+        {"account.hubspot.total_revenue": {"value": "[REDACTED]"}, "calendar.last_meeting_date":
+        {"value": "[REDACTED]"}, "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time":
+        "2000-01-01T00:00:00.000Z", "external_ids": null, "crm_settings": {"details":
+        [{"source": "hubspot", "id": "00000000-0000-0000-0000-000000000000"}]}, "is_disabled":
+        false, "parent_account_id": null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "account.hubspot.total_revenue": {"value": "[REDACTED]"},
+        "calendar.last_meeting_date": {"value": "[REDACTED]"}, "lifecycle": {"value":
+        "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "calendar.last_meeting_date": {"value": "[REDACTED]"},
+        "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"calendar.last_meeting_date": {"value":
+        "[REDACTED]"}, "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time":
+        "2000-01-01T00:00:00.000Z", "external_ids": null, "crm_settings": {"details":
+        [{"source": "hubspot", "id": "00000000-0000-0000-0000-000000000000"}]}, "is_disabled":
+        false, "parent_account_id": null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "account.hubspot.total_revenue": {"value": "[REDACTED]"},
+        "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.total_revenue":
+        {"value": "[REDACTED]"}, "calendar.last_meeting_date": {"value": "[REDACTED]"},
+        "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [], "created_at": "2000-01-01T00:00:00.000Z", "updated_at": "2000-01-01T00:00:00.000Z",
+        "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "account.hubspot.total_revenue": {"value": "[REDACTED]"},
+        "calendar.last_meeting_date": {"value": "[REDACTED]"}, "calendar.next_meeting_date":
+        {"value": "[REDACTED]"}, "lifecycle": {"value": "[REDACTED]"}}, "latest_customer_activity_time":
+        "2000-01-01T00:00:00.000Z", "external_ids": null, "crm_settings": {"details":
+        [{"source": "hubspot", "id": "00000000-0000-0000-0000-000000000000"}]}, "is_disabled":
+        false, "parent_account_id": null, "subaccount_ids": []}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "logo_url": "https://example.invalid/redacted", "owner":
+        {"id": "00000000-0000-0000-0000-000000000000"}, "domain": "[REDACTED]", "domains":
+        ["[REDACTED]"], "primary_domain": "[REDACTED]", "type": "customer", "channels":
+        [{"channel_id": "[REDACTED]", "channel_name": "[REDACTED]", "channel_url":
+        "https://example.invalid/redacted", "source": "slack", "is_primary": true,
+        "is_internal": false}], "created_at": "2000-01-01T00:00:00.000Z", "updated_at":
+        "2000-01-01T00:00:00.000Z", "tags": ["[REDACTED]"], "custom_fields": {"account.hubspot.annualrevenue":
+        {"value": "[REDACTED]"}, "account.hubspot.total_revenue": {"value": "[REDACTED]"},
+        "calendar.last_meeting_date": {"value": "[REDACTED]"}, "calendar.next_meeting_date":
+        {"value": "[REDACTED]"}}, "latest_customer_activity_time": "2000-01-01T00:00:00.000Z",
+        "external_ids": null, "crm_settings": {"details": [{"source": "hubspot", "id":
+        "00000000-0000-0000-0000-000000000000"}]}, "is_disabled": false, "parent_account_id":
+        null, "subaccount_ids": []}], "request_id": "00000000-0000-0000-0000-000000000000"}'
+    headers:
+      access-control-expose-headers:
+      - X-Pylon-Request-ID
+      connection:
+      - keep-alive
+      content-length:
+      - '68559'
+      content-type:
+      - application/json
+      date:
+      - Thu, 08 Oct 2026 02:01:16 GMT
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept-Encoding
+      - Origin
+      x-content-type-options:
+      - nosniff
+      x-frame-options:
+      - DENY
+      x-pylon-request-id:
+      - 11300378-cfc2-4c27-97a7-6ff0dbcd6ea5
+      x-rate-limit-remaining:
+      - '299'
+    status:
+      code: 200
+      message: OK
+version: 1

@@ -33,9 +33,14 @@ what keeps a cassette clean by the time it reaches that gate.
 ## Recording a new cassette
 
 1. Set the real credential in the environment or keychain per `SETUP.md`.
+    Recorded tests live under `tests/live/` and resolve each secret through
+    `secret_or_placeholder` (`tests/live/conftest.py`), so replaying needs no credential:
+    the cassette match ignores the `Authorization` header entirely.
 1. Run the test that needs a fixture:
-    `uv run pytest tests/path/to/test_thing.py --record-mode=once`.
-    pytest-recording writes the cassette under that test module's `cassettes/` directory.
+    `uv run pytest tests/live/test_thing.py --record-mode=once`.
+    pytest-recording writes the cassette under `tests/live/cassettes/` — the package's
+    `vcr_cassette_dir` override puts it directly inside `cassettes/`, which is where both
+    the scrub verifier and the pre-commit glob look.
 1. Run `uv run prek run --all-files` (or just `uv run python -m tests.cassette_scrub`)
     before
     staging the cassette.
@@ -60,9 +65,19 @@ has never seen.
 Classify it before it can be committed:
 
 - **Structural** (kept verbatim): the field carries no workspace-specific content, e.g. a
-    pagination cursor, a count, an enum, a boolean, a small integer.
+    count, an enum, a boolean, a small integer.
     Add the key name to
     `STRUCTURAL_JSON_KEYS`.
+    A pagination cursor is the exception that proves the rule: it looks structural, but
+    Pylon's cursors match the credential-shaped pattern check, so `cursor` is a redacted
+    class and `scrub_request` rewrites `?cursor=` in the recorded URI to the same
+    placeholder to keep replay matching.
+- **Keyed-map** (keys kept, values classified): a dict keyed by workspace data rather than
+    a fixed field vocabulary, like Pylon's `custom_fields` (keyed by field slug) and the
+    `time_in_status_seconds` breakdowns (keyed by status slug).
+    Add the container's key name to `KEYED_MAP_JSON_KEYS`.
+    A scalar sitting directly under a keyed-map key redacts as text, so an unexpected flat
+    shape still fails closed.
 - **Redacted** (replaced by a stable, shape-preserving placeholder): the field is an id, a
     name,
     a timestamp, free text, an email, or a URL.
@@ -80,17 +95,14 @@ unclassified field costs a two-line diff to `tests/cassette_scrub.py`.
 
 ## What is not classified yet
 
-Only Linear GraphQL and Pylon REST fields documented in `docs/api-notes.md` are
-classified today.
+Linear GraphQL and Pylon REST fields are classified, from the first recorded cassettes
+under `tests/live/cassettes/`.
 Incident.io, Google Calendar, and Slack fields are added when their first cassette is
 recorded,
-and until then the verifier rejects them by design, including Google Calendar's
-`calendars`
-object (keyed by calendar id, which is usually an email address).
-A dict whose keys are
-themselves redacted data needs handling a key-name classifier cannot express, and that
-is
-deliberately left unbuilt until a real cassette forces the question.
+and until then the verifier rejects them by design.
+A dict keyed by workspace data (Google Calendar's `calendars`, keyed by calendar id)
+belongs in `KEYED_MAP_JSON_KEYS` — the mechanism exists now, because
+`custom_fields` forced it.
 
 ## Matching without matching on body
 

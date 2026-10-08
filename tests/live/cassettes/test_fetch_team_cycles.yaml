@@ -1,0 +1,103 @@
+interactions:
+- request:
+    body: '{"query": "\nquery Team($key: String) {\n  teams(filter: { key: { eq: $key
+      } }, first: 1) {\n    nodes {\n      id key name\n      issueEstimationType
+      issueEstimationAllowZero issueEstimationExtended\n      cycles(last: 12) { nodes
+      { number startsAt endsAt } }\n      states(first: 50) { nodes { id name type
+      position } }\n    }\n  }\n}\n", "variables": {"key": "ORG"}}'
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-length:
+      - '365'
+      content-type:
+      - application/json
+      host:
+      - api.linear.app
+      user-agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: https://api.linear.app/graphql
+  response:
+    body:
+      string: '{"data": {"teams": {"nodes": [{"id": "00000000-0000-0000-0000-000000000000",
+        "key": "ORG", "name": "[REDACTED]", "issueEstimationType": "exponential",
+        "issueEstimationAllowZero": true, "issueEstimationExtended": false, "cycles":
+        {"nodes": [{"number": 55, "startsAt": "2000-01-01T00:00:00.000Z", "endsAt":
+        "2000-01-01T00:00:00.000Z"}, {"number": 56, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 57, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 58, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 59, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 60, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 61, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 62, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 63, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 64, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}, {"number": 65, "startsAt": "2000-01-01T00:00:00.000Z",
+        "endsAt": "2000-01-01T00:00:00.000Z"}]}, "states": {"nodes": [{"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "completed", "position": 7204.6}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "completed", "position": -1065.11}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 6205.51}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 4184.37}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 3102.54}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "backlog", "position": -961.81}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "started", "position": 3906.57}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "triage", "position": 0}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "started", "position": 2980.82}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "unstarted", "position": 1}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "completed", "position": 3}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "started", "position": 2}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "canceled", "position": 4}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "duplicate", "position": 5282.08}, {"id": "00000000-0000-0000-0000-000000000000",
+        "name": "[REDACTED]", "type": "backlog", "position": 0}]}}]}}}'
+    headers:
+      alt-svc:
+      - h3=":443"; ma=86400
+      cache-control:
+      - private, no-cache, no-store, must-revalidate
+      cf-cache-status:
+      - DYNAMIC
+      cf-ray:
+      - a4718ec58aab6c26-DFW
+      connection:
+      - keep-alive
+      content-length:
+      - '2714'
+      content-type:
+      - application/json; charset=utf-8
+      date:
+      - Thu, 08 Oct 2026 02:01:26 GMT
+      etag:
+      - W/"a9a-yurNVtWUlPVes69vp0SQL9lCIVA"
+      server:
+      - cloudflare
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept-Encoding
+      via:
+      - 1.1 google
+      x-complexity:
+      - '88'
+      x-ratelimit-complexity-limit:
+      - '3000000'
+      x-ratelimit-complexity-remaining:
+      - '2999912'
+      x-ratelimit-complexity-reset:
+      - '1791428486752'
+      x-ratelimit-requests-limit:
+      - '2500'
+      x-ratelimit-requests-remaining:
+      - '2499'
+      x-ratelimit-requests-reset:
+      - '1791428486752'
+      x-request-id:
+      - a4718ec5bc566c6b-DFW
+    status:
+      code: 200
+      message: OK
+version: 1

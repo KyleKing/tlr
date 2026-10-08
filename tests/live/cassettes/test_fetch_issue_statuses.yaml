@@ -1,0 +1,62 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.usepylon.com
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://api.usepylon.com/issue-statuses
+  response:
+    body:
+      string: '{"data": [{"slug": "redacted-slug", "label": "[REDACTED]", "category":
+        "new", "is_default_status": true, "is_archived": false}, {"slug": "redacted-slug",
+        "label": "[REDACTED]", "category": "waiting_on_you", "is_default_status":
+        true, "is_archived": false}, {"slug": "redacted-slug", "label": "[REDACTED]",
+        "category": "waiting_on_customer", "is_default_status": true, "is_archived":
+        false}, {"slug": "redacted-slug", "label": "[REDACTED]", "category": "on_hold",
+        "is_default_status": true, "is_archived": false}, {"slug": "redacted-slug",
+        "label": "[REDACTED]", "category": "on_hold", "is_default_status": false,
+        "is_archived": false}, {"slug": "redacted-slug", "label": "[REDACTED]", "category":
+        "on_hold", "is_default_status": false, "is_archived": true}, {"slug": "redacted-slug",
+        "label": "[REDACTED]", "category": "closed", "is_default_status": true, "is_archived":
+        false}, {"slug": "redacted-slug", "label": "[REDACTED]", "category": "closed",
+        "is_default_status": false, "is_archived": true}, {"slug": "redacted-slug",
+        "label": "[REDACTED]", "category": "closed", "is_default_status": false, "is_archived":
+        false}, {"slug": "redacted-slug", "label": "[REDACTED]", "category": "closed",
+        "is_default_status": false, "is_archived": true}], "request_id": "00000000-0000-0000-0000-000000000000"}'
+    headers:
+      access-control-expose-headers:
+      - X-Pylon-Request-ID
+      connection:
+      - keep-alive
+      content-length:
+      - '1141'
+      content-type:
+      - application/json
+      date:
+      - Thu, 08 Oct 2026 02:01:16 GMT
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      vary:
+      - Accept-Encoding
+      - Origin
+      x-content-type-options:
+      - nosniff
+      x-frame-options:
+      - DENY
+      x-pylon-request-id:
+      - bbd5348a-b4ce-4c4a-9dfd-b5aa8ddac4a1
+      x-rate-limit-remaining:
+      - '29'
+    status:
+      code: 200
+      message: OK
+version: 1

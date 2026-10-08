@@ -16,6 +16,7 @@ def vcr_config() -> dict[str, Any]:
         'record_mode': 'once',
         'match_on': ['method', 'scheme', 'host', 'port', 'path', 'query'],
         'filter_headers': sorted(DROPPED_HEADERS),
+        'decode_compressed_response': True,
         'before_record_request': scrub_request,
         'before_record_response': scrub_response,
     }
