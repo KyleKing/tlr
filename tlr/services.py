@@ -234,6 +234,10 @@ def _refresh_command(args: argparse.Namespace, config: TlrConfig) -> int:
         for name in sources:
             try:
                 row_count = refreshers[name](con, config)
+            except KeyError as exc:
+                _emit_error(f'{name}: failed (response missing key {exc})')
+                failures.append(name)
+                continue
             except (LookupError, ValueError) as exc:
                 _emit_error(f'{name}: skipped ({exc})')
                 failures.append(name)

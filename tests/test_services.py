@@ -238,6 +238,29 @@ def test_refresh_skips_unconfigured_sources_but_fails_the_run(
     assert 'sentry: skipped' in err
 
 
+def test_refresh_reports_a_response_parse_bug_as_failed(
+    monkeypatch: pytest.MonkeyPatch,
+    config_file: Path,
+    seeded_db: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.setattr('tlr.services._refresh_linear', lambda *_args: 0)
+    monkeypatch.setattr('tlr.services._refresh_sentry', lambda *_args: 0)
+    monkeypatch.setattr('tlr.sources.pylon.read_secret', lambda _name: 'token')
+
+    def missing_slug(_client: object) -> dict[str, object]:
+        raise KeyError('slug')
+
+    monkeypatch.setattr('tlr.sources.pylon.fetch_issue_statuses', missing_slug)
+
+    exit_code = _run(['--config', str(config_file), '--db', str(seeded_db), 'refresh'])
+
+    assert exit_code == 1
+    err = capsys.readouterr().err
+    assert "pylon: failed (response missing key 'slug')" in err
+    assert 'pylon: skipped' not in err
+
+
 def _seed_pylon(db_path: Path) -> None:
     con = store.connect(db_path)
     store.upsert_pylon_issues(
