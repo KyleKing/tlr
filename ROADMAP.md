@@ -103,8 +103,10 @@ below stays put.
 What they left behind: the Deno app and the app-template scaffolding are
 deleted, `tlr` is a Python package scaffolded from calcipy_template, a DuckDB store
 under the
-user's data directory carries Linear and Pylon rows with per-field provenance, and
-`tlr capacity`, `tlr triage`, `tlr backlog`, and `tlr import-snapshots` all run and
+user's data directory carries Linear, Pylon, and Sentry rows with per-field
+provenance, and
+`tlr capacity`, `tlr triage`, `tlr backlog`, `tlr snapshot`, `tlr alarms`,
+`tlr config`, and `tlr import-snapshots` all run and
 print JSON
 by default or markdown with `--format md`.
 `git log` is the record of how.
@@ -255,11 +257,6 @@ planning code once the ledger gives them better inputs than a sum of open estima
 - Linear plan tier decides whether Triage Intelligence and SLAs are available to the team,
     which
     decides how much of the health metrics tlr must keep computing itself
-- Whether `POST /issues/search` takes its cursor as a query parameter the way the
-    documented `GET`
-    endpoints do, and whether those `GET` endpoints share the 20-searches-a-minute budget.
-    A search stuck
-    on page one is how the first would show up
 
 ## Not doing
 

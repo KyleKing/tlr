@@ -89,14 +89,14 @@ uv publish
 | `tlr/render/json.py`               | 15         | 0       | 0        | 100.0%   |
 | `tlr/render/markdown.py`           | 22         | 1       | 0        | 92.9%    |
 | `tlr/secrets.py`                   | 46         | 0       | 1        | 100.0%   |
-| `tlr/services.py`                  | 327        | 50      | 0        | 83.2%    |
+| `tlr/services.py`                  | 331        | 48      | 0        | 84.1%    |
 | `tlr/sources/__init__.py`          | 0          | 0       | 0        | 100.0%   |
 | `tlr/sources/alarms.py`            | 51         | 1       | 0        | 95.1%    |
 | `tlr/sources/linear.py`            | 115        | 0       | 0        | 100.0%   |
-| `tlr/sources/pylon.py`             | 139        | 2       | 0        | 96.3%    |
+| `tlr/sources/pylon.py`             | 160        | 3       | 0        | 95.3%    |
 | `tlr/sources/sentry.py`            | 64         | 0       | 0        | 100.0%   |
 | `tlr/store.py`                     | 248        | 12      | 0        | 92.4%    |
-| **Totals**                         | 1961       | 100     | 38       | 93.1%    |
+| **Totals**                         | 1986       | 99      | 38       | 93.2%    |
 
 Generated on: 2026-10-07
 <!-- {cte} -->

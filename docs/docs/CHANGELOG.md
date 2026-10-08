@@ -2,6 +2,7 @@
 
 ### Feat
 
+- **config**: add get, set, and list subcommands
 - **alarms**: report CloudWatch alarm volume, trends, and Linear coverage
 - **snapshot**: add weekly/monthly Linear, Pylon, and Sentry check-in snapshot
 - dispatch triage, backlog, and import-snapshots

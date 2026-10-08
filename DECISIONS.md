@@ -13,6 +13,18 @@ since removed).
 
 ## Accepted
 
+**Pylon refresh walks `GET /issues` windows, not per-ticket search** (2026-10).
+In the context of a refresh that searched `/issues/search` once per Linear identifier —
+ten thousand calls against a 20-per-minute budget, roughly eight hours for a result set
+of hundreds — facing the choice between keeping the lookup direction and bulk-reading
+the workspace, we chose paginated `GET /issues` over 365-day windows, walked back until
+a window comes back empty, accepting that issue rows arrive wholesale instead of keyed
+to the Linear store.
+A consequence: the Linear link resolves from each row's
+`external_issues` (the integration's real link field, absent on unlinked rows) with the
+`linear_ticket` custom field as fallback, since the custom field alone found 3 of the
+292 links.
+
 **A dead source degrades refresh, it doesn't abort it** (2026-10).
 In the context of
 `tlr refresh` dying on the first missing credential before later sources ran, facing the
