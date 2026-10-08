@@ -98,6 +98,34 @@ def test_fetch_issue_by_linear_ticket_paginates_with_cursor_as_query_param() -> 
     assert 'cursor' not in json.loads(requests[1].content)
 
 
+def test_fetch_issues_paginates_get_issues_with_time_range_params() -> None:
+    config = PylonConfig()
+    pages = [
+        _page([_issue_record(id='issue-1')], cursor='page-2', has_next_page=True),
+        _page([_issue_record(id='issue-2')], cursor=None, has_next_page=False),
+    ]
+    requests: list[httpx.Request] = []
+
+    def _handle(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        return httpx.Response(200, json=pages[len(requests) - 1])
+
+    client = _client(_handle)
+    result = pylon.fetch_issues(
+        client,
+        config,
+        start=datetime(2026, 1, 1, tzinfo=UTC),
+        end=datetime(2026, 12, 31, tzinfo=UTC),
+    )
+
+    assert result.issues['id'].to_list() == ['issue-1', 'issue-2']
+    assert len(requests) == _EXPECTED_PAGE_COUNT
+    assert requests[0].url.params['start_time'] == '2026-01-01T00:00:00Z'
+    assert requests[0].url.params['end_time'] == '2026-12-31T00:00:00Z'
+    assert requests[1].url.params['cursor'] == 'page-2'
+    assert not requests[0].content
+
+
 def test_error_response_raises() -> None:
     config = PylonConfig()
 
@@ -137,20 +165,30 @@ def test_rate_limiter_throttles_the_21st_search_in_a_window() -> None:
 
 
 @pytest.mark.parametrize(
-    ('custom_fields', 'expected_status', 'expected_identifier'),
+    ('overrides', 'expected_status', 'expected_identifier'),
     [
-        ({'linear_ticket': {'value': 'DEV-42'}}, LINK_STATUS_LINKED, 'DEV-42'),
-        ({'linear_ticket': {'value': ''}}, LINK_STATUS_NO_LINK, None),
-        ({}, LINK_STATUS_UNKNOWN, None),
+        ({'custom_fields': {'linear_ticket': {'value': 'DEV-42'}}}, LINK_STATUS_LINKED, 'DEV-42'),
+        (
+            {'custom_fields': {'linear_ticket': {'value': 'https://linear.app/ws/issue/DEV-55/slug'}}},
+            LINK_STATUS_LINKED,
+            'DEV-55',
+        ),
+        ({'custom_fields': {'linear_ticket': {'value': ''}}}, LINK_STATUS_NO_LINK, None),
+        ({'custom_fields': {}}, LINK_STATUS_UNKNOWN, None),
+        (
+            {'external_issues': [{'source': 'linear', 'link': 'https://linear.app/ws/issue/DEV-77/slug'}]},
+            LINK_STATUS_LINKED,
+            'DEV-77',
+        ),
     ],
 )
 def test_link_status_resolution(
-    custom_fields: dict[str, Any],
+    overrides: dict[str, Any],
     expected_status: str,
     expected_identifier: str | None,
 ) -> None:
     config = PylonConfig()
-    body = _page([_issue_record(custom_fields=custom_fields)])
+    body = _page([_issue_record(**overrides)])
 
     result = pylon.parse_issues(body, config)
 
@@ -177,11 +215,19 @@ def test_parse_issues_resolves_state_category_from_slug_mapping(
     assert result['state_category'].to_list() == [expected_category]
 
 
+def test_parse_issues_and_labels_treat_request_id_only_body_as_empty() -> None:
+    config = PylonConfig()
+    body = {'request_id': 'req-1'}
+
+    assert pylon.parse_issues(body, config).is_empty()
+    assert pylon.parse_issue_labels(body, config).is_empty()
+
+
 def test_parse_issue_statuses_maps_slug_to_category() -> None:
     body = {
         'data': [
-            {'value': 'waiting_on_customer', 'label': 'Waiting on Customer', 'category': 'waiting_on_customer'},
-            {'value': 'nar', 'label': 'NAR', 'category': 'closed'},
+            {'slug': 'waiting_on_customer', 'label': 'Waiting on Customer', 'category': 'waiting_on_customer'},
+            {'slug': 'nar', 'label': 'NAR', 'category': 'closed'},
         ],
     }
 

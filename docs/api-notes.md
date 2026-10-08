@@ -247,11 +247,21 @@ downstream as a mass deletion.
 
 ## Pylon REST
 
-Base `https://api.usepylon.com`. The endpoints tlr uses are `POST /issues/search`,
+Base `https://api.usepylon.com`. The endpoints tlr uses are `GET /issues`,
+`POST /issues/search`,
 `GET /issue-statuses`, and
 `GET /accounts`.
-`GET /issues`, `GET /issues/{id}`, and `POST /accounts/search` also exist.
+`GET /issues/{id}` and `POST /accounts/search` also exist.
 The response cache sits outside the rate limiter so a cache hit costs no quota.
+
+Refresh reads `GET /issues`, not per-ticket search: it takes required
+`start_time`/`end_time` RFC3339 query params (rejects naive timestamps) with a 365-day
+cap, paginates by `cursor`, and is not billed against the search rate limit.
+A Linear link shows up in a row's `external_issues`
+(`{"source": "linear", "link": "https://linear.app/<ws>/issue/<IDENT>/…"}`) and
+sometimes in the `linear_ticket`
+custom field, which holds either a bare identifier or a full URL; the identifier is
+pulled out of either shape by regex.
 
 Lookup by tracker link:
 
@@ -296,6 +306,8 @@ Wider net over a time window, optionally by requester and free text:
 A single subfilter drops the `and` wrapper.
 No window and no tracker id means no request at all: a bare
 date range over the whole workspace is never asked for.
+An empty result set returns only `{"request_id": ...}` — `data` and `pagination` are
+omitted rather than emptied.
 
 Which custom field holds the tracker identifier is workspace configuration, defaulting
 to
@@ -314,8 +326,8 @@ The record's full shape is below.
 ### Statuses and categories
 
 `GET /issue-statuses` returns every status this workspace has.
-Each one carries a `value`
-(the slug), a `label`, and a `category`.
+Each one carries a `slug`,
+a `label`, and a `category`.
 The five categories are Pylon's own vocabulary and
 are stable across workspaces: `new`, `waiting_on_you`, `waiting_on_customer`, `on_hold`,
 and

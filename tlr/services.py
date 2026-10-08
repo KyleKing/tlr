@@ -194,20 +194,22 @@ def _refresh_linear(con: duckdb.DuckDBPyConnection, config: TlrConfig) -> int:
 def _refresh_pylon(con: duckdb.DuckDBPyConnection, config: TlrConfig) -> int:
     from tlr.sources import pylon  # noqa: PLC0415
 
-    issues = store.get_issues(con)
-    if issues.is_empty():
-        msg = 'refresh linear before pylon: the Pylon lookup keys on Linear issue identifiers'
-        raise ValueError(msg)
     client = pylon.build_client()
     status_categories = pylon.parse_issue_statuses(pylon.fetch_issue_statuses(client))
     store.upsert_pylon_accounts(con, pylon.fetch_accounts(client, config.tiers), source='pylon')
     rows = 0
-    for identifier in issues['identifier'].to_list():
-        result = pylon.fetch_issue_by_linear_ticket(client, config.pylon, identifier, status_categories)
+    end = datetime.now(UTC).replace(tzinfo=None)
+    while True:
+        start = end - timedelta(days=365)
+        result = pylon.fetch_issues(
+            client, config.pylon, start=start, end=end, status_categories=status_categories
+        )
         store.upsert_pylon_issues(con, result.issues, source='pylon')
         store.upsert_pylon_issue_labels(con, result.labels, source='pylon')
         rows += result.issues.height
-    return rows
+        if result.issues.is_empty():
+            return rows
+        end = start
 
 
 def _refresh_sentry(con: duckdb.DuckDBPyConnection, config: TlrConfig) -> int:

@@ -28,6 +28,7 @@ from tlr.store import (
 )
 
 BASE_URL = 'https://api.usepylon.com'
+ISSUES_ENDPOINT = '/issues'
 ISSUES_SEARCH_ENDPOINT = '/issues/search'
 ISSUE_STATUSES_ENDPOINT = '/issue-statuses'
 ACCOUNTS_ENDPOINT = '/accounts'
@@ -35,6 +36,7 @@ SEARCH_RATE_LIMIT_PER_MINUTE = 20
 PAGE_LIMIT = 100
 
 _CONTACT_UUID_RE = re.compile(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$')
+_LINEAR_IDENTIFIER_RE = re.compile(r'[A-Z]+-\d+')
 _NEWLINE_TAG_RE = re.compile(r'<(?:br\s*/?|/p|/div|/li)>', re.IGNORECASE)
 _TAG_RE = re.compile(r'<[^>]+>')
 
@@ -97,11 +99,14 @@ def _paginate(
     endpoint: str,
     *,
     json_body: Mapping[str, Any] | None = None,
+    params: Mapping[str, Any] | None = None,
 ) -> Iterator[dict[str, Any]]:
     cursor: str | None = None
     while True:
-        params = {'cursor': cursor} if cursor is not None else None
-        body = _send(client, method, endpoint, json_body=json_body, params=params)
+        query = dict(params or {})
+        if cursor is not None:
+            query['cursor'] = cursor
+        body = _send(client, method, endpoint, json_body=json_body, params=query or None)
         yield body
         pagination = body.get('pagination') or {}
         if not pagination.get('has_next_page'):
@@ -149,6 +154,11 @@ def _parse_datetime(value: str | None) -> datetime | None:
     return parsed.astimezone(UTC).replace(tzinfo=None) if parsed.tzinfo is not None else parsed
 
 
+def _rfc3339(value: datetime) -> str:
+    """Format as RFC3339 UTC — `/issues` rejects naive timestamps."""
+    return (value.astimezone(UTC) if value.tzinfo else value).strftime('%Y-%m-%dT%H:%M:%SZ')
+
+
 def _custom_field_single(custom_fields: Mapping[str, Any], field: str) -> str | None:
     entry = custom_fields.get(field)
     if not isinstance(entry, Mapping):
@@ -163,16 +173,31 @@ def _custom_field_multi(custom_fields: Mapping[str, Any], field: str) -> list[st
     return [value for value in entry.get('values') or [] if value]
 
 
-def _resolve_link(custom_fields: Mapping[str, Any], field: str) -> tuple[str, str | None]:
-    entry = custom_fields.get(field)
+def _linear_identifier(value: object) -> str | None:
+    """Extract an identifier like `DEV-1234` from a raw value or a Linear issue URL."""
+    if not isinstance(value, str):
+        return None
+    match = _LINEAR_IDENTIFIER_RE.search(value)
+    return match.group(0) if match else None
+
+
+def _resolve_link(record: Mapping[str, Any], field: str) -> tuple[str, str | None]:
+    """Resolve the Linear link from `external_issues` first, then the tracker-link custom field."""
+    for external in record.get('external_issues') or []:
+        if isinstance(external, Mapping) and external.get('source') == 'linear':
+            return LINK_STATUS_LINKED, _linear_identifier(external.get('link'))
+    entry = (record.get('custom_fields') or {}).get(field)
     if entry is None or not isinstance(entry, Mapping):
         return LINK_STATUS_UNKNOWN, None
-    return (LINK_STATUS_NO_LINK, None) if entry.get('value') in {None, ''} else (LINK_STATUS_LINKED, entry['value'])
+    value = entry.get('value')
+    if value in {None, ''}:
+        return LINK_STATUS_NO_LINK, None
+    return LINK_STATUS_LINKED, _linear_identifier(value)
 
 
 def _issue_row(record: Mapping[str, Any], config: PylonConfig, status_categories: Mapping[str, str]) -> dict[str, Any]:
     custom_fields = record.get('custom_fields') or {}
-    link_status, linear_identifier = _resolve_link(custom_fields, config.linear_ticket_field)
+    link_status, linear_identifier = _resolve_link(record, config.linear_ticket_field)
     requester = record.get('requester') or {}
     account = record.get('account') or {}
     assignee = record.get('assignee') or {}
@@ -213,7 +238,7 @@ def parse_issues(
     `state_category` rather than a guess.
     """
     categories = status_categories or {}
-    rows = [_issue_row(record, config, categories) for record in body['data']]
+    rows = [_issue_row(record, config, categories) for record in body.get('data') or []]
     return pl.DataFrame(rows, schema=_ISSUE_FRAME_SCHEMA) if rows else pl.DataFrame(schema=_ISSUE_FRAME_SCHEMA)
 
 
@@ -274,6 +299,20 @@ def fetch_issues_in_window(
     return _collect(pages, config, status_categories)
 
 
+def fetch_issues(
+    client: PylonClient,
+    config: PylonConfig,
+    *,
+    start: datetime,
+    end: datetime,
+    status_categories: Mapping[str, str] | None = None,
+) -> PylonIssuesResult:
+    """Fetch every issue created within `[start, end)` via `GET /issues` (max 365 days per call)."""
+    params = {'start_time': _rfc3339(start), 'end_time': _rfc3339(end)}
+    pages = _paginate(client, 'GET', ISSUES_ENDPOINT, params=params)
+    return _collect(pages, config, status_categories)
+
+
 def fetch_issue_statuses(client: PylonClient) -> dict[str, Any]:
     """Fetch the decoded `GET /issue-statuses` response for this workspace."""
     return _send(client, 'GET', ISSUE_STATUSES_ENDPOINT)
@@ -281,7 +320,7 @@ def fetch_issue_statuses(client: PylonClient) -> dict[str, Any]:
 
 def parse_issue_statuses(body: Mapping[str, Any]) -> dict[str, str]:
     """Parse a decoded `/issue-statuses` response into a status-slug to category mapping."""
-    return {row['value']: row['category'] for row in body['data']}
+    return {row['slug']: row['category'] for row in body['data']}
 
 
 def _label_rows(record: Mapping[str, Any], config: PylonConfig) -> list[dict[str, Any]]:
@@ -298,7 +337,7 @@ def _label_rows(record: Mapping[str, Any], config: PylonConfig) -> list[dict[str
 
 def parse_issue_labels(body: Mapping[str, Any], config: PylonConfig) -> pl.DataFrame:
     """Parse one decoded issue-search or issue-list response page into `pylon_issue_labels`-shaped columns."""
-    rows = [row for record in body['data'] for row in _label_rows(record, config)]
+    rows = [row for record in body.get('data') or [] for row in _label_rows(record, config)]
     return pl.DataFrame(rows, schema=_LABEL_FRAME_SCHEMA) if rows else pl.DataFrame(schema=_LABEL_FRAME_SCHEMA)
 
 
