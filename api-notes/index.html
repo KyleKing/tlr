@@ -2318,13 +2318,12 @@ products multiselect, two Hubspot revenue fields, and two calendar meeting dates
 Their
 option values are workspace vocabulary, so they stay out of this repo and in the local
 config.
-So tier ordering in
-the triage queue has no data source until someone picks a field for it, and
-<code>[tiers].account_tier_field</code> names whichever one that turns out to be.
-Left empty, every
-account keeps <code>[tiers].default_tier</code> and the tier ordering rule does nothing.
-The lifecycle field and annual revenue are the two candidates, and choosing
-between them is a judgment call rather than a lookup.</p>
+The lifecycle select is what stands in for tier here:
+<code>[tiers].account_tier_field</code> points at it and <code>[tiers].names</code> ranks its values.
+The
+revenue fields were the other candidate, but they are numeric — mapping them onto a
+ranked name list needs a bucketing rule that does not exist, and half the accounts have
+no value at all.</p>
 <p>A tier set by hand survives every later refresh, because <code>pylon_accounts</code> is
 provenance-tracked and <code>manual</code> outranks <code>pylon</code> on a field.</p>
 <h3 id="pagination">Pagination<a class="headerlink" href="#pagination" title="Permanent link">⚓︎</a></h3>
@@ -2338,10 +2337,12 @@ provenance-tracked and <code>manual</code> outranks <code>pylon</code> on a fiel
 <span class="linenos" data-linenos="7 "></span><span class="w">  </span><span class="nt">"request_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span>
 <span class="linenos" data-linenos="8 "></span><span class="p">}</span>
 </code></pre></div>
-<p>The cursor goes back as a <strong>query parameter</strong> (<code>?cursor=&lt;value&gt;</code>), not as a field in the
-request body, and <code>has_next_page</code> says whether to ask again.
-Sending the cursor in the body
-returns page one every time, with no error to notice.</p>
+<p>Where the cursor goes back depends on the method.
+<code>GET</code> list endpoints take it as a <strong>query parameter</strong> (<code>?cursor=&lt;value&gt;</code>).
+<code>POST /issues/search</code> takes it as a <strong><code>cursor</code> field in the request body</strong>, and silently
+ignores the query-parameter form: every page returns page one&rsquo;s rows, with no error to
+notice.
+<code>has_next_page</code> says whether to ask again either way.</p>
 <h3 id="rate-limiting">Rate limiting<a class="headerlink" href="#rate-limiting" title="Permanent link">⚓︎</a></h3>
 <p>The documented limit covers issue searches: 20 a minute, enforced with a sliding
 60-second
@@ -2351,13 +2352,14 @@ requests past it, because no published limit covers them.
 If a <code>GET</code> starts returning 429 the
 shared retry policy already honors <code>Retry-After</code>, so the failure degrades into slowness
 rather than an error, and that is the signal to widen the limiter.</p>
+<p>The budgets are separate, confirmed by <code>x-rate-limit-remaining</code> on live responses:
+<code>GET /accounts</code> reported 299 (a ~300 ceiling) while <code>POST /issues/search</code> reported 119
+(a ~120 ceiling) and stayed at 119 across four rapid calls, so the header&rsquo;s window is
+longer than a minute or lags.
+GETs do not consume the search budget; what consumes the
+search budget beyond each POST is unknown.</p>
 <h3 id="still-unverified">Still unverified<a class="headerlink" href="#still-unverified" title="Permanent link">⚓︎</a></h3>
 <ul>
-<li>Whether <code>GET</code> endpoints share the search quota, as above</li>
-<li>Whether <code>POST /issues/search</code> accepts the cursor as a query parameter the same way the
-    documented <code>GET</code> list endpoints do.
-    The envelope is shared, so it should, and a search that
-    never advances past page one is how a wrong answer would show up</li>
 <li>The AI-agent filter attributes (<code>issue_ai_agent_has_resolved</code>, <code>issue_ai_agent_id</code>, and
     about a dozen more) appear in the filter vocabulary but did not appear on the record I
     read,

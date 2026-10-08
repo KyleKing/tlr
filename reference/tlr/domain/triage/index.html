@@ -1613,12 +1613,12 @@ connection, no config file read.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>tlr/domain/triage.py</code></summary>
-                <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="42 "></span><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="linenos" data-linenos="43 "></span><span class="k">class</span><span class="w"> </span><span class="nc">TriageQueue</span><span class="p">:</span>
-<span class="linenos" data-linenos="44 "></span><span class="w">    </span><span class="sd">"""The ordered triage queue plus the sections held out of it, ready for `sections_to_markdown`."""</span>
-<span class="linenos" data-linenos="45 "></span>
-<span class="linenos" data-linenos="46 "></span>    <span class="n">queue</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span>
-<span class="linenos" data-linenos="47 "></span>    <span class="n">sections</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]]</span>
+                <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="38 "></span><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos" data-linenos="39 "></span><span class="k">class</span><span class="w"> </span><span class="nc">TriageQueue</span><span class="p">:</span>
+<span class="linenos" data-linenos="40 "></span><span class="w">    </span><span class="sd">"""The ordered triage queue plus the sections held out of it, ready for `sections_to_markdown`."""</span>
+<span class="linenos" data-linenos="41 "></span>
+<span class="linenos" data-linenos="42 "></span>    <span class="n">queue</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span>
+<span class="linenos" data-linenos="43 "></span>    <span class="n">sections</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]]</span>
 </code></pre></div>
               </details>
 
@@ -1671,58 +1671,58 @@ Everything left is the ordered queue. A section with no rows is left out.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tlr/domain/triage.py</code></summary>
-              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="175 "></span><span class="k">def</span><span class="w"> </span><span class="nf">build_triage_queue</span><span class="p">(</span>
-<span class="linenos" data-linenos="176 "></span>    <span class="n">pylon_issues</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
-<span class="linenos" data-linenos="177 "></span>    <span class="n">issues</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
-<span class="linenos" data-linenos="178 "></span>    <span class="n">pylon_issue_labels</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
-<span class="linenos" data-linenos="179 "></span>    <span class="n">pylon_accounts</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
-<span class="linenos" data-linenos="180 "></span>    <span class="o">*</span><span class="p">,</span>
-<span class="linenos" data-linenos="181 "></span>    <span class="n">now</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span>
-<span class="linenos" data-linenos="182 "></span>    <span class="n">triage</span><span class="p">:</span> <span class="n">TriageConfig</span><span class="p">,</span>
-<span class="linenos" data-linenos="183 "></span>    <span class="n">tiers</span><span class="p">:</span> <span class="n">TiersConfig</span><span class="p">,</span>
-<span class="linenos" data-linenos="184 "></span>    <span class="n">sla</span><span class="p">:</span> <span class="n">SlaConfig</span><span class="p">,</span>
-<span class="linenos" data-linenos="185 "></span>    <span class="n">pylon</span><span class="p">:</span> <span class="n">PylonConfig</span><span class="p">,</span>
-<span class="linenos" data-linenos="186 "></span>    <span class="n">linear</span><span class="p">:</span> <span class="n">LinearConfig</span><span class="p">,</span>
-<span class="linenos" data-linenos="187 "></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TriageQueue</span><span class="p">:</span>
-<span class="linenos" data-linenos="188 "></span><span class="w">    </span><span class="sd">"""Build the ordered triage queue and its held-out sections.</span>
+              <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="167 "></span><span class="k">def</span><span class="w"> </span><span class="nf">build_triage_queue</span><span class="p">(</span>
+<span class="linenos" data-linenos="168 "></span>    <span class="n">pylon_issues</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+<span class="linenos" data-linenos="169 "></span>    <span class="n">issues</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+<span class="linenos" data-linenos="170 "></span>    <span class="n">pylon_issue_labels</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+<span class="linenos" data-linenos="171 "></span>    <span class="n">pylon_accounts</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+<span class="linenos" data-linenos="172 "></span>    <span class="o">*</span><span class="p">,</span>
+<span class="linenos" data-linenos="173 "></span>    <span class="n">now</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span>
+<span class="linenos" data-linenos="174 "></span>    <span class="n">triage</span><span class="p">:</span> <span class="n">TriageConfig</span><span class="p">,</span>
+<span class="linenos" data-linenos="175 "></span>    <span class="n">tiers</span><span class="p">:</span> <span class="n">TiersConfig</span><span class="p">,</span>
+<span class="linenos" data-linenos="176 "></span>    <span class="n">sla</span><span class="p">:</span> <span class="n">SlaConfig</span><span class="p">,</span>
+<span class="linenos" data-linenos="177 "></span>    <span class="n">pylon</span><span class="p">:</span> <span class="n">PylonConfig</span><span class="p">,</span>
+<span class="linenos" data-linenos="178 "></span>    <span class="n">linear</span><span class="p">:</span> <span class="n">LinearConfig</span><span class="p">,</span>
+<span class="linenos" data-linenos="179 "></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TriageQueue</span><span class="p">:</span>
+<span class="linenos" data-linenos="180 "></span><span class="w">    </span><span class="sd">"""Build the ordered triage queue and its held-out sections.</span>
+<span class="linenos" data-linenos="181 "></span>
+<span class="linenos" data-linenos="182 "></span><span class="sd">    `sla_target_days` is the tighter (smaller) of `SlaConfig.target_days_by_priority` and</span>
+<span class="linenos" data-linenos="183 "></span><span class="sd">    `target_days_by_tier` when both apply to a row; either being absent leaves that half out</span>
+<span class="linenos" data-linenos="184 "></span><span class="sd">    of the comparison, and neither applying leaves the target, and so `sla_days_remaining`, null.</span>
+<span class="linenos" data-linenos="185 "></span>
+<span class="linenos" data-linenos="186 "></span><span class="sd">    A row whose `state_category` is `closed` is dropped entirely. A null category means the</span>
+<span class="linenos" data-linenos="187 "></span><span class="sd">    status slug was not in the workspace's status list, so the row stays in the queue: an</span>
+<span class="linenos" data-linenos="188 "></span><span class="sd">    unrecognized status is the one most in need of a human look.</span>
 <span class="linenos" data-linenos="189 "></span>
-<span class="linenos" data-linenos="190 "></span><span class="sd">    `sla_target_days` is the tighter (smaller) of `SlaConfig.target_days_by_priority` and</span>
-<span class="linenos" data-linenos="191 "></span><span class="sd">    `target_days_by_tier` when both apply to a row; either being absent leaves that half out</span>
-<span class="linenos" data-linenos="192 "></span><span class="sd">    of the comparison, and neither applying leaves the target, and so `sla_days_remaining`, null.</span>
-<span class="linenos" data-linenos="193 "></span>
-<span class="linenos" data-linenos="194 "></span><span class="sd">    A row whose `state_category` is `closed` is dropped entirely. A null category means the</span>
-<span class="linenos" data-linenos="195 "></span><span class="sd">    status slug was not in the workspace's status list, so the row stays in the queue: an</span>
-<span class="linenos" data-linenos="196 "></span><span class="sd">    unrecognized status is the one most in need of a human look.</span>
-<span class="linenos" data-linenos="197 "></span>
-<span class="linenos" data-linenos="198 "></span><span class="sd">    Everything else held out of the ordered queue is held out by this precedence:</span>
-<span class="linenos" data-linenos="199 "></span><span class="sd">    waiting-on-customer, agent-owned, then the first matching heading in `triage.exclusions`.</span>
-<span class="linenos" data-linenos="200 "></span><span class="sd">    Everything left is the ordered queue. A section with no rows is left out.</span>
-<span class="linenos" data-linenos="201 "></span><span class="sd">    """</span>
-<span class="linenos" data-linenos="202 "></span>    <span class="n">open_issues</span> <span class="o">=</span> <span class="n">pylon_issues</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'state_category'</span><span class="p">)</span><span class="o">.</span><span class="n">ne_missing</span><span class="p">(</span><span class="n">STATE_CATEGORY_CLOSED</span><span class="p">))</span>
-<span class="linenos" data-linenos="203 "></span>    <span class="n">working</span> <span class="o">=</span> <span class="n">_build_working_frame</span><span class="p">(</span>
-<span class="linenos" data-linenos="204 "></span>        <span class="n">open_issues</span><span class="p">,</span>
-<span class="linenos" data-linenos="205 "></span>        <span class="n">issues</span><span class="p">,</span>
-<span class="linenos" data-linenos="206 "></span>        <span class="n">pylon_issue_labels</span><span class="p">,</span>
-<span class="linenos" data-linenos="207 "></span>        <span class="n">pylon_accounts</span><span class="p">,</span>
-<span class="linenos" data-linenos="208 "></span>        <span class="n">now</span><span class="o">=</span><span class="n">now</span><span class="p">,</span>
-<span class="linenos" data-linenos="209 "></span>        <span class="n">triage</span><span class="o">=</span><span class="n">triage</span><span class="p">,</span>
-<span class="linenos" data-linenos="210 "></span>        <span class="n">tiers</span><span class="o">=</span><span class="n">tiers</span><span class="p">,</span>
-<span class="linenos" data-linenos="211 "></span>        <span class="n">sla</span><span class="o">=</span><span class="n">sla</span><span class="p">,</span>
-<span class="linenos" data-linenos="212 "></span>        <span class="n">linear</span><span class="o">=</span><span class="n">linear</span><span class="p">,</span>
-<span class="linenos" data-linenos="213 "></span>    <span class="p">)</span>
-<span class="linenos" data-linenos="214 "></span>
-<span class="linenos" data-linenos="215 "></span>    <span class="n">headings</span> <span class="o">=</span> <span class="p">[</span><span class="n">WAITING_ON_CUSTOMER_HEADING</span><span class="p">,</span> <span class="n">AGENT_OWNED_HEADING</span><span class="p">,</span> <span class="o">*</span><span class="n">triage</span><span class="o">.</span><span class="n">exclusions</span><span class="p">]</span>
-<span class="linenos" data-linenos="216 "></span>    <span class="n">queue_rows</span> <span class="o">=</span> <span class="n">working</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'section'</span><span class="p">)</span><span class="o">.</span><span class="n">is_null</span><span class="p">())</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">'issue_id'</span><span class="p">,</span> <span class="s1">'section'</span><span class="p">)</span>
-<span class="linenos" data-linenos="217 "></span>    <span class="n">queue</span> <span class="o">=</span> <span class="n">_order</span><span class="p">(</span><span class="n">queue_rows</span><span class="p">,</span> <span class="n">triage</span><span class="o">.</span><span class="n">ordering</span><span class="p">,</span> <span class="n">pylon</span><span class="p">,</span> <span class="n">tiers</span><span class="p">)</span>
-<span class="linenos" data-linenos="218 "></span>
-<span class="linenos" data-linenos="219 "></span>    <span class="n">sections</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="linenos" data-linenos="220 "></span>    <span class="k">for</span> <span class="n">heading</span> <span class="ow">in</span> <span class="n">headings</span><span class="p">:</span>
-<span class="linenos" data-linenos="221 "></span>        <span class="n">section_rows</span> <span class="o">=</span> <span class="n">working</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'section'</span><span class="p">)</span> <span class="o">==</span> <span class="n">heading</span><span class="p">)</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">'issue_id'</span><span class="p">,</span> <span class="s1">'section'</span><span class="p">)</span>
-<span class="linenos" data-linenos="222 "></span>        <span class="k">if</span> <span class="n">section_rows</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
-<span class="linenos" data-linenos="223 "></span>            <span class="k">continue</span>
-<span class="linenos" data-linenos="224 "></span>        <span class="n">sections</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">heading</span><span class="p">,</span> <span class="n">_order</span><span class="p">(</span><span class="n">section_rows</span><span class="p">,</span> <span class="n">triage</span><span class="o">.</span><span class="n">ordering</span><span class="p">,</span> <span class="n">pylon</span><span class="p">,</span> <span class="n">tiers</span><span class="p">)))</span>
-<span class="linenos" data-linenos="225 "></span>
-<span class="linenos" data-linenos="226 "></span>    <span class="k">return</span> <span class="n">TriageQueue</span><span class="p">(</span><span class="n">queue</span><span class="o">=</span><span class="n">queue</span><span class="p">,</span> <span class="n">sections</span><span class="o">=</span><span class="n">sections</span><span class="p">)</span>
+<span class="linenos" data-linenos="190 "></span><span class="sd">    Everything else held out of the ordered queue is held out by this precedence:</span>
+<span class="linenos" data-linenos="191 "></span><span class="sd">    waiting-on-customer, agent-owned, then the first matching heading in `triage.exclusions`.</span>
+<span class="linenos" data-linenos="192 "></span><span class="sd">    Everything left is the ordered queue. A section with no rows is left out.</span>
+<span class="linenos" data-linenos="193 "></span><span class="sd">    """</span>
+<span class="linenos" data-linenos="194 "></span>    <span class="n">open_issues</span> <span class="o">=</span> <span class="n">pylon_issues</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'state_category'</span><span class="p">)</span><span class="o">.</span><span class="n">ne_missing</span><span class="p">(</span><span class="n">STATE_CATEGORY_CLOSED</span><span class="p">))</span>
+<span class="linenos" data-linenos="195 "></span>    <span class="n">working</span> <span class="o">=</span> <span class="n">_build_working_frame</span><span class="p">(</span>
+<span class="linenos" data-linenos="196 "></span>        <span class="n">open_issues</span><span class="p">,</span>
+<span class="linenos" data-linenos="197 "></span>        <span class="n">issues</span><span class="p">,</span>
+<span class="linenos" data-linenos="198 "></span>        <span class="n">pylon_issue_labels</span><span class="p">,</span>
+<span class="linenos" data-linenos="199 "></span>        <span class="n">pylon_accounts</span><span class="p">,</span>
+<span class="linenos" data-linenos="200 "></span>        <span class="n">now</span><span class="o">=</span><span class="n">now</span><span class="p">,</span>
+<span class="linenos" data-linenos="201 "></span>        <span class="n">triage</span><span class="o">=</span><span class="n">triage</span><span class="p">,</span>
+<span class="linenos" data-linenos="202 "></span>        <span class="n">tiers</span><span class="o">=</span><span class="n">tiers</span><span class="p">,</span>
+<span class="linenos" data-linenos="203 "></span>        <span class="n">sla</span><span class="o">=</span><span class="n">sla</span><span class="p">,</span>
+<span class="linenos" data-linenos="204 "></span>        <span class="n">linear</span><span class="o">=</span><span class="n">linear</span><span class="p">,</span>
+<span class="linenos" data-linenos="205 "></span>    <span class="p">)</span>
+<span class="linenos" data-linenos="206 "></span>
+<span class="linenos" data-linenos="207 "></span>    <span class="n">headings</span> <span class="o">=</span> <span class="p">[</span><span class="n">WAITING_ON_CUSTOMER_HEADING</span><span class="p">,</span> <span class="n">AGENT_OWNED_HEADING</span><span class="p">,</span> <span class="o">*</span><span class="n">triage</span><span class="o">.</span><span class="n">exclusions</span><span class="p">]</span>
+<span class="linenos" data-linenos="208 "></span>    <span class="n">queue_rows</span> <span class="o">=</span> <span class="n">working</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'section'</span><span class="p">)</span><span class="o">.</span><span class="n">is_null</span><span class="p">())</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">'issue_id'</span><span class="p">,</span> <span class="s1">'section'</span><span class="p">)</span>
+<span class="linenos" data-linenos="209 "></span>    <span class="n">queue</span> <span class="o">=</span> <span class="n">_order</span><span class="p">(</span><span class="n">queue_rows</span><span class="p">,</span> <span class="n">triage</span><span class="o">.</span><span class="n">ordering</span><span class="p">,</span> <span class="n">pylon</span><span class="p">,</span> <span class="n">tiers</span><span class="p">)</span>
+<span class="linenos" data-linenos="210 "></span>
+<span class="linenos" data-linenos="211 "></span>    <span class="n">sections</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="linenos" data-linenos="212 "></span>    <span class="k">for</span> <span class="n">heading</span> <span class="ow">in</span> <span class="n">headings</span><span class="p">:</span>
+<span class="linenos" data-linenos="213 "></span>        <span class="n">section_rows</span> <span class="o">=</span> <span class="n">working</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">'section'</span><span class="p">)</span> <span class="o">==</span> <span class="n">heading</span><span class="p">)</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">'issue_id'</span><span class="p">,</span> <span class="s1">'section'</span><span class="p">)</span>
+<span class="linenos" data-linenos="214 "></span>        <span class="k">if</span> <span class="n">section_rows</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
+<span class="linenos" data-linenos="215 "></span>            <span class="k">continue</span>
+<span class="linenos" data-linenos="216 "></span>        <span class="n">sections</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">heading</span><span class="p">,</span> <span class="n">_order</span><span class="p">(</span><span class="n">section_rows</span><span class="p">,</span> <span class="n">triage</span><span class="o">.</span><span class="n">ordering</span><span class="p">,</span> <span class="n">pylon</span><span class="p">,</span> <span class="n">tiers</span><span class="p">)))</span>
+<span class="linenos" data-linenos="217 "></span>
+<span class="linenos" data-linenos="218 "></span>    <span class="k">return</span> <span class="n">TriageQueue</span><span class="p">(</span><span class="n">queue</span><span class="o">=</span><span class="n">queue</span><span class="p">,</span> <span class="n">sections</span><span class="o">=</span><span class="n">sections</span><span class="p">)</span>
 </code></pre></div>
             </details>
     </div>

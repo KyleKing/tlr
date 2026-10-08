@@ -1555,10 +1555,15 @@ Unknown always means rejected. This is the actual gate; record-time scrubbing is
 what keeps a cassette clean by the time it reaches that gate.</p>
 <h2 id="recording-a-new-cassette">Recording a new cassette<a class="headerlink" href="#recording-a-new-cassette" title="Permanent link">⚓︎</a></h2>
 <ol>
-<li>Set the real credential in the environment or keychain per <code>SETUP.md</code>.</li>
+<li>Set the real credential in the environment or keychain per <code>SETUP.md</code>.
+    Recorded tests live under <code>tests/live/</code> and resolve each secret through
+    <code>secret_or_placeholder</code> (<code>tests/live/conftest.py</code>), so replaying needs no credential:
+    the cassette match ignores the <code>Authorization</code> header entirely.</li>
 <li>Run the test that needs a fixture:
-    <code>uv run pytest tests/path/to/test_thing.py --record-mode=once</code>.
-    pytest-recording writes the cassette under that test module&rsquo;s <code>cassettes/</code> directory.</li>
+    <code>uv run pytest tests/live/test_thing.py --record-mode=once</code>.
+    pytest-recording writes the cassette under <code>tests/live/cassettes/</code> — the package&rsquo;s
+    <code>vcr_cassette_dir</code> override puts it directly inside <code>cassettes/</code>, which is where both
+    the scrub verifier and the pre-commit glob look.</li>
 <li>Run <code>uv run prek run --all-files</code> (or just <code>uv run python -m tests.cassette_scrub</code>)
     before
     staging the cassette.
@@ -1580,9 +1585,19 @@ has never seen.
 Classify it before it can be committed:</p>
 <ul>
 <li><strong>Structural</strong> (kept verbatim): the field carries no workspace-specific content, e.g. a
-    pagination cursor, a count, an enum, a boolean, a small integer.
+    count, an enum, a boolean, a small integer.
     Add the key name to
-    <code>STRUCTURAL_JSON_KEYS</code>.</li>
+    <code>STRUCTURAL_JSON_KEYS</code>.
+    A pagination cursor is the exception that proves the rule: it looks structural, but
+    Pylon&rsquo;s cursors match the credential-shaped pattern check, so <code>cursor</code> is a redacted
+    class and <code>scrub_request</code> rewrites <code>?cursor=</code> in the recorded URI to the same
+    placeholder to keep replay matching.</li>
+<li><strong>Keyed-map</strong> (keys kept, values classified): a dict keyed by workspace data rather than
+    a fixed field vocabulary, like Pylon&rsquo;s <code>custom_fields</code> (keyed by field slug) and the
+    <code>time_in_status_seconds</code> breakdowns (keyed by status slug).
+    Add the container&rsquo;s key name to <code>KEYED_MAP_JSON_KEYS</code>.
+    A scalar sitting directly under a keyed-map key redacts as text, so an unexpected flat
+    shape still fails closed.</li>
 <li><strong>Redacted</strong> (replaced by a stable, shape-preserving placeholder): the field is an id, a
     name,
     a timestamp, free text, an email, or a URL.
@@ -1598,17 +1613,14 @@ this prefix&rdquo; shortcut and no environment variable to bypass the check.
 Classifying an
 unclassified field costs a two-line diff to <code>tests/cassette_scrub.py</code>.</p>
 <h2 id="what-is-not-classified-yet">What is not classified yet<a class="headerlink" href="#what-is-not-classified-yet" title="Permanent link">⚓︎</a></h2>
-<p>Only Linear GraphQL and Pylon REST fields documented in <code>docs/api-notes.md</code> are
-classified today.
+<p>Linear GraphQL and Pylon REST fields are classified, from the first recorded cassettes
+under <code>tests/live/cassettes/</code>.
 Incident.io, Google Calendar, and Slack fields are added when their first cassette is
 recorded,
-and until then the verifier rejects them by design, including Google Calendar&rsquo;s
-<code>calendars</code>
-object (keyed by calendar id, which is usually an email address).
-A dict whose keys are
-themselves redacted data needs handling a key-name classifier cannot express, and that
-is
-deliberately left unbuilt until a real cassette forces the question.</p>
+and until then the verifier rejects them by design.
+A dict keyed by workspace data (Google Calendar&rsquo;s <code>calendars</code>, keyed by calendar id)
+belongs in <code>KEYED_MAP_JSON_KEYS</code> — the mechanism exists now, because
+<code>custom_fields</code> forced it.</p>
 <h2 id="matching-without-matching-on-body">Matching without matching on body<a class="headerlink" href="#matching-without-matching-on-body" title="Permanent link">⚓︎</a></h2>
 <p><code>vcr_config</code>&rsquo;s <code>match_on</code> is <code>method, scheme, host, port, path, query</code>, deliberately
 excluding the
