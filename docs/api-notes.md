@@ -411,13 +411,12 @@ products multiselect, two Hubspot revenue fields, and two calendar meeting dates
 Their
 option values are workspace vocabulary, so they stay out of this repo and in the local
 config.
-So tier ordering in
-the triage queue has no data source until someone picks a field for it, and
-`[tiers].account_tier_field` names whichever one that turns out to be.
-Left empty, every
-account keeps `[tiers].default_tier` and the tier ordering rule does nothing.
-The lifecycle field and annual revenue are the two candidates, and choosing
-between them is a judgment call rather than a lookup.
+The lifecycle select is what stands in for tier here:
+`[tiers].account_tier_field` points at it and `[tiers].names` ranks its values.
+The
+revenue fields were the other candidate, but they are numeric — mapping them onto a
+ranked name list needs a bucketing rule that does not exist, and half the accounts have
+no value at all.
 
 A tier set by hand survives every later refresh, because `pylon_accounts` is
 provenance-tracked and `manual` outranks `pylon` on a field.

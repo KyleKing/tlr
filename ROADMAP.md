@@ -111,16 +111,10 @@ print JSON
 by default or markdown with `--format md`.
 `git log` is the record of how.
 
-Two things those phases did not finish, both waiting on a decision rather than on code.
-Customer
-tier has no source, because this Pylon workspace has no tier field:
-`[tiers].account_tier_field`
-names whichever account field ends up carrying one, and until it is set the tier
-ordering rule
-does nothing.
-And no cassette has been recorded yet, so the scrubber has never run against a real
-payload.
-Both are written up in [docs/api-notes.md](docs/api-notes.md).
+What they left behind, continued: the Deno snapshot history was imported once into
+`milestone_scope`, the account `lifecycle` field stands in for customer tier (see
+[docs/api-notes.md](docs/api-notes.md) for why no better source exists), and the first
+scrubbed cassettes under `tests/live/cassettes/` cover Linear and Pylon reads.
 
 ### 3. Goals
 
@@ -237,11 +231,6 @@ planning code once the ledger gives them better inputs than a sum of open estima
     blocks).
     Start
     with accepted events from other people and refine
-- Which account field stands in for customer tier.
-    This Pylon workspace has no tier field, and the
-    candidates are its lifecycle field and annual revenue.
-    Until one is chosen the triage queue lists every
-    account at the default tier
 - How an agent-owned ticket is recognized.
     Pylon answers this natively through a dozen
     `issue_ai_agent_*` filter attributes, none of which appeared on the record I read,
