@@ -1518,6 +1518,7 @@
 <h2 id="unreleased">Unreleased<a class="headerlink" href="#unreleased" title="Permanent link">⚓︎</a></h2>
 <h3 id="feat">Feat<a class="headerlink" href="#feat" title="Permanent link">⚓︎</a></h3>
 <ul>
+<li><strong>config</strong>: add get, set, and list subcommands</li>
 <li><strong>alarms</strong>: report CloudWatch alarm volume, trends, and Linear coverage</li>
 <li><strong>snapshot</strong>: add weekly/monthly Linear, Pylon, and Sentry check-in snapshot</li>
 <li>dispatch triage, backlog, and import-snapshots</li>
@@ -1618,6 +1619,9 @@
 </ul>
 <h3 id="fix">Fix<a class="headerlink" href="#fix" title="Permanent link">⚓︎</a></h3>
 <ul>
+<li><strong>snapshot</strong>: cap the past-SLA table at 25 rows</li>
+<li><strong>pylon</strong>: refresh from GET /issues and resolve links from external_issues</li>
+<li><strong>refresh</strong>: report response parse errors as failed, not skipped</li>
 <li>keep refreshing when a source is missing or fails</li>
 <li><strong>snapshot</strong>: exclude archived and closed-like issues from Linear open counts</li>
 <li><strong>pylon</strong>: send the cursor as a query param and read custom fields as objects</li>

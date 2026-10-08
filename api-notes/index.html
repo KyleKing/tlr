@@ -2182,11 +2182,20 @@ Either way a blocker outside the fetched scope stays invisible.</p>
 Truncating instead reads
 downstream as a mass deletion.</p>
 <h2 id="pylon-rest">Pylon REST<a class="headerlink" href="#pylon-rest" title="Permanent link">⚓︎</a></h2>
-<p>Base <code>https://api.usepylon.com</code>. The endpoints tlr uses are <code>POST /issues/search</code>,
+<p>Base <code>https://api.usepylon.com</code>. The endpoints tlr uses are <code>GET /issues</code>,
+<code>POST /issues/search</code>,
 <code>GET /issue-statuses</code>, and
 <code>GET /accounts</code>.
-<code>GET /issues</code>, <code>GET /issues/{id}</code>, and <code>POST /accounts/search</code> also exist.
+<code>GET /issues/{id}</code> and <code>POST /accounts/search</code> also exist.
 The response cache sits outside the rate limiter so a cache hit costs no quota.</p>
+<p>Refresh reads <code>GET /issues</code>, not per-ticket search: it takes required
+<code>start_time</code>/<code>end_time</code> RFC3339 query params (rejects naive timestamps) with a 365-day
+cap, paginates by <code>cursor</code>, and is not billed against the search rate limit.
+A Linear link shows up in a row&rsquo;s <code>external_issues</code>
+(<code>{"source": "linear", "link": "https://linear.app/&lt;ws&gt;/issue/&lt;IDENT&gt;/…"}</code>) and
+sometimes in the <code>linear_ticket</code>
+custom field, which holds either a bare identifier or a full URL; the identifier is
+pulled out of either shape by regex.</p>
 <p>Lookup by tracker link:</p>
 <div class="highlight"><pre><span></span><code><span class="linenos" data-linenos="1 "></span><span class="p">{</span>
 <span class="linenos" data-linenos="2 "></span><span class="w">  </span><span class="nt">"filter"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
@@ -2223,7 +2232,9 @@ The response cache sits outside the rate limiter so a cache hit costs no quota.<
 </code></pre></div>
 <p>A single subfilter drops the <code>and</code> wrapper.
 No window and no tracker id means no request at all: a bare
-date range over the whole workspace is never asked for.</p>
+date range over the whole workspace is never asked for.
+An empty result set returns only <code>{"request_id": ...}</code> — <code>data</code> and <code>pagination</code> are
+omitted rather than emptied.</p>
 <p>Which custom field holds the tracker identifier is workspace configuration, defaulting
 to
 <code>linear_ticket</code>.
@@ -2237,8 +2248,8 @@ rather than resolved.</p>
 The record&rsquo;s full shape is below.</p>
 <h3 id="statuses-and-categories">Statuses and categories<a class="headerlink" href="#statuses-and-categories" title="Permanent link">⚓︎</a></h3>
 <p><code>GET /issue-statuses</code> returns every status this workspace has.
-Each one carries a <code>value</code>
-(the slug), a <code>label</code>, and a <code>category</code>.
+Each one carries a <code>slug</code>,
+a <code>label</code>, and a <code>category</code>.
 The five categories are Pylon&rsquo;s own vocabulary and
 are stable across workspaces: <code>new</code>, <code>waiting_on_you</code>, <code>waiting_on_customer</code>, <code>on_hold</code>,
 and
