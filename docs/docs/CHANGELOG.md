@@ -145,6 +145,7 @@
 
 ### Refactor
 
+- **triage**: slim the queue table to screen-share width
 - delete the Deno app, the deck theme, and the app-template scaffolding
 - fresh start
 - **css**: carry status and identity on a 1px border, never a thick tab
